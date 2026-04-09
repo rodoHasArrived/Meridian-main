@@ -1,0 +1,234 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.PartitionDimension
+  commentId: T:Meridian.Storage.PartitionDimension
+  id: PartitionDimension
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.PartitionDimension.AssetClass
+  - Meridian.Storage.PartitionDimension.Date
+  - Meridian.Storage.PartitionDimension.EventType
+  - Meridian.Storage.PartitionDimension.Exchange
+  - Meridian.Storage.PartitionDimension.Source
+  - Meridian.Storage.PartitionDimension.Symbol
+  langs:
+  - csharp
+  - vb
+  name: PartitionDimension
+  nameWithType: PartitionDimension
+  fullName: Meridian.Storage.PartitionDimension
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartitionDimension
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 308
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Partition dimension for multi-dimensional partitioning.
+  example: []
+  syntax:
+    content: 'public enum PartitionDimension : byte'
+    content.vb: Public Enum PartitionDimension As Byte
+- uid: Meridian.Storage.PartitionDimension.Date
+  commentId: F:Meridian.Storage.PartitionDimension.Date
+  id: Date
+  parent: Meridian.Storage.PartitionDimension
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: PartitionDimension.Date
+  fullName: Meridian.Storage.PartitionDimension.Date
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 311
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Partition by date.
+  example: []
+  syntax:
+    content: Date = 0
+    return:
+      type: Meridian.Storage.PartitionDimension
+- uid: Meridian.Storage.PartitionDimension.Symbol
+  commentId: F:Meridian.Storage.PartitionDimension.Symbol
+  id: Symbol
+  parent: Meridian.Storage.PartitionDimension
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: PartitionDimension.Symbol
+  fullName: Meridian.Storage.PartitionDimension.Symbol
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Partition by symbol.
+  example: []
+  syntax:
+    content: Symbol = 1
+    return:
+      type: Meridian.Storage.PartitionDimension
+- uid: Meridian.Storage.PartitionDimension.EventType
+  commentId: F:Meridian.Storage.PartitionDimension.EventType
+  id: EventType
+  parent: Meridian.Storage.PartitionDimension
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: PartitionDimension.EventType
+  fullName: Meridian.Storage.PartitionDimension.EventType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Partition by event type.
+  example: []
+  syntax:
+    content: EventType = 2
+    return:
+      type: Meridian.Storage.PartitionDimension
+- uid: Meridian.Storage.PartitionDimension.Source
+  commentId: F:Meridian.Storage.PartitionDimension.Source
+  id: Source
+  parent: Meridian.Storage.PartitionDimension
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: PartitionDimension.Source
+  fullName: Meridian.Storage.PartitionDimension.Source
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Partition by data source.
+  example: []
+  syntax:
+    content: Source = 3
+    return:
+      type: Meridian.Storage.PartitionDimension
+- uid: Meridian.Storage.PartitionDimension.AssetClass
+  commentId: F:Meridian.Storage.PartitionDimension.AssetClass
+  id: AssetClass
+  parent: Meridian.Storage.PartitionDimension
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: PartitionDimension.AssetClass
+  fullName: Meridian.Storage.PartitionDimension.AssetClass
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Partition by asset class.
+  example: []
+  syntax:
+    content: AssetClass = 4
+    return:
+      type: Meridian.Storage.PartitionDimension
+- uid: Meridian.Storage.PartitionDimension.Exchange
+  commentId: F:Meridian.Storage.PartitionDimension.Exchange
+  id: Exchange
+  parent: Meridian.Storage.PartitionDimension
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: PartitionDimension.Exchange
+  fullName: Meridian.Storage.PartitionDimension.Exchange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Partition by exchange.
+  example: []
+  syntax:
+    content: Exchange = 5
+    return:
+      type: Meridian.Storage.PartitionDimension
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.PartitionDimension
+  commentId: T:Meridian.Storage.PartitionDimension
+  parent: Meridian.Storage
+  href: Meridian.Storage.PartitionDimension.html
+  name: PartitionDimension
+  nameWithType: PartitionDimension
+  fullName: Meridian.Storage.PartitionDimension

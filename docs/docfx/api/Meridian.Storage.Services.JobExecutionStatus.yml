@@ -1,0 +1,880 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.JobExecutionStatus
+  commentId: T:Meridian.Storage.Services.JobExecutionStatus
+  id: JobExecutionStatus
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.JobExecutionStatus.#ctor(System.String,Meridian.Storage.Services.MaintenanceType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Storage.Services.JobStatus,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Storage.Services.JobExecutionStatus.CompletedAt
+  - Meridian.Storage.Services.JobExecutionStatus.Errors
+  - Meridian.Storage.Services.JobExecutionStatus.JobId
+  - Meridian.Storage.Services.JobExecutionStatus.Message
+  - Meridian.Storage.Services.JobExecutionStatus.Progress
+  - Meridian.Storage.Services.JobExecutionStatus.StartedAt
+  - Meridian.Storage.Services.JobExecutionStatus.Status
+  - Meridian.Storage.Services.JobExecutionStatus.Type
+  langs:
+  - csharp
+  - vb
+  name: JobExecutionStatus
+  nameWithType: JobExecutionStatus
+  fullName: Meridian.Storage.Services.JobExecutionStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobExecutionStatus
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 697
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record JobExecutionStatus : IEquatable<JobExecutionStatus>'
+    content.vb: Public NotInheritable Class JobExecutionStatus Implements IEquatable(Of JobExecutionStatus)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.JobExecutionStatus}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.JobExecutionStatus.#ctor(System.String,Meridian.Storage.Services.MaintenanceType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Storage.Services.JobStatus,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Storage.Services.JobExecutionStatus.#ctor(System.String,Meridian.Storage.Services.MaintenanceType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Storage.Services.JobStatus,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.String,Meridian.Storage.Services.MaintenanceType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Storage.Services.JobStatus,System.Int32,System.String,System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: JobExecutionStatus(string, MaintenanceType, DateTimeOffset, DateTimeOffset?, JobStatus, int, string, IReadOnlyList<string>)
+  nameWithType: JobExecutionStatus.JobExecutionStatus(string, MaintenanceType, DateTimeOffset, DateTimeOffset?, JobStatus, int, string, IReadOnlyList<string>)
+  fullName: Meridian.Storage.Services.JobExecutionStatus.JobExecutionStatus(string, Meridian.Storage.Services.MaintenanceType, System.DateTimeOffset, System.DateTimeOffset?, Meridian.Storage.Services.JobStatus, int, string, System.Collections.Generic.IReadOnlyList<string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 697
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public JobExecutionStatus(string JobId, MaintenanceType Type, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, JobStatus Status, int Progress, string Message, IReadOnlyList<string> Errors)
+    parameters:
+    - id: JobId
+      type: System.String
+    - id: Type
+      type: Meridian.Storage.Services.MaintenanceType
+    - id: StartedAt
+      type: System.DateTimeOffset
+    - id: CompletedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Status
+      type: Meridian.Storage.Services.JobStatus
+    - id: Progress
+      type: System.Int32
+    - id: Message
+      type: System.String
+    - id: Errors
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Sub New(JobId As String, Type As MaintenanceType, StartedAt As DateTimeOffset, CompletedAt As DateTimeOffset?, Status As JobStatus, Progress As Integer, Message As String, Errors As IReadOnlyList(Of String))
+  overload: Meridian.Storage.Services.JobExecutionStatus.#ctor*
+  nameWithType.vb: JobExecutionStatus.New(String, MaintenanceType, DateTimeOffset, DateTimeOffset?, JobStatus, Integer, String, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Storage.Services.JobExecutionStatus.New(String, Meridian.Storage.Services.MaintenanceType, System.DateTimeOffset, System.DateTimeOffset?, Meridian.Storage.Services.JobStatus, Integer, String, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(String, MaintenanceType, DateTimeOffset, DateTimeOffset?, JobStatus, Integer, String, IReadOnlyList(Of String))
+- uid: Meridian.Storage.Services.JobExecutionStatus.JobId
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.JobId
+  id: JobId
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: JobId
+  nameWithType: JobExecutionStatus.JobId
+  fullName: Meridian.Storage.Services.JobExecutionStatus.JobId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobId
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 698
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string JobId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property JobId As String
+  overload: Meridian.Storage.Services.JobExecutionStatus.JobId*
+- uid: Meridian.Storage.Services.JobExecutionStatus.Type
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.Type
+  id: Type
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: JobExecutionStatus.Type
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 699
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MaintenanceType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.MaintenanceType
+    content.vb: Public Property Type As MaintenanceType
+  overload: Meridian.Storage.Services.JobExecutionStatus.Type*
+- uid: Meridian.Storage.Services.JobExecutionStatus.StartedAt
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.StartedAt
+  id: StartedAt
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: JobExecutionStatus.StartedAt
+  fullName: Meridian.Storage.Services.JobExecutionStatus.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 700
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset StartedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property StartedAt As DateTimeOffset
+  overload: Meridian.Storage.Services.JobExecutionStatus.StartedAt*
+- uid: Meridian.Storage.Services.JobExecutionStatus.CompletedAt
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: JobExecutionStatus.CompletedAt
+  fullName: Meridian.Storage.Services.JobExecutionStatus.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 701
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset? CompletedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CompletedAt As DateTimeOffset?
+  overload: Meridian.Storage.Services.JobExecutionStatus.CompletedAt*
+- uid: Meridian.Storage.Services.JobExecutionStatus.Status
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.Status
+  id: Status
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: JobExecutionStatus.Status
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 702
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public JobStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.JobStatus
+    content.vb: Public Property Status As JobStatus
+  overload: Meridian.Storage.Services.JobExecutionStatus.Status*
+- uid: Meridian.Storage.Services.JobExecutionStatus.Progress
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.Progress
+  id: Progress
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Progress
+  nameWithType: JobExecutionStatus.Progress
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Progress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Progress
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 703
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int Progress { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Progress As Integer
+  overload: Meridian.Storage.Services.JobExecutionStatus.Progress*
+- uid: Meridian.Storage.Services.JobExecutionStatus.Message
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.Message
+  id: Message
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: JobExecutionStatus.Message
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 704
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Storage.Services.JobExecutionStatus.Message*
+- uid: Meridian.Storage.Services.JobExecutionStatus.Errors
+  commentId: P:Meridian.Storage.Services.JobExecutionStatus.Errors
+  id: Errors
+  parent: Meridian.Storage.Services.JobExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Errors
+  nameWithType: JobExecutionStatus.Errors
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Errors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Errors
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 705
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<string> Errors { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Errors As IReadOnlyList(Of String)
+  overload: Meridian.Storage.Services.JobExecutionStatus.Errors*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.JobExecutionStatus}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.JobExecutionStatus}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<JobExecutionStatus>
+  nameWithType: IEquatable<JobExecutionStatus>
+  fullName: System.IEquatable<Meridian.Storage.Services.JobExecutionStatus>
+  nameWithType.vb: IEquatable(Of JobExecutionStatus)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.JobExecutionStatus)
+  name.vb: IEquatable(Of JobExecutionStatus)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.JobExecutionStatus
+    name: JobExecutionStatus
+    href: Meridian.Storage.Services.JobExecutionStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.JobExecutionStatus
+    name: JobExecutionStatus
+    href: Meridian.Storage.Services.JobExecutionStatus.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.JobExecutionStatus.#ctor*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.#ctor
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus__ctor_System_String_Meridian_Storage_Services_MaintenanceType_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__Meridian_Storage_Services_JobStatus_System_Int32_System_String_System_Collections_Generic_IReadOnlyList_System_String__
+  name: JobExecutionStatus
+  nameWithType: JobExecutionStatus.JobExecutionStatus
+  fullName: Meridian.Storage.Services.JobExecutionStatus.JobExecutionStatus
+  nameWithType.vb: JobExecutionStatus.New
+  fullName.vb: Meridian.Storage.Services.JobExecutionStatus.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.MaintenanceType
+  commentId: T:Meridian.Storage.Services.MaintenanceType
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.MaintenanceType.html
+  name: MaintenanceType
+  nameWithType: MaintenanceType
+  fullName: Meridian.Storage.Services.MaintenanceType
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: Meridian.Storage.Services.JobStatus
+  commentId: T:Meridian.Storage.Services.JobStatus
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.JobStatus.html
+  name: JobStatus
+  nameWithType: JobStatus
+  fullName: Meridian.Storage.Services.JobStatus
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.JobExecutionStatus.JobId*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.JobId
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_JobId
+  name: JobId
+  nameWithType: JobExecutionStatus.JobId
+  fullName: Meridian.Storage.Services.JobExecutionStatus.JobId
+- uid: Meridian.Storage.Services.JobExecutionStatus.Type*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.Type
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_Type
+  name: Type
+  nameWithType: JobExecutionStatus.Type
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Type
+- uid: Meridian.Storage.Services.JobExecutionStatus.StartedAt*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.StartedAt
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_StartedAt
+  name: StartedAt
+  nameWithType: JobExecutionStatus.StartedAt
+  fullName: Meridian.Storage.Services.JobExecutionStatus.StartedAt
+- uid: Meridian.Storage.Services.JobExecutionStatus.CompletedAt*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.CompletedAt
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_CompletedAt
+  name: CompletedAt
+  nameWithType: JobExecutionStatus.CompletedAt
+  fullName: Meridian.Storage.Services.JobExecutionStatus.CompletedAt
+- uid: Meridian.Storage.Services.JobExecutionStatus.Status*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.Status
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_Status
+  name: Status
+  nameWithType: JobExecutionStatus.Status
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Status
+- uid: Meridian.Storage.Services.JobExecutionStatus.Progress*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.Progress
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_Progress
+  name: Progress
+  nameWithType: JobExecutionStatus.Progress
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Progress
+- uid: Meridian.Storage.Services.JobExecutionStatus.Message*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.Message
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_Message
+  name: Message
+  nameWithType: JobExecutionStatus.Message
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Message
+- uid: Meridian.Storage.Services.JobExecutionStatus.Errors*
+  commentId: Overload:Meridian.Storage.Services.JobExecutionStatus.Errors
+  href: Meridian.Storage.Services.JobExecutionStatus.html#Meridian_Storage_Services_JobExecutionStatus_Errors
+  name: Errors
+  nameWithType: JobExecutionStatus.Errors
+  fullName: Meridian.Storage.Services.JobExecutionStatus.Errors

@@ -1,0 +1,104 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  id: Meridian.Execution
+  children:
+  - Meridian.Execution.BrokerageServiceRegistration
+  - Meridian.Execution.IRiskValidator
+  - Meridian.Execution.ISecurityMasterGate
+  - Meridian.Execution.OrderManagementSystem
+  - Meridian.Execution.PaperExecutionContext
+  - Meridian.Execution.PaperTradingGateway
+  - Meridian.Execution.RiskValidationResult
+  - Meridian.Execution.SecurityMasterGate
+  - Meridian.Execution.SecurityMasterGateResult
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.BrokerageServiceRegistration
+  commentId: T:Meridian.Execution.BrokerageServiceRegistration
+  href: Meridian.Execution.BrokerageServiceRegistration.html
+  name: BrokerageServiceRegistration
+  nameWithType: BrokerageServiceRegistration
+  fullName: Meridian.Execution.BrokerageServiceRegistration
+- uid: Meridian.Execution.IRiskValidator
+  commentId: T:Meridian.Execution.IRiskValidator
+  parent: Meridian.Execution
+  href: Meridian.Execution.IRiskValidator.html
+  name: IRiskValidator
+  nameWithType: IRiskValidator
+  fullName: Meridian.Execution.IRiskValidator
+- uid: Meridian.Execution.RiskValidationResult
+  commentId: T:Meridian.Execution.RiskValidationResult
+  parent: Meridian.Execution
+  href: Meridian.Execution.RiskValidationResult.html
+  name: RiskValidationResult
+  nameWithType: RiskValidationResult
+  fullName: Meridian.Execution.RiskValidationResult
+- uid: Meridian.Execution.SecurityMasterGateResult
+  commentId: T:Meridian.Execution.SecurityMasterGateResult
+  href: Meridian.Execution.SecurityMasterGateResult.html
+  name: SecurityMasterGateResult
+  nameWithType: SecurityMasterGateResult
+  fullName: Meridian.Execution.SecurityMasterGateResult
+- uid: Meridian.Execution.ISecurityMasterGate
+  commentId: T:Meridian.Execution.ISecurityMasterGate
+  parent: Meridian.Execution
+  href: Meridian.Execution.ISecurityMasterGate.html
+  name: ISecurityMasterGate
+  nameWithType: ISecurityMasterGate
+  fullName: Meridian.Execution.ISecurityMasterGate
+- uid: Meridian.Execution.OrderManagementSystem
+  commentId: T:Meridian.Execution.OrderManagementSystem
+  href: Meridian.Execution.OrderManagementSystem.html
+  name: OrderManagementSystem
+  nameWithType: OrderManagementSystem
+  fullName: Meridian.Execution.OrderManagementSystem
+- uid: Meridian.Execution.PaperExecutionContext
+  commentId: T:Meridian.Execution.PaperExecutionContext
+  href: Meridian.Execution.PaperExecutionContext.html
+  name: PaperExecutionContext
+  nameWithType: PaperExecutionContext
+  fullName: Meridian.Execution.PaperExecutionContext
+- uid: Meridian.Execution.PaperTradingGateway
+  commentId: T:Meridian.Execution.PaperTradingGateway
+  href: Meridian.Execution.PaperTradingGateway.html
+  name: PaperTradingGateway
+  nameWithType: PaperTradingGateway
+  fullName: Meridian.Execution.PaperTradingGateway
+- uid: Meridian.Execution.SecurityMasterGate
+  commentId: T:Meridian.Execution.SecurityMasterGate
+  href: Meridian.Execution.SecurityMasterGate.html
+  name: SecurityMasterGate
+  nameWithType: SecurityMasterGate
+  fullName: Meridian.Execution.SecurityMasterGate
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  href: Meridian.html
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html

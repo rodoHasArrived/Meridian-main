@@ -1,0 +1,647 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.BackfillRequestDto
+  commentId: T:Meridian.Contracts.Api.BackfillRequestDto
+  id: BackfillRequestDto
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  - Meridian.Contracts.Api.BackfillRequestDto.From
+  - Meridian.Contracts.Api.BackfillRequestDto.Provider
+  - Meridian.Contracts.Api.BackfillRequestDto.Symbols
+  - Meridian.Contracts.Api.BackfillRequestDto.To
+  langs:
+  - csharp
+  - vb
+  name: BackfillRequestDto
+  nameWithType: BackfillRequestDto
+  fullName: Meridian.Contracts.Api.BackfillRequestDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillRequestDto
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to run a backfill operation.
+  example: []
+  syntax:
+    content: 'public record BackfillRequestDto : IEquatable<BackfillRequestDto>'
+    content.vb: Public Class BackfillRequestDto Implements IEquatable(Of BackfillRequestDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.BackfillRequestDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  commentId: M:Meridian.Contracts.Api.BackfillRequestDto.#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  id: '#ctor(System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})'
+  parent: Meridian.Contracts.Api.BackfillRequestDto
+  langs:
+  - csharp
+  - vb
+  name: BackfillRequestDto(string?, string[], DateOnly?, DateOnly?)
+  nameWithType: BackfillRequestDto.BackfillRequestDto(string?, string[], DateOnly?, DateOnly?)
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.BackfillRequestDto(string?, string[], System.DateOnly?, System.DateOnly?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to run a backfill operation.
+  example: []
+  syntax:
+    content: public BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To)
+    parameters:
+    - id: Provider
+      type: System.String
+    - id: Symbols
+      type: System.String[]
+    - id: From
+      type: System.Nullable{System.DateOnly}
+    - id: To
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Sub New(Provider As String, Symbols As String(), From As DateOnly?, [To] As DateOnly?)
+  overload: Meridian.Contracts.Api.BackfillRequestDto.#ctor*
+  nameWithType.vb: BackfillRequestDto.New(String, String(), DateOnly?, DateOnly?)
+  fullName.vb: Meridian.Contracts.Api.BackfillRequestDto.New(String, String(), System.DateOnly?, System.DateOnly?)
+  name.vb: New(String, String(), DateOnly?, DateOnly?)
+- uid: Meridian.Contracts.Api.BackfillRequestDto.Provider
+  commentId: P:Meridian.Contracts.Api.BackfillRequestDto.Provider
+  id: Provider
+  parent: Meridian.Contracts.Api.BackfillRequestDto
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: BackfillRequestDto.Provider
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Contracts.Api.BackfillRequestDto.Provider*
+- uid: Meridian.Contracts.Api.BackfillRequestDto.Symbols
+  commentId: P:Meridian.Contracts.Api.BackfillRequestDto.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Api.BackfillRequestDto
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: BackfillRequestDto.Symbols
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string[] Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Contracts.Api.BackfillRequestDto.Symbols*
+- uid: Meridian.Contracts.Api.BackfillRequestDto.From
+  commentId: P:Meridian.Contracts.Api.BackfillRequestDto.From
+  id: From
+  parent: Meridian.Contracts.Api.BackfillRequestDto
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: BackfillRequestDto.From
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateOnly? From { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property From As DateOnly?
+  overload: Meridian.Contracts.Api.BackfillRequestDto.From*
+- uid: Meridian.Contracts.Api.BackfillRequestDto.To
+  commentId: P:Meridian.Contracts.Api.BackfillRequestDto.To
+  id: To
+  parent: Meridian.Contracts.Api.BackfillRequestDto
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: BackfillRequestDto.To
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateOnly? To { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property [To] As DateOnly?
+  overload: Meridian.Contracts.Api.BackfillRequestDto.To*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.BackfillRequestDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.BackfillRequestDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackfillRequestDto>
+  nameWithType: IEquatable<BackfillRequestDto>
+  fullName: System.IEquatable<Meridian.Contracts.Api.BackfillRequestDto>
+  nameWithType.vb: IEquatable(Of BackfillRequestDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.BackfillRequestDto)
+  name.vb: IEquatable(Of BackfillRequestDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackfillRequestDto
+    name: BackfillRequestDto
+    href: Meridian.Contracts.Api.BackfillRequestDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackfillRequestDto
+    name: BackfillRequestDto
+    href: Meridian.Contracts.Api.BackfillRequestDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.BackfillRequestDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.BackfillRequestDto.#ctor
+  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto__ctor_System_String_System_String___System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__
+  name: BackfillRequestDto
+  nameWithType: BackfillRequestDto.BackfillRequestDto
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.BackfillRequestDto
+  nameWithType.vb: BackfillRequestDto.New
+  fullName.vb: Meridian.Contracts.Api.BackfillRequestDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.BackfillRequestDto.Provider*
+  commentId: Overload:Meridian.Contracts.Api.BackfillRequestDto.Provider
+  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto_Provider
+  name: Provider
+  nameWithType: BackfillRequestDto.Provider
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.Provider
+- uid: Meridian.Contracts.Api.BackfillRequestDto.Symbols*
+  commentId: Overload:Meridian.Contracts.Api.BackfillRequestDto.Symbols
+  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto_Symbols
+  name: Symbols
+  nameWithType: BackfillRequestDto.Symbols
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.Symbols
+- uid: Meridian.Contracts.Api.BackfillRequestDto.From*
+  commentId: Overload:Meridian.Contracts.Api.BackfillRequestDto.From
+  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto_From
+  name: From
+  nameWithType: BackfillRequestDto.From
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.From
+- uid: Meridian.Contracts.Api.BackfillRequestDto.To*
+  commentId: Overload:Meridian.Contracts.Api.BackfillRequestDto.To
+  href: Meridian.Contracts.Api.BackfillRequestDto.html#Meridian_Contracts_Api_BackfillRequestDto_To
+  name: To
+  nameWithType: BackfillRequestDto.To
+  fullName: Meridian.Contracts.Api.BackfillRequestDto.To

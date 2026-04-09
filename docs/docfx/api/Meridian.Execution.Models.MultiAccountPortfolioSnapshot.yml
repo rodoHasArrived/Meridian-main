@@ -1,0 +1,931 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  commentId: T:Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  id: MultiAccountPortfolioSnapshot
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot},System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot})
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue
+  - Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: MultiAccountPortfolioSnapshot
+  nameWithType: MultiAccountPortfolioSnapshot
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MultiAccountPortfolioSnapshot
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Aggregate snapshot across all accounts tracked by an <xref href="Meridian.Execution.Models.IMultiAccountPortfolioState" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed record MultiAccountPortfolioSnapshot : IEquatable<MultiAccountPortfolioSnapshot>'
+    content.vb: Public NotInheritable Class MultiAccountPortfolioSnapshot Implements IEquatable(Of MultiAccountPortfolioSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Models.MultiAccountPortfolioSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot},System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  commentId: M:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot},System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot},System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)'
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MultiAccountPortfolioSnapshot(IReadOnlyList<ExecutionAccountDetailSnapshot>, decimal, decimal, decimal, decimal, decimal, decimal, decimal, DateTimeOffset)
+  nameWithType: MultiAccountPortfolioSnapshot.MultiAccountPortfolioSnapshot(IReadOnlyList<ExecutionAccountDetailSnapshot>, decimal, decimal, decimal, decimal, decimal, decimal, decimal, DateTimeOffset)
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.MultiAccountPortfolioSnapshot(System.Collections.Generic.IReadOnlyList<Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot>, decimal, decimal, decimal, decimal, decimal, decimal, decimal, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Aggregate snapshot across all accounts tracked by an <xref href="Meridian.Execution.Models.IMultiAccountPortfolioState" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public MultiAccountPortfolioSnapshot(IReadOnlyList<ExecutionAccountDetailSnapshot> Accounts, decimal TotalCash, decimal TotalLongMarketValue, decimal TotalShortMarketValue, decimal TotalGrossExposure, decimal TotalNetExposure, decimal TotalUnrealisedPnl, decimal TotalRealisedPnl, DateTimeOffset AsOf)
+    parameters:
+    - id: Accounts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+      description: Per-account detailed snapshots.
+    - id: TotalCash
+      type: System.Decimal
+      description: Sum of cash across all accounts.
+    - id: TotalLongMarketValue
+      type: System.Decimal
+      description: Sum of long market values.
+    - id: TotalShortMarketValue
+      type: System.Decimal
+      description: Sum of absolute short market values.
+    - id: TotalGrossExposure
+      type: System.Decimal
+      description: TotalLongMarketValue + TotalShortMarketValue.
+    - id: TotalNetExposure
+      type: System.Decimal
+      description: TotalLongMarketValue − TotalShortMarketValue.
+    - id: TotalUnrealisedPnl
+      type: System.Decimal
+      description: Aggregate unrealised P&amp;L.
+    - id: TotalRealisedPnl
+      type: System.Decimal
+      description: Aggregate realised P&amp;L.
+    - id: AsOf
+      type: System.DateTimeOffset
+      description: UTC timestamp.
+    content.vb: Public Sub New(Accounts As IReadOnlyList(Of ExecutionAccountDetailSnapshot), TotalCash As Decimal, TotalLongMarketValue As Decimal, TotalShortMarketValue As Decimal, TotalGrossExposure As Decimal, TotalNetExposure As Decimal, TotalUnrealisedPnl As Decimal, TotalRealisedPnl As Decimal, AsOf As DateTimeOffset)
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.#ctor*
+  nameWithType.vb: MultiAccountPortfolioSnapshot.New(IReadOnlyList(Of ExecutionAccountDetailSnapshot), Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, DateTimeOffset)
+  fullName.vb: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.New(System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot), Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, System.DateTimeOffset)
+  name.vb: New(IReadOnlyList(Of ExecutionAccountDetailSnapshot), Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, DateTimeOffset)
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts
+  id: Accounts
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: MultiAccountPortfolioSnapshot.Accounts
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Per-account detailed snapshots.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ExecutionAccountDetailSnapshot> Accounts { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+    content.vb: Public Property Accounts As IReadOnlyList(Of ExecutionAccountDetailSnapshot)
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash
+  id: TotalCash
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalCash
+  nameWithType: MultiAccountPortfolioSnapshot.TotalCash
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCash
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Sum of cash across all accounts.
+  example: []
+  syntax:
+    content: public decimal TotalCash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalCash As Decimal
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue
+  id: TotalLongMarketValue
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalLongMarketValue
+  nameWithType: MultiAccountPortfolioSnapshot.TotalLongMarketValue
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalLongMarketValue
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Sum of long market values.
+  example: []
+  syntax:
+    content: public decimal TotalLongMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalLongMarketValue As Decimal
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue
+  id: TotalShortMarketValue
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalShortMarketValue
+  nameWithType: MultiAccountPortfolioSnapshot.TotalShortMarketValue
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalShortMarketValue
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Sum of absolute short market values.
+  example: []
+  syntax:
+    content: public decimal TotalShortMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalShortMarketValue As Decimal
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure
+  id: TotalGrossExposure
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalGrossExposure
+  nameWithType: MultiAccountPortfolioSnapshot.TotalGrossExposure
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGrossExposure
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: TotalLongMarketValue + TotalShortMarketValue.
+  example: []
+  syntax:
+    content: public decimal TotalGrossExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalGrossExposure As Decimal
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure
+  id: TotalNetExposure
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalNetExposure
+  nameWithType: MultiAccountPortfolioSnapshot.TotalNetExposure
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalNetExposure
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: TotalLongMarketValue − TotalShortMarketValue.
+  example: []
+  syntax:
+    content: public decimal TotalNetExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalNetExposure As Decimal
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+  id: TotalUnrealisedPnl
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalUnrealisedPnl
+  nameWithType: MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalUnrealisedPnl
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Aggregate unrealised P&amp;L.
+  example: []
+  syntax:
+    content: public decimal TotalUnrealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalUnrealisedPnl As Decimal
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl
+  id: TotalRealisedPnl
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalRealisedPnl
+  nameWithType: MultiAccountPortfolioSnapshot.TotalRealisedPnl
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRealisedPnl
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Aggregate realised P&amp;L.
+  example: []
+  syntax:
+    content: public decimal TotalRealisedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalRealisedPnl As Decimal
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf
+  commentId: P:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf
+  id: AsOf
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: MultiAccountPortfolioSnapshot.AsOf
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: UTC timestamp.
+  example: []
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf*
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot})
+  commentId: M:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot})
+  id: FromAccounts(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot})
+  parent: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  langs:
+  - csharp
+  - vb
+  name: FromAccounts(IReadOnlyList<ExecutionAccountDetailSnapshot>)
+  nameWithType: MultiAccountPortfolioSnapshot.FromAccounts(IReadOnlyList<ExecutionAccountDetailSnapshot>)
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts(System.Collections.Generic.IReadOnlyList<Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromAccounts
+    path: ../../src/Meridian.Execution/Models/IMultiAccountPortfolioState.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Creates an aggregate snapshot from a list of per-account snapshots.
+  example: []
+  syntax:
+    content: public static MultiAccountPortfolioSnapshot FromAccounts(IReadOnlyList<ExecutionAccountDetailSnapshot> accounts)
+    parameters:
+    - id: accounts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+    return:
+      type: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+    content.vb: Public Shared Function FromAccounts(accounts As IReadOnlyList(Of ExecutionAccountDetailSnapshot)) As MultiAccountPortfolioSnapshot
+  overload: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts*
+  nameWithType.vb: MultiAccountPortfolioSnapshot.FromAccounts(IReadOnlyList(Of ExecutionAccountDetailSnapshot))
+  fullName.vb: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts(System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot))
+  name.vb: FromAccounts(IReadOnlyList(Of ExecutionAccountDetailSnapshot))
+references:
+- uid: Meridian.Execution.Models.IMultiAccountPortfolioState
+  commentId: T:Meridian.Execution.Models.IMultiAccountPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IMultiAccountPortfolioState.html
+  name: IMultiAccountPortfolioState
+  nameWithType: IMultiAccountPortfolioState
+  fullName: Meridian.Execution.Models.IMultiAccountPortfolioState
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Models.MultiAccountPortfolioSnapshot}
+  commentId: T:System.IEquatable{Meridian.Execution.Models.MultiAccountPortfolioSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MultiAccountPortfolioSnapshot>
+  nameWithType: IEquatable<MultiAccountPortfolioSnapshot>
+  fullName: System.IEquatable<Meridian.Execution.Models.MultiAccountPortfolioSnapshot>
+  nameWithType.vb: IEquatable(Of MultiAccountPortfolioSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Models.MultiAccountPortfolioSnapshot)
+  name.vb: IEquatable(Of MultiAccountPortfolioSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+    name: MultiAccountPortfolioSnapshot
+    href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+    name: MultiAccountPortfolioSnapshot
+    href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.#ctor*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.#ctor
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot__ctor_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot__System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_DateTimeOffset_
+  name: MultiAccountPortfolioSnapshot
+  nameWithType: MultiAccountPortfolioSnapshot.MultiAccountPortfolioSnapshot
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.MultiAccountPortfolioSnapshot
+  nameWithType.vb: MultiAccountPortfolioSnapshot.New
+  fullName.vb: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExecutionAccountDetailSnapshot>
+  nameWithType: IReadOnlyList<ExecutionAccountDetailSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot>
+  nameWithType.vb: IReadOnlyList(Of ExecutionAccountDetailSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot)
+  name.vb: IReadOnlyList(Of ExecutionAccountDetailSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+    name: ExecutionAccountDetailSnapshot
+    href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot
+    name: ExecutionAccountDetailSnapshot
+    href: Meridian.Execution.Interfaces.ExecutionAccountDetailSnapshot.html
+  - name: )
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_Accounts
+  name: Accounts
+  nameWithType: MultiAccountPortfolioSnapshot.Accounts
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.Accounts
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_TotalCash
+  name: TotalCash
+  nameWithType: MultiAccountPortfolioSnapshot.TotalCash
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalCash
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_TotalLongMarketValue
+  name: TotalLongMarketValue
+  nameWithType: MultiAccountPortfolioSnapshot.TotalLongMarketValue
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalLongMarketValue
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_TotalShortMarketValue
+  name: TotalShortMarketValue
+  nameWithType: MultiAccountPortfolioSnapshot.TotalShortMarketValue
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalShortMarketValue
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_TotalGrossExposure
+  name: TotalGrossExposure
+  nameWithType: MultiAccountPortfolioSnapshot.TotalGrossExposure
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalGrossExposure
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_TotalNetExposure
+  name: TotalNetExposure
+  nameWithType: MultiAccountPortfolioSnapshot.TotalNetExposure
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalNetExposure
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_TotalUnrealisedPnl
+  name: TotalUnrealisedPnl
+  nameWithType: MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalUnrealisedPnl
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_TotalRealisedPnl
+  name: TotalRealisedPnl
+  nameWithType: MultiAccountPortfolioSnapshot.TotalRealisedPnl
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.TotalRealisedPnl
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_AsOf
+  name: AsOf
+  nameWithType: MultiAccountPortfolioSnapshot.AsOf
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.AsOf
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts*
+  commentId: Overload:Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html#Meridian_Execution_Models_MultiAccountPortfolioSnapshot_FromAccounts_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Interfaces_ExecutionAccountDetailSnapshot__
+  name: FromAccounts
+  nameWithType: MultiAccountPortfolioSnapshot.FromAccounts
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.FromAccounts
+- uid: Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  commentId: T:Meridian.Execution.Models.MultiAccountPortfolioSnapshot
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.MultiAccountPortfolioSnapshot.html
+  name: MultiAccountPortfolioSnapshot
+  nameWithType: MultiAccountPortfolioSnapshot
+  fullName: Meridian.Execution.Models.MultiAccountPortfolioSnapshot

@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.CatalogExportFormat
+  commentId: T:Meridian.Storage.Interfaces.CatalogExportFormat
+  id: CatalogExportFormat
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.CatalogExportFormat.Csv
+  - Meridian.Storage.Interfaces.CatalogExportFormat.Json
+  - Meridian.Storage.Interfaces.CatalogExportFormat.Parquet
+  langs:
+  - csharp
+  - vb
+  name: CatalogExportFormat
+  nameWithType: CatalogExportFormat
+  fullName: Meridian.Storage.Interfaces.CatalogExportFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatalogExportFormat
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Export format for catalog.
+  example: []
+  syntax:
+    content: 'public enum CatalogExportFormat : byte'
+    content.vb: Public Enum CatalogExportFormat As Byte
+- uid: Meridian.Storage.Interfaces.CatalogExportFormat.Json
+  commentId: F:Meridian.Storage.Interfaces.CatalogExportFormat.Json
+  id: Json
+  parent: Meridian.Storage.Interfaces.CatalogExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Json
+  nameWithType: CatalogExportFormat.Json
+  fullName: Meridian.Storage.Interfaces.CatalogExportFormat.Json
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Json
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: JSON format.
+  example: []
+  syntax:
+    content: Json = 0
+    return:
+      type: Meridian.Storage.Interfaces.CatalogExportFormat
+- uid: Meridian.Storage.Interfaces.CatalogExportFormat.Csv
+  commentId: F:Meridian.Storage.Interfaces.CatalogExportFormat.Csv
+  id: Csv
+  parent: Meridian.Storage.Interfaces.CatalogExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Csv
+  nameWithType: CatalogExportFormat.Csv
+  fullName: Meridian.Storage.Interfaces.CatalogExportFormat.Csv
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Csv
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: CSV format (file listing).
+  example: []
+  syntax:
+    content: Csv = 1
+    return:
+      type: Meridian.Storage.Interfaces.CatalogExportFormat
+- uid: Meridian.Storage.Interfaces.CatalogExportFormat.Parquet
+  commentId: F:Meridian.Storage.Interfaces.CatalogExportFormat.Parquet
+  id: Parquet
+  parent: Meridian.Storage.Interfaces.CatalogExportFormat
+  langs:
+  - csharp
+  - vb
+  name: Parquet
+  nameWithType: CatalogExportFormat.Parquet
+  fullName: Meridian.Storage.Interfaces.CatalogExportFormat.Parquet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parquet
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 387
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Parquet format (for analytics).
+  example: []
+  syntax:
+    content: Parquet = 2
+    return:
+      type: Meridian.Storage.Interfaces.CatalogExportFormat
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Interfaces.CatalogExportFormat
+  commentId: T:Meridian.Storage.Interfaces.CatalogExportFormat
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogExportFormat.html
+  name: CatalogExportFormat
+  nameWithType: CatalogExportFormat
+  fullName: Meridian.Storage.Interfaces.CatalogExportFormat

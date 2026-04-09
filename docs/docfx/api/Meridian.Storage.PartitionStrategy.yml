@@ -1,0 +1,592 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.PartitionStrategy
+  commentId: T:Meridian.Storage.PartitionStrategy
+  id: PartitionStrategy
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.PartitionStrategy.#ctor(Meridian.Storage.PartitionDimension,System.Nullable{Meridian.Storage.PartitionDimension},System.Nullable{Meridian.Storage.PartitionDimension},Meridian.Storage.DatePartition)
+  - Meridian.Storage.PartitionStrategy.DateGranularity
+  - Meridian.Storage.PartitionStrategy.Primary
+  - Meridian.Storage.PartitionStrategy.Secondary
+  - Meridian.Storage.PartitionStrategy.Tertiary
+  langs:
+  - csharp
+  - vb
+  name: PartitionStrategy
+  nameWithType: PartitionStrategy
+  fullName: Meridian.Storage.PartitionStrategy
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartitionStrategy
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 327
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Multi-dimensional partition strategy.
+  example: []
+  syntax:
+    content: 'public sealed record PartitionStrategy : IEquatable<PartitionStrategy>'
+    content.vb: Public NotInheritable Class PartitionStrategy Implements IEquatable(Of PartitionStrategy)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.PartitionStrategy}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.PartitionStrategy.#ctor(Meridian.Storage.PartitionDimension,System.Nullable{Meridian.Storage.PartitionDimension},System.Nullable{Meridian.Storage.PartitionDimension},Meridian.Storage.DatePartition)
+  commentId: M:Meridian.Storage.PartitionStrategy.#ctor(Meridian.Storage.PartitionDimension,System.Nullable{Meridian.Storage.PartitionDimension},System.Nullable{Meridian.Storage.PartitionDimension},Meridian.Storage.DatePartition)
+  id: '#ctor(Meridian.Storage.PartitionDimension,System.Nullable{Meridian.Storage.PartitionDimension},System.Nullable{Meridian.Storage.PartitionDimension},Meridian.Storage.DatePartition)'
+  parent: Meridian.Storage.PartitionStrategy
+  langs:
+  - csharp
+  - vb
+  name: PartitionStrategy(PartitionDimension, PartitionDimension?, PartitionDimension?, DatePartition)
+  nameWithType: PartitionStrategy.PartitionStrategy(PartitionDimension, PartitionDimension?, PartitionDimension?, DatePartition)
+  fullName: Meridian.Storage.PartitionStrategy.PartitionStrategy(Meridian.Storage.PartitionDimension, Meridian.Storage.PartitionDimension?, Meridian.Storage.PartitionDimension?, Meridian.Storage.DatePartition)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 327
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Multi-dimensional partition strategy.
+  example: []
+  syntax:
+    content: public PartitionStrategy(PartitionDimension Primary, PartitionDimension? Secondary = null, PartitionDimension? Tertiary = null, DatePartition DateGranularity = DatePartition.Daily)
+    parameters:
+    - id: Primary
+      type: Meridian.Storage.PartitionDimension
+    - id: Secondary
+      type: System.Nullable{Meridian.Storage.PartitionDimension}
+    - id: Tertiary
+      type: System.Nullable{Meridian.Storage.PartitionDimension}
+    - id: DateGranularity
+      type: Meridian.Storage.DatePartition
+    content.vb: Public Sub New(Primary As PartitionDimension, Secondary As PartitionDimension? = Nothing, Tertiary As PartitionDimension? = Nothing, DateGranularity As DatePartition = DatePartition.Daily)
+  overload: Meridian.Storage.PartitionStrategy.#ctor*
+  nameWithType.vb: PartitionStrategy.New(PartitionDimension, PartitionDimension?, PartitionDimension?, DatePartition)
+  fullName.vb: Meridian.Storage.PartitionStrategy.New(Meridian.Storage.PartitionDimension, Meridian.Storage.PartitionDimension?, Meridian.Storage.PartitionDimension?, Meridian.Storage.DatePartition)
+  name.vb: New(PartitionDimension, PartitionDimension?, PartitionDimension?, DatePartition)
+- uid: Meridian.Storage.PartitionStrategy.Primary
+  commentId: P:Meridian.Storage.PartitionStrategy.Primary
+  id: Primary
+  parent: Meridian.Storage.PartitionStrategy
+  langs:
+  - csharp
+  - vb
+  name: Primary
+  nameWithType: PartitionStrategy.Primary
+  fullName: Meridian.Storage.PartitionStrategy.Primary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Primary
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 328
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: public PartitionDimension Primary { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.PartitionDimension
+    content.vb: Public Property Primary As PartitionDimension
+  overload: Meridian.Storage.PartitionStrategy.Primary*
+- uid: Meridian.Storage.PartitionStrategy.Secondary
+  commentId: P:Meridian.Storage.PartitionStrategy.Secondary
+  id: Secondary
+  parent: Meridian.Storage.PartitionStrategy
+  langs:
+  - csharp
+  - vb
+  name: Secondary
+  nameWithType: PartitionStrategy.Secondary
+  fullName: Meridian.Storage.PartitionStrategy.Secondary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Secondary
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 329
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: public PartitionDimension? Secondary { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Storage.PartitionDimension}
+    content.vb: Public Property Secondary As PartitionDimension?
+  overload: Meridian.Storage.PartitionStrategy.Secondary*
+- uid: Meridian.Storage.PartitionStrategy.Tertiary
+  commentId: P:Meridian.Storage.PartitionStrategy.Tertiary
+  id: Tertiary
+  parent: Meridian.Storage.PartitionStrategy
+  langs:
+  - csharp
+  - vb
+  name: Tertiary
+  nameWithType: PartitionStrategy.Tertiary
+  fullName: Meridian.Storage.PartitionStrategy.Tertiary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tertiary
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 330
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: public PartitionDimension? Tertiary { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Storage.PartitionDimension}
+    content.vb: Public Property Tertiary As PartitionDimension?
+  overload: Meridian.Storage.PartitionStrategy.Tertiary*
+- uid: Meridian.Storage.PartitionStrategy.DateGranularity
+  commentId: P:Meridian.Storage.PartitionStrategy.DateGranularity
+  id: DateGranularity
+  parent: Meridian.Storage.PartitionStrategy
+  langs:
+  - csharp
+  - vb
+  name: DateGranularity
+  nameWithType: PartitionStrategy.DateGranularity
+  fullName: Meridian.Storage.PartitionStrategy.DateGranularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateGranularity
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 331
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: public DatePartition DateGranularity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.DatePartition
+    content.vb: Public Property DateGranularity As DatePartition
+  overload: Meridian.Storage.PartitionStrategy.DateGranularity*
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.PartitionStrategy}
+  commentId: T:System.IEquatable{Meridian.Storage.PartitionStrategy}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PartitionStrategy>
+  nameWithType: IEquatable<PartitionStrategy>
+  fullName: System.IEquatable<Meridian.Storage.PartitionStrategy>
+  nameWithType.vb: IEquatable(Of PartitionStrategy)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.PartitionStrategy)
+  name.vb: IEquatable(Of PartitionStrategy)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.PartitionStrategy
+    name: PartitionStrategy
+    href: Meridian.Storage.PartitionStrategy.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.PartitionStrategy
+    name: PartitionStrategy
+    href: Meridian.Storage.PartitionStrategy.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.PartitionStrategy.#ctor*
+  commentId: Overload:Meridian.Storage.PartitionStrategy.#ctor
+  href: Meridian.Storage.PartitionStrategy.html#Meridian_Storage_PartitionStrategy__ctor_Meridian_Storage_PartitionDimension_System_Nullable_Meridian_Storage_PartitionDimension__System_Nullable_Meridian_Storage_PartitionDimension__Meridian_Storage_DatePartition_
+  name: PartitionStrategy
+  nameWithType: PartitionStrategy.PartitionStrategy
+  fullName: Meridian.Storage.PartitionStrategy.PartitionStrategy
+  nameWithType.vb: PartitionStrategy.New
+  fullName.vb: Meridian.Storage.PartitionStrategy.New
+  name.vb: New
+- uid: Meridian.Storage.PartitionDimension
+  commentId: T:Meridian.Storage.PartitionDimension
+  parent: Meridian.Storage
+  href: Meridian.Storage.PartitionDimension.html
+  name: PartitionDimension
+  nameWithType: PartitionDimension
+  fullName: Meridian.Storage.PartitionDimension
+- uid: System.Nullable{Meridian.Storage.PartitionDimension}
+  commentId: T:System.Nullable{Meridian.Storage.PartitionDimension}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Storage.PartitionDimension.html
+  name: PartitionDimension?
+  nameWithType: PartitionDimension?
+  fullName: Meridian.Storage.PartitionDimension?
+  spec.csharp:
+  - uid: Meridian.Storage.PartitionDimension
+    name: PartitionDimension
+    href: Meridian.Storage.PartitionDimension.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Storage.PartitionDimension
+    name: PartitionDimension
+    href: Meridian.Storage.PartitionDimension.html
+  - name: '?'
+- uid: Meridian.Storage.DatePartition
+  commentId: T:Meridian.Storage.DatePartition
+  parent: Meridian.Storage
+  href: Meridian.Storage.DatePartition.html
+  name: DatePartition
+  nameWithType: DatePartition
+  fullName: Meridian.Storage.DatePartition
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.PartitionStrategy.Primary*
+  commentId: Overload:Meridian.Storage.PartitionStrategy.Primary
+  href: Meridian.Storage.PartitionStrategy.html#Meridian_Storage_PartitionStrategy_Primary
+  name: Primary
+  nameWithType: PartitionStrategy.Primary
+  fullName: Meridian.Storage.PartitionStrategy.Primary
+- uid: Meridian.Storage.PartitionStrategy.Secondary*
+  commentId: Overload:Meridian.Storage.PartitionStrategy.Secondary
+  href: Meridian.Storage.PartitionStrategy.html#Meridian_Storage_PartitionStrategy_Secondary
+  name: Secondary
+  nameWithType: PartitionStrategy.Secondary
+  fullName: Meridian.Storage.PartitionStrategy.Secondary
+- uid: Meridian.Storage.PartitionStrategy.Tertiary*
+  commentId: Overload:Meridian.Storage.PartitionStrategy.Tertiary
+  href: Meridian.Storage.PartitionStrategy.html#Meridian_Storage_PartitionStrategy_Tertiary
+  name: Tertiary
+  nameWithType: PartitionStrategy.Tertiary
+  fullName: Meridian.Storage.PartitionStrategy.Tertiary
+- uid: Meridian.Storage.PartitionStrategy.DateGranularity*
+  commentId: Overload:Meridian.Storage.PartitionStrategy.DateGranularity
+  href: Meridian.Storage.PartitionStrategy.html#Meridian_Storage_PartitionStrategy_DateGranularity
+  name: DateGranularity
+  nameWithType: PartitionStrategy.DateGranularity
+  fullName: Meridian.Storage.PartitionStrategy.DateGranularity

@@ -1,0 +1,677 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ServiceHealthResult
+  commentId: T:Meridian.Contracts.Api.ServiceHealthResult
+  id: ServiceHealthResult
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage
+  - Meridian.Contracts.Api.ServiceHealthResult.Healthy(System.Boolean,System.Single)
+  - Meridian.Contracts.Api.ServiceHealthResult.IsConnected
+  - Meridian.Contracts.Api.ServiceHealthResult.IsReachable
+  - Meridian.Contracts.Api.ServiceHealthResult.LatencyMs
+  - Meridian.Contracts.Api.ServiceHealthResult.StatusCode
+  - Meridian.Contracts.Api.ServiceHealthResult.Unhealthy(System.String,System.Single)
+  langs:
+  - csharp
+  - vb
+  name: ServiceHealthResult
+  nameWithType: ServiceHealthResult
+  fullName: Meridian.Contracts.Api.ServiceHealthResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceHealthResult
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: >-
+    Result of a service health check.
+
+    Used by UI clients to verify connectivity.
+  example: []
+  syntax:
+    content: public sealed class ServiceHealthResult
+    content.vb: Public NotInheritable Class ServiceHealthResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.ServiceHealthResult.IsReachable
+  commentId: P:Meridian.Contracts.Api.ServiceHealthResult.IsReachable
+  id: IsReachable
+  parent: Meridian.Contracts.Api.ServiceHealthResult
+  langs:
+  - csharp
+  - vb
+  name: IsReachable
+  nameWithType: ServiceHealthResult.IsReachable
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.IsReachable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsReachable
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Whether the service endpoint is reachable.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isReachable")]
+
+      public bool IsReachable { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isReachable")>
+
+      Public Property IsReachable As Boolean
+  overload: Meridian.Contracts.Api.ServiceHealthResult.IsReachable*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isReachable
+- uid: Meridian.Contracts.Api.ServiceHealthResult.IsConnected
+  commentId: P:Meridian.Contracts.Api.ServiceHealthResult.IsConnected
+  id: IsConnected
+  parent: Meridian.Contracts.Api.ServiceHealthResult
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: ServiceHealthResult.IsConnected
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Whether the service is connected to data providers.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isConnected")]
+
+      public bool IsConnected { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isConnected")>
+
+      Public Property IsConnected As Boolean
+  overload: Meridian.Contracts.Api.ServiceHealthResult.IsConnected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isConnected
+- uid: Meridian.Contracts.Api.ServiceHealthResult.LatencyMs
+  commentId: P:Meridian.Contracts.Api.ServiceHealthResult.LatencyMs
+  id: LatencyMs
+  parent: Meridian.Contracts.Api.ServiceHealthResult
+  langs:
+  - csharp
+  - vb
+  name: LatencyMs
+  nameWithType: ServiceHealthResult.LatencyMs
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.LatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyMs
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Round-trip latency in milliseconds.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("latencyMs")]
+
+      public float LatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("latencyMs")>
+
+      Public Property LatencyMs As Single
+  overload: Meridian.Contracts.Api.ServiceHealthResult.LatencyMs*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: latencyMs
+- uid: Meridian.Contracts.Api.ServiceHealthResult.StatusCode
+  commentId: P:Meridian.Contracts.Api.ServiceHealthResult.StatusCode
+  id: StatusCode
+  parent: Meridian.Contracts.Api.ServiceHealthResult
+  langs:
+  - csharp
+  - vb
+  name: StatusCode
+  nameWithType: ServiceHealthResult.StatusCode
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.StatusCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatusCode
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: HTTP status code received (if any).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("statusCode")]
+
+      public int StatusCode { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("statusCode")>
+
+      Public Property StatusCode As Integer
+  overload: Meridian.Contracts.Api.ServiceHealthResult.StatusCode*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: statusCode
+- uid: Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage
+  commentId: P:Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Contracts.Api.ServiceHealthResult
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: ServiceHealthResult.ErrorMessage
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Error message if the health check failed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("errorMessage")]
+
+      public string? ErrorMessage { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("errorMessage")>
+
+      Public Property ErrorMessage As String
+  overload: Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorMessage
+- uid: Meridian.Contracts.Api.ServiceHealthResult.Healthy(System.Boolean,System.Single)
+  commentId: M:Meridian.Contracts.Api.ServiceHealthResult.Healthy(System.Boolean,System.Single)
+  id: Healthy(System.Boolean,System.Single)
+  parent: Meridian.Contracts.Api.ServiceHealthResult
+  langs:
+  - csharp
+  - vb
+  name: Healthy(bool, float)
+  nameWithType: ServiceHealthResult.Healthy(bool, float)
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.Healthy(bool, float)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates a healthy result.
+  example: []
+  syntax:
+    content: public static ServiceHealthResult Healthy(bool isConnected, float latencyMs)
+    parameters:
+    - id: isConnected
+      type: System.Boolean
+    - id: latencyMs
+      type: System.Single
+    return:
+      type: Meridian.Contracts.Api.ServiceHealthResult
+    content.vb: Public Shared Function Healthy(isConnected As Boolean, latencyMs As Single) As ServiceHealthResult
+  overload: Meridian.Contracts.Api.ServiceHealthResult.Healthy*
+  nameWithType.vb: ServiceHealthResult.Healthy(Boolean, Single)
+  fullName.vb: Meridian.Contracts.Api.ServiceHealthResult.Healthy(Boolean, Single)
+  name.vb: Healthy(Boolean, Single)
+- uid: Meridian.Contracts.Api.ServiceHealthResult.Unhealthy(System.String,System.Single)
+  commentId: M:Meridian.Contracts.Api.ServiceHealthResult.Unhealthy(System.String,System.Single)
+  id: Unhealthy(System.String,System.Single)
+  parent: Meridian.Contracts.Api.ServiceHealthResult
+  langs:
+  - csharp
+  - vb
+  name: Unhealthy(string, float)
+  nameWithType: ServiceHealthResult.Unhealthy(string, float)
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.Unhealthy(string, float)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ClientModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unhealthy
+    path: ../../src/Meridian.Contracts/Api/ClientModels.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates an unhealthy result with an error.
+  example: []
+  syntax:
+    content: public static ServiceHealthResult Unhealthy(string errorMessage, float latencyMs = 0)
+    parameters:
+    - id: errorMessage
+      type: System.String
+    - id: latencyMs
+      type: System.Single
+    return:
+      type: Meridian.Contracts.Api.ServiceHealthResult
+    content.vb: Public Shared Function Unhealthy(errorMessage As String, latencyMs As Single = 0) As ServiceHealthResult
+  overload: Meridian.Contracts.Api.ServiceHealthResult.Unhealthy*
+  nameWithType.vb: ServiceHealthResult.Unhealthy(String, Single)
+  fullName.vb: Meridian.Contracts.Api.ServiceHealthResult.Unhealthy(String, Single)
+  name.vb: Unhealthy(String, Single)
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.ServiceHealthResult.IsReachable*
+  commentId: Overload:Meridian.Contracts.Api.ServiceHealthResult.IsReachable
+  href: Meridian.Contracts.Api.ServiceHealthResult.html#Meridian_Contracts_Api_ServiceHealthResult_IsReachable
+  name: IsReachable
+  nameWithType: ServiceHealthResult.IsReachable
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.IsReachable
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Api.ServiceHealthResult.IsConnected*
+  commentId: Overload:Meridian.Contracts.Api.ServiceHealthResult.IsConnected
+  href: Meridian.Contracts.Api.ServiceHealthResult.html#Meridian_Contracts_Api_ServiceHealthResult_IsConnected
+  name: IsConnected
+  nameWithType: ServiceHealthResult.IsConnected
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.IsConnected
+- uid: Meridian.Contracts.Api.ServiceHealthResult.LatencyMs*
+  commentId: Overload:Meridian.Contracts.Api.ServiceHealthResult.LatencyMs
+  href: Meridian.Contracts.Api.ServiceHealthResult.html#Meridian_Contracts_Api_ServiceHealthResult_LatencyMs
+  name: LatencyMs
+  nameWithType: ServiceHealthResult.LatencyMs
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.LatencyMs
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Api.ServiceHealthResult.StatusCode*
+  commentId: Overload:Meridian.Contracts.Api.ServiceHealthResult.StatusCode
+  href: Meridian.Contracts.Api.ServiceHealthResult.html#Meridian_Contracts_Api_ServiceHealthResult_StatusCode
+  name: StatusCode
+  nameWithType: ServiceHealthResult.StatusCode
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.StatusCode
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage*
+  commentId: Overload:Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage
+  href: Meridian.Contracts.Api.ServiceHealthResult.html#Meridian_Contracts_Api_ServiceHealthResult_ErrorMessage
+  name: ErrorMessage
+  nameWithType: ServiceHealthResult.ErrorMessage
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.ErrorMessage
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.ServiceHealthResult.Healthy*
+  commentId: Overload:Meridian.Contracts.Api.ServiceHealthResult.Healthy
+  href: Meridian.Contracts.Api.ServiceHealthResult.html#Meridian_Contracts_Api_ServiceHealthResult_Healthy_System_Boolean_System_Single_
+  name: Healthy
+  nameWithType: ServiceHealthResult.Healthy
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.Healthy
+- uid: Meridian.Contracts.Api.ServiceHealthResult
+  commentId: T:Meridian.Contracts.Api.ServiceHealthResult
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ServiceHealthResult.html
+  name: ServiceHealthResult
+  nameWithType: ServiceHealthResult
+  fullName: Meridian.Contracts.Api.ServiceHealthResult
+- uid: Meridian.Contracts.Api.ServiceHealthResult.Unhealthy*
+  commentId: Overload:Meridian.Contracts.Api.ServiceHealthResult.Unhealthy
+  href: Meridian.Contracts.Api.ServiceHealthResult.html#Meridian_Contracts_Api_ServiceHealthResult_Unhealthy_System_String_System_Single_
+  name: Unhealthy
+  nameWithType: ServiceHealthResult.Unhealthy
+  fullName: Meridian.Contracts.Api.ServiceHealthResult.Unhealthy

@@ -1,0 +1,187 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  commentId: T:Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  id: InfoBarSeverityLevel
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.InfoBarSeverityLevel.Error
+  - Meridian.Ui.Services.Services.InfoBarSeverityLevel.Informational
+  - Meridian.Ui.Services.Services.InfoBarSeverityLevel.Success
+  - Meridian.Ui.Services.Services.InfoBarSeverityLevel.Warning
+  langs:
+  - csharp
+  - vb
+  name: InfoBarSeverityLevel
+  nameWithType: InfoBarSeverityLevel
+  fullName: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InfoBarSeverityLevel
+    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Platform-agnostic severity levels for info bar notifications.
+
+    Shared across desktop platforms.
+  example: []
+  syntax:
+    content: 'public enum InfoBarSeverityLevel : byte'
+    content.vb: Public Enum InfoBarSeverityLevel As Byte
+- uid: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Informational
+  commentId: F:Meridian.Ui.Services.Services.InfoBarSeverityLevel.Informational
+  id: Informational
+  parent: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  langs:
+  - csharp
+  - vb
+  name: Informational
+  nameWithType: InfoBarSeverityLevel.Informational
+  fullName: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Informational
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Informational
+    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Informational = 0
+    return:
+      type: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+- uid: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Success
+  commentId: F:Meridian.Ui.Services.Services.InfoBarSeverityLevel.Success
+  id: Success
+  parent: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: InfoBarSeverityLevel.Success
+  fullName: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Success
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Success = 1
+    return:
+      type: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+- uid: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Warning
+  commentId: F:Meridian.Ui.Services.Services.InfoBarSeverityLevel.Warning
+  id: Warning
+  parent: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: InfoBarSeverityLevel.Warning
+  fullName: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Warning = 2
+    return:
+      type: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+- uid: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Error
+  commentId: F:Meridian.Ui.Services.Services.InfoBarSeverityLevel.Error
+  id: Error
+  parent: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: InfoBarSeverityLevel.Error
+  fullName: Meridian.Ui.Services.Services.InfoBarSeverityLevel.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Error = 3
+    return:
+      type: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  commentId: T:Meridian.Ui.Services.Services.InfoBarSeverityLevel
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.InfoBarSeverityLevel.html
+  name: InfoBarSeverityLevel
+  nameWithType: InfoBarSeverityLevel
+  fullName: Meridian.Ui.Services.Services.InfoBarSeverityLevel

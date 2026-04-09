@@ -1,0 +1,617 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceOptions
+  id: DataSourceOptions
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DataSourceOptions.#ctor(System.Int32,Meridian.Infrastructure.DataSources.RetryPolicyOptions,Meridian.Infrastructure.DataSources.RateLimitOptions,Meridian.Infrastructure.DataSources.HealthCheckOptions)
+  - Meridian.Infrastructure.DataSources.DataSourceOptions.Default
+  - Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck
+  - Meridian.Infrastructure.DataSources.DataSourceOptions.Priority
+  - Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits
+  - Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy
+  langs:
+  - csharp
+  - vb
+  name: DataSourceOptions
+  nameWithType: DataSourceOptions
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceOptions
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    startLine: 496
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Configuration options for a data source.
+  example: []
+  syntax:
+    content: 'public sealed record DataSourceOptions : IEquatable<DataSourceOptions>'
+    content.vb: Public NotInheritable Class DataSourceOptions Implements IEquatable(Of DataSourceOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.#ctor(System.Int32,Meridian.Infrastructure.DataSources.RetryPolicyOptions,Meridian.Infrastructure.DataSources.RateLimitOptions,Meridian.Infrastructure.DataSources.HealthCheckOptions)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceOptions.#ctor(System.Int32,Meridian.Infrastructure.DataSources.RetryPolicyOptions,Meridian.Infrastructure.DataSources.RateLimitOptions,Meridian.Infrastructure.DataSources.HealthCheckOptions)
+  id: '#ctor(System.Int32,Meridian.Infrastructure.DataSources.RetryPolicyOptions,Meridian.Infrastructure.DataSources.RateLimitOptions,Meridian.Infrastructure.DataSources.HealthCheckOptions)'
+  parent: Meridian.Infrastructure.DataSources.DataSourceOptions
+  langs:
+  - csharp
+  - vb
+  name: DataSourceOptions(int, RetryPolicyOptions?, RateLimitOptions?, HealthCheckOptions?)
+  nameWithType: DataSourceOptions.DataSourceOptions(int, RetryPolicyOptions?, RateLimitOptions?, HealthCheckOptions?)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.DataSourceOptions(int, Meridian.Infrastructure.DataSources.RetryPolicyOptions?, Meridian.Infrastructure.DataSources.RateLimitOptions?, Meridian.Infrastructure.DataSources.HealthCheckOptions?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    startLine: 496
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Configuration options for a data source.
+  example: []
+  syntax:
+    content: public DataSourceOptions(int Priority = 100, RetryPolicyOptions? RetryPolicy = null, RateLimitOptions? RateLimits = null, HealthCheckOptions? HealthCheck = null)
+    parameters:
+    - id: Priority
+      type: System.Int32
+    - id: RetryPolicy
+      type: Meridian.Infrastructure.DataSources.RetryPolicyOptions
+    - id: RateLimits
+      type: Meridian.Infrastructure.DataSources.RateLimitOptions
+    - id: HealthCheck
+      type: Meridian.Infrastructure.DataSources.HealthCheckOptions
+    content.vb: Public Sub New(Priority As Integer = 100, RetryPolicy As RetryPolicyOptions = Nothing, RateLimits As RateLimitOptions = Nothing, HealthCheck As HealthCheckOptions = Nothing)
+  overload: Meridian.Infrastructure.DataSources.DataSourceOptions.#ctor*
+  nameWithType.vb: DataSourceOptions.New(Integer, RetryPolicyOptions, RateLimitOptions, HealthCheckOptions)
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceOptions.New(Integer, Meridian.Infrastructure.DataSources.RetryPolicyOptions, Meridian.Infrastructure.DataSources.RateLimitOptions, Meridian.Infrastructure.DataSources.HealthCheckOptions)
+  name.vb: New(Integer, RetryPolicyOptions, RateLimitOptions, HealthCheckOptions)
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.Priority
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceOptions.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.DataSources.DataSourceOptions
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: DataSourceOptions.Priority
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Infrastructure.DataSources.DataSourceOptions.Priority*
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy
+  id: RetryPolicy
+  parent: Meridian.Infrastructure.DataSources.DataSourceOptions
+  langs:
+  - csharp
+  - vb
+  name: RetryPolicy
+  nameWithType: DataSourceOptions.RetryPolicy
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryPolicy
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public RetryPolicyOptions RetryPolicy { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.RetryPolicyOptions
+    content.vb: Public ReadOnly Property RetryPolicy As RetryPolicyOptions
+  overload: Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy*
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits
+  id: RateLimits
+  parent: Meridian.Infrastructure.DataSources.DataSourceOptions
+  langs:
+  - csharp
+  - vb
+  name: RateLimits
+  nameWithType: DataSourceOptions.RateLimits
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimits
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    startLine: 504
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public RateLimitOptions RateLimits { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.RateLimitOptions
+    content.vb: Public ReadOnly Property RateLimits As RateLimitOptions
+  overload: Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits*
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck
+  id: HealthCheck
+  parent: Meridian.Infrastructure.DataSources.DataSourceOptions
+  langs:
+  - csharp
+  - vb
+  name: HealthCheck
+  nameWithType: DataSourceOptions.HealthCheck
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheck
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    startLine: 505
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public HealthCheckOptions HealthCheck { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.HealthCheckOptions
+    content.vb: Public ReadOnly Property HealthCheck As HealthCheckOptions
+  overload: Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck*
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.Default
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceOptions.Default
+  id: Default
+  parent: Meridian.Infrastructure.DataSources.DataSourceOptions
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: DataSourceOptions.Default
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Creates default options.
+  example: []
+  syntax:
+    content: public static DataSourceOptions Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceOptions
+    content.vb: Public Shared ReadOnly Property [Default] As DataSourceOptions
+  overload: Meridian.Infrastructure.DataSources.DataSourceOptions.Default*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceOptions}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataSourceOptions>
+  nameWithType: IEquatable<DataSourceOptions>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.DataSourceOptions>
+  nameWithType.vb: IEquatable(Of DataSourceOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.DataSourceOptions)
+  name.vb: IEquatable(Of DataSourceOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DataSourceOptions
+    name: DataSourceOptions
+    href: Meridian.Infrastructure.DataSources.DataSourceOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceOptions
+    name: DataSourceOptions
+    href: Meridian.Infrastructure.DataSources.DataSourceOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceOptions.#ctor
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html#Meridian_Infrastructure_DataSources_DataSourceOptions__ctor_System_Int32_Meridian_Infrastructure_DataSources_RetryPolicyOptions_Meridian_Infrastructure_DataSources_RateLimitOptions_Meridian_Infrastructure_DataSources_HealthCheckOptions_
+  name: DataSourceOptions
+  nameWithType: DataSourceOptions.DataSourceOptions
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.DataSourceOptions
+  nameWithType.vb: DataSourceOptions.New
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceOptions.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyOptions
+  commentId: T:Meridian.Infrastructure.DataSources.RetryPolicyOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RetryPolicyOptions.html
+  name: RetryPolicyOptions
+  nameWithType: RetryPolicyOptions
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyOptions
+- uid: Meridian.Infrastructure.DataSources.RateLimitOptions
+  commentId: T:Meridian.Infrastructure.DataSources.RateLimitOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RateLimitOptions.html
+  name: RateLimitOptions
+  nameWithType: RateLimitOptions
+  fullName: Meridian.Infrastructure.DataSources.RateLimitOptions
+- uid: Meridian.Infrastructure.DataSources.HealthCheckOptions
+  commentId: T:Meridian.Infrastructure.DataSources.HealthCheckOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.HealthCheckOptions.html
+  name: HealthCheckOptions
+  nameWithType: HealthCheckOptions
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckOptions
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.Priority*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceOptions.Priority
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html#Meridian_Infrastructure_DataSources_DataSourceOptions_Priority
+  name: Priority
+  nameWithType: DataSourceOptions.Priority
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.Priority
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html#Meridian_Infrastructure_DataSources_DataSourceOptions_RetryPolicy
+  name: RetryPolicy
+  nameWithType: DataSourceOptions.RetryPolicy
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.RetryPolicy
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html#Meridian_Infrastructure_DataSources_DataSourceOptions_RateLimits
+  name: RateLimits
+  nameWithType: DataSourceOptions.RateLimits
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.RateLimits
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html#Meridian_Infrastructure_DataSources_DataSourceOptions_HealthCheck
+  name: HealthCheck
+  nameWithType: DataSourceOptions.HealthCheck
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.HealthCheck
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions.Default*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceOptions.Default
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html#Meridian_Infrastructure_DataSources_DataSourceOptions_Default
+  name: Default
+  nameWithType: DataSourceOptions.Default
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions.Default
+- uid: Meridian.Infrastructure.DataSources.DataSourceOptions
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceOptions.html
+  name: DataSourceOptions
+  nameWithType: DataSourceOptions
+  fullName: Meridian.Infrastructure.DataSources.DataSourceOptions

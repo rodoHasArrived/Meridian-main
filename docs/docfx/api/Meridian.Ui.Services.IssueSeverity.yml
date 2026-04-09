@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.IssueSeverity
+  commentId: T:Meridian.Ui.Services.IssueSeverity
+  id: IssueSeverity
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.IssueSeverity.Critical
+  - Meridian.Ui.Services.IssueSeverity.Error
+  - Meridian.Ui.Services.IssueSeverity.Info
+  - Meridian.Ui.Services.IssueSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Ui.Services.IssueSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssueSeverity
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 628
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Issue severity levels.
+  example: []
+  syntax:
+    content: 'public enum IssueSeverity : byte'
+    content.vb: Public Enum IssueSeverity As Byte
+- uid: Meridian.Ui.Services.IssueSeverity.Info
+  commentId: F:Meridian.Ui.Services.IssueSeverity.Info
+  id: Info
+  parent: Meridian.Ui.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: IssueSeverity.Info
+  fullName: Meridian.Ui.Services.IssueSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 630
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Ui.Services.IssueSeverity
+- uid: Meridian.Ui.Services.IssueSeverity.Warning
+  commentId: F:Meridian.Ui.Services.IssueSeverity.Warning
+  id: Warning
+  parent: Meridian.Ui.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: IssueSeverity.Warning
+  fullName: Meridian.Ui.Services.IssueSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 631
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Ui.Services.IssueSeverity
+- uid: Meridian.Ui.Services.IssueSeverity.Error
+  commentId: F:Meridian.Ui.Services.IssueSeverity.Error
+  id: Error
+  parent: Meridian.Ui.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: IssueSeverity.Error
+  fullName: Meridian.Ui.Services.IssueSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 632
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Ui.Services.IssueSeverity
+- uid: Meridian.Ui.Services.IssueSeverity.Critical
+  commentId: F:Meridian.Ui.Services.IssueSeverity.Critical
+  id: Critical
+  parent: Meridian.Ui.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: IssueSeverity.Critical
+  fullName: Meridian.Ui.Services.IssueSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 633
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Ui.Services.IssueSeverity
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.IssueSeverity
+  commentId: T:Meridian.Ui.Services.IssueSeverity
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.IssueSeverity.html
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Ui.Services.IssueSeverity

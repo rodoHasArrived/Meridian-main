@@ -1,0 +1,141 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.StorageProfile
+  commentId: T:Meridian.Storage.StorageProfile
+  id: StorageProfile
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.StorageProfile.Archival
+  - Meridian.Storage.StorageProfile.LowLatency
+  - Meridian.Storage.StorageProfile.Research
+  langs:
+  - csharp
+  - vb
+  name: StorageProfile
+  nameWithType: StorageProfile
+  fullName: Meridian.Storage.StorageProfile
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageProfile
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Storage profile presets for simplifying configuration.
+  example: []
+  syntax:
+    content: 'public enum StorageProfile : byte'
+    content.vb: Public Enum StorageProfile As Byte
+- uid: Meridian.Storage.StorageProfile.Research
+  commentId: F:Meridian.Storage.StorageProfile.Research
+  id: Research
+  parent: Meridian.Storage.StorageProfile
+  langs:
+  - csharp
+  - vb
+  name: Research
+  nameWithType: StorageProfile.Research
+  fullName: Meridian.Storage.StorageProfile.Research
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Research
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: Research = 0
+    return:
+      type: Meridian.Storage.StorageProfile
+- uid: Meridian.Storage.StorageProfile.LowLatency
+  commentId: F:Meridian.Storage.StorageProfile.LowLatency
+  id: LowLatency
+  parent: Meridian.Storage.StorageProfile
+  langs:
+  - csharp
+  - vb
+  name: LowLatency
+  nameWithType: StorageProfile.LowLatency
+  fullName: Meridian.Storage.StorageProfile.LowLatency
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowLatency
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: LowLatency = 1
+    return:
+      type: Meridian.Storage.StorageProfile
+- uid: Meridian.Storage.StorageProfile.Archival
+  commentId: F:Meridian.Storage.StorageProfile.Archival
+  id: Archival
+  parent: Meridian.Storage.StorageProfile
+  langs:
+  - csharp
+  - vb
+  name: Archival
+  nameWithType: StorageProfile.Archival
+  fullName: Meridian.Storage.StorageProfile.Archival
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Archival
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: Archival = 2
+    return:
+      type: Meridian.Storage.StorageProfile
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.StorageProfile
+  commentId: T:Meridian.Storage.StorageProfile
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageProfile.html
+  name: StorageProfile
+  nameWithType: StorageProfile
+  fullName: Meridian.Storage.StorageProfile

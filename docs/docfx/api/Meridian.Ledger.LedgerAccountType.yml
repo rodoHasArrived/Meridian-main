@@ -1,0 +1,205 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.LedgerAccountType
+  commentId: T:Meridian.Ledger.LedgerAccountType
+  id: LedgerAccountType
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.LedgerAccountType.Asset
+  - Meridian.Ledger.LedgerAccountType.Equity
+  - Meridian.Ledger.LedgerAccountType.Expense
+  - Meridian.Ledger.LedgerAccountType.Liability
+  - Meridian.Ledger.LedgerAccountType.Revenue
+  langs:
+  - csharp
+  - vb
+  name: LedgerAccountType
+  nameWithType: LedgerAccountType
+  fullName: Meridian.Ledger.LedgerAccountType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerAccountType
+    path: ../../src/Meridian.Ledger/LedgerAccountType.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Classifies a ledger account under standard double-entry accounting categories.
+  example: []
+  syntax:
+    content: public enum LedgerAccountType
+    content.vb: Public Enum LedgerAccountType
+- uid: Meridian.Ledger.LedgerAccountType.Asset
+  commentId: F:Meridian.Ledger.LedgerAccountType.Asset
+  id: Asset
+  parent: Meridian.Ledger.LedgerAccountType
+  langs:
+  - csharp
+  - vb
+  name: Asset
+  nameWithType: LedgerAccountType.Asset
+  fullName: Meridian.Ledger.LedgerAccountType.Asset
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Asset
+    path: ../../src/Meridian.Ledger/LedgerAccountType.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Resources owned (cash, long securities positions).
+  example: []
+  syntax:
+    content: Asset = 0
+    return:
+      type: Meridian.Ledger.LedgerAccountType
+- uid: Meridian.Ledger.LedgerAccountType.Liability
+  commentId: F:Meridian.Ledger.LedgerAccountType.Liability
+  id: Liability
+  parent: Meridian.Ledger.LedgerAccountType
+  langs:
+  - csharp
+  - vb
+  name: Liability
+  nameWithType: LedgerAccountType.Liability
+  fullName: Meridian.Ledger.LedgerAccountType.Liability
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Liability
+    path: ../../src/Meridian.Ledger/LedgerAccountType.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Obligations owed (margin debt to broker).
+  example: []
+  syntax:
+    content: Liability = 1
+    return:
+      type: Meridian.Ledger.LedgerAccountType
+- uid: Meridian.Ledger.LedgerAccountType.Equity
+  commentId: F:Meridian.Ledger.LedgerAccountType.Equity
+  id: Equity
+  parent: Meridian.Ledger.LedgerAccountType
+  langs:
+  - csharp
+  - vb
+  name: Equity
+  nameWithType: LedgerAccountType.Equity
+  fullName: Meridian.Ledger.LedgerAccountType.Equity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Equity
+    path: ../../src/Meridian.Ledger/LedgerAccountType.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Net worth / owner's initial capital.
+  example: []
+  syntax:
+    content: Equity = 2
+    return:
+      type: Meridian.Ledger.LedgerAccountType
+- uid: Meridian.Ledger.LedgerAccountType.Revenue
+  commentId: F:Meridian.Ledger.LedgerAccountType.Revenue
+  id: Revenue
+  parent: Meridian.Ledger.LedgerAccountType
+  langs:
+  - csharp
+  - vb
+  name: Revenue
+  nameWithType: LedgerAccountType.Revenue
+  fullName: Meridian.Ledger.LedgerAccountType.Revenue
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Revenue
+    path: ../../src/Meridian.Ledger/LedgerAccountType.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Inflows that increase equity (realized gains, dividends, short rebates).
+  example: []
+  syntax:
+    content: Revenue = 3
+    return:
+      type: Meridian.Ledger.LedgerAccountType
+- uid: Meridian.Ledger.LedgerAccountType.Expense
+  commentId: F:Meridian.Ledger.LedgerAccountType.Expense
+  id: Expense
+  parent: Meridian.Ledger.LedgerAccountType
+  langs:
+  - csharp
+  - vb
+  name: Expense
+  nameWithType: LedgerAccountType.Expense
+  fullName: Meridian.Ledger.LedgerAccountType.Expense
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountType.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expense
+    path: ../../src/Meridian.Ledger/LedgerAccountType.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Outflows that decrease equity (commissions, margin interest, realized losses).
+  example: []
+  syntax:
+    content: Expense = 4
+    return:
+      type: Meridian.Ledger.LedgerAccountType
+references:
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: Meridian.Ledger.LedgerAccountType
+  commentId: T:Meridian.Ledger.LedgerAccountType
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerAccountType.html
+  name: LedgerAccountType
+  nameWithType: LedgerAccountType
+  fullName: Meridian.Ledger.LedgerAccountType

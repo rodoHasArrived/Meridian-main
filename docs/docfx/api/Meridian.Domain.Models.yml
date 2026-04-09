@@ -1,0 +1,78 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Models
+  commentId: N:Meridian.Domain.Models
+  id: Meridian.Domain.Models
+  children:
+  - Meridian.Domain.Models.AggregateBar
+  - Meridian.Domain.Models.AggregateTimeframe
+  - Meridian.Domain.Models.MarketDepthUpdate
+  - Meridian.Domain.Models.MarketTradeUpdate
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Domain.Models
+  nameWithType: Meridian.Domain.Models
+  fullName: Meridian.Domain.Models
+  type: Namespace
+  assemblies:
+  - Meridian.Domain
+references:
+- uid: Meridian.Domain.Models.AggregateBar
+  commentId: T:Meridian.Domain.Models.AggregateBar
+  parent: Meridian.Domain.Models
+  href: Meridian.Domain.Models.AggregateBar.html
+  name: AggregateBar
+  nameWithType: AggregateBar
+  fullName: Meridian.Domain.Models.AggregateBar
+- uid: Meridian.Domain.Models.AggregateTimeframe
+  commentId: T:Meridian.Domain.Models.AggregateTimeframe
+  parent: Meridian.Domain.Models
+  href: Meridian.Domain.Models.AggregateTimeframe.html
+  name: AggregateTimeframe
+  nameWithType: AggregateTimeframe
+  fullName: Meridian.Domain.Models.AggregateTimeframe
+- uid: Meridian.Domain.Models.MarketDepthUpdate
+  commentId: T:Meridian.Domain.Models.MarketDepthUpdate
+  parent: Meridian.Domain.Models
+  href: Meridian.Domain.Models.MarketDepthUpdate.html
+  name: MarketDepthUpdate
+  nameWithType: MarketDepthUpdate
+  fullName: Meridian.Domain.Models.MarketDepthUpdate
+- uid: Meridian.Domain.Models.MarketTradeUpdate
+  commentId: T:Meridian.Domain.Models.MarketTradeUpdate
+  parent: Meridian.Domain.Models
+  href: Meridian.Domain.Models.MarketTradeUpdate.html
+  name: MarketTradeUpdate
+  nameWithType: MarketTradeUpdate
+  fullName: Meridian.Domain.Models.MarketTradeUpdate
+- uid: Meridian.Domain.Models
+  commentId: N:Meridian.Domain.Models
+  href: Meridian.html
+  name: Meridian.Domain.Models
+  nameWithType: Meridian.Domain.Models
+  fullName: Meridian.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Models
+    name: Models
+    href: Meridian.Domain.Models.html

@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian
+  commentId: N:Meridian
+  id: Meridian
+  children:
+  - Meridian.Program
+  - Meridian.UiServer
+  langs:
+  - csharp
+  - vb
+  name: Meridian
+  nameWithType: Meridian
+  fullName: Meridian
+  type: Namespace
+  assemblies:
+  - Meridian
+references:
+- uid: Meridian.Program
+  commentId: T:Meridian.Program
+  href: Meridian.Program.html
+  name: Program
+  nameWithType: Program
+  fullName: Meridian.Program
+- uid: Meridian.UiServer
+  commentId: T:Meridian.UiServer
+  href: Meridian.UiServer.html
+  name: UiServer
+  nameWithType: UiServer
+  fullName: Meridian.UiServer

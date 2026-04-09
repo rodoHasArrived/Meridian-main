@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Resources
+  commentId: N:Meridian.McpServer.Resources
+  id: Meridian.McpServer.Resources
+  children:
+  - Meridian.McpServer.Resources.MarketDataResources
+  - Meridian.McpServer.Resources.RepoNavigationResources
+  langs:
+  - csharp
+  - vb
+  name: Meridian.McpServer.Resources
+  nameWithType: Meridian.McpServer.Resources
+  fullName: Meridian.McpServer.Resources
+  type: Namespace
+  assemblies:
+  - Meridian.McpServer
+references:
+- uid: Meridian.McpServer.Resources.MarketDataResources
+  commentId: T:Meridian.McpServer.Resources.MarketDataResources
+  href: Meridian.McpServer.Resources.MarketDataResources.html
+  name: MarketDataResources
+  nameWithType: MarketDataResources
+  fullName: Meridian.McpServer.Resources.MarketDataResources
+- uid: Meridian.McpServer.Resources.RepoNavigationResources
+  commentId: T:Meridian.McpServer.Resources.RepoNavigationResources
+  href: Meridian.McpServer.Resources.RepoNavigationResources.html
+  name: RepoNavigationResources
+  nameWithType: RepoNavigationResources
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources

@@ -1,0 +1,746 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Margin.MarginRequirement
+  commentId: T:Meridian.Execution.Margin.MarginRequirement
+  id: MarginRequirement
+  parent: Meridian.Execution.Margin
+  children:
+  - Meridian.Execution.Margin.MarginRequirement.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  - Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity
+  - Meridian.Execution.Margin.MarginRequirement.InitialMargin
+  - Meridian.Execution.Margin.MarginRequirement.InitialMarginRate
+  - Meridian.Execution.Margin.MarginRequirement.IsMarginCall
+  - Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin
+  - Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate
+  - Meridian.Execution.Margin.MarginRequirement.NotionalValue
+  - Meridian.Execution.Margin.MarginRequirement.Symbol
+  langs:
+  - csharp
+  - vb
+  name: MarginRequirement
+  nameWithType: MarginRequirement
+  fullName: Meridian.Execution.Margin.MarginRequirement
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginRequirement
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: The margin requirement calculated for a single position or the whole portfolio.
+  example: []
+  syntax:
+    content: 'public sealed record MarginRequirement : IEquatable<MarginRequirement>'
+    content.vb: Public NotInheritable Class MarginRequirement Implements IEquatable(Of MarginRequirement)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Margin.MarginRequirement}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Margin.MarginRequirement.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Execution.Margin.MarginRequirement.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal)'
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: MarginRequirement(string?, decimal, decimal, decimal, decimal)
+  nameWithType: MarginRequirement.MarginRequirement(string?, decimal, decimal, decimal, decimal)
+  fullName: Meridian.Execution.Margin.MarginRequirement.MarginRequirement(string?, decimal, decimal, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: The margin requirement calculated for a single position or the whole portfolio.
+  example: []
+  syntax:
+    content: public MarginRequirement(string? Symbol, decimal NotionalValue, decimal InitialMargin, decimal MaintenanceMargin, decimal ExcessLiquidity)
+    parameters:
+    - id: Symbol
+      type: System.String
+      description: Instrument symbol the requirement applies to, or <code>null</code> for portfolio-level.
+    - id: NotionalValue
+      type: System.Decimal
+      description: Market value of the position used for the margin calculation.
+    - id: InitialMargin
+      type: System.Decimal
+      description: Amount of capital required to open (or maintain during the session opening) the position.
+    - id: MaintenanceMargin
+      type: System.Decimal
+      description: Minimum equity required to hold the position without triggering a margin call.
+    - id: ExcessLiquidity
+      type: System.Decimal
+      description: >-
+        Portfolio equity minus the maintenance margin requirement. Negative values indicate
+
+        a margin-call situation.
+    content.vb: Public Sub New(Symbol As String, NotionalValue As Decimal, InitialMargin As Decimal, MaintenanceMargin As Decimal, ExcessLiquidity As Decimal)
+  overload: Meridian.Execution.Margin.MarginRequirement.#ctor*
+  nameWithType.vb: MarginRequirement.New(String, Decimal, Decimal, Decimal, Decimal)
+  fullName.vb: Meridian.Execution.Margin.MarginRequirement.New(String, Decimal, Decimal, Decimal, Decimal)
+  name.vb: New(String, Decimal, Decimal, Decimal, Decimal)
+- uid: Meridian.Execution.Margin.MarginRequirement.Symbol
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: MarginRequirement.Symbol
+  fullName: Meridian.Execution.Margin.MarginRequirement.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Instrument symbol the requirement applies to, or <code>null</code> for portfolio-level.
+  example: []
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Margin.MarginRequirement.Symbol*
+- uid: Meridian.Execution.Margin.MarginRequirement.NotionalValue
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.NotionalValue
+  id: NotionalValue
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: NotionalValue
+  nameWithType: MarginRequirement.NotionalValue
+  fullName: Meridian.Execution.Margin.MarginRequirement.NotionalValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotionalValue
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Market value of the position used for the margin calculation.
+  example: []
+  syntax:
+    content: public decimal NotionalValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NotionalValue As Decimal
+  overload: Meridian.Execution.Margin.MarginRequirement.NotionalValue*
+- uid: Meridian.Execution.Margin.MarginRequirement.InitialMargin
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.InitialMargin
+  id: InitialMargin
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: InitialMargin
+  nameWithType: MarginRequirement.InitialMargin
+  fullName: Meridian.Execution.Margin.MarginRequirement.InitialMargin
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialMargin
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Amount of capital required to open (or maintain during the session opening) the position.
+  example: []
+  syntax:
+    content: public decimal InitialMargin { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property InitialMargin As Decimal
+  overload: Meridian.Execution.Margin.MarginRequirement.InitialMargin*
+- uid: Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin
+  id: MaintenanceMargin
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceMargin
+  nameWithType: MarginRequirement.MaintenanceMargin
+  fullName: Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceMargin
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Minimum equity required to hold the position without triggering a margin call.
+  example: []
+  syntax:
+    content: public decimal MaintenanceMargin { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MaintenanceMargin As Decimal
+  overload: Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin*
+- uid: Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity
+  id: ExcessLiquidity
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: ExcessLiquidity
+  nameWithType: MarginRequirement.ExcessLiquidity
+  fullName: Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExcessLiquidity
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: >-
+    Portfolio equity minus the maintenance margin requirement. Negative values indicate
+
+    a margin-call situation.
+  example: []
+  syntax:
+    content: public decimal ExcessLiquidity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ExcessLiquidity As Decimal
+  overload: Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity*
+- uid: Meridian.Execution.Margin.MarginRequirement.IsMarginCall
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.IsMarginCall
+  id: IsMarginCall
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: IsMarginCall
+  nameWithType: MarginRequirement.IsMarginCall
+  fullName: Meridian.Execution.Margin.MarginRequirement.IsMarginCall
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsMarginCall
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: <code>true</code> when the account is in margin-call territory.
+  example: []
+  syntax:
+    content: public bool IsMarginCall { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsMarginCall As Boolean
+  overload: Meridian.Execution.Margin.MarginRequirement.IsMarginCall*
+- uid: Meridian.Execution.Margin.MarginRequirement.InitialMarginRate
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.InitialMarginRate
+  id: InitialMarginRate
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: InitialMarginRate
+  nameWithType: MarginRequirement.InitialMarginRate
+  fullName: Meridian.Execution.Margin.MarginRequirement.InitialMarginRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialMarginRate
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Initial margin as a percentage of notional value.
+  example: []
+  syntax:
+    content: public decimal InitialMarginRate { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property InitialMarginRate As Decimal
+  overload: Meridian.Execution.Margin.MarginRequirement.InitialMarginRate*
+- uid: Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate
+  commentId: P:Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate
+  id: MaintenanceMarginRate
+  parent: Meridian.Execution.Margin.MarginRequirement
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceMarginRate
+  nameWithType: MarginRequirement.MaintenanceMarginRate
+  fullName: Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginRequirement.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceMarginRate
+    path: ../../src/Meridian.Execution/Margin/MarginRequirement.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Maintenance margin as a percentage of notional value.
+  example: []
+  syntax:
+    content: public decimal MaintenanceMarginRate { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property MaintenanceMarginRate As Decimal
+  overload: Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate*
+references:
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Margin.MarginRequirement}
+  commentId: T:System.IEquatable{Meridian.Execution.Margin.MarginRequirement}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarginRequirement>
+  nameWithType: IEquatable<MarginRequirement>
+  fullName: System.IEquatable<Meridian.Execution.Margin.MarginRequirement>
+  nameWithType.vb: IEquatable(Of MarginRequirement)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Margin.MarginRequirement)
+  name.vb: IEquatable(Of MarginRequirement)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Margin.MarginRequirement
+    name: MarginRequirement
+    href: Meridian.Execution.Margin.MarginRequirement.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Margin.MarginRequirement
+    name: MarginRequirement
+    href: Meridian.Execution.Margin.MarginRequirement.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Margin.MarginRequirement.#ctor*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.#ctor
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement__ctor_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_
+  name: MarginRequirement
+  nameWithType: MarginRequirement.MarginRequirement
+  fullName: Meridian.Execution.Margin.MarginRequirement.MarginRequirement
+  nameWithType.vb: MarginRequirement.New
+  fullName.vb: Meridian.Execution.Margin.MarginRequirement.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Margin.MarginRequirement.Symbol*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.Symbol
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_Symbol
+  name: Symbol
+  nameWithType: MarginRequirement.Symbol
+  fullName: Meridian.Execution.Margin.MarginRequirement.Symbol
+- uid: Meridian.Execution.Margin.MarginRequirement.NotionalValue*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.NotionalValue
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_NotionalValue
+  name: NotionalValue
+  nameWithType: MarginRequirement.NotionalValue
+  fullName: Meridian.Execution.Margin.MarginRequirement.NotionalValue
+- uid: Meridian.Execution.Margin.MarginRequirement.InitialMargin*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.InitialMargin
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_InitialMargin
+  name: InitialMargin
+  nameWithType: MarginRequirement.InitialMargin
+  fullName: Meridian.Execution.Margin.MarginRequirement.InitialMargin
+- uid: Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_MaintenanceMargin
+  name: MaintenanceMargin
+  nameWithType: MarginRequirement.MaintenanceMargin
+  fullName: Meridian.Execution.Margin.MarginRequirement.MaintenanceMargin
+- uid: Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_ExcessLiquidity
+  name: ExcessLiquidity
+  nameWithType: MarginRequirement.ExcessLiquidity
+  fullName: Meridian.Execution.Margin.MarginRequirement.ExcessLiquidity
+- uid: Meridian.Execution.Margin.MarginRequirement.IsMarginCall*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.IsMarginCall
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_IsMarginCall
+  name: IsMarginCall
+  nameWithType: MarginRequirement.IsMarginCall
+  fullName: Meridian.Execution.Margin.MarginRequirement.IsMarginCall
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Execution.Margin.MarginRequirement.InitialMarginRate*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.InitialMarginRate
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_InitialMarginRate
+  name: InitialMarginRate
+  nameWithType: MarginRequirement.InitialMarginRate
+  fullName: Meridian.Execution.Margin.MarginRequirement.InitialMarginRate
+- uid: Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate*
+  commentId: Overload:Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate
+  href: Meridian.Execution.Margin.MarginRequirement.html#Meridian_Execution_Margin_MarginRequirement_MaintenanceMarginRate
+  name: MaintenanceMarginRate
+  nameWithType: MarginRequirement.MaintenanceMarginRate
+  fullName: Meridian.Execution.Margin.MarginRequirement.MaintenanceMarginRate

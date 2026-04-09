@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.GapHandling
+  commentId: T:Meridian.Storage.Export.GapHandling
+  id: GapHandling
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.GapHandling.ForwardFill
+  - Meridian.Storage.Export.GapHandling.Interpolate
+  - Meridian.Storage.Export.GapHandling.Null
+  - Meridian.Storage.Export.GapHandling.Skip
+  langs:
+  - csharp
+  - vb
+  name: GapHandling
+  nameWithType: GapHandling
+  fullName: Meridian.Storage.Export.GapHandling
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapHandling
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Gap handling strategies.
+  example: []
+  syntax:
+    content: 'public enum GapHandling : byte'
+    content.vb: Public Enum GapHandling As Byte
+- uid: Meridian.Storage.Export.GapHandling.Null
+  commentId: F:Meridian.Storage.Export.GapHandling.Null
+  id: "Null"
+  parent: Meridian.Storage.Export.GapHandling
+  langs:
+  - csharp
+  - vb
+  name: "Null"
+  nameWithType: GapHandling.Null
+  fullName: Meridian.Storage.Export.GapHandling.Null
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: "Null"
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Leave gaps as null/NaN.
+  example: []
+  syntax:
+    content: Null = 0
+    return:
+      type: Meridian.Storage.Export.GapHandling
+- uid: Meridian.Storage.Export.GapHandling.ForwardFill
+  commentId: F:Meridian.Storage.Export.GapHandling.ForwardFill
+  id: ForwardFill
+  parent: Meridian.Storage.Export.GapHandling
+  langs:
+  - csharp
+  - vb
+  name: ForwardFill
+  nameWithType: GapHandling.ForwardFill
+  fullName: Meridian.Storage.Export.GapHandling.ForwardFill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForwardFill
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Forward fill from last known value.
+  example: []
+  syntax:
+    content: ForwardFill = 1
+    return:
+      type: Meridian.Storage.Export.GapHandling
+- uid: Meridian.Storage.Export.GapHandling.Interpolate
+  commentId: F:Meridian.Storage.Export.GapHandling.Interpolate
+  id: Interpolate
+  parent: Meridian.Storage.Export.GapHandling
+  langs:
+  - csharp
+  - vb
+  name: Interpolate
+  nameWithType: GapHandling.Interpolate
+  fullName: Meridian.Storage.Export.GapHandling.Interpolate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Interpolate
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Linear interpolation.
+  example: []
+  syntax:
+    content: Interpolate = 2
+    return:
+      type: Meridian.Storage.Export.GapHandling
+- uid: Meridian.Storage.Export.GapHandling.Skip
+  commentId: F:Meridian.Storage.Export.GapHandling.Skip
+  id: Skip
+  parent: Meridian.Storage.Export.GapHandling
+  langs:
+  - csharp
+  - vb
+  name: Skip
+  nameWithType: GapHandling.Skip
+  fullName: Meridian.Storage.Export.GapHandling.Skip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skip
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Skip gaps entirely.
+  example: []
+  syntax:
+    content: Skip = 3
+    return:
+      type: Meridian.Storage.Export.GapHandling
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.GapHandling
+  commentId: T:Meridian.Storage.Export.GapHandling
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.GapHandling.html
+  name: GapHandling
+  nameWithType: GapHandling
+  fullName: Meridian.Storage.Export.GapHandling

@@ -1,0 +1,494 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration
+  commentId: T:Meridian.Contracts.Catalog.CatalogConfiguration
+  id: CatalogConfiguration
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.CatalogConfiguration.Compression
+  - Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition
+  - Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention
+  - Meridian.Contracts.Catalog.CatalogConfiguration.RootPath
+  langs:
+  - csharp
+  - vb
+  name: CatalogConfiguration
+  nameWithType: CatalogConfiguration
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatalogConfiguration
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Configuration snapshot for reproducibility.
+  example: []
+  syntax:
+    content: public sealed class CatalogConfiguration
+    content.vb: Public NotInheritable Class CatalogConfiguration
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention
+  commentId: P:Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention
+  id: NamingConvention
+  parent: Meridian.Contracts.Catalog.CatalogConfiguration
+  langs:
+  - csharp
+  - vb
+  name: NamingConvention
+  nameWithType: CatalogConfiguration.NamingConvention
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NamingConvention
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: File naming convention.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("namingConvention")]
+
+      public string? NamingConvention { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("namingConvention")>
+
+      Public Property NamingConvention As String
+  overload: Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: namingConvention
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition
+  commentId: P:Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition
+  id: DatePartition
+  parent: Meridian.Contracts.Catalog.CatalogConfiguration
+  langs:
+  - csharp
+  - vb
+  name: DatePartition
+  nameWithType: CatalogConfiguration.DatePartition
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatePartition
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 427
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Date partitioning strategy.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("datePartition")]
+
+      public string? DatePartition { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("datePartition")>
+
+      Public Property DatePartition As String
+  overload: Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: datePartition
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.Compression
+  commentId: P:Meridian.Contracts.Catalog.CatalogConfiguration.Compression
+  id: Compression
+  parent: Meridian.Contracts.Catalog.CatalogConfiguration
+  langs:
+  - csharp
+  - vb
+  name: Compression
+  nameWithType: CatalogConfiguration.Compression
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.Compression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compression
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 433
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Compression codec in use.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compression")]
+
+      public string? Compression { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("compression")>
+
+      Public Property Compression As String
+  overload: Meridian.Contracts.Catalog.CatalogConfiguration.Compression*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compression
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.RootPath
+  commentId: P:Meridian.Contracts.Catalog.CatalogConfiguration.RootPath
+  id: RootPath
+  parent: Meridian.Contracts.Catalog.CatalogConfiguration
+  langs:
+  - csharp
+  - vb
+  name: RootPath
+  nameWithType: CatalogConfiguration.RootPath
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.RootPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RootPath
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 439
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Storage root path.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("rootPath")]
+
+      public string? RootPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("rootPath")>
+
+      Public Property RootPath As String
+  overload: Meridian.Contracts.Catalog.CatalogConfiguration.RootPath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: rootPath
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention*
+  commentId: Overload:Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention
+  href: Meridian.Contracts.Catalog.CatalogConfiguration.html#Meridian_Contracts_Catalog_CatalogConfiguration_NamingConvention
+  name: NamingConvention
+  nameWithType: CatalogConfiguration.NamingConvention
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.NamingConvention
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition*
+  commentId: Overload:Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition
+  href: Meridian.Contracts.Catalog.CatalogConfiguration.html#Meridian_Contracts_Catalog_CatalogConfiguration_DatePartition
+  name: DatePartition
+  nameWithType: CatalogConfiguration.DatePartition
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.DatePartition
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.Compression*
+  commentId: Overload:Meridian.Contracts.Catalog.CatalogConfiguration.Compression
+  href: Meridian.Contracts.Catalog.CatalogConfiguration.html#Meridian_Contracts_Catalog_CatalogConfiguration_Compression
+  name: Compression
+  nameWithType: CatalogConfiguration.Compression
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.Compression
+- uid: Meridian.Contracts.Catalog.CatalogConfiguration.RootPath*
+  commentId: Overload:Meridian.Contracts.Catalog.CatalogConfiguration.RootPath
+  href: Meridian.Contracts.Catalog.CatalogConfiguration.html#Meridian_Contracts_Catalog_CatalogConfiguration_RootPath
+  name: RootPath
+  nameWithType: CatalogConfiguration.RootPath
+  fullName: Meridian.Contracts.Catalog.CatalogConfiguration.RootPath

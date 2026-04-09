@@ -1,0 +1,753 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateVehicleRequest
+  id: CreateVehicleRequest
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.Code
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.Description
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.Name
+  - Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId
+  langs:
+  - csharp
+  - vb
+  name: CreateVehicleRequest
+  nameWithType: CreateVehicleRequest
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateVehicleRequest
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record CreateVehicleRequest : IEquatable<CreateVehicleRequest>'
+    content.vb: Public NotInheritable Class CreateVehicleRequest Implements IEquatable(Of CreateVehicleRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.CreateVehicleRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.CreateVehicleRequest.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  id: '#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String)'
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: CreateVehicleRequest(Guid, Guid, Guid, string, string, string, DateTimeOffset, string, string?)
+  nameWithType: CreateVehicleRequest.CreateVehicleRequest(Guid, Guid, Guid, string, string, string, DateTimeOffset, string, string?)
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.CreateVehicleRequest(System.Guid, System.Guid, System.Guid, string, string, string, System.DateTimeOffset, string, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public CreateVehicleRequest(Guid VehicleId, Guid FundId, Guid LegalEntityId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null)
+    parameters:
+    - id: VehicleId
+      type: System.Guid
+    - id: FundId
+      type: System.Guid
+    - id: LegalEntityId
+      type: System.Guid
+    - id: Code
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: CreatedBy
+      type: System.String
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(VehicleId As Guid, FundId As Guid, LegalEntityId As Guid, Code As String, Name As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, Description As String = Nothing)
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.#ctor*
+  nameWithType.vb: CreateVehicleRequest.New(Guid, Guid, Guid, String, String, String, DateTimeOffset, String, String)
+  fullName.vb: Meridian.Contracts.FundStructure.CreateVehicleRequest.New(System.Guid, System.Guid, System.Guid, String, String, String, System.DateTimeOffset, String, String)
+  name.vb: New(Guid, Guid, Guid, String, String, String, DateTimeOffset, String, String)
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId
+  id: VehicleId
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: VehicleId
+  nameWithType: CreateVehicleRequest.VehicleId
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid VehicleId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property VehicleId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId
+  id: FundId
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: FundId
+  nameWithType: CreateVehicleRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid FundId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property FundId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId
+  id: LegalEntityId
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: LegalEntityId
+  nameWithType: CreateVehicleRequest.LegalEntityId
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LegalEntityId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid LegalEntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LegalEntityId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.Code
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.Code
+  id: Code
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: CreateVehicleRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.Code*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.Name
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.Name
+  id: Name
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CreateVehicleRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.Name*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: CreateVehicleRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: CreateVehicleRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy
+  id: CreatedBy
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: CreatedBy
+  nameWithType: CreateVehicleRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedBy
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string CreatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CreatedBy As String
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy*
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.Description
+  commentId: P:Meridian.Contracts.FundStructure.CreateVehicleRequest.Description
+  id: Description
+  parent: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: CreateVehicleRequest.Description
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.FundStructure.CreateVehicleRequest.Description*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.CreateVehicleRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.CreateVehicleRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CreateVehicleRequest>
+  nameWithType: IEquatable<CreateVehicleRequest>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.CreateVehicleRequest>
+  nameWithType.vb: IEquatable(Of CreateVehicleRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.CreateVehicleRequest)
+  name.vb: IEquatable(Of CreateVehicleRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
+    name: CreateVehicleRequest
+    href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
+    name: CreateVehicleRequest
+    href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.#ctor
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest__ctor_System_Guid_System_Guid_System_Guid_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_String_
+  name: CreateVehicleRequest
+  nameWithType: CreateVehicleRequest.CreateVehicleRequest
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.CreateVehicleRequest
+  nameWithType.vb: CreateVehicleRequest.New
+  fullName.vb: Meridian.Contracts.FundStructure.CreateVehicleRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_VehicleId
+  name: VehicleId
+  nameWithType: CreateVehicleRequest.VehicleId
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.VehicleId
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_FundId
+  name: FundId
+  nameWithType: CreateVehicleRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.FundId
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_LegalEntityId
+  name: LegalEntityId
+  nameWithType: CreateVehicleRequest.LegalEntityId
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.LegalEntityId
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.Code*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.Code
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_Code
+  name: Code
+  nameWithType: CreateVehicleRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.Code
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.Name*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.Name
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_Name
+  name: Name
+  nameWithType: CreateVehicleRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.Name
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_BaseCurrency
+  name: BaseCurrency
+  nameWithType: CreateVehicleRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.BaseCurrency
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: CreateVehicleRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.EffectiveFrom
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_CreatedBy
+  name: CreatedBy
+  nameWithType: CreateVehicleRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.CreatedBy
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest.Description*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateVehicleRequest.Description
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html#Meridian_Contracts_FundStructure_CreateVehicleRequest_Description
+  name: Description
+  nameWithType: CreateVehicleRequest.Description
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest.Description

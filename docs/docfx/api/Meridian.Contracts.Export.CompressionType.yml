@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.CompressionType
+  commentId: T:Meridian.Contracts.Export.CompressionType
+  id: CompressionType
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.CompressionType.Gzip
+  - Meridian.Contracts.Export.CompressionType.LZ4
+  - Meridian.Contracts.Export.CompressionType.None
+  - Meridian.Contracts.Export.CompressionType.Snappy
+  - Meridian.Contracts.Export.CompressionType.ZSTD
+  langs:
+  - csharp
+  - vb
+  name: CompressionType
+  nameWithType: CompressionType
+  fullName: Meridian.Contracts.Export.CompressionType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionType
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: 'public enum CompressionType : byte'
+    content.vb: Public Enum CompressionType As Byte
+- uid: Meridian.Contracts.Export.CompressionType.None
+  commentId: F:Meridian.Contracts.Export.CompressionType.None
+  id: None
+  parent: Meridian.Contracts.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: CompressionType.None
+  fullName: Meridian.Contracts.Export.CompressionType.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Contracts.Export.CompressionType
+- uid: Meridian.Contracts.Export.CompressionType.Gzip
+  commentId: F:Meridian.Contracts.Export.CompressionType.Gzip
+  id: Gzip
+  parent: Meridian.Contracts.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: Gzip
+  nameWithType: CompressionType.Gzip
+  fullName: Meridian.Contracts.Export.CompressionType.Gzip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gzip
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Gzip = 1
+    return:
+      type: Meridian.Contracts.Export.CompressionType
+- uid: Meridian.Contracts.Export.CompressionType.LZ4
+  commentId: F:Meridian.Contracts.Export.CompressionType.LZ4
+  id: LZ4
+  parent: Meridian.Contracts.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: LZ4
+  nameWithType: CompressionType.LZ4
+  fullName: Meridian.Contracts.Export.CompressionType.LZ4
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LZ4
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: LZ4 = 2
+    return:
+      type: Meridian.Contracts.Export.CompressionType
+- uid: Meridian.Contracts.Export.CompressionType.Snappy
+  commentId: F:Meridian.Contracts.Export.CompressionType.Snappy
+  id: Snappy
+  parent: Meridian.Contracts.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: Snappy
+  nameWithType: CompressionType.Snappy
+  fullName: Meridian.Contracts.Export.CompressionType.Snappy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snappy
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: Snappy = 3
+    return:
+      type: Meridian.Contracts.Export.CompressionType
+- uid: Meridian.Contracts.Export.CompressionType.ZSTD
+  commentId: F:Meridian.Contracts.Export.CompressionType.ZSTD
+  id: ZSTD
+  parent: Meridian.Contracts.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: ZSTD
+  nameWithType: CompressionType.ZSTD
+  fullName: Meridian.Contracts.Export.CompressionType.ZSTD
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ZSTD
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: ZSTD = 4
+    return:
+      type: Meridian.Contracts.Export.CompressionType
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: Meridian.Contracts.Export.CompressionType
+  commentId: T:Meridian.Contracts.Export.CompressionType
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.CompressionType.html
+  name: CompressionType
+  nameWithType: CompressionType
+  fullName: Meridian.Contracts.Export.CompressionType

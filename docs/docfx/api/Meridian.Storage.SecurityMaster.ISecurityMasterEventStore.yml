@@ -1,0 +1,722 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  id: ISecurityMasterEventStore
+  parent: Meridian.Storage.SecurityMaster
+  children:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterEventStore
+  nameWithType: ISecurityMasterEventStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterEventStore
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public interface ISecurityMasterEventStore
+    content.vb: Public Interface ISecurityMasterEventStore
+  derivedClasses:
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  id: AppendAsync(System.Guid,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope},System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(Guid, long, IReadOnlyList<SecurityMasterEventEnvelope>, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.AppendAsync(Guid, long, IReadOnlyList<SecurityMasterEventEnvelope>, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid, long, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task AppendAsync(Guid securityId, long expectedVersion, IReadOnlyList<SecurityMasterEventEnvelope> events, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: expectedVersion
+      type: System.Int64
+    - id: events
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AppendAsync(securityId As Guid, expectedVersion As Long, events As IReadOnlyList(Of SecurityMasterEventEnvelope), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync*
+  nameWithType.vb: ISecurityMasterEventStore.AppendAsync(Guid, Long, IReadOnlyList(Of SecurityMasterEventEnvelope), CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync(System.Guid, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope), System.Threading.CancellationToken)
+  name.vb: AppendAsync(Guid, Long, IReadOnlyList(Of SecurityMasterEventEnvelope), CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  id: LoadAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: LoadAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.LoadAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+    content.vb: Function LoadAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  id: LoadSinceSequenceAsync(System.Int64,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: LoadSinceSequenceAsync(long, int, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.LoadSinceSequenceAsync(long, int, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(long, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadSinceSequenceAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadSinceSequenceAsync(long sequenceExclusive, int take, CancellationToken ct = default)
+    parameters:
+    - id: sequenceExclusive
+      type: System.Int64
+    - id: take
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+    content.vb: Function LoadSinceSequenceAsync(sequenceExclusive As Long, take As Integer, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync*
+  nameWithType.vb: ISecurityMasterEventStore.LoadSinceSequenceAsync(Long, Integer, CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync(Long, Integer, System.Threading.CancellationToken)
+  name.vb: LoadSinceSequenceAsync(Long, Integer, CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  id: GetLatestSequenceAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: GetLatestSequenceAsync(CancellationToken)
+  nameWithType: ISecurityMasterEventStore.GetLatestSequenceAsync(CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestSequenceAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<long> GetLatestSequenceAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int64}
+    content.vb: Function GetLatestSequenceAsync(ct As CancellationToken = Nothing) As Task(Of Long)
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  id: AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: AppendCorporateActionAsync(CorporateActionDto, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.AppendCorporateActionAsync(CorporateActionDto, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync(Meridian.Contracts.SecurityMaster.CorporateActionDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendCorporateActionAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  summary: Appends one or more corporate action events for a security.
+  example: []
+  syntax:
+    content: Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default)
+    parameters:
+    - id: action
+      type: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AppendCorporateActionAsync(action As CorporateActionDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  id: LoadCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  langs:
+  - csharp
+  - vb
+  name: LoadCorporateActionsAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterEventStore.LoadCorporateActionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadCorporateActionsAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  summary: Returns all corporate action events for a security in ascending ex-date order.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<CorporateActionDto>> LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+    content.vb: Function LoadCorporateActionsAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CorporateActionDto))
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync*
+references:
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendAsync_System_Guid_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityMasterEventEnvelope__System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: ISecurityMasterEventStore.AppendAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SecurityMasterEventEnvelope>
+  nameWithType: IReadOnlyList<SecurityMasterEventEnvelope>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>
+  nameWithType.vb: IReadOnlyList(Of SecurityMasterEventEnvelope)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope)
+  name.vb: IReadOnlyList(Of SecurityMasterEventEnvelope)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadAsync_System_Guid_System_Threading_CancellationToken_
+  name: LoadAsync
+  nameWithType: ISecurityMasterEventStore.LoadAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecurityMasterEventEnvelope>>
+  nameWithType: Task<IReadOnlyList<SecurityMasterEventEnvelope>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope))
+  name.vb: Task(Of IReadOnlyList(Of SecurityMasterEventEnvelope))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+    href: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope
+    name: SecurityMasterEventEnvelope
+    href: Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope.html
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadSinceSequenceAsync_System_Int64_System_Int32_System_Threading_CancellationToken_
+  name: LoadSinceSequenceAsync
+  nameWithType: ISecurityMasterEventStore.LoadSinceSequenceAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadSinceSequenceAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_GetLatestSequenceAsync_System_Threading_CancellationToken_
+  name: GetLatestSequenceAsync
+  nameWithType: ISecurityMasterEventStore.GetLatestSequenceAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.GetLatestSequenceAsync
+- uid: System.Threading.Tasks.Task{System.Int64}
+  commentId: T:System.Threading.Tasks.Task{System.Int64}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<long>
+  nameWithType: Task<long>
+  fullName: System.Threading.Tasks.Task<long>
+  nameWithType.vb: Task(Of Long)
+  fullName.vb: System.Threading.Tasks.Task(Of Long)
+  name.vb: Task(Of Long)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_AppendCorporateActionAsync_Meridian_Contracts_SecurityMaster_CorporateActionDto_System_Threading_CancellationToken_
+  name: AppendCorporateActionAsync
+  nameWithType: ISecurityMasterEventStore.AppendCorporateActionAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.AppendCorporateActionAsync
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+  commentId: T:Meridian.Contracts.SecurityMaster.CorporateActionDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  name: CorporateActionDto
+  nameWithType: CorporateActionDto
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_LoadCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: LoadCorporateActionsAsync
+  nameWithType: ISecurityMasterEventStore.LoadCorporateActionsAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.LoadCorporateActionsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CorporateActionDto>>
+  nameWithType: Task<IReadOnlyList<CorporateActionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.CorporateActionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.CorporateActionDto))
+  name.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: )
+  - name: )

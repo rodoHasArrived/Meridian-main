@@ -1,0 +1,113 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  id: Meridian.Storage.SecurityMaster
+  children:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  - Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterSnapshotStore
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore
+  - Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  - Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner
+  - Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html
+  name: ISecurityMasterEventStore
+  nameWithType: ISecurityMasterEventStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.html
+  name: ISecurityMasterSnapshotStore
+  nameWithType: ISecurityMasterSnapshotStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html
+  name: ISecurityMasterStore
+  nameWithType: ISecurityMasterStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  commentId: T:Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore.html
+  name: PostgresSecurityMasterEventStore
+  nameWithType: PostgresSecurityMasterEventStore
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterEventStore
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterSnapshotStore
+  commentId: T:Meridian.Storage.SecurityMaster.PostgresSecurityMasterSnapshotStore
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterSnapshotStore.html
+  name: PostgresSecurityMasterSnapshotStore
+  nameWithType: PostgresSecurityMasterSnapshotStore
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterSnapshotStore
+- uid: Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore
+  commentId: T:Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore
+  href: Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.html
+  name: PostgresSecurityMasterStore
+  nameWithType: PostgresSecurityMasterStore
+  fullName: Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  commentId: T:Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+  href: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper.html
+  name: SecurityMasterDbMapper
+  nameWithType: SecurityMasterDbMapper
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterDbMapper
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner
+  commentId: T:Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner
+  href: Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner.html
+  name: SecurityMasterMigrationRunner
+  nameWithType: SecurityMasterMigrationRunner
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  commentId: T:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.html
+  name: SecurityMasterProjectionCache
+  nameWithType: SecurityMasterProjectionCache
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html

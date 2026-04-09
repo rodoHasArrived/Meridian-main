@@ -1,0 +1,1135 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus
+  commentId: T:Meridian.Contracts.Archive.ArchiveHealthStatus
+  id: ArchiveHealthStatus
+  parent: Meridian.Contracts.Archive
+  children:
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.Issues
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.Status
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles
+  - Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes
+  langs:
+  - csharp
+  - vb
+  name: ArchiveHealthStatus
+  nameWithType: ArchiveHealthStatus
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveHealthStatus
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  summary: Archive health status and metrics.
+  example: []
+  syntax:
+    content: public sealed class ArchiveHealthStatus
+    content.vb: Public NotInheritable Class ArchiveHealthStatus
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore
+  id: OverallHealthScore
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: OverallHealthScore
+  nameWithType: ArchiveHealthStatus.OverallHealthScore
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallHealthScore
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("overallHealthScore")]
+
+      public float OverallHealthScore { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("overallHealthScore")>
+
+      Public Property OverallHealthScore As Single
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: overallHealthScore
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.Status
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.Status
+  id: Status
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ArchiveHealthStatus.Status
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("status")]
+
+      public string Status { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("status")>
+
+      Public Property Status As String
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.Status*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: status
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt
+  id: LastFullVerificationAt
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: LastFullVerificationAt
+  nameWithType: ArchiveHealthStatus.LastFullVerificationAt
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastFullVerificationAt
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("lastFullVerificationAt")]
+
+      public DateTime? LastFullVerificationAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastFullVerificationAt")>
+
+      Public Property LastFullVerificationAt As Date?
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastFullVerificationAt
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes
+  id: LastVerificationDurationMinutes
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: LastVerificationDurationMinutes
+  nameWithType: ArchiveHealthStatus.LastVerificationDurationMinutes
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastVerificationDurationMinutes
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("lastVerificationDurationMinutes")]
+
+      public int? LastVerificationDurationMinutes { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <JsonPropertyName("lastVerificationDurationMinutes")>
+
+      Public Property LastVerificationDurationMinutes As Integer?
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastVerificationDurationMinutes
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: ArchiveHealthStatus.TotalFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("totalFiles")]
+
+      public int TotalFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalFiles")>
+
+      Public Property TotalFiles As Integer
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalFiles
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles
+  id: VerifiedFiles
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: VerifiedFiles
+  nameWithType: ArchiveHealthStatus.VerifiedFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifiedFiles
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("verifiedFiles")]
+
+      public int VerifiedFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("verifiedFiles")>
+
+      Public Property VerifiedFiles As Integer
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: verifiedFiles
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles
+  id: PendingFiles
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: PendingFiles
+  nameWithType: ArchiveHealthStatus.PendingFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingFiles
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("pendingFiles")]
+
+      public int PendingFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("pendingFiles")>
+
+      Public Property PendingFiles As Integer
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: pendingFiles
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles
+  id: FailedFiles
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: FailedFiles
+  nameWithType: ArchiveHealthStatus.FailedFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedFiles
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("failedFiles")]
+
+      public int FailedFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("failedFiles")>
+
+      Public Property FailedFiles As Integer
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: failedFiles
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes
+  id: TotalSizeBytes
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: TotalSizeBytes
+  nameWithType: ArchiveHealthStatus.TotalSizeBytes
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSizeBytes
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("totalSizeBytes")]
+
+      public long TotalSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalSizeBytes")>
+
+      Public Property TotalSizeBytes As Long
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalSizeBytes
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes
+  id: VerifiedSizeBytes
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: VerifiedSizeBytes
+  nameWithType: ArchiveHealthStatus.VerifiedSizeBytes
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifiedSizeBytes
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("verifiedSizeBytes")]
+
+      public long VerifiedSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("verifiedSizeBytes")>
+
+      Public Property VerifiedSizeBytes As Long
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: verifiedSizeBytes
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.Issues
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.Issues
+  id: Issues
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: ArchiveHealthStatus.Issues
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("issues")]
+
+      public ArchiveIssue[]? Issues { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Archive.ArchiveIssue[]
+    content.vb: >-
+      <JsonPropertyName("issues")>
+
+      Public Property Issues As ArchiveIssue()
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.Issues*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: issues
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations
+  id: Recommendations
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Recommendations
+  nameWithType: ArchiveHealthStatus.Recommendations
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Recommendations
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("recommendations")]
+
+      public string[]? Recommendations { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("recommendations")>
+
+      Public Property Recommendations As String()
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: recommendations
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: ArchiveHealthStatus.LastUpdated
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("lastUpdated")]
+
+      public DateTime LastUpdated { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("lastUpdated")>
+
+      Public Property LastUpdated As Date
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastUpdated
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo
+  commentId: P:Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo
+  id: StorageHealthInfo
+  parent: Meridian.Contracts.Archive.ArchiveHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: StorageHealthInfo
+  nameWithType: ArchiveHealthStatus.StorageHealthInfo
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageHealthInfo
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("storageHealthInfo")]
+
+      public StorageHealthInfo? StorageHealthInfo { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Archive.StorageHealthInfo
+    content.vb: >-
+      <JsonPropertyName("storageHealthInfo")>
+
+      Public Property StorageHealthInfo As StorageHealthInfo
+  overload: Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: storageHealthInfo
+references:
+- uid: Meridian.Contracts.Archive
+  commentId: N:Meridian.Contracts.Archive
+  href: Meridian.html
+  name: Meridian.Contracts.Archive
+  nameWithType: Meridian.Contracts.Archive
+  fullName: Meridian.Contracts.Archive
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Archive
+    name: Archive
+    href: Meridian.Contracts.Archive.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Archive
+    name: Archive
+    href: Meridian.Contracts.Archive.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_OverallHealthScore
+  name: OverallHealthScore
+  nameWithType: ArchiveHealthStatus.OverallHealthScore
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.OverallHealthScore
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.Status*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.Status
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_Status
+  name: Status
+  nameWithType: ArchiveHealthStatus.Status
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.Status
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_LastFullVerificationAt
+  name: LastFullVerificationAt
+  nameWithType: ArchiveHealthStatus.LastFullVerificationAt
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.LastFullVerificationAt
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_LastVerificationDurationMinutes
+  name: LastVerificationDurationMinutes
+  nameWithType: ArchiveHealthStatus.LastVerificationDurationMinutes
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.LastVerificationDurationMinutes
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_TotalFiles
+  name: TotalFiles
+  nameWithType: ArchiveHealthStatus.TotalFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalFiles
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_VerifiedFiles
+  name: VerifiedFiles
+  nameWithType: ArchiveHealthStatus.VerifiedFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedFiles
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_PendingFiles
+  name: PendingFiles
+  nameWithType: ArchiveHealthStatus.PendingFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.PendingFiles
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_FailedFiles
+  name: FailedFiles
+  nameWithType: ArchiveHealthStatus.FailedFiles
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.FailedFiles
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_TotalSizeBytes
+  name: TotalSizeBytes
+  nameWithType: ArchiveHealthStatus.TotalSizeBytes
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.TotalSizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_VerifiedSizeBytes
+  name: VerifiedSizeBytes
+  nameWithType: ArchiveHealthStatus.VerifiedSizeBytes
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.VerifiedSizeBytes
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.Issues*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.Issues
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_Issues
+  name: Issues
+  nameWithType: ArchiveHealthStatus.Issues
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.Issues
+- uid: Meridian.Contracts.Archive.ArchiveIssue[]
+  isExternal: true
+  href: Meridian.Contracts.Archive.ArchiveIssue.html
+  name: ArchiveIssue[]
+  nameWithType: ArchiveIssue[]
+  fullName: Meridian.Contracts.Archive.ArchiveIssue[]
+  nameWithType.vb: ArchiveIssue()
+  fullName.vb: Meridian.Contracts.Archive.ArchiveIssue()
+  name.vb: ArchiveIssue()
+  spec.csharp:
+  - uid: Meridian.Contracts.Archive.ArchiveIssue
+    name: ArchiveIssue
+    href: Meridian.Contracts.Archive.ArchiveIssue.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Archive.ArchiveIssue
+    name: ArchiveIssue
+    href: Meridian.Contracts.Archive.ArchiveIssue.html
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_Recommendations
+  name: Recommendations
+  nameWithType: ArchiveHealthStatus.Recommendations
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.Recommendations
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_LastUpdated
+  name: LastUpdated
+  nameWithType: ArchiveHealthStatus.LastUpdated
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.LastUpdated
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo*
+  commentId: Overload:Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo
+  href: Meridian.Contracts.Archive.ArchiveHealthStatus.html#Meridian_Contracts_Archive_ArchiveHealthStatus_StorageHealthInfo
+  name: StorageHealthInfo
+  nameWithType: ArchiveHealthStatus.StorageHealthInfo
+  fullName: Meridian.Contracts.Archive.ArchiveHealthStatus.StorageHealthInfo
+- uid: Meridian.Contracts.Archive.StorageHealthInfo
+  commentId: T:Meridian.Contracts.Archive.StorageHealthInfo
+  parent: Meridian.Contracts.Archive
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html
+  name: StorageHealthInfo
+  nameWithType: StorageHealthInfo
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo

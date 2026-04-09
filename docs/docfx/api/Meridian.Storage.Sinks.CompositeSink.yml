@@ -1,0 +1,1459 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Sinks.CompositeSink
+  commentId: T:Meridian.Storage.Sinks.CompositeSink
+  id: CompositeSink
+  parent: Meridian.Storage.Sinks
+  children:
+  - Meridian.Storage.Sinks.CompositeSink.#ctor(System.Collections.Generic.IEnumerable{Meridian.Storage.Interfaces.IStorageSink},Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Sinks.CompositeSink},System.Int32,System.Nullable{System.TimeSpan},Meridian.Storage.Sinks.FailurePolicy,System.TimeProvider)
+  - Meridian.Storage.Sinks.CompositeSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  - Meridian.Storage.Sinks.CompositeSink.AppendFailures
+  - Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount
+  - Meridian.Storage.Sinks.CompositeSink.DisposeAsync
+  - Meridian.Storage.Sinks.CompositeSink.FailedSinkCount
+  - Meridian.Storage.Sinks.CompositeSink.FailurePolicy
+  - Meridian.Storage.Sinks.CompositeSink.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport
+  - Meridian.Storage.Sinks.CompositeSink.HealthySinkCount
+  - Meridian.Storage.Sinks.CompositeSink.SinkCount
+  - Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks
+  langs:
+  - csharp
+  - vb
+  name: CompositeSink
+  nameWithType: CompositeSink
+  fullName: Meridian.Storage.Sinks.CompositeSink
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositeSink
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Fans out events to multiple storage sinks, enabling multi-format storage
+
+    (e.g., JSONL + Parquet simultaneously) without modifying the EventPipeline.
+
+    Includes per-sink circuit breaker health tracking to avoid hammering
+
+    a persistently failing sink.
+  example: []
+  syntax:
+    content: 'public sealed class CompositeSink : IStorageSink, IAsyncDisposable, IFlushable'
+    content.vb: Public NotInheritable Class CompositeSink Implements IStorageSink, IAsyncDisposable, IFlushable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink
+  - System.IAsyncDisposable
+  - Meridian.Application.Services.IFlushable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Sinks.CompositeSink.#ctor(System.Collections.Generic.IEnumerable{Meridian.Storage.Interfaces.IStorageSink},Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Sinks.CompositeSink},System.Int32,System.Nullable{System.TimeSpan},Meridian.Storage.Sinks.FailurePolicy,System.TimeProvider)
+  commentId: M:Meridian.Storage.Sinks.CompositeSink.#ctor(System.Collections.Generic.IEnumerable{Meridian.Storage.Interfaces.IStorageSink},Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Sinks.CompositeSink},System.Int32,System.Nullable{System.TimeSpan},Meridian.Storage.Sinks.FailurePolicy,System.TimeProvider)
+  id: '#ctor(System.Collections.Generic.IEnumerable{Meridian.Storage.Interfaces.IStorageSink},Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Sinks.CompositeSink},System.Int32,System.Nullable{System.TimeSpan},Meridian.Storage.Sinks.FailurePolicy,System.TimeProvider)'
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: CompositeSink(IEnumerable<IStorageSink>, ILogger<CompositeSink>?, int, TimeSpan?, FailurePolicy, TimeProvider?)
+  nameWithType: CompositeSink.CompositeSink(IEnumerable<IStorageSink>, ILogger<CompositeSink>?, int, TimeSpan?, FailurePolicy, TimeProvider?)
+  fullName: Meridian.Storage.Sinks.CompositeSink.CompositeSink(System.Collections.Generic.IEnumerable<Meridian.Storage.Interfaces.IStorageSink>, Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Sinks.CompositeSink>?, int, System.TimeSpan?, Meridian.Storage.Sinks.FailurePolicy, System.TimeProvider?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public CompositeSink(IEnumerable<IStorageSink> sinks, ILogger<CompositeSink>? logger = null, int maxConsecutiveFailures = 5, TimeSpan? circuitResetTimeout = null, FailurePolicy failurePolicy = FailurePolicy.ContinueOnPartialFailure, TimeProvider? timeProvider = null)
+    parameters:
+    - id: sinks
+      type: System.Collections.Generic.IEnumerable{Meridian.Storage.Interfaces.IStorageSink}
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Sinks.CompositeSink}
+    - id: maxConsecutiveFailures
+      type: System.Int32
+    - id: circuitResetTimeout
+      type: System.Nullable{System.TimeSpan}
+    - id: failurePolicy
+      type: Meridian.Storage.Sinks.FailurePolicy
+    - id: timeProvider
+      type: System.TimeProvider
+    content.vb: Public Sub New(sinks As IEnumerable(Of IStorageSink), logger As ILogger(Of CompositeSink) = Nothing, maxConsecutiveFailures As Integer = 5, circuitResetTimeout As TimeSpan? = Nothing, failurePolicy As FailurePolicy = FailurePolicy.ContinueOnPartialFailure, timeProvider As TimeProvider = Nothing)
+  overload: Meridian.Storage.Sinks.CompositeSink.#ctor*
+  nameWithType.vb: CompositeSink.New(IEnumerable(Of IStorageSink), ILogger(Of CompositeSink), Integer, TimeSpan?, FailurePolicy, TimeProvider)
+  fullName.vb: Meridian.Storage.Sinks.CompositeSink.New(System.Collections.Generic.IEnumerable(Of Meridian.Storage.Interfaces.IStorageSink), Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Sinks.CompositeSink), Integer, System.TimeSpan?, Meridian.Storage.Sinks.FailurePolicy, System.TimeProvider)
+  name.vb: New(IEnumerable(Of IStorageSink), ILogger(Of CompositeSink), Integer, TimeSpan?, FailurePolicy, TimeProvider)
+- uid: Meridian.Storage.Sinks.CompositeSink.SinkCount
+  commentId: P:Meridian.Storage.Sinks.CompositeSink.SinkCount
+  id: SinkCount
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: SinkCount
+  nameWithType: CompositeSink.SinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.SinkCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SinkCount
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Gets the number of underlying sinks.
+  example: []
+  syntax:
+    content: public int SinkCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property SinkCount As Integer
+  overload: Meridian.Storage.Sinks.CompositeSink.SinkCount*
+- uid: Meridian.Storage.Sinks.CompositeSink.AppendFailures
+  commentId: P:Meridian.Storage.Sinks.CompositeSink.AppendFailures
+  id: AppendFailures
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: AppendFailures
+  nameWithType: CompositeSink.AppendFailures
+  fullName: Meridian.Storage.Sinks.CompositeSink.AppendFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendFailures
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Gets the total number of individual sink append failures since startup.
+  example: []
+  syntax:
+    content: public long AppendFailures { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property AppendFailures As Long
+  overload: Meridian.Storage.Sinks.CompositeSink.AppendFailures*
+- uid: Meridian.Storage.Sinks.CompositeSink.FailurePolicy
+  commentId: P:Meridian.Storage.Sinks.CompositeSink.FailurePolicy
+  id: FailurePolicy
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: FailurePolicy
+  nameWithType: CompositeSink.FailurePolicy
+  fullName: Meridian.Storage.Sinks.CompositeSink.FailurePolicy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailurePolicy
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Gets the configured failure policy.
+  example: []
+  syntax:
+    content: public FailurePolicy FailurePolicy { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Sinks.FailurePolicy
+    content.vb: Public ReadOnly Property FailurePolicy As FailurePolicy
+  overload: Meridian.Storage.Sinks.CompositeSink.FailurePolicy*
+- uid: Meridian.Storage.Sinks.CompositeSink.HealthySinkCount
+  commentId: P:Meridian.Storage.Sinks.CompositeSink.HealthySinkCount
+  id: HealthySinkCount
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: HealthySinkCount
+  nameWithType: CompositeSink.HealthySinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.HealthySinkCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthySinkCount
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Gets the number of sinks currently in the <xref href="Meridian.Storage.Sinks.SinkHealthState.Healthy" data-throw-if-not-resolved="false"></xref> state.
+  example: []
+  syntax:
+    content: public int HealthySinkCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property HealthySinkCount As Integer
+  overload: Meridian.Storage.Sinks.CompositeSink.HealthySinkCount*
+- uid: Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount
+  commentId: P:Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount
+  id: DegradedSinkCount
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: DegradedSinkCount
+  nameWithType: CompositeSink.DegradedSinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DegradedSinkCount
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Gets the number of sinks currently in the <xref href="Meridian.Storage.Sinks.SinkHealthState.Degraded" data-throw-if-not-resolved="false"></xref> state.
+  example: []
+  syntax:
+    content: public int DegradedSinkCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property DegradedSinkCount As Integer
+  overload: Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount*
+- uid: Meridian.Storage.Sinks.CompositeSink.FailedSinkCount
+  commentId: P:Meridian.Storage.Sinks.CompositeSink.FailedSinkCount
+  id: FailedSinkCount
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: FailedSinkCount
+  nameWithType: CompositeSink.FailedSinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.FailedSinkCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedSinkCount
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Gets the number of sinks currently in the <xref href="Meridian.Storage.Sinks.SinkHealthState.Failed" data-throw-if-not-resolved="false"></xref> state (circuit open).
+  example: []
+  syntax:
+    content: public int FailedSinkCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property FailedSinkCount As Integer
+  overload: Meridian.Storage.Sinks.CompositeSink.FailedSinkCount*
+- uid: Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks
+  commentId: P:Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks
+  id: TotalCircuitBreaks
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: TotalCircuitBreaks
+  nameWithType: CompositeSink.TotalCircuitBreaks
+  fullName: Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCircuitBreaks
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Gets the total number of circuit breaker trip events across all sinks.
+  example: []
+  syntax:
+    content: public long TotalCircuitBreaks { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalCircuitBreaks As Long
+  overload: Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks*
+- uid: Meridian.Storage.Sinks.CompositeSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Sinks.CompositeSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: AppendAsync(MarketEvent, CancellationToken)
+  nameWithType: CompositeSink.AppendAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Storage.Sinks.CompositeSink.AppendAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppendAsync
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  example: []
+  syntax:
+    content: public ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask
+    content.vb: Public Function AppendAsync(evt As MarketEvent, ct As CancellationToken = Nothing) As ValueTask
+  overload: Meridian.Storage.Sinks.CompositeSink.AppendAsync*
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Sinks.CompositeSink.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Sinks.CompositeSink.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: CompositeSink.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Sinks.CompositeSink.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  example: []
+  syntax:
+    content: public Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Sinks.CompositeSink.FlushAsync*
+  implements:
+  - Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+- uid: Meridian.Storage.Sinks.CompositeSink.DisposeAsync
+  commentId: M:Meridian.Storage.Sinks.CompositeSink.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: CompositeSink.DisposeAsync()
+  fullName: Meridian.Storage.Sinks.CompositeSink.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Storage.Sinks.CompositeSink.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport
+  commentId: M:Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport
+  id: GetSinkHealthReport
+  parent: Meridian.Storage.Sinks.CompositeSink
+  langs:
+  - csharp
+  - vb
+  name: GetSinkHealthReport()
+  nameWithType: CompositeSink.GetSinkHealthReport()
+  fullName: Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSinkHealthReport
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Returns a health report for every registered sink, including circuit breaker state,
+
+    failure counts, and reset times. Useful for Prometheus metrics and diagnostics endpoints.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SinkHealth> GetSinkHealthReport()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Sinks.SinkHealth}
+    content.vb: Public Function GetSinkHealthReport() As IReadOnlyList(Of SinkHealth)
+  overload: Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport*
+references:
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  href: Meridian.html
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Interfaces.IStorageSink
+  commentId: T:Meridian.Storage.Interfaces.IStorageSink
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStorageSink.html
+  name: IStorageSink
+  nameWithType: IStorageSink
+  fullName: Meridian.Storage.Interfaces.IStorageSink
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: Meridian.Application.Services.IFlushable
+  commentId: T:Meridian.Application.Services.IFlushable
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IFlushable.html
+  name: IFlushable
+  nameWithType: IFlushable
+  fullName: Meridian.Application.Services.IFlushable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Storage.Sinks.CompositeSink.#ctor*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.#ctor
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink__ctor_System_Collections_Generic_IEnumerable_Meridian_Storage_Interfaces_IStorageSink__Microsoft_Extensions_Logging_ILogger_Meridian_Storage_Sinks_CompositeSink__System_Int32_System_Nullable_System_TimeSpan__Meridian_Storage_Sinks_FailurePolicy_System_TimeProvider_
+  name: CompositeSink
+  nameWithType: CompositeSink.CompositeSink
+  fullName: Meridian.Storage.Sinks.CompositeSink.CompositeSink
+  nameWithType.vb: CompositeSink.New
+  fullName.vb: Meridian.Storage.Sinks.CompositeSink.New
+  name.vb: New
+- uid: System.Collections.Generic.IEnumerable{Meridian.Storage.Interfaces.IStorageSink}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Storage.Interfaces.IStorageSink}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<IStorageSink>
+  nameWithType: IEnumerable<IStorageSink>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Storage.Interfaces.IStorageSink>
+  nameWithType.vb: IEnumerable(Of IStorageSink)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Storage.Interfaces.IStorageSink)
+  name.vb: IEnumerable(Of IStorageSink)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Storage.Interfaces.IStorageSink
+    name: IStorageSink
+    href: Meridian.Storage.Interfaces.IStorageSink.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Interfaces.IStorageSink
+    name: IStorageSink
+    href: Meridian.Storage.Interfaces.IStorageSink.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Sinks.CompositeSink}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Sinks.CompositeSink}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<CompositeSink>
+  nameWithType: ILogger<CompositeSink>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Sinks.CompositeSink>
+  nameWithType.vb: ILogger(Of CompositeSink)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Sinks.CompositeSink)
+  name.vb: ILogger(Of CompositeSink)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Storage.Sinks.CompositeSink
+    name: CompositeSink
+    href: Meridian.Storage.Sinks.CompositeSink.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Sinks.CompositeSink
+    name: CompositeSink
+    href: Meridian.Storage.Sinks.CompositeSink.html
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Meridian.Storage.Sinks.FailurePolicy
+  commentId: T:Meridian.Storage.Sinks.FailurePolicy
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.FailurePolicy.html
+  name: FailurePolicy
+  nameWithType: FailurePolicy
+  fullName: Meridian.Storage.Sinks.FailurePolicy
+- uid: System.TimeProvider
+  commentId: T:System.TimeProvider
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timeprovider
+  name: TimeProvider
+  nameWithType: TimeProvider
+  fullName: System.TimeProvider
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Sinks.CompositeSink.SinkCount*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.SinkCount
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_SinkCount
+  name: SinkCount
+  nameWithType: CompositeSink.SinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.SinkCount
+- uid: Meridian.Storage.Sinks.CompositeSink.AppendFailures*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.AppendFailures
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_AppendFailures
+  name: AppendFailures
+  nameWithType: CompositeSink.AppendFailures
+  fullName: Meridian.Storage.Sinks.CompositeSink.AppendFailures
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Sinks.CompositeSink.FailurePolicy*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.FailurePolicy
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_FailurePolicy
+  name: FailurePolicy
+  nameWithType: CompositeSink.FailurePolicy
+  fullName: Meridian.Storage.Sinks.CompositeSink.FailurePolicy
+- uid: Meridian.Storage.Sinks.SinkHealthState.Healthy
+  commentId: F:Meridian.Storage.Sinks.SinkHealthState.Healthy
+  href: Meridian.Storage.Sinks.SinkHealthState.html#Meridian_Storage_Sinks_SinkHealthState_Healthy
+  name: Healthy
+  nameWithType: SinkHealthState.Healthy
+  fullName: Meridian.Storage.Sinks.SinkHealthState.Healthy
+- uid: Meridian.Storage.Sinks.CompositeSink.HealthySinkCount*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.HealthySinkCount
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_HealthySinkCount
+  name: HealthySinkCount
+  nameWithType: CompositeSink.HealthySinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.HealthySinkCount
+- uid: Meridian.Storage.Sinks.SinkHealthState.Degraded
+  commentId: F:Meridian.Storage.Sinks.SinkHealthState.Degraded
+  href: Meridian.Storage.Sinks.SinkHealthState.html#Meridian_Storage_Sinks_SinkHealthState_Degraded
+  name: Degraded
+  nameWithType: SinkHealthState.Degraded
+  fullName: Meridian.Storage.Sinks.SinkHealthState.Degraded
+- uid: Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_DegradedSinkCount
+  name: DegradedSinkCount
+  nameWithType: CompositeSink.DegradedSinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.DegradedSinkCount
+- uid: Meridian.Storage.Sinks.SinkHealthState.Failed
+  commentId: F:Meridian.Storage.Sinks.SinkHealthState.Failed
+  href: Meridian.Storage.Sinks.SinkHealthState.html#Meridian_Storage_Sinks_SinkHealthState_Failed
+  name: Failed
+  nameWithType: SinkHealthState.Failed
+  fullName: Meridian.Storage.Sinks.SinkHealthState.Failed
+- uid: Meridian.Storage.Sinks.CompositeSink.FailedSinkCount*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.FailedSinkCount
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_FailedSinkCount
+  name: FailedSinkCount
+  nameWithType: CompositeSink.FailedSinkCount
+  fullName: Meridian.Storage.Sinks.CompositeSink.FailedSinkCount
+- uid: Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_TotalCircuitBreaks
+  name: TotalCircuitBreaks
+  nameWithType: CompositeSink.TotalCircuitBreaks
+  fullName: Meridian.Storage.Sinks.CompositeSink.TotalCircuitBreaks
+- uid: Meridian.Storage.Sinks.CompositeSink.AppendAsync*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.AppendAsync
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: AppendAsync
+  nameWithType: CompositeSink.AppendAsync
+  fullName: Meridian.Storage.Sinks.CompositeSink.AppendAsync
+- uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  isExternal: true
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: AppendAsync(MarketEvent, CancellationToken)
+  nameWithType: IStorageSink.AppendAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.AppendAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: AppendAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_AppendAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Sinks.CompositeSink.FlushAsync*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.FlushAsync
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: CompositeSink.FlushAsync
+  fullName: Meridian.Storage.Sinks.CompositeSink.FlushAsync
+- uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageSink
+  isExternal: true
+  href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync(CancellationToken)
+  nameWithType: IStorageSink.FlushAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.IStorageSink.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+    href: Meridian.Storage.Interfaces.IStorageSink.html#Meridian_Storage_Interfaces_IStorageSink_FlushAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.IFlushable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: FlushAsync(CancellationToken)
+  nameWithType: IFlushable.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Storage.Sinks.CompositeSink.DisposeAsync*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.DisposeAsync
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_DisposeAsync
+  name: DisposeAsync
+  nameWithType: CompositeSink.DisposeAsync
+  fullName: Meridian.Storage.Sinks.CompositeSink.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport*
+  commentId: Overload:Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport
+  href: Meridian.Storage.Sinks.CompositeSink.html#Meridian_Storage_Sinks_CompositeSink_GetSinkHealthReport
+  name: GetSinkHealthReport
+  nameWithType: CompositeSink.GetSinkHealthReport
+  fullName: Meridian.Storage.Sinks.CompositeSink.GetSinkHealthReport
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Sinks.SinkHealth}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Sinks.SinkHealth}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SinkHealth>
+  nameWithType: IReadOnlyList<SinkHealth>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Sinks.SinkHealth>
+  nameWithType.vb: IReadOnlyList(Of SinkHealth)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Sinks.SinkHealth)
+  name.vb: IReadOnlyList(Of SinkHealth)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Sinks.SinkHealth
+    name: SinkHealth
+    href: Meridian.Storage.Sinks.SinkHealth.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Sinks.SinkHealth
+    name: SinkHealth
+    href: Meridian.Storage.Sinks.SinkHealth.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

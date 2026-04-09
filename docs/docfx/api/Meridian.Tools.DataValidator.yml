@@ -1,0 +1,803 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Tools.DataValidator
+  commentId: T:Meridian.Tools.DataValidator
+  id: DataValidator
+  parent: Meridian.Tools
+  children:
+  - Meridian.Tools.DataValidator.GenerateSummary(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  - Meridian.Tools.DataValidator.PrintResults(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  - Meridian.Tools.DataValidator.ValidateDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Tools.DataValidator.ValidateFileAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: DataValidator
+  nameWithType: DataValidator
+  fullName: Meridian.Tools.DataValidator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataValidator
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 14
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  summary: >-
+    Validates JSONL data files for integrity and completeness.
+
+    Can be run as a standalone tool to check stored data quality.
+
+    Supports both PascalCase and camelCase JSON property names.
+  example: []
+  syntax:
+    content: public sealed class DataValidator
+    content.vb: Public NotInheritable Class DataValidator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Tools.DataValidator.ValidateFileAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Tools.DataValidator.ValidateFileAsync(System.String,System.Threading.CancellationToken)
+  id: ValidateFileAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Tools.DataValidator
+  langs:
+  - csharp
+  - vb
+  name: ValidateFileAsync(string, CancellationToken)
+  nameWithType: DataValidator.ValidateFileAsync(string, CancellationToken)
+  fullName: Meridian.Tools.DataValidator.ValidateFileAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateFileAsync
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 52
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  summary: Validates a single JSONL file.
+  example: []
+  syntax:
+    content: public Task<DataValidator.ValidationResult> ValidateFileAsync(string filePath, CancellationToken ct = default)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Tools.DataValidator.ValidationResult}
+    content.vb: Public Function ValidateFileAsync(filePath As String, ct As CancellationToken = Nothing) As Task(Of DataValidator.ValidationResult)
+  overload: Meridian.Tools.DataValidator.ValidateFileAsync*
+  nameWithType.vb: DataValidator.ValidateFileAsync(String, CancellationToken)
+  fullName.vb: Meridian.Tools.DataValidator.ValidateFileAsync(String, System.Threading.CancellationToken)
+  name.vb: ValidateFileAsync(String, CancellationToken)
+- uid: Meridian.Tools.DataValidator.ValidateDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Tools.DataValidator.ValidateDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: ValidateDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Tools.DataValidator
+  langs:
+  - csharp
+  - vb
+  name: ValidateDirectoryAsync(string, bool, CancellationToken)
+  nameWithType: DataValidator.ValidateDirectoryAsync(string, bool, CancellationToken)
+  fullName: Meridian.Tools.DataValidator.ValidateDirectoryAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateDirectoryAsync
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 217
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  summary: Validates all JSONL files in a directory.
+  example: []
+  syntax:
+    content: public Task<List<DataValidator.ValidationResult>> ValidateDirectoryAsync(string directoryPath, bool recursive = true, CancellationToken ct = default)
+    parameters:
+    - id: directoryPath
+      type: System.String
+    - id: recursive
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Tools.DataValidator.ValidationResult}}
+    content.vb: Public Function ValidateDirectoryAsync(directoryPath As String, recursive As Boolean = True, ct As CancellationToken = Nothing) As Task(Of List(Of DataValidator.ValidationResult))
+  overload: Meridian.Tools.DataValidator.ValidateDirectoryAsync*
+  nameWithType.vb: DataValidator.ValidateDirectoryAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Tools.DataValidator.ValidateDirectoryAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: ValidateDirectoryAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Tools.DataValidator.GenerateSummary(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  commentId: M:Meridian.Tools.DataValidator.GenerateSummary(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  id: GenerateSummary(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  parent: Meridian.Tools.DataValidator
+  langs:
+  - csharp
+  - vb
+  name: GenerateSummary(IEnumerable<ValidationResult>)
+  nameWithType: DataValidator.GenerateSummary(IEnumerable<DataValidator.ValidationResult>)
+  fullName: Meridian.Tools.DataValidator.GenerateSummary(System.Collections.Generic.IEnumerable<Meridian.Tools.DataValidator.ValidationResult>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateSummary
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 259
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  summary: Generates a summary report for validation results.
+  example: []
+  syntax:
+    content: public static DataValidator.ValidationSummary GenerateSummary(IEnumerable<DataValidator.ValidationResult> results)
+    parameters:
+    - id: results
+      type: System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult}
+    return:
+      type: Meridian.Tools.DataValidator.ValidationSummary
+    content.vb: Public Shared Function GenerateSummary(results As IEnumerable(Of DataValidator.ValidationResult)) As DataValidator.ValidationSummary
+  overload: Meridian.Tools.DataValidator.GenerateSummary*
+  nameWithType.vb: DataValidator.GenerateSummary(IEnumerable(Of DataValidator.ValidationResult))
+  fullName.vb: Meridian.Tools.DataValidator.GenerateSummary(System.Collections.Generic.IEnumerable(Of Meridian.Tools.DataValidator.ValidationResult))
+  name.vb: GenerateSummary(IEnumerable(Of ValidationResult))
+- uid: Meridian.Tools.DataValidator.PrintResults(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  commentId: M:Meridian.Tools.DataValidator.PrintResults(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  id: PrintResults(System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult})
+  parent: Meridian.Tools.DataValidator
+  langs:
+  - csharp
+  - vb
+  name: PrintResults(IEnumerable<ValidationResult>)
+  nameWithType: DataValidator.PrintResults(IEnumerable<DataValidator.ValidationResult>)
+  fullName: Meridian.Tools.DataValidator.PrintResults(System.Collections.Generic.IEnumerable<Meridian.Tools.DataValidator.ValidationResult>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian/Tools/DataValidator.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrintResults
+    path: ../../src/Meridian/Tools/DataValidator.cs
+    startLine: 289
+  assemblies:
+  - Meridian
+  namespace: Meridian.Tools
+  summary: Prints validation results to console.
+  example: []
+  syntax:
+    content: public static void PrintResults(IEnumerable<DataValidator.ValidationResult> results)
+    parameters:
+    - id: results
+      type: System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult}
+    content.vb: Public Shared Sub PrintResults(results As IEnumerable(Of DataValidator.ValidationResult))
+  overload: Meridian.Tools.DataValidator.PrintResults*
+  nameWithType.vb: DataValidator.PrintResults(IEnumerable(Of DataValidator.ValidationResult))
+  fullName.vb: Meridian.Tools.DataValidator.PrintResults(System.Collections.Generic.IEnumerable(Of Meridian.Tools.DataValidator.ValidationResult))
+  name.vb: PrintResults(IEnumerable(Of ValidationResult))
+references:
+- uid: Meridian.Tools
+  commentId: N:Meridian.Tools
+  href: Meridian.html
+  name: Meridian.Tools
+  nameWithType: Meridian.Tools
+  fullName: Meridian.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Tools
+    name: Tools
+    href: Meridian.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Tools
+    name: Tools
+    href: Meridian.Tools.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Tools.DataValidator.ValidateFileAsync*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidateFileAsync
+  href: Meridian.Tools.DataValidator.html#Meridian_Tools_DataValidator_ValidateFileAsync_System_String_System_Threading_CancellationToken_
+  name: ValidateFileAsync
+  nameWithType: DataValidator.ValidateFileAsync
+  fullName: Meridian.Tools.DataValidator.ValidateFileAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Tools.DataValidator.ValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Tools.DataValidator.ValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataValidator.ValidationResult>
+  nameWithType: Task<DataValidator.ValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Tools.DataValidator.ValidationResult>
+  nameWithType.vb: Task(Of DataValidator.ValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Tools.DataValidator.ValidationResult)
+  name.vb: Task(Of DataValidator.ValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Tools.DataValidator.ValidateDirectoryAsync*
+  commentId: Overload:Meridian.Tools.DataValidator.ValidateDirectoryAsync
+  href: Meridian.Tools.DataValidator.html#Meridian_Tools_DataValidator_ValidateDirectoryAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: ValidateDirectoryAsync
+  nameWithType: DataValidator.ValidateDirectoryAsync
+  fullName: Meridian.Tools.DataValidator.ValidateDirectoryAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Tools.DataValidator.ValidationResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Tools.DataValidator.ValidationResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<DataValidator.ValidationResult>>
+  nameWithType: Task<List<DataValidator.ValidationResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Tools.DataValidator.ValidationResult>>
+  nameWithType.vb: Task(Of List(Of DataValidator.ValidationResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Tools.DataValidator.ValidationResult))
+  name.vb: Task(Of List(Of DataValidator.ValidationResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: )
+  - name: )
+- uid: Meridian.Tools.DataValidator.GenerateSummary*
+  commentId: Overload:Meridian.Tools.DataValidator.GenerateSummary
+  href: Meridian.Tools.DataValidator.html#Meridian_Tools_DataValidator_GenerateSummary_System_Collections_Generic_IEnumerable_Meridian_Tools_DataValidator_ValidationResult__
+  name: GenerateSummary
+  nameWithType: DataValidator.GenerateSummary
+  fullName: Meridian.Tools.DataValidator.GenerateSummary
+- uid: System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Tools.DataValidator.ValidationResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<DataValidator.ValidationResult>
+  nameWithType: IEnumerable<DataValidator.ValidationResult>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Tools.DataValidator.ValidationResult>
+  nameWithType.vb: IEnumerable(Of DataValidator.ValidationResult)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Tools.DataValidator.ValidationResult)
+  name.vb: IEnumerable(Of DataValidator.ValidationResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  - name: )
+- uid: Meridian.Tools.DataValidator.ValidationSummary
+  commentId: T:Meridian.Tools.DataValidator.ValidationSummary
+  parent: Meridian.Tools
+  href: Meridian.Tools.DataValidator.html
+  name: DataValidator.ValidationSummary
+  nameWithType: DataValidator.ValidationSummary
+  fullName: Meridian.Tools.DataValidator.ValidationSummary
+  spec.csharp:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationSummary
+    name: ValidationSummary
+    href: Meridian.Tools.DataValidator.ValidationSummary.html
+  spec.vb:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationSummary
+    name: ValidationSummary
+    href: Meridian.Tools.DataValidator.ValidationSummary.html
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Tools.DataValidator.PrintResults*
+  commentId: Overload:Meridian.Tools.DataValidator.PrintResults
+  href: Meridian.Tools.DataValidator.html#Meridian_Tools_DataValidator_PrintResults_System_Collections_Generic_IEnumerable_Meridian_Tools_DataValidator_ValidationResult__
+  name: PrintResults
+  nameWithType: DataValidator.PrintResults
+  fullName: Meridian.Tools.DataValidator.PrintResults

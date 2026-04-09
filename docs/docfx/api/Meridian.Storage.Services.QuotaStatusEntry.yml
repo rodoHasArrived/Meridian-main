@@ -1,0 +1,799 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.QuotaStatusEntry
+  commentId: T:Meridian.Storage.Services.QuotaStatusEntry
+  id: QuotaStatusEntry
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.QuotaStatusEntry.#ctor(System.String,System.String,System.Int64,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},Meridian.Storage.QuotaEnforcementPolicy)
+  - Meridian.Storage.Services.QuotaStatusEntry.DisplayName
+  - Meridian.Storage.Services.QuotaStatusEntry.MaxBytes
+  - Meridian.Storage.Services.QuotaStatusEntry.MaxFiles
+  - Meridian.Storage.Services.QuotaStatusEntry.Policy
+  - Meridian.Storage.Services.QuotaStatusEntry.QuotaId
+  - Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage
+  - Meridian.Storage.Services.QuotaStatusEntry.UsedBytes
+  - Meridian.Storage.Services.QuotaStatusEntry.UsedFiles
+  langs:
+  - csharp
+  - vb
+  name: QuotaStatusEntry
+  nameWithType: QuotaStatusEntry
+  fullName: Meridian.Storage.Services.QuotaStatusEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotaStatusEntry
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record QuotaStatusEntry : IEquatable<QuotaStatusEntry>'
+    content.vb: Public NotInheritable Class QuotaStatusEntry Implements IEquatable(Of QuotaStatusEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.QuotaStatusEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.QuotaStatusEntry.#ctor(System.String,System.String,System.Int64,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},Meridian.Storage.QuotaEnforcementPolicy)
+  commentId: M:Meridian.Storage.Services.QuotaStatusEntry.#ctor(System.String,System.String,System.Int64,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},Meridian.Storage.QuotaEnforcementPolicy)
+  id: '#ctor(System.String,System.String,System.Int64,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},Meridian.Storage.QuotaEnforcementPolicy)'
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: QuotaStatusEntry(string, string, long, long, long?, long?, QuotaEnforcementPolicy)
+  nameWithType: QuotaStatusEntry.QuotaStatusEntry(string, string, long, long, long?, long?, QuotaEnforcementPolicy)
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.QuotaStatusEntry(string, string, long, long, long?, long?, Meridian.Storage.QuotaEnforcementPolicy)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public QuotaStatusEntry(string QuotaId, string DisplayName, long UsedBytes, long MaxBytes, long? UsedFiles, long? MaxFiles, QuotaEnforcementPolicy Policy)
+    parameters:
+    - id: QuotaId
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: UsedBytes
+      type: System.Int64
+    - id: MaxBytes
+      type: System.Int64
+    - id: UsedFiles
+      type: System.Nullable{System.Int64}
+    - id: MaxFiles
+      type: System.Nullable{System.Int64}
+    - id: Policy
+      type: Meridian.Storage.QuotaEnforcementPolicy
+    content.vb: Public Sub New(QuotaId As String, DisplayName As String, UsedBytes As Long, MaxBytes As Long, UsedFiles As Long?, MaxFiles As Long?, Policy As QuotaEnforcementPolicy)
+  overload: Meridian.Storage.Services.QuotaStatusEntry.#ctor*
+  nameWithType.vb: QuotaStatusEntry.New(String, String, Long, Long, Long?, Long?, QuotaEnforcementPolicy)
+  fullName.vb: Meridian.Storage.Services.QuotaStatusEntry.New(String, String, Long, Long, Long?, Long?, Meridian.Storage.QuotaEnforcementPolicy)
+  name.vb: New(String, String, Long, Long, Long?, Long?, QuotaEnforcementPolicy)
+- uid: Meridian.Storage.Services.QuotaStatusEntry.QuotaId
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.QuotaId
+  id: QuotaId
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: QuotaId
+  nameWithType: QuotaStatusEntry.QuotaId
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.QuotaId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotaId
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 396
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string QuotaId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property QuotaId As String
+  overload: Meridian.Storage.Services.QuotaStatusEntry.QuotaId*
+- uid: Meridian.Storage.Services.QuotaStatusEntry.DisplayName
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.DisplayName
+  id: DisplayName
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: QuotaStatusEntry.DisplayName
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Storage.Services.QuotaStatusEntry.DisplayName*
+- uid: Meridian.Storage.Services.QuotaStatusEntry.UsedBytes
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.UsedBytes
+  id: UsedBytes
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: UsedBytes
+  nameWithType: QuotaStatusEntry.UsedBytes
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.UsedBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsedBytes
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 398
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long UsedBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property UsedBytes As Long
+  overload: Meridian.Storage.Services.QuotaStatusEntry.UsedBytes*
+- uid: Meridian.Storage.Services.QuotaStatusEntry.MaxBytes
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.MaxBytes
+  id: MaxBytes
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: MaxBytes
+  nameWithType: QuotaStatusEntry.MaxBytes
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.MaxBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxBytes
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 399
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long MaxBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MaxBytes As Long
+  overload: Meridian.Storage.Services.QuotaStatusEntry.MaxBytes*
+- uid: Meridian.Storage.Services.QuotaStatusEntry.UsedFiles
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.UsedFiles
+  id: UsedFiles
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: UsedFiles
+  nameWithType: QuotaStatusEntry.UsedFiles
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.UsedFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsedFiles
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 400
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? UsedFiles { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property UsedFiles As Long?
+  overload: Meridian.Storage.Services.QuotaStatusEntry.UsedFiles*
+- uid: Meridian.Storage.Services.QuotaStatusEntry.MaxFiles
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.MaxFiles
+  id: MaxFiles
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: MaxFiles
+  nameWithType: QuotaStatusEntry.MaxFiles
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.MaxFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxFiles
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? MaxFiles { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MaxFiles As Long?
+  overload: Meridian.Storage.Services.QuotaStatusEntry.MaxFiles*
+- uid: Meridian.Storage.Services.QuotaStatusEntry.Policy
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.Policy
+  id: Policy
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: Policy
+  nameWithType: QuotaStatusEntry.Policy
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.Policy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Policy
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public QuotaEnforcementPolicy Policy { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.QuotaEnforcementPolicy
+    content.vb: Public Property Policy As QuotaEnforcementPolicy
+  overload: Meridian.Storage.Services.QuotaStatusEntry.Policy*
+- uid: Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage
+  commentId: P:Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage
+  id: UsagePercentage
+  parent: Meridian.Storage.Services.QuotaStatusEntry
+  langs:
+  - csharp
+  - vb
+  name: UsagePercentage
+  nameWithType: QuotaStatusEntry.UsagePercentage
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsagePercentage
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double UsagePercentage { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property UsagePercentage As Double
+  overload: Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.QuotaStatusEntry}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.QuotaStatusEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QuotaStatusEntry>
+  nameWithType: IEquatable<QuotaStatusEntry>
+  fullName: System.IEquatable<Meridian.Storage.Services.QuotaStatusEntry>
+  nameWithType.vb: IEquatable(Of QuotaStatusEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.QuotaStatusEntry)
+  name.vb: IEquatable(Of QuotaStatusEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.QuotaStatusEntry
+    name: QuotaStatusEntry
+    href: Meridian.Storage.Services.QuotaStatusEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QuotaStatusEntry
+    name: QuotaStatusEntry
+    href: Meridian.Storage.Services.QuotaStatusEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.QuotaStatusEntry.#ctor*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.#ctor
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry__ctor_System_String_System_String_System_Int64_System_Int64_System_Nullable_System_Int64__System_Nullable_System_Int64__Meridian_Storage_QuotaEnforcementPolicy_
+  name: QuotaStatusEntry
+  nameWithType: QuotaStatusEntry.QuotaStatusEntry
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.QuotaStatusEntry
+  nameWithType.vb: QuotaStatusEntry.New
+  fullName.vb: Meridian.Storage.Services.QuotaStatusEntry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Storage.QuotaEnforcementPolicy
+  commentId: T:Meridian.Storage.QuotaEnforcementPolicy
+  parent: Meridian.Storage
+  href: Meridian.Storage.QuotaEnforcementPolicy.html
+  name: QuotaEnforcementPolicy
+  nameWithType: QuotaEnforcementPolicy
+  fullName: Meridian.Storage.QuotaEnforcementPolicy
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.Services.QuotaStatusEntry.QuotaId*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.QuotaId
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_QuotaId
+  name: QuotaId
+  nameWithType: QuotaStatusEntry.QuotaId
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.QuotaId
+- uid: Meridian.Storage.Services.QuotaStatusEntry.DisplayName*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.DisplayName
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_DisplayName
+  name: DisplayName
+  nameWithType: QuotaStatusEntry.DisplayName
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.DisplayName
+- uid: Meridian.Storage.Services.QuotaStatusEntry.UsedBytes*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.UsedBytes
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_UsedBytes
+  name: UsedBytes
+  nameWithType: QuotaStatusEntry.UsedBytes
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.UsedBytes
+- uid: Meridian.Storage.Services.QuotaStatusEntry.MaxBytes*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.MaxBytes
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_MaxBytes
+  name: MaxBytes
+  nameWithType: QuotaStatusEntry.MaxBytes
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.MaxBytes
+- uid: Meridian.Storage.Services.QuotaStatusEntry.UsedFiles*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.UsedFiles
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_UsedFiles
+  name: UsedFiles
+  nameWithType: QuotaStatusEntry.UsedFiles
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.UsedFiles
+- uid: Meridian.Storage.Services.QuotaStatusEntry.MaxFiles*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.MaxFiles
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_MaxFiles
+  name: MaxFiles
+  nameWithType: QuotaStatusEntry.MaxFiles
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.MaxFiles
+- uid: Meridian.Storage.Services.QuotaStatusEntry.Policy*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.Policy
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_Policy
+  name: Policy
+  nameWithType: QuotaStatusEntry.Policy
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.Policy
+- uid: Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage*
+  commentId: Overload:Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage
+  href: Meridian.Storage.Services.QuotaStatusEntry.html#Meridian_Storage_Services_QuotaStatusEntry_UsagePercentage
+  name: UsagePercentage
+  nameWithType: QuotaStatusEntry.UsagePercentage
+  fullName: Meridian.Storage.Services.QuotaStatusEntry.UsagePercentage
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

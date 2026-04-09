@@ -1,0 +1,804 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.IDataQualityService
+  commentId: T:Meridian.Storage.Services.IDataQualityService
+  id: IDataQualityService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync(System.String,System.DateTimeOffset,Meridian.Storage.Services.ConsolidationOptions,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IDataQualityService.GenerateReportAsync(Meridian.Storage.Services.QualityReportOptions,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IDataQualityService.GetTrendAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IDataQualityService.RankSourcesAsync(System.String,System.DateTimeOffset,Meridian.Contracts.Domain.Enums.MarketEventType,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IDataQualityService.ScoreAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IDataQualityService
+  nameWithType: IDataQualityService
+  fullName: Meridian.Storage.Services.IDataQualityService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDataQualityService
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 580
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Interface for data quality service.
+  example: []
+  syntax:
+    content: public interface IDataQualityService
+    content.vb: Public Interface IDataQualityService
+  derivedClasses:
+  - Meridian.Storage.Services.DataQualityService
+- uid: Meridian.Storage.Services.IDataQualityService.ScoreAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityService.ScoreAsync(System.String,System.Threading.CancellationToken)
+  id: ScoreAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityService
+  langs:
+  - csharp
+  - vb
+  name: ScoreAsync(string, CancellationToken)
+  nameWithType: IDataQualityService.ScoreAsync(string, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityService.ScoreAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScoreAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 582
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<DataQualityScore> ScoreAsync(string path, CancellationToken ct = default)
+    parameters:
+    - id: path
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScore}
+    content.vb: Function ScoreAsync(path As String, ct As CancellationToken = Nothing) As Task(Of DataQualityScore)
+  overload: Meridian.Storage.Services.IDataQualityService.ScoreAsync*
+  nameWithType.vb: IDataQualityService.ScoreAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IDataQualityService.ScoreAsync(String, System.Threading.CancellationToken)
+  name.vb: ScoreAsync(String, CancellationToken)
+- uid: Meridian.Storage.Services.IDataQualityService.GenerateReportAsync(Meridian.Storage.Services.QualityReportOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityService.GenerateReportAsync(Meridian.Storage.Services.QualityReportOptions,System.Threading.CancellationToken)
+  id: GenerateReportAsync(Meridian.Storage.Services.QualityReportOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityService
+  langs:
+  - csharp
+  - vb
+  name: GenerateReportAsync(QualityReportOptions, CancellationToken)
+  nameWithType: IDataQualityService.GenerateReportAsync(QualityReportOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityService.GenerateReportAsync(Meridian.Storage.Services.QualityReportOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateReportAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 583
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<DataQualityReport> GenerateReportAsync(QualityReportOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Storage.Services.QualityReportOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityReport}
+    content.vb: Function GenerateReportAsync(options As QualityReportOptions, ct As CancellationToken = Nothing) As Task(Of DataQualityReport)
+  overload: Meridian.Storage.Services.IDataQualityService.GenerateReportAsync*
+- uid: Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  id: GetHistoricalScoresAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityService
+  langs:
+  - csharp
+  - vb
+  name: GetHistoricalScoresAsync(string, TimeSpan, CancellationToken)
+  nameWithType: IDataQualityService.GetHistoricalScoresAsync(string, TimeSpan, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync(string, System.TimeSpan, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistoricalScoresAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 584
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<DataQualityScore[]> GetHistoricalScoresAsync(string path, TimeSpan window, CancellationToken ct = default)
+    parameters:
+    - id: path
+      type: System.String
+    - id: window
+      type: System.TimeSpan
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScore[]}
+    content.vb: Function GetHistoricalScoresAsync(path As String, window As TimeSpan, ct As CancellationToken = Nothing) As Task(Of DataQualityScore())
+  overload: Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync*
+  nameWithType.vb: IDataQualityService.GetHistoricalScoresAsync(String, TimeSpan, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync(String, System.TimeSpan, System.Threading.CancellationToken)
+  name.vb: GetHistoricalScoresAsync(String, TimeSpan, CancellationToken)
+- uid: Meridian.Storage.Services.IDataQualityService.RankSourcesAsync(System.String,System.DateTimeOffset,Meridian.Contracts.Domain.Enums.MarketEventType,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityService.RankSourcesAsync(System.String,System.DateTimeOffset,Meridian.Contracts.Domain.Enums.MarketEventType,System.Threading.CancellationToken)
+  id: RankSourcesAsync(System.String,System.DateTimeOffset,Meridian.Contracts.Domain.Enums.MarketEventType,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityService
+  langs:
+  - csharp
+  - vb
+  name: RankSourcesAsync(string, DateTimeOffset, MarketEventType, CancellationToken)
+  nameWithType: IDataQualityService.RankSourcesAsync(string, DateTimeOffset, MarketEventType, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityService.RankSourcesAsync(string, System.DateTimeOffset, Meridian.Contracts.Domain.Enums.MarketEventType, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RankSourcesAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 585
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<SourceRanking[]> RankSourcesAsync(string symbol, DateTimeOffset date, MarketEventType type, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateTimeOffset
+    - id: type
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.SourceRanking[]}
+    content.vb: Function RankSourcesAsync(symbol As String, [date] As DateTimeOffset, type As MarketEventType, ct As CancellationToken = Nothing) As Task(Of SourceRanking())
+  overload: Meridian.Storage.Services.IDataQualityService.RankSourcesAsync*
+  nameWithType.vb: IDataQualityService.RankSourcesAsync(String, DateTimeOffset, MarketEventType, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IDataQualityService.RankSourcesAsync(String, System.DateTimeOffset, Meridian.Contracts.Domain.Enums.MarketEventType, System.Threading.CancellationToken)
+  name.vb: RankSourcesAsync(String, DateTimeOffset, MarketEventType, CancellationToken)
+- uid: Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync(System.String,System.DateTimeOffset,Meridian.Storage.Services.ConsolidationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync(System.String,System.DateTimeOffset,Meridian.Storage.Services.ConsolidationOptions,System.Threading.CancellationToken)
+  id: CreateGoldenRecordAsync(System.String,System.DateTimeOffset,Meridian.Storage.Services.ConsolidationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityService
+  langs:
+  - csharp
+  - vb
+  name: CreateGoldenRecordAsync(string, DateTimeOffset, ConsolidationOptions, CancellationToken)
+  nameWithType: IDataQualityService.CreateGoldenRecordAsync(string, DateTimeOffset, ConsolidationOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync(string, System.DateTimeOffset, Meridian.Storage.Services.ConsolidationOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateGoldenRecordAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 586
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<ConsolidatedDataset> CreateGoldenRecordAsync(string symbol, DateTimeOffset date, ConsolidationOptions options, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateTimeOffset
+    - id: options
+      type: Meridian.Storage.Services.ConsolidationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.ConsolidatedDataset}
+    content.vb: Function CreateGoldenRecordAsync(symbol As String, [date] As DateTimeOffset, options As ConsolidationOptions, ct As CancellationToken = Nothing) As Task(Of ConsolidatedDataset)
+  overload: Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync*
+  nameWithType.vb: IDataQualityService.CreateGoldenRecordAsync(String, DateTimeOffset, ConsolidationOptions, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync(String, System.DateTimeOffset, Meridian.Storage.Services.ConsolidationOptions, System.Threading.CancellationToken)
+  name.vb: CreateGoldenRecordAsync(String, DateTimeOffset, ConsolidationOptions, CancellationToken)
+- uid: Meridian.Storage.Services.IDataQualityService.GetTrendAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityService.GetTrendAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  id: GetTrendAsync(System.String,System.TimeSpan,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityService
+  langs:
+  - csharp
+  - vb
+  name: GetTrendAsync(string, TimeSpan, CancellationToken)
+  nameWithType: IDataQualityService.GetTrendAsync(string, TimeSpan, CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityService.GetTrendAsync(string, System.TimeSpan, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTrendAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 587
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<QualityTrend> GetTrendAsync(string symbol, TimeSpan window, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: window
+      type: System.TimeSpan
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.QualityTrend}
+    content.vb: Function GetTrendAsync(symbol As String, window As TimeSpan, ct As CancellationToken = Nothing) As Task(Of QualityTrend)
+  overload: Meridian.Storage.Services.IDataQualityService.GetTrendAsync*
+  nameWithType.vb: IDataQualityService.GetTrendAsync(String, TimeSpan, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.IDataQualityService.GetTrendAsync(String, System.TimeSpan, System.Threading.CancellationToken)
+  name.vb: GetTrendAsync(String, TimeSpan, CancellationToken)
+- uid: Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync(System.Threading.CancellationToken)
+  id: GetQualityAlertsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IDataQualityService
+  langs:
+  - csharp
+  - vb
+  name: GetQualityAlertsAsync(CancellationToken)
+  nameWithType: IDataQualityService.GetQualityAlertsAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetQualityAlertsAsync
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 588
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<QualityAlert[]> GetQualityAlertsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.QualityAlert[]}
+    content.vb: Function GetQualityAlertsAsync(ct As CancellationToken = Nothing) As Task(Of QualityAlert())
+  overload: Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.IDataQualityService.ScoreAsync*
+  commentId: Overload:Meridian.Storage.Services.IDataQualityService.ScoreAsync
+  href: Meridian.Storage.Services.IDataQualityService.html#Meridian_Storage_Services_IDataQualityService_ScoreAsync_System_String_System_Threading_CancellationToken_
+  name: ScoreAsync
+  nameWithType: IDataQualityService.ScoreAsync
+  fullName: Meridian.Storage.Services.IDataQualityService.ScoreAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScore}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScore}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataQualityScore>
+  nameWithType: Task<DataQualityScore>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.DataQualityScore>
+  nameWithType.vb: Task(Of DataQualityScore)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.DataQualityScore)
+  name.vb: Task(Of DataQualityScore)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataQualityScore
+    name: DataQualityScore
+    href: Meridian.Storage.Services.DataQualityScore.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataQualityScore
+    name: DataQualityScore
+    href: Meridian.Storage.Services.DataQualityScore.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.IDataQualityService.GenerateReportAsync*
+  commentId: Overload:Meridian.Storage.Services.IDataQualityService.GenerateReportAsync
+  href: Meridian.Storage.Services.IDataQualityService.html#Meridian_Storage_Services_IDataQualityService_GenerateReportAsync_Meridian_Storage_Services_QualityReportOptions_System_Threading_CancellationToken_
+  name: GenerateReportAsync
+  nameWithType: IDataQualityService.GenerateReportAsync
+  fullName: Meridian.Storage.Services.IDataQualityService.GenerateReportAsync
+- uid: Meridian.Storage.Services.QualityReportOptions
+  commentId: T:Meridian.Storage.Services.QualityReportOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.QualityReportOptions.html
+  name: QualityReportOptions
+  nameWithType: QualityReportOptions
+  fullName: Meridian.Storage.Services.QualityReportOptions
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataQualityReport>
+  nameWithType: Task<DataQualityReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.DataQualityReport>
+  nameWithType.vb: Task(Of DataQualityReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.DataQualityReport)
+  name.vb: Task(Of DataQualityReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataQualityReport
+    name: DataQualityReport
+    href: Meridian.Storage.Services.DataQualityReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataQualityReport
+    name: DataQualityReport
+    href: Meridian.Storage.Services.DataQualityReport.html
+  - name: )
+- uid: Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync*
+  commentId: Overload:Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync
+  href: Meridian.Storage.Services.IDataQualityService.html#Meridian_Storage_Services_IDataQualityService_GetHistoricalScoresAsync_System_String_System_TimeSpan_System_Threading_CancellationToken_
+  name: GetHistoricalScoresAsync
+  nameWithType: IDataQualityService.GetHistoricalScoresAsync
+  fullName: Meridian.Storage.Services.IDataQualityService.GetHistoricalScoresAsync
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScore[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.DataQualityScore[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataQualityScore[]>
+  nameWithType: Task<DataQualityScore[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.DataQualityScore[]>
+  nameWithType.vb: Task(Of DataQualityScore())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.DataQualityScore())
+  name.vb: Task(Of DataQualityScore())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.DataQualityScore
+    name: DataQualityScore
+    href: Meridian.Storage.Services.DataQualityScore.html
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DataQualityScore
+    name: DataQualityScore
+    href: Meridian.Storage.Services.DataQualityScore.html
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Storage.Services.IDataQualityService.RankSourcesAsync*
+  commentId: Overload:Meridian.Storage.Services.IDataQualityService.RankSourcesAsync
+  href: Meridian.Storage.Services.IDataQualityService.html#Meridian_Storage_Services_IDataQualityService_RankSourcesAsync_System_String_System_DateTimeOffset_Meridian_Contracts_Domain_Enums_MarketEventType_System_Threading_CancellationToken_
+  name: RankSourcesAsync
+  nameWithType: IDataQualityService.RankSourcesAsync
+  fullName: Meridian.Storage.Services.IDataQualityService.RankSourcesAsync
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  name: MarketEventType
+  nameWithType: MarketEventType
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.SourceRanking[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.SourceRanking[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SourceRanking[]>
+  nameWithType: Task<SourceRanking[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.SourceRanking[]>
+  nameWithType.vb: Task(Of SourceRanking())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.SourceRanking())
+  name.vb: Task(Of SourceRanking())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.SourceRanking
+    name: SourceRanking
+    href: Meridian.Storage.Services.SourceRanking.html
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.SourceRanking
+    name: SourceRanking
+    href: Meridian.Storage.Services.SourceRanking.html
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync*
+  commentId: Overload:Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync
+  href: Meridian.Storage.Services.IDataQualityService.html#Meridian_Storage_Services_IDataQualityService_CreateGoldenRecordAsync_System_String_System_DateTimeOffset_Meridian_Storage_Services_ConsolidationOptions_System_Threading_CancellationToken_
+  name: CreateGoldenRecordAsync
+  nameWithType: IDataQualityService.CreateGoldenRecordAsync
+  fullName: Meridian.Storage.Services.IDataQualityService.CreateGoldenRecordAsync
+- uid: Meridian.Storage.Services.ConsolidationOptions
+  commentId: T:Meridian.Storage.Services.ConsolidationOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.ConsolidationOptions.html
+  name: ConsolidationOptions
+  nameWithType: ConsolidationOptions
+  fullName: Meridian.Storage.Services.ConsolidationOptions
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.ConsolidatedDataset}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.ConsolidatedDataset}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ConsolidatedDataset>
+  nameWithType: Task<ConsolidatedDataset>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.ConsolidatedDataset>
+  nameWithType.vb: Task(Of ConsolidatedDataset)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.ConsolidatedDataset)
+  name.vb: Task(Of ConsolidatedDataset)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.ConsolidatedDataset
+    name: ConsolidatedDataset
+    href: Meridian.Storage.Services.ConsolidatedDataset.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.ConsolidatedDataset
+    name: ConsolidatedDataset
+    href: Meridian.Storage.Services.ConsolidatedDataset.html
+  - name: )
+- uid: Meridian.Storage.Services.IDataQualityService.GetTrendAsync*
+  commentId: Overload:Meridian.Storage.Services.IDataQualityService.GetTrendAsync
+  href: Meridian.Storage.Services.IDataQualityService.html#Meridian_Storage_Services_IDataQualityService_GetTrendAsync_System_String_System_TimeSpan_System_Threading_CancellationToken_
+  name: GetTrendAsync
+  nameWithType: IDataQualityService.GetTrendAsync
+  fullName: Meridian.Storage.Services.IDataQualityService.GetTrendAsync
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.QualityTrend}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.QualityTrend}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityTrend>
+  nameWithType: Task<QualityTrend>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.QualityTrend>
+  nameWithType.vb: Task(Of QualityTrend)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.QualityTrend)
+  name.vb: Task(Of QualityTrend)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.QualityTrend
+    name: QualityTrend
+    href: Meridian.Storage.Services.QualityTrend.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QualityTrend
+    name: QualityTrend
+    href: Meridian.Storage.Services.QualityTrend.html
+  - name: )
+- uid: Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync*
+  commentId: Overload:Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync
+  href: Meridian.Storage.Services.IDataQualityService.html#Meridian_Storage_Services_IDataQualityService_GetQualityAlertsAsync_System_Threading_CancellationToken_
+  name: GetQualityAlertsAsync
+  nameWithType: IDataQualityService.GetQualityAlertsAsync
+  fullName: Meridian.Storage.Services.IDataQualityService.GetQualityAlertsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.QualityAlert[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.QualityAlert[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityAlert[]>
+  nameWithType: Task<QualityAlert[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.QualityAlert[]>
+  nameWithType.vb: Task(Of QualityAlert())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.QualityAlert())
+  name.vb: Task(Of QualityAlert())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.QualityAlert
+    name: QualityAlert
+    href: Meridian.Storage.Services.QualityAlert.html
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QualityAlert
+    name: QualityAlert
+    href: Meridian.Storage.Services.QualityAlert.html
+  - name: (
+  - name: )
+  - name: )

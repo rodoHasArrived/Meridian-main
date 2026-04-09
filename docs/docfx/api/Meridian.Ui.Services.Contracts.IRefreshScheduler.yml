@@ -1,0 +1,320 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler
+  commentId: T:Meridian.Ui.Services.Contracts.IRefreshScheduler
+  id: IRefreshScheduler
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+  langs:
+  - csharp
+  - vb
+  name: IRefreshScheduler
+  nameWithType: IRefreshScheduler
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IRefreshScheduler
+    path: ../../src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Schedules recurring asynchronous refresh work behind a platform-neutral abstraction.
+
+    Consumers can keep refresh orchestration testable without depending on UI timers.
+  example: []
+  syntax:
+    content: 'public interface IRefreshScheduler : IDisposable'
+    content.vb: Public Interface IRefreshScheduler Inherits IDisposable
+  derivedClasses:
+  - Meridian.Ui.Services.Services.PeriodicRefreshScheduler
+  inheritedMembers:
+  - System.IDisposable.Dispose
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  id: Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IRefreshScheduler
+  langs:
+  - csharp
+  - vb
+  name: Start(TimeSpan, Func<CancellationToken, Task>, CancellationToken)
+  nameWithType: IRefreshScheduler.Start(TimeSpan, Func<CancellationToken, Task>, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Starts recurring execution of the supplied callback.
+
+    Replaces any previously scheduled callback owned by this scheduler instance.
+  example: []
+  syntax:
+    content: void Start(TimeSpan interval, Func<CancellationToken, Task> callback, CancellationToken cancellationToken = default)
+    parameters:
+    - id: interval
+      type: System.TimeSpan
+    - id: callback
+      type: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    content.vb: Sub Start(interval As TimeSpan, callback As Func(Of CancellationToken, Task), cancellationToken As CancellationToken = Nothing)
+  overload: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start*
+  nameWithType.vb: IRefreshScheduler.Start(TimeSpan, Func(Of CancellationToken, Task), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan, System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task), System.Threading.CancellationToken)
+  name.vb: Start(TimeSpan, Func(Of CancellationToken, Task), CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+  commentId: M:Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+  id: Stop
+  parent: Meridian.Ui.Services.Contracts.IRefreshScheduler
+  langs:
+  - csharp
+  - vb
+  name: Stop()
+  nameWithType: IRefreshScheduler.Stop()
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stop
+    path: ../../src/Meridian.Ui.Services/Contracts/IRefreshScheduler.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Stops the active recurring callback, if any.
+  example: []
+  syntax:
+    content: void Stop()
+    content.vb: Sub [Stop]()
+  overload: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IRefreshScheduler.Start
+  href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Start_System_TimeSpan_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  name: Start
+  nameWithType: IRefreshScheduler.Start
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  commentId: T:System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<CancellationToken, Task>
+  nameWithType: Func<CancellationToken, Task>
+  fullName: System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of CancellationToken, Task)
+  fullName.vb: System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task)
+  name.vb: Func(Of CancellationToken, Task)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+  href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Stop
+  name: Stop
+  nameWithType: IRefreshScheduler.Stop
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop

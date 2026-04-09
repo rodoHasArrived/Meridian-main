@@ -1,0 +1,754 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.ExportPresetFilters
+  commentId: T:Meridian.Contracts.Export.ExportPresetFilters
+  id: ExportPresetFilters
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate
+  - Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate
+  - Meridian.Contracts.Export.ExportPresetFilters.DateRangeType
+  - Meridian.Contracts.Export.ExportPresetFilters.EventTypes
+  - Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore
+  - Meridian.Contracts.Export.ExportPresetFilters.SessionFilter
+  - Meridian.Contracts.Export.ExportPresetFilters.Symbols
+  langs:
+  - csharp
+  - vb
+  name: ExportPresetFilters
+  nameWithType: ExportPresetFilters
+  fullName: Meridian.Contracts.Export.ExportPresetFilters
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportPresetFilters
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Filter settings for export presets.
+  example: []
+  syntax:
+    content: public sealed class ExportPresetFilters
+    content.vb: Public NotInheritable Class ExportPresetFilters
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Export.ExportPresetFilters.EventTypes
+  commentId: P:Meridian.Contracts.Export.ExportPresetFilters.EventTypes
+  id: EventTypes
+  parent: Meridian.Contracts.Export.ExportPresetFilters
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: ExportPresetFilters.EventTypes
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Event types to include (Trade, BboQuote, LOBSnapshot, HistoricalBar).
+
+    Empty array means all event types.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventTypes")]
+
+      public string[] EventTypes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("eventTypes")>
+
+      Public Property EventTypes As String()
+  overload: Meridian.Contracts.Export.ExportPresetFilters.EventTypes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventTypes
+- uid: Meridian.Contracts.Export.ExportPresetFilters.Symbols
+  commentId: P:Meridian.Contracts.Export.ExportPresetFilters.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Export.ExportPresetFilters
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: ExportPresetFilters.Symbols
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Symbols to include.
+
+    Empty array means all symbols.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbols")]
+
+      public string[] Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("symbols")>
+
+      Public Property Symbols As String()
+  overload: Meridian.Contracts.Export.ExportPresetFilters.Symbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbols
+- uid: Meridian.Contracts.Export.ExportPresetFilters.DateRangeType
+  commentId: P:Meridian.Contracts.Export.ExportPresetFilters.DateRangeType
+  id: DateRangeType
+  parent: Meridian.Contracts.Export.ExportPresetFilters
+  langs:
+  - csharp
+  - vb
+  name: DateRangeType
+  nameWithType: ExportPresetFilters.DateRangeType
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.DateRangeType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRangeType
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Date range type for export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("dateRangeType")]
+
+      public DateRangeType DateRangeType { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Export.DateRangeType
+    content.vb: >-
+      <JsonPropertyName("dateRangeType")>
+
+      Public Property DateRangeType As DateRangeType
+  overload: Meridian.Contracts.Export.ExportPresetFilters.DateRangeType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dateRangeType
+- uid: Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate
+  commentId: P:Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate
+  id: CustomStartDate
+  parent: Meridian.Contracts.Export.ExportPresetFilters
+  langs:
+  - csharp
+  - vb
+  name: CustomStartDate
+  nameWithType: ExportPresetFilters.CustomStartDate
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustomStartDate
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Custom start date (used when DateRangeType is Custom).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("customStartDate")]
+
+      public DateTime? CustomStartDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("customStartDate")>
+
+      Public Property CustomStartDate As Date?
+  overload: Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: customStartDate
+- uid: Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate
+  commentId: P:Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate
+  id: CustomEndDate
+  parent: Meridian.Contracts.Export.ExportPresetFilters
+  langs:
+  - csharp
+  - vb
+  name: CustomEndDate
+  nameWithType: ExportPresetFilters.CustomEndDate
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustomEndDate
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Custom end date (used when DateRangeType is Custom).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("customEndDate")]
+
+      public DateTime? CustomEndDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("customEndDate")>
+
+      Public Property CustomEndDate As Date?
+  overload: Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: customEndDate
+- uid: Meridian.Contracts.Export.ExportPresetFilters.SessionFilter
+  commentId: P:Meridian.Contracts.Export.ExportPresetFilters.SessionFilter
+  id: SessionFilter
+  parent: Meridian.Contracts.Export.ExportPresetFilters
+  langs:
+  - csharp
+  - vb
+  name: SessionFilter
+  nameWithType: ExportPresetFilters.SessionFilter
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.SessionFilter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionFilter
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Session filter (All, RegularHours, PreMarket, AfterHours, ExtendedHours).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sessionFilter")]
+
+      public string SessionFilter { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("sessionFilter")>
+
+      Public Property SessionFilter As String
+  overload: Meridian.Contracts.Export.ExportPresetFilters.SessionFilter*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sessionFilter
+- uid: Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore
+  commentId: P:Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore
+  id: MinQualityScore
+  parent: Meridian.Contracts.Export.ExportPresetFilters
+  langs:
+  - csharp
+  - vb
+  name: MinQualityScore
+  nameWithType: ExportPresetFilters.MinQualityScore
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinQualityScore
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Minimum quality score (0-1). Exclude data below this threshold.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("minQualityScore")]
+
+      public double? MinQualityScore { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: >-
+      <JsonPropertyName("minQualityScore")>
+
+      Public Property MinQualityScore As Double?
+  overload: Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: minQualityScore
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Export.ExportPresetFilters.EventTypes*
+  commentId: Overload:Meridian.Contracts.Export.ExportPresetFilters.EventTypes
+  href: Meridian.Contracts.Export.ExportPresetFilters.html#Meridian_Contracts_Export_ExportPresetFilters_EventTypes
+  name: EventTypes
+  nameWithType: ExportPresetFilters.EventTypes
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.EventTypes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Export.ExportPresetFilters.Symbols*
+  commentId: Overload:Meridian.Contracts.Export.ExportPresetFilters.Symbols
+  href: Meridian.Contracts.Export.ExportPresetFilters.html#Meridian_Contracts_Export_ExportPresetFilters_Symbols
+  name: Symbols
+  nameWithType: ExportPresetFilters.Symbols
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.Symbols
+- uid: Meridian.Contracts.Export.ExportPresetFilters.DateRangeType*
+  commentId: Overload:Meridian.Contracts.Export.ExportPresetFilters.DateRangeType
+  href: Meridian.Contracts.Export.ExportPresetFilters.html#Meridian_Contracts_Export_ExportPresetFilters_DateRangeType
+  name: DateRangeType
+  nameWithType: ExportPresetFilters.DateRangeType
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.DateRangeType
+- uid: Meridian.Contracts.Export.DateRangeType
+  commentId: T:Meridian.Contracts.Export.DateRangeType
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.DateRangeType.html
+  name: DateRangeType
+  nameWithType: DateRangeType
+  fullName: Meridian.Contracts.Export.DateRangeType
+- uid: Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate*
+  commentId: Overload:Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate
+  href: Meridian.Contracts.Export.ExportPresetFilters.html#Meridian_Contracts_Export_ExportPresetFilters_CustomStartDate
+  name: CustomStartDate
+  nameWithType: ExportPresetFilters.CustomStartDate
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.CustomStartDate
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate*
+  commentId: Overload:Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate
+  href: Meridian.Contracts.Export.ExportPresetFilters.html#Meridian_Contracts_Export_ExportPresetFilters_CustomEndDate
+  name: CustomEndDate
+  nameWithType: ExportPresetFilters.CustomEndDate
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.CustomEndDate
+- uid: Meridian.Contracts.Export.ExportPresetFilters.SessionFilter*
+  commentId: Overload:Meridian.Contracts.Export.ExportPresetFilters.SessionFilter
+  href: Meridian.Contracts.Export.ExportPresetFilters.html#Meridian_Contracts_Export_ExportPresetFilters_SessionFilter
+  name: SessionFilter
+  nameWithType: ExportPresetFilters.SessionFilter
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.SessionFilter
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore*
+  commentId: Overload:Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore
+  href: Meridian.Contracts.Export.ExportPresetFilters.html#Meridian_Contracts_Export_ExportPresetFilters_MinQualityScore
+  name: MinQualityScore
+  nameWithType: ExportPresetFilters.MinQualityScore
+  fullName: Meridian.Contracts.Export.ExportPresetFilters.MinQualityScore
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'

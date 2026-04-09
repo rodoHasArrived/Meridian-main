@@ -1,0 +1,599 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.FieldError
+  commentId: T:Meridian.Contracts.Api.FieldError
+  id: FieldError
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.FieldError.#ctor(System.String,System.String,System.String,System.Object)
+  - Meridian.Contracts.Api.FieldError.AttemptedValue
+  - Meridian.Contracts.Api.FieldError.Code
+  - Meridian.Contracts.Api.FieldError.Field
+  - Meridian.Contracts.Api.FieldError.Message
+  langs:
+  - csharp
+  - vb
+  name: FieldError
+  nameWithType: FieldError
+  fullName: Meridian.Contracts.Api.FieldError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FieldError
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Represents a field-level validation error.
+  example: []
+  syntax:
+    content: 'public sealed record FieldError : IEquatable<FieldError>'
+    content.vb: Public NotInheritable Class FieldError Implements IEquatable(Of FieldError)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.FieldError}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.FieldError.#ctor(System.String,System.String,System.String,System.Object)
+  commentId: M:Meridian.Contracts.Api.FieldError.#ctor(System.String,System.String,System.String,System.Object)
+  id: '#ctor(System.String,System.String,System.String,System.Object)'
+  parent: Meridian.Contracts.Api.FieldError
+  langs:
+  - csharp
+  - vb
+  name: FieldError(string, string, string?, object?)
+  nameWithType: FieldError.FieldError(string, string, string?, object?)
+  fullName: Meridian.Contracts.Api.FieldError.FieldError(string, string, string?, object?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Represents a field-level validation error.
+  example: []
+  syntax:
+    content: public FieldError(string Field, string Message, string? Code = null, object? AttemptedValue = null)
+    parameters:
+    - id: Field
+      type: System.String
+    - id: Message
+      type: System.String
+    - id: Code
+      type: System.String
+    - id: AttemptedValue
+      type: System.Object
+    content.vb: Public Sub New(Field As String, Message As String, Code As String = Nothing, AttemptedValue As Object = Nothing)
+  overload: Meridian.Contracts.Api.FieldError.#ctor*
+  nameWithType.vb: FieldError.New(String, String, String, Object)
+  fullName.vb: Meridian.Contracts.Api.FieldError.New(String, String, String, Object)
+  name.vb: New(String, String, String, Object)
+- uid: Meridian.Contracts.Api.FieldError.Field
+  commentId: P:Meridian.Contracts.Api.FieldError.Field
+  id: Field
+  parent: Meridian.Contracts.Api.FieldError
+  langs:
+  - csharp
+  - vb
+  name: Field
+  nameWithType: FieldError.Field
+  fullName: Meridian.Contracts.Api.FieldError.Field
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Field
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 267
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("field")]
+
+      public string Field { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("field")>
+
+      Public Property Field As String
+  overload: Meridian.Contracts.Api.FieldError.Field*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: field
+- uid: Meridian.Contracts.Api.FieldError.Message
+  commentId: P:Meridian.Contracts.Api.FieldError.Message
+  id: Message
+  parent: Meridian.Contracts.Api.FieldError
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: FieldError.Message
+  fullName: Meridian.Contracts.Api.FieldError.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 268
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("message")]
+
+      public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("message")>
+
+      Public Property Message As String
+  overload: Meridian.Contracts.Api.FieldError.Message*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: message
+- uid: Meridian.Contracts.Api.FieldError.Code
+  commentId: P:Meridian.Contracts.Api.FieldError.Code
+  id: Code
+  parent: Meridian.Contracts.Api.FieldError
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: FieldError.Code
+  fullName: Meridian.Contracts.Api.FieldError.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 269
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("code")]
+
+      public string? Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("code")>
+
+      Public Property Code As String
+  overload: Meridian.Contracts.Api.FieldError.Code*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: code
+- uid: Meridian.Contracts.Api.FieldError.AttemptedValue
+  commentId: P:Meridian.Contracts.Api.FieldError.AttemptedValue
+  id: AttemptedValue
+  parent: Meridian.Contracts.Api.FieldError
+  langs:
+  - csharp
+  - vb
+  name: AttemptedValue
+  nameWithType: FieldError.AttemptedValue
+  fullName: Meridian.Contracts.Api.FieldError.AttemptedValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ErrorResponse.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AttemptedValue
+    path: ../../src/Meridian.Contracts/Api/ErrorResponse.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("attemptedValue")]
+
+      public object? AttemptedValue { get; init; }
+    parameters: []
+    return:
+      type: System.Object
+    content.vb: >-
+      <JsonPropertyName("attemptedValue")>
+
+      Public Property AttemptedValue As Object
+  overload: Meridian.Contracts.Api.FieldError.AttemptedValue*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: attemptedValue
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.FieldError}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.FieldError}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FieldError>
+  nameWithType: IEquatable<FieldError>
+  fullName: System.IEquatable<Meridian.Contracts.Api.FieldError>
+  nameWithType.vb: IEquatable(Of FieldError)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.FieldError)
+  name.vb: IEquatable(Of FieldError)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.FieldError
+    name: FieldError
+    href: Meridian.Contracts.Api.FieldError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.FieldError
+    name: FieldError
+    href: Meridian.Contracts.Api.FieldError.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.FieldError.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.FieldError.#ctor
+  href: Meridian.Contracts.Api.FieldError.html#Meridian_Contracts_Api_FieldError__ctor_System_String_System_String_System_String_System_Object_
+  name: FieldError
+  nameWithType: FieldError.FieldError
+  fullName: Meridian.Contracts.Api.FieldError.FieldError
+  nameWithType.vb: FieldError.New
+  fullName.vb: Meridian.Contracts.Api.FieldError.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.FieldError.Field*
+  commentId: Overload:Meridian.Contracts.Api.FieldError.Field
+  href: Meridian.Contracts.Api.FieldError.html#Meridian_Contracts_Api_FieldError_Field
+  name: Field
+  nameWithType: FieldError.Field
+  fullName: Meridian.Contracts.Api.FieldError.Field
+- uid: Meridian.Contracts.Api.FieldError.Message*
+  commentId: Overload:Meridian.Contracts.Api.FieldError.Message
+  href: Meridian.Contracts.Api.FieldError.html#Meridian_Contracts_Api_FieldError_Message
+  name: Message
+  nameWithType: FieldError.Message
+  fullName: Meridian.Contracts.Api.FieldError.Message
+- uid: Meridian.Contracts.Api.FieldError.Code*
+  commentId: Overload:Meridian.Contracts.Api.FieldError.Code
+  href: Meridian.Contracts.Api.FieldError.html#Meridian_Contracts_Api_FieldError_Code
+  name: Code
+  nameWithType: FieldError.Code
+  fullName: Meridian.Contracts.Api.FieldError.Code
+- uid: Meridian.Contracts.Api.FieldError.AttemptedValue*
+  commentId: Overload:Meridian.Contracts.Api.FieldError.AttemptedValue
+  href: Meridian.Contracts.Api.FieldError.html#Meridian_Contracts_Api_FieldError_AttemptedValue
+  name: AttemptedValue
+  nameWithType: FieldError.AttemptedValue
+  fullName: Meridian.Contracts.Api.FieldError.AttemptedValue

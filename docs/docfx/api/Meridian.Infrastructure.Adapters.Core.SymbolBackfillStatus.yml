@@ -1,0 +1,211 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  id: SymbolBackfillStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Completed
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Failed
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.InProgress
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Pending
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Skipped
+  langs:
+  - csharp
+  - vb
+  name: SymbolBackfillStatus
+  nameWithType: SymbolBackfillStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolBackfillStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Status of a symbol within a backfill job.
+  example: []
+  syntax:
+    content: 'public enum SymbolBackfillStatus : byte'
+    content.vb: Public Enum SymbolBackfillStatus As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Pending
+  commentId: F:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Pending
+  id: Pending
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: SymbolBackfillStatus.Pending
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.InProgress
+  commentId: F:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.InProgress
+  id: InProgress
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  langs:
+  - csharp
+  - vb
+  name: InProgress
+  nameWithType: SymbolBackfillStatus.InProgress
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.InProgress
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InProgress
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: InProgress = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Completed
+  commentId: F:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Completed
+  id: Completed
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: SymbolBackfillStatus.Completed
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Completed = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Failed
+  commentId: F:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Failed
+  id: Failed
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: SymbolBackfillStatus.Failed
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Failed = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Skipped
+  commentId: F:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Skipped
+  id: Skipped
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  langs:
+  - csharp
+  - vb
+  name: Skipped
+  nameWithType: SymbolBackfillStatus.Skipped
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.Skipped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skipped
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Skipped = 4
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.html
+  name: SymbolBackfillStatus
+  nameWithType: SymbolBackfillStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus

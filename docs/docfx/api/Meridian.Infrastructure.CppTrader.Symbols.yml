@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Symbols
+  commentId: N:Meridian.Infrastructure.CppTrader.Symbols
+  id: Meridian.Infrastructure.CppTrader.Symbols
+  children:
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Symbols
+  nameWithType: Meridian.Infrastructure.CppTrader.Symbols
+  fullName: Meridian.Infrastructure.CppTrader.Symbols
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  commentId: T:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  href: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.html
+  name: CppTraderSymbolMapper
+  nameWithType: CppTraderSymbolMapper
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  commentId: T:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  parent: Meridian.Infrastructure.CppTrader.Symbols
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html
+  name: ICppTraderSymbolMapper
+  nameWithType: ICppTraderSymbolMapper
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+- uid: Meridian.Infrastructure.CppTrader.Symbols
+  commentId: N:Meridian.Infrastructure.CppTrader.Symbols
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Symbols
+  nameWithType: Meridian.Infrastructure.CppTrader.Symbols
+  fullName: Meridian.Infrastructure.CppTrader.Symbols
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Symbols
+    name: Symbols
+    href: Meridian.Infrastructure.CppTrader.Symbols.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Symbols
+    name: Symbols
+    href: Meridian.Infrastructure.CppTrader.Symbols.html

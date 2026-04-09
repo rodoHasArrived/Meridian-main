@@ -1,0 +1,655 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountRules
+  id: FinancialAccountRules
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.FinancialAccountRules.#ctor(System.Boolean,System.Boolean,System.Double,System.Double,System.Double,Meridian.Backtesting.Sdk.LotSelectionMethod)
+  - Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin
+  - Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling
+  - Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate
+  - Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate
+  - Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate
+  - Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountRules
+  nameWithType: FinancialAccountRules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAccountRules
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Account-specific financing and trading rules.
+
+    Brokerage accounts can opt into margin and shorting, while bank accounts typically use
+
+    only the cash-interest portion of the configuration.
+  example: []
+  syntax:
+    content: 'public sealed record FinancialAccountRules : IEquatable<FinancialAccountRules>'
+    content.vb: Public NotInheritable Class FinancialAccountRules Implements IEquatable(Of FinancialAccountRules)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccountRules}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.#ctor(System.Boolean,System.Boolean,System.Double,System.Double,System.Double,Meridian.Backtesting.Sdk.LotSelectionMethod)
+  commentId: M:Meridian.Backtesting.Sdk.FinancialAccountRules.#ctor(System.Boolean,System.Boolean,System.Double,System.Double,System.Double,Meridian.Backtesting.Sdk.LotSelectionMethod)
+  id: '#ctor(System.Boolean,System.Boolean,System.Double,System.Double,System.Double,Meridian.Backtesting.Sdk.LotSelectionMethod)'
+  parent: Meridian.Backtesting.Sdk.FinancialAccountRules
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountRules(bool, bool, double, double, double, LotSelectionMethod)
+  nameWithType: FinancialAccountRules.FinancialAccountRules(bool, bool, double, double, double, LotSelectionMethod)
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.FinancialAccountRules(bool, bool, double, double, double, Meridian.Backtesting.Sdk.LotSelectionMethod)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Account-specific financing and trading rules.
+
+    Brokerage accounts can opt into margin and shorting, while bank accounts typically use
+
+    only the cash-interest portion of the configuration.
+  example: []
+  syntax:
+    content: public FinancialAccountRules(bool AllowMargin = true, bool AllowShortSelling = true, double AnnualMarginRate = 0.05, double AnnualShortRebateRate = 0.02, double AnnualCashInterestRate = 0, LotSelectionMethod LotSelection = LotSelectionMethod.Fifo)
+    parameters:
+    - id: AllowMargin
+      type: System.Boolean
+    - id: AllowShortSelling
+      type: System.Boolean
+    - id: AnnualMarginRate
+      type: System.Double
+    - id: AnnualShortRebateRate
+      type: System.Double
+    - id: AnnualCashInterestRate
+      type: System.Double
+    - id: LotSelection
+      type: Meridian.Backtesting.Sdk.LotSelectionMethod
+    content.vb: Public Sub New(AllowMargin As Boolean = True, AllowShortSelling As Boolean = True, AnnualMarginRate As Double = 0.05, AnnualShortRebateRate As Double = 0.02, AnnualCashInterestRate As Double = 0, LotSelection As LotSelectionMethod = LotSelectionMethod.Fifo)
+  overload: Meridian.Backtesting.Sdk.FinancialAccountRules.#ctor*
+  nameWithType.vb: FinancialAccountRules.New(Boolean, Boolean, Double, Double, Double, LotSelectionMethod)
+  fullName.vb: Meridian.Backtesting.Sdk.FinancialAccountRules.New(Boolean, Boolean, Double, Double, Double, Meridian.Backtesting.Sdk.LotSelectionMethod)
+  name.vb: New(Boolean, Boolean, Double, Double, Double, LotSelectionMethod)
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin
+  id: AllowMargin
+  parent: Meridian.Backtesting.Sdk.FinancialAccountRules
+  langs:
+  - csharp
+  - vb
+  name: AllowMargin
+  nameWithType: FinancialAccountRules.AllowMargin
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllowMargin
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public bool AllowMargin { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AllowMargin As Boolean
+  overload: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling
+  id: AllowShortSelling
+  parent: Meridian.Backtesting.Sdk.FinancialAccountRules
+  langs:
+  - csharp
+  - vb
+  name: AllowShortSelling
+  nameWithType: FinancialAccountRules.AllowShortSelling
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllowShortSelling
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public bool AllowShortSelling { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AllowShortSelling As Boolean
+  overload: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate
+  id: AnnualMarginRate
+  parent: Meridian.Backtesting.Sdk.FinancialAccountRules
+  langs:
+  - csharp
+  - vb
+  name: AnnualMarginRate
+  nameWithType: FinancialAccountRules.AnnualMarginRate
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualMarginRate
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double AnnualMarginRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualMarginRate As Double
+  overload: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate
+  id: AnnualShortRebateRate
+  parent: Meridian.Backtesting.Sdk.FinancialAccountRules
+  langs:
+  - csharp
+  - vb
+  name: AnnualShortRebateRate
+  nameWithType: FinancialAccountRules.AnnualShortRebateRate
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualShortRebateRate
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double AnnualShortRebateRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualShortRebateRate As Double
+  overload: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate
+  id: AnnualCashInterestRate
+  parent: Meridian.Backtesting.Sdk.FinancialAccountRules
+  langs:
+  - csharp
+  - vb
+  name: AnnualCashInterestRate
+  nameWithType: FinancialAccountRules.AnnualCashInterestRate
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualCashInterestRate
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public double AnnualCashInterestRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AnnualCashInterestRate As Double
+  overload: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection
+  id: LotSelection
+  parent: Meridian.Backtesting.Sdk.FinancialAccountRules
+  langs:
+  - csharp
+  - vb
+  name: LotSelection
+  nameWithType: FinancialAccountRules.LotSelection
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LotSelection
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public LotSelectionMethod LotSelection { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.LotSelectionMethod
+    content.vb: Public Property LotSelection As LotSelectionMethod
+  overload: Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccountRules}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccountRules}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FinancialAccountRules>
+  nameWithType: IEquatable<FinancialAccountRules>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.FinancialAccountRules>
+  nameWithType.vb: IEquatable(Of FinancialAccountRules)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.FinancialAccountRules)
+  name.vb: IEquatable(Of FinancialAccountRules)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.FinancialAccountRules
+    name: FinancialAccountRules
+    href: Meridian.Backtesting.Sdk.FinancialAccountRules.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.FinancialAccountRules
+    name: FinancialAccountRules
+    href: Meridian.Backtesting.Sdk.FinancialAccountRules.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountRules.#ctor
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html#Meridian_Backtesting_Sdk_FinancialAccountRules__ctor_System_Boolean_System_Boolean_System_Double_System_Double_System_Double_Meridian_Backtesting_Sdk_LotSelectionMethod_
+  name: FinancialAccountRules
+  nameWithType: FinancialAccountRules.FinancialAccountRules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.FinancialAccountRules
+  nameWithType.vb: FinancialAccountRules.New
+  fullName.vb: Meridian.Backtesting.Sdk.FinancialAccountRules.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod
+  commentId: T:Meridian.Backtesting.Sdk.LotSelectionMethod
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.LotSelectionMethod.html
+  name: LotSelectionMethod
+  nameWithType: LotSelectionMethod
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html#Meridian_Backtesting_Sdk_FinancialAccountRules_AllowMargin
+  name: AllowMargin
+  nameWithType: FinancialAccountRules.AllowMargin
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowMargin
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html#Meridian_Backtesting_Sdk_FinancialAccountRules_AllowShortSelling
+  name: AllowShortSelling
+  nameWithType: FinancialAccountRules.AllowShortSelling
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AllowShortSelling
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html#Meridian_Backtesting_Sdk_FinancialAccountRules_AnnualMarginRate
+  name: AnnualMarginRate
+  nameWithType: FinancialAccountRules.AnnualMarginRate
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualMarginRate
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html#Meridian_Backtesting_Sdk_FinancialAccountRules_AnnualShortRebateRate
+  name: AnnualShortRebateRate
+  nameWithType: FinancialAccountRules.AnnualShortRebateRate
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualShortRebateRate
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html#Meridian_Backtesting_Sdk_FinancialAccountRules_AnnualCashInterestRate
+  name: AnnualCashInterestRate
+  nameWithType: FinancialAccountRules.AnnualCashInterestRate
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.AnnualCashInterestRate
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html#Meridian_Backtesting_Sdk_FinancialAccountRules_LotSelection
+  name: LotSelection
+  nameWithType: FinancialAccountRules.LotSelection
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules.LotSelection

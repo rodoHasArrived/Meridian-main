@@ -1,0 +1,327 @@
+<<<<<<< HEAD
+=======
+# Multi-Platform Test Matrix Workflow
+# Runs tests across multiple operating systems and generates coverage reports.
+# On PRs, only ubuntu tests run to reduce billing costs. Full matrix runs on pushes to main.
+#
+# NOTE: This workflow intentionally does NOT use reusable-dotnet-build.yml because it needs
+# separate C# / F# test runs with per-language arguments, a Category!=Integration filter,
+# platform-conditional jobs, and per-platform Codecov flags. The reusable template targets
+# simpler "build + test entire solution" scenarios.
+#
+# Performance optimizations applied:
+# - Minimal verbosity on restore/build/test to reduce log I/O
+# - blame-hang-timeout to prevent tests from hanging indefinitely
+# - Parallel test execution via xUnit defaults
+# - SDK telemetry and first-time experience disabled
+
+name: Test Matrix
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '**/*.csproj'
+      - '**/*.fsproj'
+      - 'Directory.Build.props'
+      - '.github/workflows/test-matrix.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '**/*.csproj'
+      - '**/*.fsproj'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  build-artifact:
+    name: Build Artifact
+    uses: ./.github/workflows/generate-build-artifact.yml
+
+  # Ubuntu tests always run (free tier for public repos, essential for PRs)
+  test-ubuntu:
+    name: Test (Linux)
+    needs: [build-artifact]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-artifact.outputs.artifact-name }}
+
+      - name: Run C# unit tests
+        shell: bash
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results-csharp-Linux.trx" \
+            --results-directory ./TestResults \
+            --collect:"XPlat Code Coverage" \
+            --filter "Category!=Integration" \
+            --blame-hang-timeout 60s
+
+      - name: Run F# unit tests
+        shell: bash
+        run: |
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --collect:"XPlat Code Coverage" \
+            --logger "trx;LogFileName=test-results-fsharp-Linux.trx" \
+            --results-directory ./TestResults \
+            /p:EnableWindowsTargeting=true \
+            --blame-hang-timeout 60s
+
+      - name: Upload test results on failure
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-results-Linux
+          path: ./TestResults/
+          retention-days: 3
+
+      - name: Upload coverage to Codecov
+        if: success()
+        continue-on-error: true
+        uses: codecov/codecov-action@v6.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./TestResults/**/coverage.cobertura.xml
+          flags: unittests,Linux
+          name: codecov-Linux
+          fail_ci_if_error: true
+
+  # PostgreSQL integration tests — only on push to main to keep PR latency low
+  test-db:
+    name: Test (PostgreSQL)
+    if: github.event_name != 'pull_request'
+    needs: [build-artifact]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: meridian_test
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: meridian
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U meridian_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      MERIDIAN_SECURITY_MASTER_CONNECTION_STRING: "Host=localhost;Port=5432;Database=meridian;Username=meridian_test;Password=testpass"
+      MERIDIAN_DIRECT_LENDING_CONNECTION_STRING: "Host=localhost;Port=5432;Database=meridian;Username=meridian_test;Password=testpass"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build-artifact.outputs.artifact-name }}
+
+      - name: Run Security Master PostgreSQL tests
+        shell: bash
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results-secmaster-db.trx" \
+            --results-directory ./TestResults \
+            --filter "Collection=SecurityMasterDatabaseCollection" \
+            --blame-hang-timeout 120s
+
+      - name: Run Direct Lending PostgreSQL tests
+        shell: bash
+        run: |
+          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results-directlending-db.trx" \
+            --results-directory ./TestResults \
+            --blame-hang-timeout 120s
+
+      - name: Upload test results on failure
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-results-postgresql
+          path: ./TestResults/
+          retention-days: 3
+
+  # Windows and macOS tests only run on pushes to main (not on PRs) to reduce billing
+  test-other-platforms:
+    name: Test (${{ matrix.os_name }})
+    # Skip on PRs to reduce billing - only run on pushes to main and manual triggers
+    if: github.event_name != 'pull_request'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            os_name: Windows
+          - os: macos-latest
+            os_name: macOS
+
+    env:
+      # Docker / Testcontainers are unreliable on Windows and unavailable on macOS
+      # GitHub Actions runners. The SecurityMaster PostgreSQL tests are covered by the
+      # dedicated test-db job; skip them here to avoid spurious failures.
+      MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build
+        shell: bash
+        env:
+          MSYS_NO_PATHCONV: 1
+        run: |
+          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Run C# unit tests
+        shell: bash
+        run: |
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --logger "trx;LogFileName=test-results-csharp-${{ matrix.os_name }}.trx" \
+            --results-directory ./TestResults \
+            --filter "Category!=Integration" \
+            --blame-hang-timeout 60s
+
+      - name: Run F# unit tests
+        shell: bash
+        env:
+          MSYS_NO_PATHCONV: 1
+        run: |
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj \
+            -c Release \
+            --no-build \
+            --verbosity minimal \
+            --collect:"XPlat Code Coverage" \
+            --logger "trx;LogFileName=test-results-fsharp-${{ matrix.os_name }}.trx" \
+            --results-directory ./TestResults \
+            /p:EnableWindowsTargeting=true \
+            --blame-hang-timeout 60s
+
+      - name: Upload test results on failure
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-results-${{ matrix.os_name }}
+          path: ./TestResults/
+          retention-days: 5
+
+      - name: Upload coverage to Codecov
+        if: success()
+        continue-on-error: true
+        uses: codecov/codecov-action@v6.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./TestResults/**/coverage.cobertura.xml
+          flags: unittests,${{ matrix.os_name }}
+          name: codecov-${{ matrix.os_name }}
+          fail_ci_if_error: false
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-ubuntu, test-other-platforms, test-db]
+    if: always()
+    timeout-minutes: 30
+
+    steps:
+      - name: Generate test summary
+        run: |
+          # Linux always runs and has a single definitive result
+          LINUX_STATUS="${{ needs.test-ubuntu.result }}"
+          case "$LINUX_STATUS" in
+            success) LINUX_LABEL="✅ Passed" ;;
+            skipped) LINUX_LABEL="⏭️ Skipped" ;;
+            *) LINUX_LABEL="❌ Failed" ;;
+          esac
+
+          # Windows and macOS share a matrix result; on PRs they are skipped
+          OTHER_STATUS="${{ needs.test-other-platforms.result }}"
+          case "$OTHER_STATUS" in
+            success) WIN_LABEL="✅ Passed"; MAC_LABEL="✅ Passed" ;;
+            skipped) WIN_LABEL="⏭️ Skipped (PR)"; MAC_LABEL="⏭️ Skipped (PR)" ;;
+            *) WIN_LABEL="❌ Failed"; MAC_LABEL="❌ Failed" ;;
+          esac
+
+          # PostgreSQL DB tests only run on push to main; skipped on PRs
+          DB_STATUS="${{ needs.test-db.result }}"
+          case "$DB_STATUS" in
+            success) DB_LABEL="✅ Passed" ;;
+            skipped) DB_LABEL="⏭️ Skipped (PR)" ;;
+            *) DB_LABEL="❌ Failed" ;;
+          esac
+
+          {
+            echo "# Test Matrix Summary"
+            echo ""
+            echo "| Platform | Status |"
+            echo "|----------|--------|"
+            echo "| Linux | $LINUX_LABEL |"
+            echo "| Windows | $WIN_LABEL |"
+            echo "| macOS | $MAC_LABEL |"
+            echo "| PostgreSQL | $DB_LABEL |"
+          } >> "$GITHUB_STEP_SUMMARY"
+>>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3

@@ -1,0 +1,140 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionStyle
+  id: OptionStyle
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.OptionStyle.American
+  - Meridian.Contracts.Domain.Enums.OptionStyle.European
+  langs:
+  - csharp
+  - vb
+  name: OptionStyle
+  nameWithType: OptionStyle
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionStyle
+    path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Exercise style of an option contract.
+  example: []
+  syntax:
+    content: 'public enum OptionStyle : byte'
+    content.vb: Public Enum OptionStyle As Byte
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle.American
+  commentId: F:Meridian.Contracts.Domain.Enums.OptionStyle.American
+  id: American
+  parent: Meridian.Contracts.Domain.Enums.OptionStyle
+  langs:
+  - csharp
+  - vb
+  name: American
+  nameWithType: OptionStyle.American
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle.American
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: American
+    path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    American-style option — can be exercised at any time before expiration.
+
+    Most US equity options are American-style.
+  example: []
+  syntax:
+    content: American = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionStyle
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle.European
+  commentId: F:Meridian.Contracts.Domain.Enums.OptionStyle.European
+  id: European
+  parent: Meridian.Contracts.Domain.Enums.OptionStyle
+  langs:
+  - csharp
+  - vb
+  name: European
+  nameWithType: OptionStyle.European
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle.European
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: European
+    path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    European-style option — can only be exercised at expiration.
+
+    Most index options (SPX, NDX, RUT) are European-style.
+  example: []
+  syntax:
+    content: European = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionStyle
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionStyle
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  name: OptionStyle
+  nameWithType: OptionStyle
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle

@@ -1,0 +1,1108 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Store.MarketDataQuery
+  commentId: T:Meridian.Contracts.Store.MarketDataQuery
+  id: MarketDataQuery
+  parent: Meridian.Contracts.Store
+  children:
+  - Meridian.Contracts.Store.MarketDataQuery.#ctor(System.Nullable{Meridian.Contracts.Domain.SymbolId},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType},System.String,System.Nullable{System.Int32})
+  - Meridian.Contracts.Store.MarketDataQuery.EventType
+  - Meridian.Contracts.Store.MarketDataQuery.From
+  - Meridian.Contracts.Store.MarketDataQuery.Limit
+  - Meridian.Contracts.Store.MarketDataQuery.Source
+  - Meridian.Contracts.Store.MarketDataQuery.Symbol
+  - Meridian.Contracts.Store.MarketDataQuery.To
+  - Meridian.Contracts.Store.MarketDataQuery.WithEventType(Meridian.Contracts.Domain.Enums.MarketEventType)
+  - Meridian.Contracts.Store.MarketDataQuery.WithLimit(System.Int32)
+  - Meridian.Contracts.Store.MarketDataQuery.WithSource(System.String)
+  - Meridian.Contracts.Store.MarketDataQuery.WithSymbol(Meridian.Contracts.Domain.SymbolId)
+  - Meridian.Contracts.Store.MarketDataQuery.WithTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  langs:
+  - csharp
+  - vb
+  name: MarketDataQuery
+  nameWithType: MarketDataQuery
+  fullName: Meridian.Contracts.Store.MarketDataQuery
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketDataQuery
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Immutable query specification for <code>IMarketDataStore</code>.
+
+    All parameters are optional — an empty query returns all stored events up to
+
+    <xref href="Meridian.Contracts.Store.MarketDataQuery.Limit" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed record MarketDataQuery : IEquatable<MarketDataQuery>'
+    content.vb: Public NotInheritable Class MarketDataQuery Implements IEquatable(Of MarketDataQuery)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Store.MarketDataQuery}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Store.MarketDataQuery.#ctor(System.Nullable{Meridian.Contracts.Domain.SymbolId},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType},System.String,System.Nullable{System.Int32})
+  commentId: M:Meridian.Contracts.Store.MarketDataQuery.#ctor(System.Nullable{Meridian.Contracts.Domain.SymbolId},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType},System.String,System.Nullable{System.Int32})
+  id: '#ctor(System.Nullable{Meridian.Contracts.Domain.SymbolId},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType},System.String,System.Nullable{System.Int32})'
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: MarketDataQuery(SymbolId?, DateTimeOffset?, DateTimeOffset?, MarketEventType?, string?, int?)
+  nameWithType: MarketDataQuery.MarketDataQuery(SymbolId?, DateTimeOffset?, DateTimeOffset?, MarketEventType?, string?, int?)
+  fullName: Meridian.Contracts.Store.MarketDataQuery.MarketDataQuery(Meridian.Contracts.Domain.SymbolId?, System.DateTimeOffset?, System.DateTimeOffset?, Meridian.Contracts.Domain.Enums.MarketEventType?, string?, int?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Immutable query specification for <code>IMarketDataStore</code>.
+
+    All parameters are optional — an empty query returns all stored events up to
+
+    <xref href="Meridian.Contracts.Store.MarketDataQuery.Limit" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public MarketDataQuery(SymbolId? Symbol = null, DateTimeOffset? From = null, DateTimeOffset? To = null, MarketEventType? EventType = null, string? Source = null, int? Limit = null)
+    parameters:
+    - id: Symbol
+      type: System.Nullable{Meridian.Contracts.Domain.SymbolId}
+      description: >-
+        Restrict results to a single instrument.  When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>,
+            events for all symbols are returned.
+    - id: From
+      type: System.Nullable{System.DateTimeOffset}
+      description: >-
+        Inclusive lower bound on the event timestamp.
+            When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, there is no lower bound.
+    - id: To
+      type: System.Nullable{System.DateTimeOffset}
+      description: >-
+        Exclusive upper bound on the event timestamp.
+            When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, there is no upper bound.
+    - id: EventType
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType}
+      description: >-
+        Restrict results to a specific <xref href="Meridian.Contracts.Domain.Enums.MarketEventType" data-throw-if-not-resolved="false"></xref>.
+            When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, all event types are returned.
+    - id: Source
+      type: System.String
+      description: >-
+        Restrict results to a named data source (e.g. <code>"alpaca"</code>).
+            When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, all sources are returned.
+    - id: Limit
+      type: System.Nullable{System.Int32}
+      description: >-
+        Maximum number of events to return.  When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>,
+            all matching events are returned.
+    content.vb: Public Sub New(Symbol As SymbolId? = Nothing, From As DateTimeOffset? = Nothing, [To] As DateTimeOffset? = Nothing, EventType As MarketEventType? = Nothing, Source As String = Nothing, Limit As Integer? = Nothing)
+  overload: Meridian.Contracts.Store.MarketDataQuery.#ctor*
+  nameWithType.vb: MarketDataQuery.New(SymbolId?, DateTimeOffset?, DateTimeOffset?, MarketEventType?, String, Integer?)
+  fullName.vb: Meridian.Contracts.Store.MarketDataQuery.New(Meridian.Contracts.Domain.SymbolId?, System.DateTimeOffset?, System.DateTimeOffset?, Meridian.Contracts.Domain.Enums.MarketEventType?, String, Integer?)
+  name.vb: New(SymbolId?, DateTimeOffset?, DateTimeOffset?, MarketEventType?, String, Integer?)
+- uid: Meridian.Contracts.Store.MarketDataQuery.Symbol
+  commentId: P:Meridian.Contracts.Store.MarketDataQuery.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: MarketDataQuery.Symbol
+  fullName: Meridian.Contracts.Store.MarketDataQuery.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Restrict results to a single instrument.  When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>,
+        events for all symbols are returned.
+  example: []
+  syntax:
+    content: public SymbolId? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.SymbolId}
+    content.vb: Public Property Symbol As SymbolId?
+  overload: Meridian.Contracts.Store.MarketDataQuery.Symbol*
+- uid: Meridian.Contracts.Store.MarketDataQuery.From
+  commentId: P:Meridian.Contracts.Store.MarketDataQuery.From
+  id: From
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: MarketDataQuery.From
+  fullName: Meridian.Contracts.Store.MarketDataQuery.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Inclusive lower bound on the event timestamp.
+        When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, there is no lower bound.
+  example: []
+  syntax:
+    content: public DateTimeOffset? From { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property From As DateTimeOffset?
+  overload: Meridian.Contracts.Store.MarketDataQuery.From*
+- uid: Meridian.Contracts.Store.MarketDataQuery.To
+  commentId: P:Meridian.Contracts.Store.MarketDataQuery.To
+  id: To
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: MarketDataQuery.To
+  fullName: Meridian.Contracts.Store.MarketDataQuery.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Exclusive upper bound on the event timestamp.
+        When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, there is no upper bound.
+  example: []
+  syntax:
+    content: public DateTimeOffset? To { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property [To] As DateTimeOffset?
+  overload: Meridian.Contracts.Store.MarketDataQuery.To*
+- uid: Meridian.Contracts.Store.MarketDataQuery.EventType
+  commentId: P:Meridian.Contracts.Store.MarketDataQuery.EventType
+  id: EventType
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: MarketDataQuery.EventType
+  fullName: Meridian.Contracts.Store.MarketDataQuery.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Restrict results to a specific <xref href="Meridian.Contracts.Domain.Enums.MarketEventType" data-throw-if-not-resolved="false"></xref>.
+        When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, all event types are returned.
+  example: []
+  syntax:
+    content: public MarketEventType? EventType { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType}
+    content.vb: Public Property EventType As MarketEventType?
+  overload: Meridian.Contracts.Store.MarketDataQuery.EventType*
+- uid: Meridian.Contracts.Store.MarketDataQuery.Source
+  commentId: P:Meridian.Contracts.Store.MarketDataQuery.Source
+  id: Source
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: MarketDataQuery.Source
+  fullName: Meridian.Contracts.Store.MarketDataQuery.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Restrict results to a named data source (e.g. <code>"alpaca"</code>).
+        When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>, all sources are returned.
+  example: []
+  syntax:
+    content: public string? Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Contracts.Store.MarketDataQuery.Source*
+- uid: Meridian.Contracts.Store.MarketDataQuery.Limit
+  commentId: P:Meridian.Contracts.Store.MarketDataQuery.Limit
+  id: Limit
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: Limit
+  nameWithType: MarketDataQuery.Limit
+  fullName: Meridian.Contracts.Store.MarketDataQuery.Limit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Limit
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: >-
+    Maximum number of events to return.  When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>,
+        all matching events are returned.
+  example: []
+  syntax:
+    content: public int? Limit { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property Limit As Integer?
+  overload: Meridian.Contracts.Store.MarketDataQuery.Limit*
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithSymbol(Meridian.Contracts.Domain.SymbolId)
+  commentId: M:Meridian.Contracts.Store.MarketDataQuery.WithSymbol(Meridian.Contracts.Domain.SymbolId)
+  id: WithSymbol(Meridian.Contracts.Domain.SymbolId)
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: WithSymbol(SymbolId)
+  nameWithType: MarketDataQuery.WithSymbol(SymbolId)
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithSymbol(Meridian.Contracts.Domain.SymbolId)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithSymbol
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: Returns a new query that adds a symbol filter.
+  example: []
+  syntax:
+    content: public MarketDataQuery WithSymbol(SymbolId symbol)
+    parameters:
+    - id: symbol
+      type: Meridian.Contracts.Domain.SymbolId
+    return:
+      type: Meridian.Contracts.Store.MarketDataQuery
+    content.vb: Public Function WithSymbol(symbol As SymbolId) As MarketDataQuery
+  overload: Meridian.Contracts.Store.MarketDataQuery.WithSymbol*
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.Store.MarketDataQuery.WithTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  id: WithTimeRange(System.DateTimeOffset,System.DateTimeOffset)
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: WithTimeRange(DateTimeOffset, DateTimeOffset)
+  nameWithType: MarketDataQuery.WithTimeRange(DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithTimeRange(System.DateTimeOffset, System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithTimeRange
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: Returns a new query restricted to a time window.
+  example: []
+  syntax:
+    content: public MarketDataQuery WithTimeRange(DateTimeOffset from, DateTimeOffset to)
+    parameters:
+    - id: from
+      type: System.DateTimeOffset
+    - id: to
+      type: System.DateTimeOffset
+    return:
+      type: Meridian.Contracts.Store.MarketDataQuery
+    content.vb: Public Function WithTimeRange(from As DateTimeOffset, [to] As DateTimeOffset) As MarketDataQuery
+  overload: Meridian.Contracts.Store.MarketDataQuery.WithTimeRange*
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithEventType(Meridian.Contracts.Domain.Enums.MarketEventType)
+  commentId: M:Meridian.Contracts.Store.MarketDataQuery.WithEventType(Meridian.Contracts.Domain.Enums.MarketEventType)
+  id: WithEventType(Meridian.Contracts.Domain.Enums.MarketEventType)
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: WithEventType(MarketEventType)
+  nameWithType: MarketDataQuery.WithEventType(MarketEventType)
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithEventType(Meridian.Contracts.Domain.Enums.MarketEventType)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithEventType
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: Returns a new query restricted to a specific event type.
+  example: []
+  syntax:
+    content: public MarketDataQuery WithEventType(MarketEventType type)
+    parameters:
+    - id: type
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+    return:
+      type: Meridian.Contracts.Store.MarketDataQuery
+    content.vb: Public Function WithEventType(type As MarketEventType) As MarketDataQuery
+  overload: Meridian.Contracts.Store.MarketDataQuery.WithEventType*
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithSource(System.String)
+  commentId: M:Meridian.Contracts.Store.MarketDataQuery.WithSource(System.String)
+  id: WithSource(System.String)
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: WithSource(string)
+  nameWithType: MarketDataQuery.WithSource(string)
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithSource(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithSource
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: Returns a new query restricted to a specific data source.
+  example: []
+  syntax:
+    content: public MarketDataQuery WithSource(string source)
+    parameters:
+    - id: source
+      type: System.String
+    return:
+      type: Meridian.Contracts.Store.MarketDataQuery
+    content.vb: Public Function WithSource(source As String) As MarketDataQuery
+  overload: Meridian.Contracts.Store.MarketDataQuery.WithSource*
+  nameWithType.vb: MarketDataQuery.WithSource(String)
+  fullName.vb: Meridian.Contracts.Store.MarketDataQuery.WithSource(String)
+  name.vb: WithSource(String)
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithLimit(System.Int32)
+  commentId: M:Meridian.Contracts.Store.MarketDataQuery.WithLimit(System.Int32)
+  id: WithLimit(System.Int32)
+  parent: Meridian.Contracts.Store.MarketDataQuery
+  langs:
+  - csharp
+  - vb
+  name: WithLimit(int)
+  nameWithType: MarketDataQuery.WithLimit(int)
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithLimit(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Store/MarketDataQuery.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithLimit
+    path: ../../src/Meridian.Contracts/Store/MarketDataQuery.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Store
+  summary: Returns a new query with a maximum result count.
+  example: []
+  syntax:
+    content: public MarketDataQuery WithLimit(int limit)
+    parameters:
+    - id: limit
+      type: System.Int32
+    return:
+      type: Meridian.Contracts.Store.MarketDataQuery
+    content.vb: Public Function WithLimit(limit As Integer) As MarketDataQuery
+  overload: Meridian.Contracts.Store.MarketDataQuery.WithLimit*
+  nameWithType.vb: MarketDataQuery.WithLimit(Integer)
+  fullName.vb: Meridian.Contracts.Store.MarketDataQuery.WithLimit(Integer)
+  name.vb: WithLimit(Integer)
+references:
+- uid: Meridian.Contracts.Store.MarketDataQuery.Limit
+  commentId: P:Meridian.Contracts.Store.MarketDataQuery.Limit
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_Limit
+  name: Limit
+  nameWithType: MarketDataQuery.Limit
+  fullName: Meridian.Contracts.Store.MarketDataQuery.Limit
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  name: MarketEventType
+  nameWithType: MarketEventType
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Store
+  commentId: N:Meridian.Contracts.Store
+  href: Meridian.html
+  name: Meridian.Contracts.Store
+  nameWithType: Meridian.Contracts.Store
+  fullName: Meridian.Contracts.Store
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Store.MarketDataQuery}
+  commentId: T:System.IEquatable{Meridian.Contracts.Store.MarketDataQuery}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketDataQuery>
+  nameWithType: IEquatable<MarketDataQuery>
+  fullName: System.IEquatable<Meridian.Contracts.Store.MarketDataQuery>
+  nameWithType.vb: IEquatable(Of MarketDataQuery)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Store.MarketDataQuery)
+  name.vb: IEquatable(Of MarketDataQuery)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Store.MarketDataQuery
+    name: MarketDataQuery
+    href: Meridian.Contracts.Store.MarketDataQuery.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Store.MarketDataQuery
+    name: MarketDataQuery
+    href: Meridian.Contracts.Store.MarketDataQuery.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Store.MarketDataQuery.#ctor*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.#ctor
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery__ctor_System_Nullable_Meridian_Contracts_Domain_SymbolId__System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Nullable_Meridian_Contracts_Domain_Enums_MarketEventType__System_String_System_Nullable_System_Int32__
+  name: MarketDataQuery
+  nameWithType: MarketDataQuery.MarketDataQuery
+  fullName: Meridian.Contracts.Store.MarketDataQuery.MarketDataQuery
+  nameWithType.vb: MarketDataQuery.New
+  fullName.vb: Meridian.Contracts.Store.MarketDataQuery.New
+  name.vb: New
+- uid: System.Nullable{Meridian.Contracts.Domain.SymbolId}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.SymbolId}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Domain.SymbolId.html
+  name: SymbolId?
+  nameWithType: SymbolId?
+  fullName: Meridian.Contracts.Domain.SymbolId?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+    href: Meridian.Contracts.Domain.SymbolId.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+    href: Meridian.Contracts.Domain.SymbolId.html
+  - name: '?'
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.Enums.MarketEventType}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  name: MarketEventType?
+  nameWithType: MarketEventType?
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.MarketEventType
+    name: MarketEventType
+    href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.MarketEventType
+    name: MarketEventType
+    href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  - name: '?'
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Store.MarketDataQuery.Symbol*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.Symbol
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_Symbol
+  name: Symbol
+  nameWithType: MarketDataQuery.Symbol
+  fullName: Meridian.Contracts.Store.MarketDataQuery.Symbol
+- uid: Meridian.Contracts.Store.MarketDataQuery.From*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.From
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_From
+  name: From
+  nameWithType: MarketDataQuery.From
+  fullName: Meridian.Contracts.Store.MarketDataQuery.From
+- uid: Meridian.Contracts.Store.MarketDataQuery.To*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.To
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_To
+  name: To
+  nameWithType: MarketDataQuery.To
+  fullName: Meridian.Contracts.Store.MarketDataQuery.To
+- uid: Meridian.Contracts.Store.MarketDataQuery.EventType*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.EventType
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_EventType
+  name: EventType
+  nameWithType: MarketDataQuery.EventType
+  fullName: Meridian.Contracts.Store.MarketDataQuery.EventType
+- uid: Meridian.Contracts.Store.MarketDataQuery.Source*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.Source
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_Source
+  name: Source
+  nameWithType: MarketDataQuery.Source
+  fullName: Meridian.Contracts.Store.MarketDataQuery.Source
+- uid: Meridian.Contracts.Store.MarketDataQuery.Limit*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.Limit
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_Limit
+  name: Limit
+  nameWithType: MarketDataQuery.Limit
+  fullName: Meridian.Contracts.Store.MarketDataQuery.Limit
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithSymbol*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.WithSymbol
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_WithSymbol_Meridian_Contracts_Domain_SymbolId_
+  name: WithSymbol
+  nameWithType: MarketDataQuery.WithSymbol
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithSymbol
+- uid: Meridian.Contracts.Domain.SymbolId
+  commentId: T:Meridian.Contracts.Domain.SymbolId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.SymbolId.html
+  name: SymbolId
+  nameWithType: SymbolId
+  fullName: Meridian.Contracts.Domain.SymbolId
+- uid: Meridian.Contracts.Store.MarketDataQuery
+  commentId: T:Meridian.Contracts.Store.MarketDataQuery
+  parent: Meridian.Contracts.Store
+  href: Meridian.Contracts.Store.MarketDataQuery.html
+  name: MarketDataQuery
+  nameWithType: MarketDataQuery
+  fullName: Meridian.Contracts.Store.MarketDataQuery
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithTimeRange*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.WithTimeRange
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_WithTimeRange_System_DateTimeOffset_System_DateTimeOffset_
+  name: WithTimeRange
+  nameWithType: MarketDataQuery.WithTimeRange
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithTimeRange
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithEventType*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.WithEventType
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_WithEventType_Meridian_Contracts_Domain_Enums_MarketEventType_
+  name: WithEventType
+  nameWithType: MarketDataQuery.WithEventType
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithEventType
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithSource*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.WithSource
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_WithSource_System_String_
+  name: WithSource
+  nameWithType: MarketDataQuery.WithSource
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithSource
+- uid: Meridian.Contracts.Store.MarketDataQuery.WithLimit*
+  commentId: Overload:Meridian.Contracts.Store.MarketDataQuery.WithLimit
+  href: Meridian.Contracts.Store.MarketDataQuery.html#Meridian_Contracts_Store_MarketDataQuery_WithLimit_System_Int32_
+  name: WithLimit
+  nameWithType: MarketDataQuery.WithLimit
+  fullName: Meridian.Contracts.Store.MarketDataQuery.WithLimit
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

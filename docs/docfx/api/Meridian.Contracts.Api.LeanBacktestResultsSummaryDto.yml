@@ -1,0 +1,763 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  commentId: T:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  id: LeanBacktestResultsSummaryDto
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades
+  - Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate
+  langs:
+  - csharp
+  - vb
+  name: LeanBacktestResultsSummaryDto
+  nameWithType: LeanBacktestResultsSummaryDto
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeanBacktestResultsSummaryDto
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Lightweight Lean backtest metric summary used by launcher/status surfaces.
+  example: []
+  syntax:
+    content: 'public sealed record LeanBacktestResultsSummaryDto : IEquatable<LeanBacktestResultsSummaryDto>'
+    content.vb: Public NotInheritable Class LeanBacktestResultsSummaryDto Implements IEquatable(Of LeanBacktestResultsSummaryDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.LeanBacktestResultsSummaryDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName
+  id: AlgorithmName
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: AlgorithmName
+  nameWithType: LeanBacktestResultsSummaryDto.AlgorithmName
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlgorithmName
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("algorithmName")]
+
+      public string? AlgorithmName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("algorithmName")>
+
+      Public Property AlgorithmName As String
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: algorithmName
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn
+  id: TotalReturn
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: TotalReturn
+  nameWithType: LeanBacktestResultsSummaryDto.TotalReturn
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalReturn
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("totalReturn")]
+
+      public decimal TotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("totalReturn")>
+
+      Public Property TotalReturn As Decimal
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalReturn
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn
+  id: AnnualizedReturn
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: AnnualizedReturn
+  nameWithType: LeanBacktestResultsSummaryDto.AnnualizedReturn
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualizedReturn
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("annualizedReturn")]
+
+      public decimal AnnualizedReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("annualizedReturn")>
+
+      Public Property AnnualizedReturn As Decimal
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: annualizedReturn
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio
+  id: SharpeRatio
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: SharpeRatio
+  nameWithType: LeanBacktestResultsSummaryDto.SharpeRatio
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharpeRatio
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("sharpeRatio")]
+
+      public decimal SharpeRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("sharpeRatio")>
+
+      Public Property SharpeRatio As Decimal
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sharpeRatio
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown
+  id: MaxDrawdown
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: MaxDrawdown
+  nameWithType: LeanBacktestResultsSummaryDto.MaxDrawdown
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDrawdown
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("maxDrawdown")]
+
+      public decimal MaxDrawdown { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("maxDrawdown")>
+
+      Public Property MaxDrawdown As Decimal
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: maxDrawdown
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades
+  id: TotalTrades
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: TotalTrades
+  nameWithType: LeanBacktestResultsSummaryDto.TotalTrades
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalTrades
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("totalTrades")]
+
+      public int TotalTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalTrades")>
+
+      Public Property TotalTrades As Integer
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalTrades
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate
+  id: WinRate
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: WinRate
+  nameWithType: LeanBacktestResultsSummaryDto.WinRate
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WinRate
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("winRate")]
+
+      public decimal WinRate { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("winRate")>
+
+      Public Property WinRate As Decimal
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: winRate
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor
+  commentId: P:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor
+  id: ProfitFactor
+  parent: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: ProfitFactor
+  nameWithType: LeanBacktestResultsSummaryDto.ProfitFactor
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LeanApiModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProfitFactor
+    path: ../../src/Meridian.Contracts/Api/LeanApiModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("profitFactor")]
+
+      public decimal ProfitFactor { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("profitFactor")>
+
+      Public Property ProfitFactor As Decimal
+  overload: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: profitFactor
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.LeanBacktestResultsSummaryDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.LeanBacktestResultsSummaryDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LeanBacktestResultsSummaryDto>
+  nameWithType: IEquatable<LeanBacktestResultsSummaryDto>
+  fullName: System.IEquatable<Meridian.Contracts.Api.LeanBacktestResultsSummaryDto>
+  nameWithType.vb: IEquatable(Of LeanBacktestResultsSummaryDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.LeanBacktestResultsSummaryDto)
+  name.vb: IEquatable(Of LeanBacktestResultsSummaryDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+    name: LeanBacktestResultsSummaryDto
+    href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto
+    name: LeanBacktestResultsSummaryDto
+    href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_AlgorithmName
+  name: AlgorithmName
+  nameWithType: LeanBacktestResultsSummaryDto.AlgorithmName
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AlgorithmName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_TotalReturn
+  name: TotalReturn
+  nameWithType: LeanBacktestResultsSummaryDto.TotalReturn
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalReturn
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_AnnualizedReturn
+  name: AnnualizedReturn
+  nameWithType: LeanBacktestResultsSummaryDto.AnnualizedReturn
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.AnnualizedReturn
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_SharpeRatio
+  name: SharpeRatio
+  nameWithType: LeanBacktestResultsSummaryDto.SharpeRatio
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.SharpeRatio
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_MaxDrawdown
+  name: MaxDrawdown
+  nameWithType: LeanBacktestResultsSummaryDto.MaxDrawdown
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.MaxDrawdown
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_TotalTrades
+  name: TotalTrades
+  nameWithType: LeanBacktestResultsSummaryDto.TotalTrades
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.TotalTrades
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_WinRate
+  name: WinRate
+  nameWithType: LeanBacktestResultsSummaryDto.WinRate
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.WinRate
+- uid: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor*
+  commentId: Overload:Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor
+  href: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.html#Meridian_Contracts_Api_LeanBacktestResultsSummaryDto_ProfitFactor
+  name: ProfitFactor
+  nameWithType: LeanBacktestResultsSummaryDto.ProfitFactor
+  fullName: Meridian.Contracts.Api.LeanBacktestResultsSummaryDto.ProfitFactor

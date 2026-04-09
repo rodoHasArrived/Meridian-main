@@ -1,0 +1,257 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.MaintenanceScope
+  commentId: T:Meridian.Ui.Services.MaintenanceScope
+  id: MaintenanceScope
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.MaintenanceScope.All
+  - Meridian.Ui.Services.MaintenanceScope.ColdTier
+  - Meridian.Ui.Services.MaintenanceScope.Custom
+  - Meridian.Ui.Services.MaintenanceScope.HotTier
+  - Meridian.Ui.Services.MaintenanceScope.Last30Days
+  - Meridian.Ui.Services.MaintenanceScope.Last7Days
+  - Meridian.Ui.Services.MaintenanceScope.WarmTier
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceScope
+  nameWithType: MaintenanceScope
+  fullName: Meridian.Ui.Services.MaintenanceScope
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceScope
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 679
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Scope of maintenance operations.
+  example: []
+  syntax:
+    content: 'public enum MaintenanceScope : byte'
+    content.vb: Public Enum MaintenanceScope As Byte
+- uid: Meridian.Ui.Services.MaintenanceScope.All
+  commentId: F:Meridian.Ui.Services.MaintenanceScope.All
+  id: All
+  parent: Meridian.Ui.Services.MaintenanceScope
+  langs:
+  - csharp
+  - vb
+  name: All
+  nameWithType: MaintenanceScope.All
+  fullName: Meridian.Ui.Services.MaintenanceScope.All
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: All
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 681
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: All = 0
+    return:
+      type: Meridian.Ui.Services.MaintenanceScope
+- uid: Meridian.Ui.Services.MaintenanceScope.HotTier
+  commentId: F:Meridian.Ui.Services.MaintenanceScope.HotTier
+  id: HotTier
+  parent: Meridian.Ui.Services.MaintenanceScope
+  langs:
+  - csharp
+  - vb
+  name: HotTier
+  nameWithType: MaintenanceScope.HotTier
+  fullName: Meridian.Ui.Services.MaintenanceScope.HotTier
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotTier
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 682
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: HotTier = 1
+    return:
+      type: Meridian.Ui.Services.MaintenanceScope
+- uid: Meridian.Ui.Services.MaintenanceScope.WarmTier
+  commentId: F:Meridian.Ui.Services.MaintenanceScope.WarmTier
+  id: WarmTier
+  parent: Meridian.Ui.Services.MaintenanceScope
+  langs:
+  - csharp
+  - vb
+  name: WarmTier
+  nameWithType: MaintenanceScope.WarmTier
+  fullName: Meridian.Ui.Services.MaintenanceScope.WarmTier
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WarmTier
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 683
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: WarmTier = 2
+    return:
+      type: Meridian.Ui.Services.MaintenanceScope
+- uid: Meridian.Ui.Services.MaintenanceScope.ColdTier
+  commentId: F:Meridian.Ui.Services.MaintenanceScope.ColdTier
+  id: ColdTier
+  parent: Meridian.Ui.Services.MaintenanceScope
+  langs:
+  - csharp
+  - vb
+  name: ColdTier
+  nameWithType: MaintenanceScope.ColdTier
+  fullName: Meridian.Ui.Services.MaintenanceScope.ColdTier
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ColdTier
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 684
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ColdTier = 3
+    return:
+      type: Meridian.Ui.Services.MaintenanceScope
+- uid: Meridian.Ui.Services.MaintenanceScope.Last7Days
+  commentId: F:Meridian.Ui.Services.MaintenanceScope.Last7Days
+  id: Last7Days
+  parent: Meridian.Ui.Services.MaintenanceScope
+  langs:
+  - csharp
+  - vb
+  name: Last7Days
+  nameWithType: MaintenanceScope.Last7Days
+  fullName: Meridian.Ui.Services.MaintenanceScope.Last7Days
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Last7Days
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 685
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Last7Days = 4
+    return:
+      type: Meridian.Ui.Services.MaintenanceScope
+- uid: Meridian.Ui.Services.MaintenanceScope.Last30Days
+  commentId: F:Meridian.Ui.Services.MaintenanceScope.Last30Days
+  id: Last30Days
+  parent: Meridian.Ui.Services.MaintenanceScope
+  langs:
+  - csharp
+  - vb
+  name: Last30Days
+  nameWithType: MaintenanceScope.Last30Days
+  fullName: Meridian.Ui.Services.MaintenanceScope.Last30Days
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Last30Days
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 686
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Last30Days = 5
+    return:
+      type: Meridian.Ui.Services.MaintenanceScope
+- uid: Meridian.Ui.Services.MaintenanceScope.Custom
+  commentId: F:Meridian.Ui.Services.MaintenanceScope.Custom
+  id: Custom
+  parent: Meridian.Ui.Services.MaintenanceScope
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: MaintenanceScope.Custom
+  fullName: Meridian.Ui.Services.MaintenanceScope.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 687
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Custom = 6
+    return:
+      type: Meridian.Ui.Services.MaintenanceScope
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.MaintenanceScope
+  commentId: T:Meridian.Ui.Services.MaintenanceScope
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.MaintenanceScope.html
+  name: MaintenanceScope
+  nameWithType: MaintenanceScope
+  fullName: Meridian.Ui.Services.MaintenanceScope

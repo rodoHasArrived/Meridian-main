@@ -1,0 +1,235 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ICapabilityRouter
+  commentId: T:Meridian.ProviderSdk.ICapabilityRouter
+  id: ICapabilityRouter
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ICapabilityRouter.RouteAsync(Meridian.ProviderSdk.ProviderRouteContext,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ICapabilityRouter
+  nameWithType: ICapabilityRouter
+  fullName: Meridian.ProviderSdk.ICapabilityRouter
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICapabilityRouter
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 27
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Canonical capability router.
+  example: []
+  syntax:
+    content: public interface ICapabilityRouter
+    content.vb: Public Interface ICapabilityRouter
+  derivedClasses:
+  - Meridian.Application.ProviderRouting.ProviderRoutingService
+- uid: Meridian.ProviderSdk.ICapabilityRouter.RouteAsync(Meridian.ProviderSdk.ProviderRouteContext,System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.ICapabilityRouter.RouteAsync(Meridian.ProviderSdk.ProviderRouteContext,System.Threading.CancellationToken)
+  id: RouteAsync(Meridian.ProviderSdk.ProviderRouteContext,System.Threading.CancellationToken)
+  parent: Meridian.ProviderSdk.ICapabilityRouter
+  langs:
+  - csharp
+  - vb
+  name: RouteAsync(ProviderRouteContext, CancellationToken)
+  nameWithType: ICapabilityRouter.RouteAsync(ProviderRouteContext, CancellationToken)
+  fullName: Meridian.ProviderSdk.ICapabilityRouter.RouteAsync(Meridian.ProviderSdk.ProviderRouteContext, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RouteAsync
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 29
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
+    parameters:
+    - id: context
+      type: Meridian.ProviderSdk.ProviderRouteContext
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask{Meridian.ProviderSdk.ProviderRouteResult}
+    content.vb: Function RouteAsync(context As ProviderRouteContext, ct As CancellationToken = Nothing) As ValueTask(Of ProviderRouteResult)
+  overload: Meridian.ProviderSdk.ICapabilityRouter.RouteAsync*
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.ICapabilityRouter.RouteAsync*
+  commentId: Overload:Meridian.ProviderSdk.ICapabilityRouter.RouteAsync
+  href: Meridian.ProviderSdk.ICapabilityRouter.html#Meridian_ProviderSdk_ICapabilityRouter_RouteAsync_Meridian_ProviderSdk_ProviderRouteContext_System_Threading_CancellationToken_
+  name: RouteAsync
+  nameWithType: ICapabilityRouter.RouteAsync
+  fullName: Meridian.ProviderSdk.ICapabilityRouter.RouteAsync
+- uid: Meridian.ProviderSdk.ProviderRouteContext
+  commentId: T:Meridian.ProviderSdk.ProviderRouteContext
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderRouteContext.html
+  name: ProviderRouteContext
+  nameWithType: ProviderRouteContext
+  fullName: Meridian.ProviderSdk.ProviderRouteContext
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.ValueTask{Meridian.ProviderSdk.ProviderRouteResult}
+  commentId: T:System.Threading.Tasks.ValueTask{Meridian.ProviderSdk.ProviderRouteResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.ValueTask`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<ProviderRouteResult>
+  nameWithType: ValueTask<ProviderRouteResult>
+  fullName: System.Threading.Tasks.ValueTask<Meridian.ProviderSdk.ProviderRouteResult>
+  nameWithType.vb: ValueTask(Of ProviderRouteResult)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of Meridian.ProviderSdk.ProviderRouteResult)
+  name.vb: ValueTask(Of ProviderRouteResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - uid: Meridian.ProviderSdk.ProviderRouteResult
+    name: ProviderRouteResult
+    href: Meridian.ProviderSdk.ProviderRouteResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderRouteResult
+    name: ProviderRouteResult
+    href: Meridian.ProviderSdk.ProviderRouteResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.ValueTask`1
+  commentId: T:System.Threading.Tasks.ValueTask`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<TResult>
+  nameWithType: ValueTask<TResult>
+  fullName: System.Threading.Tasks.ValueTask<TResult>
+  nameWithType.vb: ValueTask(Of TResult)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of TResult)
+  name.vb: ValueTask(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

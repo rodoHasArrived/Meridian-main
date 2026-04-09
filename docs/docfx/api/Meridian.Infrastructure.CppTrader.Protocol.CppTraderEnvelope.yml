@@ -1,0 +1,686 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  id: CppTraderEnvelope
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  children:
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.#ctor(System.String,System.String,System.String,System.Text.Json.JsonElement,System.Nullable{System.DateTimeOffset})
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId
+  - Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: CppTraderEnvelope
+  nameWithType: CppTraderEnvelope
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderEnvelope
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: 'public sealed record CppTraderEnvelope : IEquatable<CppTraderEnvelope>'
+    content.vb: Public NotInheritable Class CppTraderEnvelope Implements IEquatable(Of CppTraderEnvelope)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.#ctor(System.String,System.String,System.String,System.Text.Json.JsonElement,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.#ctor(System.String,System.String,System.String,System.Text.Json.JsonElement,System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.String,System.String,System.String,System.Text.Json.JsonElement,System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  langs:
+  - csharp
+  - vb
+  name: CppTraderEnvelope(string, string?, string?, JsonElement, DateTimeOffset?)
+  nameWithType: CppTraderEnvelope.CppTraderEnvelope(string, string?, string?, JsonElement, DateTimeOffset?)
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.CppTraderEnvelope(string, string?, string?, System.Text.Json.JsonElement, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public CppTraderEnvelope(string MessageType, string? RequestId = null, string? SessionId = null, JsonElement Payload = default, DateTimeOffset? Timestamp = null)
+    parameters:
+    - id: MessageType
+      type: System.String
+    - id: RequestId
+      type: System.String
+    - id: SessionId
+      type: System.String
+    - id: Payload
+      type: System.Text.Json.JsonElement
+    - id: Timestamp
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(MessageType As String, RequestId As String = Nothing, SessionId As String = Nothing, Payload As JsonElement = Nothing, Timestamp As DateTimeOffset? = Nothing)
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.#ctor*
+  nameWithType.vb: CppTraderEnvelope.New(String, String, String, JsonElement, DateTimeOffset?)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.New(String, String, String, System.Text.Json.JsonElement, System.DateTimeOffset?)
+  name.vb: New(String, String, String, JsonElement, DateTimeOffset?)
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType
+  id: MessageType
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  langs:
+  - csharp
+  - vb
+  name: MessageType
+  nameWithType: CppTraderEnvelope.MessageType
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessageType
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public string MessageType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MessageType As String
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType*
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId
+  id: RequestId
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  langs:
+  - csharp
+  - vb
+  name: RequestId
+  nameWithType: CppTraderEnvelope.RequestId
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestId
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public string? RequestId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RequestId As String
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId*
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId
+  id: SessionId
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  langs:
+  - csharp
+  - vb
+  name: SessionId
+  nameWithType: CppTraderEnvelope.SessionId
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionId
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public string? SessionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SessionId As String
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId*
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload
+  id: Payload
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  langs:
+  - csharp
+  - vb
+  name: Payload
+  nameWithType: CppTraderEnvelope.Payload
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Payload
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public JsonElement Payload { get; init; }
+    parameters: []
+    return:
+      type: System.Text.Json.JsonElement
+    content.vb: Public Property Payload As JsonElement
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload*
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp
+  id: Timestamp
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: CppTraderEnvelope.Timestamp
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public DateTimeOffset? Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property Timestamp As DateTimeOffset?
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CppTraderEnvelope>
+  nameWithType: IEquatable<CppTraderEnvelope>
+  fullName: System.IEquatable<Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope>
+  nameWithType.vb: IEquatable(Of CppTraderEnvelope)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope)
+  name.vb: IEquatable(Of CppTraderEnvelope)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+    name: CppTraderEnvelope
+    href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+    name: CppTraderEnvelope
+    href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.#ctor
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html#Meridian_Infrastructure_CppTrader_Protocol_CppTraderEnvelope__ctor_System_String_System_String_System_String_System_Text_Json_JsonElement_System_Nullable_System_DateTimeOffset__
+  name: CppTraderEnvelope
+  nameWithType: CppTraderEnvelope.CppTraderEnvelope
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.CppTraderEnvelope
+  nameWithType.vb: CppTraderEnvelope.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Text.Json.JsonElement
+  commentId: T:System.Text.Json.JsonElement
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonelement
+  name: JsonElement
+  nameWithType: JsonElement
+  fullName: System.Text.Json.JsonElement
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html#Meridian_Infrastructure_CppTrader_Protocol_CppTraderEnvelope_MessageType
+  name: MessageType
+  nameWithType: CppTraderEnvelope.MessageType
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.MessageType
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html#Meridian_Infrastructure_CppTrader_Protocol_CppTraderEnvelope_RequestId
+  name: RequestId
+  nameWithType: CppTraderEnvelope.RequestId
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.RequestId
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html#Meridian_Infrastructure_CppTrader_Protocol_CppTraderEnvelope_SessionId
+  name: SessionId
+  nameWithType: CppTraderEnvelope.SessionId
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.SessionId
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html#Meridian_Infrastructure_CppTrader_Protocol_CppTraderEnvelope_Payload
+  name: Payload
+  nameWithType: CppTraderEnvelope.Payload
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Payload
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html#Meridian_Infrastructure_CppTrader_Protocol_CppTraderEnvelope_Timestamp
+  name: Timestamp
+  nameWithType: CppTraderEnvelope.Timestamp
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.Timestamp

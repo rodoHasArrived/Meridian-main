@@ -1,0 +1,479 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  id: SecurityHistoryRequest
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.#ctor(System.Guid,System.Int32)
+  - Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId
+  - Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take
+  langs:
+  - csharp
+  - vb
+  name: SecurityHistoryRequest
+  nameWithType: SecurityHistoryRequest
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityHistoryRequest
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: 'public sealed record SecurityHistoryRequest : IEquatable<SecurityHistoryRequest>'
+    content.vb: Public NotInheritable Class SecurityHistoryRequest Implements IEquatable(Of SecurityHistoryRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.SecurityHistoryRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.#ctor(System.Guid,System.Int32)
+  commentId: M:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.#ctor(System.Guid,System.Int32)
+  id: '#ctor(System.Guid,System.Int32)'
+  parent: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  langs:
+  - csharp
+  - vb
+  name: SecurityHistoryRequest(Guid, int)
+  nameWithType: SecurityHistoryRequest.SecurityHistoryRequest(Guid, int)
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityHistoryRequest(System.Guid, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public SecurityHistoryRequest(Guid SecurityId, int Take = 100)
+    parameters:
+    - id: SecurityId
+      type: System.Guid
+    - id: Take
+      type: System.Int32
+    content.vb: Public Sub New(SecurityId As Guid, Take As Integer = 100)
+  overload: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.#ctor*
+  nameWithType.vb: SecurityHistoryRequest.New(Guid, Integer)
+  fullName.vb: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.New(System.Guid, Integer)
+  name.vb: New(Guid, Integer)
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: SecurityHistoryRequest.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId*
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take
+  id: Take
+  parent: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+  langs:
+  - csharp
+  - vb
+  name: Take
+  nameWithType: SecurityHistoryRequest.Take
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Take
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public int Take { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Take As Integer
+  overload: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.SecurityHistoryRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.SecurityHistoryRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SecurityHistoryRequest>
+  nameWithType: IEquatable<SecurityHistoryRequest>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.SecurityHistoryRequest>
+  nameWithType.vb: IEquatable(Of SecurityHistoryRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.SecurityHistoryRequest)
+  name.vb: IEquatable(Of SecurityHistoryRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+    name: SecurityHistoryRequest
+    href: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest
+    name: SecurityHistoryRequest
+    href: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.#ctor
+  href: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.html#Meridian_Contracts_SecurityMaster_SecurityHistoryRequest__ctor_System_Guid_System_Int32_
+  name: SecurityHistoryRequest
+  nameWithType: SecurityHistoryRequest.SecurityHistoryRequest
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityHistoryRequest
+  nameWithType.vb: SecurityHistoryRequest.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId
+  href: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.html#Meridian_Contracts_SecurityMaster_SecurityHistoryRequest_SecurityId
+  name: SecurityId
+  nameWithType: SecurityHistoryRequest.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.SecurityId
+- uid: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take
+  href: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.html#Meridian_Contracts_SecurityMaster_SecurityHistoryRequest_Take
+  name: Take
+  nameWithType: SecurityHistoryRequest.Take
+  fullName: Meridian.Contracts.SecurityMaster.SecurityHistoryRequest.Take

@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.OpenFigi
+  commentId: N:Meridian.Infrastructure.Adapters.OpenFigi
+  id: Meridian.Infrastructure.Adapters.OpenFigi
+  children:
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiSymbolResolver
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.OpenFigi
+  nameWithType: Meridian.Infrastructure.Adapters.OpenFigi
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  commentId: T:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+  parent: Meridian.Infrastructure.Adapters.OpenFigi
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient.html
+  name: OpenFigiClient
+  nameWithType: OpenFigiClient
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient
+- uid: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiSymbolResolver
+  commentId: T:Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiSymbolResolver
+  href: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiSymbolResolver.html
+  name: OpenFigiSymbolResolver
+  nameWithType: OpenFigiSymbolResolver
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiSymbolResolver
+- uid: Meridian.Infrastructure.Adapters.OpenFigi
+  commentId: N:Meridian.Infrastructure.Adapters.OpenFigi
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.OpenFigi
+  nameWithType: Meridian.Infrastructure.Adapters.OpenFigi
+  fullName: Meridian.Infrastructure.Adapters.OpenFigi
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.OpenFigi
+    name: OpenFigi
+    href: Meridian.Infrastructure.Adapters.OpenFigi.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.OpenFigi
+    name: OpenFigi
+    href: Meridian.Infrastructure.Adapters.OpenFigi.html

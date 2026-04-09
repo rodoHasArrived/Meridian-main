@@ -1,0 +1,777 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DividendInfo
+  commentId: T:Meridian.Infrastructure.DataSources.DividendInfo
+  id: DividendInfo
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DividendInfo.#ctor(System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.String,Meridian.Infrastructure.DataSources.DividendType,System.String)
+  - Meridian.Infrastructure.DataSources.DividendInfo.Amount
+  - Meridian.Infrastructure.DataSources.DividendInfo.Currency
+  - Meridian.Infrastructure.DataSources.DividendInfo.ExDate
+  - Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate
+  - Meridian.Infrastructure.DataSources.DividendInfo.RecordDate
+  - Meridian.Infrastructure.DataSources.DividendInfo.Source
+  - Meridian.Infrastructure.DataSources.DividendInfo.Symbol
+  - Meridian.Infrastructure.DataSources.DividendInfo.Type
+  langs:
+  - csharp
+  - vb
+  name: DividendInfo
+  nameWithType: DividendInfo
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendInfo
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 176
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Dividend information for a stock.
+  example: []
+  syntax:
+    content: 'public sealed record DividendInfo : IEquatable<DividendInfo>'
+    content.vb: Public NotInheritable Class DividendInfo Implements IEquatable(Of DividendInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.DividendInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.#ctor(System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.String,Meridian.Infrastructure.DataSources.DividendType,System.String)
+  commentId: M:Meridian.Infrastructure.DataSources.DividendInfo.#ctor(System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.String,Meridian.Infrastructure.DataSources.DividendType,System.String)
+  id: '#ctor(System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.String,Meridian.Infrastructure.DataSources.DividendType,System.String)'
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: DividendInfo(string, DateOnly, DateOnly?, DateOnly?, decimal, string, DividendType, string)
+  nameWithType: DividendInfo.DividendInfo(string, DateOnly, DateOnly?, DateOnly?, decimal, string, DividendType, string)
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.DividendInfo(string, System.DateOnly, System.DateOnly?, System.DateOnly?, decimal, string, Meridian.Infrastructure.DataSources.DividendType, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 176
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Dividend information for a stock.
+  example: []
+  syntax:
+    content: public DividendInfo(string Symbol, DateOnly ExDate, DateOnly? PaymentDate, DateOnly? RecordDate, decimal Amount, string Currency = "USD", DividendType Type = DividendType.Regular, string Source = "unknown")
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: ExDate
+      type: System.DateOnly
+    - id: PaymentDate
+      type: System.Nullable{System.DateOnly}
+    - id: RecordDate
+      type: System.Nullable{System.DateOnly}
+    - id: Amount
+      type: System.Decimal
+    - id: Currency
+      type: System.String
+    - id: Type
+      type: Meridian.Infrastructure.DataSources.DividendType
+    - id: Source
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, ExDate As DateOnly, PaymentDate As DateOnly?, RecordDate As DateOnly?, Amount As Decimal, Currency As String = "USD", Type As DividendType = DividendType.Regular, Source As String = "unknown")
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.#ctor*
+  nameWithType.vb: DividendInfo.New(String, DateOnly, DateOnly?, DateOnly?, Decimal, String, DividendType, String)
+  fullName.vb: Meridian.Infrastructure.DataSources.DividendInfo.New(String, System.DateOnly, System.DateOnly?, System.DateOnly?, Decimal, String, Meridian.Infrastructure.DataSources.DividendType, String)
+  name.vb: New(String, DateOnly, DateOnly?, DateOnly?, Decimal, String, DividendType, String)
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Symbol
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: DividendInfo.Symbol
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 177
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.Symbol*
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.ExDate
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.ExDate
+  id: ExDate
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: ExDate
+  nameWithType: DividendInfo.ExDate
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.ExDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExDate
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 178
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateOnly ExDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ExDate As DateOnly
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.ExDate*
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate
+  id: PaymentDate
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: PaymentDate
+  nameWithType: DividendInfo.PaymentDate
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaymentDate
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 179
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateOnly? PaymentDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property PaymentDate As DateOnly?
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate*
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.RecordDate
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.RecordDate
+  id: RecordDate
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: RecordDate
+  nameWithType: DividendInfo.RecordDate
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.RecordDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordDate
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 180
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateOnly? RecordDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property RecordDate As DateOnly?
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.RecordDate*
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Amount
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.Amount
+  id: Amount
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: Amount
+  nameWithType: DividendInfo.Amount
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Amount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Amount
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 181
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public decimal Amount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Amount As Decimal
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.Amount*
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Currency
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.Currency
+  id: Currency
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: DividendInfo.Currency
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 182
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.Currency*
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Type
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.Type
+  id: Type
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: DividendInfo.Type
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 183
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DividendType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DividendType
+    content.vb: Public Property Type As DividendType
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.Type*
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Source
+  commentId: P:Meridian.Infrastructure.DataSources.DividendInfo.Source
+  id: Source
+  parent: Meridian.Infrastructure.DataSources.DividendInfo
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: DividendInfo.Source
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 184
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Infrastructure.DataSources.DividendInfo.Source*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.DividendInfo}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.DividendInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DividendInfo>
+  nameWithType: IEquatable<DividendInfo>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.DividendInfo>
+  nameWithType.vb: IEquatable(Of DividendInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.DividendInfo)
+  name.vb: IEquatable(Of DividendInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DividendInfo
+    name: DividendInfo
+    href: Meridian.Infrastructure.DataSources.DividendInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DividendInfo
+    name: DividendInfo
+    href: Meridian.Infrastructure.DataSources.DividendInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.#ctor
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo__ctor_System_String_System_DateOnly_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Decimal_System_String_Meridian_Infrastructure_DataSources_DividendType_System_String_
+  name: DividendInfo
+  nameWithType: DividendInfo.DividendInfo
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.DividendInfo
+  nameWithType.vb: DividendInfo.New
+  fullName.vb: Meridian.Infrastructure.DataSources.DividendInfo.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Infrastructure.DataSources.DividendType
+  commentId: T:Meridian.Infrastructure.DataSources.DividendType
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DividendType.html
+  name: DividendType
+  nameWithType: DividendType
+  fullName: Meridian.Infrastructure.DataSources.DividendType
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Symbol*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.Symbol
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_Symbol
+  name: Symbol
+  nameWithType: DividendInfo.Symbol
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Symbol
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.ExDate*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.ExDate
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_ExDate
+  name: ExDate
+  nameWithType: DividendInfo.ExDate
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.ExDate
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_PaymentDate
+  name: PaymentDate
+  nameWithType: DividendInfo.PaymentDate
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.PaymentDate
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.RecordDate*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.RecordDate
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_RecordDate
+  name: RecordDate
+  nameWithType: DividendInfo.RecordDate
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.RecordDate
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Amount*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.Amount
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_Amount
+  name: Amount
+  nameWithType: DividendInfo.Amount
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Amount
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Currency*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.Currency
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_Currency
+  name: Currency
+  nameWithType: DividendInfo.Currency
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Currency
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Type*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.Type
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_Type
+  name: Type
+  nameWithType: DividendInfo.Type
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Type
+- uid: Meridian.Infrastructure.DataSources.DividendInfo.Source*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DividendInfo.Source
+  href: Meridian.Infrastructure.DataSources.DividendInfo.html#Meridian_Infrastructure_DataSources_DividendInfo_Source
+  name: Source
+  nameWithType: DividendInfo.Source
+  fullName: Meridian.Infrastructure.DataSources.DividendInfo.Source

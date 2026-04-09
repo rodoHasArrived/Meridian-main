@@ -1,0 +1,982 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.OpenInterestDto
+  commentId: T:Meridian.Contracts.Api.OpenInterestDto
+  id: OpenInterestDto
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.OpenInterestDto.#ctor(System.String,System.String,System.Decimal,System.String,System.DateOnly,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int64,System.Decimal,System.Int64,System.String,System.DateTimeOffset)
+  - Meridian.Contracts.Api.OpenInterestDto.Expiration
+  - Meridian.Contracts.Api.OpenInterestDto.OpenInterest
+  - Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange
+  - Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest
+  - Meridian.Contracts.Api.OpenInterestDto.Right
+  - Meridian.Contracts.Api.OpenInterestDto.SequenceNumber
+  - Meridian.Contracts.Api.OpenInterestDto.Source
+  - Meridian.Contracts.Api.OpenInterestDto.Strike
+  - Meridian.Contracts.Api.OpenInterestDto.Symbol
+  - Meridian.Contracts.Api.OpenInterestDto.Timestamp
+  - Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol
+  - Meridian.Contracts.Api.OpenInterestDto.Volume
+  - Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio
+  langs:
+  - csharp
+  - vb
+  name: OpenInterestDto
+  nameWithType: OpenInterestDto
+  fullName: Meridian.Contracts.Api.OpenInterestDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterestDto
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for an open interest update.
+  example: []
+  syntax:
+    content: 'public sealed record OpenInterestDto : IEquatable<OpenInterestDto>'
+    content.vb: Public NotInheritable Class OpenInterestDto Implements IEquatable(Of OpenInterestDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.OpenInterestDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.OpenInterestDto.#ctor(System.String,System.String,System.Decimal,System.String,System.DateOnly,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int64,System.Decimal,System.Int64,System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.Api.OpenInterestDto.#ctor(System.String,System.String,System.Decimal,System.String,System.DateOnly,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int64,System.Decimal,System.Int64,System.String,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.Decimal,System.String,System.DateOnly,System.Int64,System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int64,System.Decimal,System.Int64,System.String,System.DateTimeOffset)'
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: OpenInterestDto(string, string, decimal, string, DateOnly, long, long?, long?, long, decimal, long, string, DateTimeOffset)
+  nameWithType: OpenInterestDto.OpenInterestDto(string, string, decimal, string, DateOnly, long, long?, long?, long, decimal, long, string, DateTimeOffset)
+  fullName: Meridian.Contracts.Api.OpenInterestDto.OpenInterestDto(string, string, decimal, string, System.DateOnly, long, long?, long?, long, decimal, long, string, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for an open interest update.
+  example: []
+  syntax:
+    content: public OpenInterestDto(string Symbol, string UnderlyingSymbol, decimal Strike, string Right, DateOnly Expiration, long OpenInterest, long? PreviousOpenInterest, long? OpenInterestChange, long Volume, decimal VolumeToOpenInterestRatio, long SequenceNumber, string Source, DateTimeOffset Timestamp)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: UnderlyingSymbol
+      type: System.String
+    - id: Strike
+      type: System.Decimal
+    - id: Right
+      type: System.String
+    - id: Expiration
+      type: System.DateOnly
+    - id: OpenInterest
+      type: System.Int64
+    - id: PreviousOpenInterest
+      type: System.Nullable{System.Int64}
+    - id: OpenInterestChange
+      type: System.Nullable{System.Int64}
+    - id: Volume
+      type: System.Int64
+    - id: VolumeToOpenInterestRatio
+      type: System.Decimal
+    - id: SequenceNumber
+      type: System.Int64
+    - id: Source
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, UnderlyingSymbol As String, Strike As Decimal, Right As String, Expiration As DateOnly, OpenInterest As Long, PreviousOpenInterest As Long?, OpenInterestChange As Long?, Volume As Long, VolumeToOpenInterestRatio As Decimal, SequenceNumber As Long, Source As String, Timestamp As DateTimeOffset)
+  overload: Meridian.Contracts.Api.OpenInterestDto.#ctor*
+  nameWithType.vb: OpenInterestDto.New(String, String, Decimal, String, DateOnly, Long, Long?, Long?, Long, Decimal, Long, String, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.Api.OpenInterestDto.New(String, String, Decimal, String, System.DateOnly, Long, Long?, Long?, Long, Decimal, Long, String, System.DateTimeOffset)
+  name.vb: New(String, String, Decimal, String, DateOnly, Long, Long?, Long?, Long, Decimal, Long, String, DateTimeOffset)
+- uid: Meridian.Contracts.Api.OpenInterestDto.Symbol
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OpenInterestDto.Symbol
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Api.OpenInterestDto.Symbol*
+- uid: Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: OpenInterestDto.UnderlyingSymbol
+  fullName: Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string UnderlyingSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UnderlyingSymbol As String
+  overload: Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol*
+- uid: Meridian.Contracts.Api.OpenInterestDto.Strike
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.Strike
+  id: Strike
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: Strike
+  nameWithType: OpenInterestDto.Strike
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Strike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strike
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal Strike { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Strike As Decimal
+  overload: Meridian.Contracts.Api.OpenInterestDto.Strike*
+- uid: Meridian.Contracts.Api.OpenInterestDto.Right
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.Right
+  id: Right
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: Right
+  nameWithType: OpenInterestDto.Right
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Right
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Right
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Right { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Right As String
+  overload: Meridian.Contracts.Api.OpenInterestDto.Right*
+- uid: Meridian.Contracts.Api.OpenInterestDto.Expiration
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.Expiration
+  id: Expiration
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: Expiration
+  nameWithType: OpenInterestDto.Expiration
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Expiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expiration
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateOnly Expiration { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property Expiration As DateOnly
+  overload: Meridian.Contracts.Api.OpenInterestDto.Expiration*
+- uid: Meridian.Contracts.Api.OpenInterestDto.OpenInterest
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.OpenInterest
+  id: OpenInterest
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: OpenInterest
+  nameWithType: OpenInterestDto.OpenInterest
+  fullName: Meridian.Contracts.Api.OpenInterestDto.OpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterest
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long OpenInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property OpenInterest As Long
+  overload: Meridian.Contracts.Api.OpenInterestDto.OpenInterest*
+- uid: Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest
+  id: PreviousOpenInterest
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: PreviousOpenInterest
+  nameWithType: OpenInterestDto.PreviousOpenInterest
+  fullName: Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousOpenInterest
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long? PreviousOpenInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property PreviousOpenInterest As Long?
+  overload: Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest*
+- uid: Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange
+  id: OpenInterestChange
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: OpenInterestChange
+  nameWithType: OpenInterestDto.OpenInterestChange
+  fullName: Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterestChange
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long? OpenInterestChange { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property OpenInterestChange As Long?
+  overload: Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange*
+- uid: Meridian.Contracts.Api.OpenInterestDto.Volume
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.Volume
+  id: Volume
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: Volume
+  nameWithType: OpenInterestDto.Volume
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Volume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Volume
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long Volume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Volume As Long
+  overload: Meridian.Contracts.Api.OpenInterestDto.Volume*
+- uid: Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio
+  id: VolumeToOpenInterestRatio
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: VolumeToOpenInterestRatio
+  nameWithType: OpenInterestDto.VolumeToOpenInterestRatio
+  fullName: Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeToOpenInterestRatio
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal VolumeToOpenInterestRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property VolumeToOpenInterestRatio As Decimal
+  overload: Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio*
+- uid: Meridian.Contracts.Api.OpenInterestDto.SequenceNumber
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: OpenInterestDto.SequenceNumber
+  fullName: Meridian.Contracts.Api.OpenInterestDto.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Contracts.Api.OpenInterestDto.SequenceNumber*
+- uid: Meridian.Contracts.Api.OpenInterestDto.Source
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.Source
+  id: Source
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: OpenInterestDto.Source
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Contracts.Api.OpenInterestDto.Source*
+- uid: Meridian.Contracts.Api.OpenInterestDto.Timestamp
+  commentId: P:Meridian.Contracts.Api.OpenInterestDto.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.OpenInterestDto
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OpenInterestDto.Timestamp
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.OpenInterestDto.Timestamp*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.OpenInterestDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.OpenInterestDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OpenInterestDto>
+  nameWithType: IEquatable<OpenInterestDto>
+  fullName: System.IEquatable<Meridian.Contracts.Api.OpenInterestDto>
+  nameWithType.vb: IEquatable(Of OpenInterestDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.OpenInterestDto)
+  name.vb: IEquatable(Of OpenInterestDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OpenInterestDto
+    name: OpenInterestDto
+    href: Meridian.Contracts.Api.OpenInterestDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OpenInterestDto
+    name: OpenInterestDto
+    href: Meridian.Contracts.Api.OpenInterestDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.OpenInterestDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.#ctor
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto__ctor_System_String_System_String_System_Decimal_System_String_System_DateOnly_System_Int64_System_Nullable_System_Int64__System_Nullable_System_Int64__System_Int64_System_Decimal_System_Int64_System_String_System_DateTimeOffset_
+  name: OpenInterestDto
+  nameWithType: OpenInterestDto.OpenInterestDto
+  fullName: Meridian.Contracts.Api.OpenInterestDto.OpenInterestDto
+  nameWithType.vb: OpenInterestDto.New
+  fullName.vb: Meridian.Contracts.Api.OpenInterestDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.OpenInterestDto.Symbol*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.Symbol
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_Symbol
+  name: Symbol
+  nameWithType: OpenInterestDto.Symbol
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Symbol
+- uid: Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: OpenInterestDto.UnderlyingSymbol
+  fullName: Meridian.Contracts.Api.OpenInterestDto.UnderlyingSymbol
+- uid: Meridian.Contracts.Api.OpenInterestDto.Strike*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.Strike
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_Strike
+  name: Strike
+  nameWithType: OpenInterestDto.Strike
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Strike
+- uid: Meridian.Contracts.Api.OpenInterestDto.Right*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.Right
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_Right
+  name: Right
+  nameWithType: OpenInterestDto.Right
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Right
+- uid: Meridian.Contracts.Api.OpenInterestDto.Expiration*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.Expiration
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_Expiration
+  name: Expiration
+  nameWithType: OpenInterestDto.Expiration
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Expiration
+- uid: Meridian.Contracts.Api.OpenInterestDto.OpenInterest*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.OpenInterest
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_OpenInterest
+  name: OpenInterest
+  nameWithType: OpenInterestDto.OpenInterest
+  fullName: Meridian.Contracts.Api.OpenInterestDto.OpenInterest
+- uid: Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_PreviousOpenInterest
+  name: PreviousOpenInterest
+  nameWithType: OpenInterestDto.PreviousOpenInterest
+  fullName: Meridian.Contracts.Api.OpenInterestDto.PreviousOpenInterest
+- uid: Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_OpenInterestChange
+  name: OpenInterestChange
+  nameWithType: OpenInterestDto.OpenInterestChange
+  fullName: Meridian.Contracts.Api.OpenInterestDto.OpenInterestChange
+- uid: Meridian.Contracts.Api.OpenInterestDto.Volume*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.Volume
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_Volume
+  name: Volume
+  nameWithType: OpenInterestDto.Volume
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Volume
+- uid: Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_VolumeToOpenInterestRatio
+  name: VolumeToOpenInterestRatio
+  nameWithType: OpenInterestDto.VolumeToOpenInterestRatio
+  fullName: Meridian.Contracts.Api.OpenInterestDto.VolumeToOpenInterestRatio
+- uid: Meridian.Contracts.Api.OpenInterestDto.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.SequenceNumber
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_SequenceNumber
+  name: SequenceNumber
+  nameWithType: OpenInterestDto.SequenceNumber
+  fullName: Meridian.Contracts.Api.OpenInterestDto.SequenceNumber
+- uid: Meridian.Contracts.Api.OpenInterestDto.Source*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.Source
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_Source
+  name: Source
+  nameWithType: OpenInterestDto.Source
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Source
+- uid: Meridian.Contracts.Api.OpenInterestDto.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.OpenInterestDto.Timestamp
+  href: Meridian.Contracts.Api.OpenInterestDto.html#Meridian_Contracts_Api_OpenInterestDto_Timestamp
+  name: Timestamp
+  nameWithType: OpenInterestDto.Timestamp
+  fullName: Meridian.Contracts.Api.OpenInterestDto.Timestamp

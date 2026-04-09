@@ -1,0 +1,40 @@
+<<<<<<< HEAD
+=======
+name: "{name}"
+description: "{description}"
+# Auto-generated prompt from workflow results - {workflow_name}
+# Generated: {now}
+# Source: {run_url}
+# Model-agnostic prompt - works with any capable LLM
+messages:
+  - role: system
+    content: |
+      {system_content}
+
+      {error_context}
+      ## Resolution Approach
+      1. Read the error messages and stack traces carefully
+      2. Identify the root cause (not just symptoms)
+      3. Check if this is a known pattern in docs/ai/ai-known-errors.md
+      4. Apply the fix following project conventions
+      5. Verify the fix resolves the issue without introducing new problems
+      6. Add tests if the failure was not covered
+
+  - role: user
+    content: |
+      The CI workflow `{workflow_name}` has reported failures that need attention.
+
+      Error details:
+      ```
+      {{{{error_details}}}}
+      ```
+
+      Affected files:
+      {{{{affected_files}}}}
+
+      Please provide:
+      1. Root cause analysis of each failure
+      2. Specific code fixes with file paths and line numbers
+      3. Verification steps to confirm the fix
+      4. Any preventive measures to avoid recurrence
+>>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3

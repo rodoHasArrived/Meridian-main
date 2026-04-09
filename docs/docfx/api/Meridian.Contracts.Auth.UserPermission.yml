@@ -1,0 +1,754 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Auth.UserPermission
+  commentId: T:Meridian.Contracts.Auth.UserPermission
+  id: UserPermission
+  parent: Meridian.Contracts.Auth
+  children:
+  - Meridian.Contracts.Auth.UserPermission.AdminMaintenance
+  - Meridian.Contracts.Auth.UserPermission.ExecuteTrades
+  - Meridian.Contracts.Auth.UserPermission.ExportData
+  - Meridian.Contracts.Auth.UserPermission.ManageCredentials
+  - Meridian.Contracts.Auth.UserPermission.ManageDirectLending
+  - Meridian.Contracts.Auth.UserPermission.ManageOrders
+  - Meridian.Contracts.Auth.UserPermission.ManageProviders
+  - Meridian.Contracts.Auth.UserPermission.ManageStorage
+  - Meridian.Contracts.Auth.UserPermission.ManageStrategies
+  - Meridian.Contracts.Auth.UserPermission.ManageUsers
+  - Meridian.Contracts.Auth.UserPermission.ModifyConfig
+  - Meridian.Contracts.Auth.UserPermission.ModifySecurityMaster
+  - Meridian.Contracts.Auth.UserPermission.None
+  - Meridian.Contracts.Auth.UserPermission.TriggerBackfill
+  - Meridian.Contracts.Auth.UserPermission.ViewAnalytics
+  - Meridian.Contracts.Auth.UserPermission.ViewConfig
+  - Meridian.Contracts.Auth.UserPermission.ViewDiagnostics
+  - Meridian.Contracts.Auth.UserPermission.ViewDirectLending
+  - Meridian.Contracts.Auth.UserPermission.ViewHistoricalData
+  - Meridian.Contracts.Auth.UserPermission.ViewMarketData
+  - Meridian.Contracts.Auth.UserPermission.ViewSecurityMaster
+  - Meridian.Contracts.Auth.UserPermission.ViewStrategies
+  - Meridian.Contracts.Auth.UserPermission.ViewTrades
+  langs:
+  - csharp
+  - vb
+  name: UserPermission
+  nameWithType: UserPermission
+  fullName: Meridian.Contracts.Auth.UserPermission
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UserPermission
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: >-
+    Fine-grained permission flags used to control access to individual platform features.
+
+    Roles are mapped to a combination of these flags by <xref href="Meridian.Contracts.Auth.RolePermissions" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: >-
+      [Flags]
+
+      public enum UserPermission : long
+    content.vb: >-
+      <Flags>
+
+      Public Enum UserPermission As Long
+  attributes:
+  - type: System.FlagsAttribute
+    ctor: System.FlagsAttribute.#ctor
+    arguments: []
+- uid: Meridian.Contracts.Auth.UserPermission.None
+  commentId: F:Meridian.Contracts.Auth.UserPermission.None
+  id: None
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: UserPermission.None
+  fullName: Meridian.Contracts.Auth.UserPermission.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: No access.
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewMarketData
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewMarketData
+  id: ViewMarketData
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewMarketData
+  nameWithType: UserPermission.ViewMarketData
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewMarketData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewMarketData
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: View real-time streaming market data.
+  example: []
+  syntax:
+    content: ViewMarketData = 1
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewHistoricalData
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewHistoricalData
+  id: ViewHistoricalData
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewHistoricalData
+  nameWithType: UserPermission.ViewHistoricalData
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewHistoricalData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewHistoricalData
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: View historical bars, quotes, and trades.
+  example: []
+  syntax:
+    content: ViewHistoricalData = 2
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.TriggerBackfill
+  commentId: F:Meridian.Contracts.Auth.UserPermission.TriggerBackfill
+  id: TriggerBackfill
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: TriggerBackfill
+  nameWithType: UserPermission.TriggerBackfill
+  fullName: Meridian.Contracts.Auth.UserPermission.TriggerBackfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TriggerBackfill
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Trigger backfill jobs for historical data gaps.
+  example: []
+  syntax:
+    content: TriggerBackfill = 4
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ManageProviders
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ManageProviders
+  id: ManageProviders
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ManageProviders
+  nameWithType: UserPermission.ManageProviders
+  fullName: Meridian.Contracts.Auth.UserPermission.ManageProviders
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManageProviders
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Add, remove, or reconfigure data providers.
+  example: []
+  syntax:
+    content: ManageProviders = 8
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewTrades
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewTrades
+  id: ViewTrades
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewTrades
+  nameWithType: UserPermission.ViewTrades
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewTrades
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewTrades
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: View trade records and order history.
+  example: []
+  syntax:
+    content: ViewTrades = 16
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ExecuteTrades
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ExecuteTrades
+  id: ExecuteTrades
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ExecuteTrades
+  nameWithType: UserPermission.ExecuteTrades
+  fullName: Meridian.Contracts.Auth.UserPermission.ExecuteTrades
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteTrades
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Submit orders through the execution gateway.
+  example: []
+  syntax:
+    content: ExecuteTrades = 32
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ManageOrders
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ManageOrders
+  id: ManageOrders
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ManageOrders
+  nameWithType: UserPermission.ManageOrders
+  fullName: Meridian.Contracts.Auth.UserPermission.ManageOrders
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManageOrders
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Modify or cancel outstanding orders.
+  example: []
+  syntax:
+    content: ManageOrders = 64
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewAnalytics
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewAnalytics
+  id: ViewAnalytics
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewAnalytics
+  nameWithType: UserPermission.ViewAnalytics
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewAnalytics
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewAnalytics
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: View analytics dashboards and reports.
+  example: []
+  syntax:
+    content: ViewAnalytics = 128
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ExportData
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ExportData
+  id: ExportData
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ExportData
+  nameWithType: UserPermission.ExportData
+  fullName: Meridian.Contracts.Auth.UserPermission.ExportData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportData
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Export data to CSV, Parquet, or other formats.
+  example: []
+  syntax:
+    content: ExportData = 256
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewConfig
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewConfig
+  id: ViewConfig
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewConfig
+  nameWithType: UserPermission.ViewConfig
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewConfig
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewConfig
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Read platform configuration settings.
+  example: []
+  syntax:
+    content: ViewConfig = 512
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ModifyConfig
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ModifyConfig
+  id: ModifyConfig
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ModifyConfig
+  nameWithType: UserPermission.ModifyConfig
+  fullName: Meridian.Contracts.Auth.UserPermission.ModifyConfig
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModifyConfig
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Change platform configuration settings.
+  example: []
+  syntax:
+    content: ModifyConfig = 1024
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ManageCredentials
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ManageCredentials
+  id: ManageCredentials
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ManageCredentials
+  nameWithType: UserPermission.ManageCredentials
+  fullName: Meridian.Contracts.Auth.UserPermission.ManageCredentials
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManageCredentials
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Add or rotate provider credentials.
+  example: []
+  syntax:
+    content: ManageCredentials = 2048
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewDiagnostics
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewDiagnostics
+  id: ViewDiagnostics
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewDiagnostics
+  nameWithType: UserPermission.ViewDiagnostics
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewDiagnostics
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewDiagnostics
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: View diagnostic bundles and connection health.
+  example: []
+  syntax:
+    content: ViewDiagnostics = 4096
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ManageStorage
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ManageStorage
+  id: ManageStorage
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ManageStorage
+  nameWithType: UserPermission.ManageStorage
+  fullName: Meridian.Contracts.Auth.UserPermission.ManageStorage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManageStorage
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Manage storage tiers, archival, and maintenance jobs.
+  example: []
+  syntax:
+    content: ManageStorage = 8192
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.AdminMaintenance
+  commentId: F:Meridian.Contracts.Auth.UserPermission.AdminMaintenance
+  id: AdminMaintenance
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: AdminMaintenance
+  nameWithType: UserPermission.AdminMaintenance
+  fullName: Meridian.Contracts.Auth.UserPermission.AdminMaintenance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdminMaintenance
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Run admin maintenance routines (WAL repair, reindex, etc.).
+  example: []
+  syntax:
+    content: AdminMaintenance = 16384
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ManageUsers
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ManageUsers
+  id: ManageUsers
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ManageUsers
+  nameWithType: UserPermission.ManageUsers
+  fullName: Meridian.Contracts.Auth.UserPermission.ManageUsers
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManageUsers
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Create, modify, or delete user accounts.
+  example: []
+  syntax:
+    content: ManageUsers = 32768
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewStrategies
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewStrategies
+  id: ViewStrategies
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewStrategies
+  nameWithType: UserPermission.ViewStrategies
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewStrategies
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewStrategies
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: View strategy definitions and backtest results.
+  example: []
+  syntax:
+    content: ViewStrategies = 65536
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ManageStrategies
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ManageStrategies
+  id: ManageStrategies
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ManageStrategies
+  nameWithType: UserPermission.ManageStrategies
+  fullName: Meridian.Contracts.Auth.UserPermission.ManageStrategies
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManageStrategies
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Create, promote, or delete strategies and run backtests.
+  example: []
+  syntax:
+    content: ManageStrategies = 131072
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewSecurityMaster
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewSecurityMaster
+  id: ViewSecurityMaster
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewSecurityMaster
+  nameWithType: UserPermission.ViewSecurityMaster
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewSecurityMaster
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewSecurityMaster
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Read security master reference data.
+  example: []
+  syntax:
+    content: ViewSecurityMaster = 262144
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ModifySecurityMaster
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ModifySecurityMaster
+  id: ModifySecurityMaster
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ModifySecurityMaster
+  nameWithType: UserPermission.ModifySecurityMaster
+  fullName: Meridian.Contracts.Auth.UserPermission.ModifySecurityMaster
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModifySecurityMaster
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Create or update security master entries.
+  example: []
+  syntax:
+    content: ModifySecurityMaster = 524288
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ViewDirectLending
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ViewDirectLending
+  id: ViewDirectLending
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ViewDirectLending
+  nameWithType: UserPermission.ViewDirectLending
+  fullName: Meridian.Contracts.Auth.UserPermission.ViewDirectLending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViewDirectLending
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: View direct-lending contracts and positions.
+  example: []
+  syntax:
+    content: ViewDirectLending = 1048576
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+- uid: Meridian.Contracts.Auth.UserPermission.ManageDirectLending
+  commentId: F:Meridian.Contracts.Auth.UserPermission.ManageDirectLending
+  id: ManageDirectLending
+  parent: Meridian.Contracts.Auth.UserPermission
+  langs:
+  - csharp
+  - vb
+  name: ManageDirectLending
+  nameWithType: UserPermission.ManageDirectLending
+  fullName: Meridian.Contracts.Auth.UserPermission.ManageDirectLending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Auth/UserPermission.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManageDirectLending
+    path: ../../src/Meridian.Contracts/Auth/UserPermission.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Auth
+  summary: Create and service direct-lending contracts.
+  example: []
+  syntax:
+    content: ManageDirectLending = 2097152
+    return:
+      type: Meridian.Contracts.Auth.UserPermission
+references:
+- uid: Meridian.Contracts.Auth.RolePermissions
+  commentId: T:Meridian.Contracts.Auth.RolePermissions
+  href: Meridian.Contracts.Auth.RolePermissions.html
+  name: RolePermissions
+  nameWithType: RolePermissions
+  fullName: Meridian.Contracts.Auth.RolePermissions
+- uid: Meridian.Contracts.Auth
+  commentId: N:Meridian.Contracts.Auth
+  href: Meridian.html
+  name: Meridian.Contracts.Auth
+  nameWithType: Meridian.Contracts.Auth
+  fullName: Meridian.Contracts.Auth
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+- uid: Meridian.Contracts.Auth.UserPermission
+  commentId: T:Meridian.Contracts.Auth.UserPermission
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserPermission.html
+  name: UserPermission
+  nameWithType: UserPermission
+  fullName: Meridian.Contracts.Auth.UserPermission

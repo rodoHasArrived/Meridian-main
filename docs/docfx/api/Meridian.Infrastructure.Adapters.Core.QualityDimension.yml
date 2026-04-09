@@ -1,0 +1,818 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualityDimension
+  id: QualityDimension
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.#ctor(System.String,System.Double,System.Double,System.String)
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy(System.Double)
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness(System.Double)
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency(System.Double)
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Description
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Name
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Score
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness(System.Double)
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity(System.Double)
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight
+  - Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore
+  langs:
+  - csharp
+  - vb
+  name: QualityDimension
+  nameWithType: QualityDimension
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityDimension
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: A quality dimension with its score.
+  example: []
+  syntax:
+    content: 'public sealed record QualityDimension : IEquatable<QualityDimension>'
+    content.vb: Public NotInheritable Class QualityDimension Implements IEquatable(Of QualityDimension)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.QualityDimension}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.#ctor(System.String,System.Double,System.Double,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.QualityDimension.#ctor(System.String,System.Double,System.Double,System.String)
+  id: '#ctor(System.String,System.Double,System.Double,System.String)'
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: QualityDimension(string, double, double, string)
+  nameWithType: QualityDimension.QualityDimension(string, double, double, string)
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.QualityDimension(string, double, double, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: A quality dimension with its score.
+  example: []
+  syntax:
+    content: public QualityDimension(string Name, double Score, double Weight, string Description)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: Score
+      type: System.Double
+    - id: Weight
+      type: System.Double
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(Name As String, Score As Double, Weight As Double, Description As String)
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.#ctor*
+  nameWithType.vb: QualityDimension.New(String, Double, Double, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityDimension.New(String, Double, Double, String)
+  name.vb: New(String, Double, Double, String)
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityDimension.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: QualityDimension.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Name*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Score
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityDimension.Score
+  id: Score
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: QualityDimension.Score
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double Score { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Score As Double
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Score*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight
+  id: Weight
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Weight
+  nameWithType: QualityDimension.Weight
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weight
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double Weight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Weight As Double
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Description
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityDimension.Description
+  id: Description
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: QualityDimension.Description
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Description*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore
+  commentId: P:Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore
+  id: WeightedScore
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: WeightedScore
+  nameWithType: QualityDimension.WeightedScore
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WeightedScore
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double WeightedScore { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property WeightedScore As Double
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore*
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness(System.Double)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness(System.Double)
+  id: Completeness(System.Double)
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Completeness(double)
+  nameWithType: QualityDimension.Completeness(double)
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completeness
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static QualityDimension Completeness(double score)
+    parameters:
+    - id: score
+      type: System.Double
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityDimension
+    content.vb: Public Shared Function Completeness(score As Double) As QualityDimension
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness*
+  nameWithType.vb: QualityDimension.Completeness(Double)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness(Double)
+  name.vb: Completeness(Double)
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy(System.Double)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy(System.Double)
+  id: Accuracy(System.Double)
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Accuracy(double)
+  nameWithType: QualityDimension.Accuracy(double)
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accuracy
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static QualityDimension Accuracy(double score)
+    parameters:
+    - id: score
+      type: System.Double
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityDimension
+    content.vb: Public Shared Function Accuracy(score As Double) As QualityDimension
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy*
+  nameWithType.vb: QualityDimension.Accuracy(Double)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy(Double)
+  name.vb: Accuracy(Double)
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness(System.Double)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness(System.Double)
+  id: Timeliness(System.Double)
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Timeliness(double)
+  nameWithType: QualityDimension.Timeliness(double)
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timeliness
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static QualityDimension Timeliness(double score)
+    parameters:
+    - id: score
+      type: System.Double
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityDimension
+    content.vb: Public Shared Function Timeliness(score As Double) As QualityDimension
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness*
+  nameWithType.vb: QualityDimension.Timeliness(Double)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness(Double)
+  name.vb: Timeliness(Double)
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency(System.Double)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency(System.Double)
+  id: Consistency(System.Double)
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Consistency(double)
+  nameWithType: QualityDimension.Consistency(double)
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Consistency
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static QualityDimension Consistency(double score)
+    parameters:
+    - id: score
+      type: System.Double
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityDimension
+    content.vb: Public Shared Function Consistency(score As Double) As QualityDimension
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency*
+  nameWithType.vb: QualityDimension.Consistency(Double)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency(Double)
+  name.vb: Consistency(Double)
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity(System.Double)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity(System.Double)
+  id: Validity(System.Double)
+  parent: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  langs:
+  - csharp
+  - vb
+  name: Validity(double)
+  nameWithType: QualityDimension.Validity(double)
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validity
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public static QualityDimension Validity(double score)
+    parameters:
+    - id: score
+      type: System.Double
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityDimension
+    content.vb: Public Shared Function Validity(score As Double) As QualityDimension
+  overload: Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity*
+  nameWithType.vb: QualityDimension.Validity(Double)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity(Double)
+  name.vb: Validity(Double)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.QualityDimension}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.QualityDimension}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualityDimension>
+  nameWithType: IEquatable<QualityDimension>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.QualityDimension>
+  nameWithType.vb: IEquatable(Of QualityDimension)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.QualityDimension)
+  name.vb: IEquatable(Of QualityDimension)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityDimension
+    name: QualityDimension
+    href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.QualityDimension
+    name: QualityDimension
+    href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension__ctor_System_String_System_Double_System_Double_System_String_
+  name: QualityDimension
+  nameWithType: QualityDimension.QualityDimension
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.QualityDimension
+  nameWithType.vb: QualityDimension.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.QualityDimension.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Name
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Name
+  name: Name
+  nameWithType: QualityDimension.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Name
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Score*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Score
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Score
+  name: Score
+  nameWithType: QualityDimension.Score
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Score
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Weight
+  name: Weight
+  nameWithType: QualityDimension.Weight
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Weight
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Description*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Description
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Description
+  name: Description
+  nameWithType: QualityDimension.Description
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Description
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_WeightedScore
+  name: WeightedScore
+  nameWithType: QualityDimension.WeightedScore
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.WeightedScore
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Completeness_System_Double_
+  name: Completeness
+  nameWithType: QualityDimension.Completeness
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Completeness
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualityDimension
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html
+  name: QualityDimension
+  nameWithType: QualityDimension
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Accuracy_System_Double_
+  name: Accuracy
+  nameWithType: QualityDimension.Accuracy
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Accuracy
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Timeliness_System_Double_
+  name: Timeliness
+  nameWithType: QualityDimension.Timeliness
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Timeliness
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Consistency_System_Double_
+  name: Consistency
+  nameWithType: QualityDimension.Consistency
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Consistency
+- uid: Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity
+  href: Meridian.Infrastructure.Adapters.Core.QualityDimension.html#Meridian_Infrastructure_Adapters_Core_QualityDimension_Validity_System_Double_
+  name: Validity
+  nameWithType: QualityDimension.Validity
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityDimension.Validity

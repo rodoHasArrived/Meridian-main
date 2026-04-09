@@ -1,0 +1,216 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  id: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecisionEngine
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryExecutionOptions
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  type: Namespace
+  assemblies:
+  - Meridian.Backtesting.Sdk
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecisionEngine
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecisionEngine
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecisionEngine.html
+  name: AdvancedCarryDecisionEngine
+  nameWithType: AdvancedCarryDecisionEngine
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecisionEngine
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.html
+  name: CarryOptimizationMethod
+  nameWithType: CarryOptimizationMethod
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.html
+  name: CarryExecutionAlgorithm
+  nameWithType: CarryExecutionAlgorithm
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.html
+  name: CarryScenarioType
+  nameWithType: CarryScenarioType
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions.html
+  name: AdvancedCarryRiskOptions
+  nameWithType: AdvancedCarryRiskOptions
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryRiskOptions
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryExecutionOptions
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryExecutionOptions
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryExecutionOptions.html
+  name: AdvancedCarryExecutionOptions
+  nameWithType: AdvancedCarryExecutionOptions
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryExecutionOptions
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration.html
+  name: AdvancedCarryConfiguration
+  nameWithType: AdvancedCarryConfiguration
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html
+  name: CarryAssetSnapshot
+  nameWithType: CarryAssetSnapshot
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation.html
+  name: AssetCorrelation
+  nameWithType: AssetCorrelation
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html
+  name: CarryPortfolioState
+  nameWithType: CarryPortfolioState
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html
+  name: AdvancedCarryInput
+  nameWithType: AdvancedCarryInput
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.html
+  name: ICarryForecastOverlay
+  nameWithType: ICarryForecastOverlay
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight.html
+  name: OptimizedTargetWeight
+  nameWithType: OptimizedTargetWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html
+  name: RebalanceInstruction
+  nameWithType: RebalanceInstruction
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html
+  name: ExecutionSlice
+  nameWithType: ExecutionSlice
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan.html
+  name: ExecutionPlan
+  nameWithType: ExecutionPlan
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate.html
+  name: CarryTailRiskEstimate
+  nameWithType: CarryTailRiskEstimate
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact.html
+  name: ScenarioImpact
+  nameWithType: ScenarioImpact
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport.html
+  name: CarryRiskReport
+  nameWithType: CarryRiskReport
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html
+  name: AdvancedCarryDecision
+  nameWithType: AdvancedCarryDecision
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html

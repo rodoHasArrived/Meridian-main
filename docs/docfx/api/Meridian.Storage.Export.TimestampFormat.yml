@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.TimestampFormat
+  commentId: T:Meridian.Storage.Export.TimestampFormat
+  id: TimestampFormat
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.TimestampFormat.ExcelSerial
+  - Meridian.Storage.Export.TimestampFormat.Iso8601
+  - Meridian.Storage.Export.TimestampFormat.UnixMilliseconds
+  - Meridian.Storage.Export.TimestampFormat.UnixNanoseconds
+  - Meridian.Storage.Export.TimestampFormat.UnixSeconds
+  langs:
+  - csharp
+  - vb
+  name: TimestampFormat
+  nameWithType: TimestampFormat
+  fullName: Meridian.Storage.Export.TimestampFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampFormat
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Supported timestamp formats.
+  example: []
+  syntax:
+    content: 'public enum TimestampFormat : byte'
+    content.vb: Public Enum TimestampFormat As Byte
+- uid: Meridian.Storage.Export.TimestampFormat.Iso8601
+  commentId: F:Meridian.Storage.Export.TimestampFormat.Iso8601
+  id: Iso8601
+  parent: Meridian.Storage.Export.TimestampFormat
+  langs:
+  - csharp
+  - vb
+  name: Iso8601
+  nameWithType: TimestampFormat.Iso8601
+  fullName: Meridian.Storage.Export.TimestampFormat.Iso8601
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Iso8601
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 339
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: ISO 8601 string format.
+  example: []
+  syntax:
+    content: Iso8601 = 0
+    return:
+      type: Meridian.Storage.Export.TimestampFormat
+- uid: Meridian.Storage.Export.TimestampFormat.UnixSeconds
+  commentId: F:Meridian.Storage.Export.TimestampFormat.UnixSeconds
+  id: UnixSeconds
+  parent: Meridian.Storage.Export.TimestampFormat
+  langs:
+  - csharp
+  - vb
+  name: UnixSeconds
+  nameWithType: TimestampFormat.UnixSeconds
+  fullName: Meridian.Storage.Export.TimestampFormat.UnixSeconds
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnixSeconds
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Unix timestamp in seconds.
+  example: []
+  syntax:
+    content: UnixSeconds = 1
+    return:
+      type: Meridian.Storage.Export.TimestampFormat
+- uid: Meridian.Storage.Export.TimestampFormat.UnixMilliseconds
+  commentId: F:Meridian.Storage.Export.TimestampFormat.UnixMilliseconds
+  id: UnixMilliseconds
+  parent: Meridian.Storage.Export.TimestampFormat
+  langs:
+  - csharp
+  - vb
+  name: UnixMilliseconds
+  nameWithType: TimestampFormat.UnixMilliseconds
+  fullName: Meridian.Storage.Export.TimestampFormat.UnixMilliseconds
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnixMilliseconds
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Unix timestamp in milliseconds.
+  example: []
+  syntax:
+    content: UnixMilliseconds = 2
+    return:
+      type: Meridian.Storage.Export.TimestampFormat
+- uid: Meridian.Storage.Export.TimestampFormat.UnixNanoseconds
+  commentId: F:Meridian.Storage.Export.TimestampFormat.UnixNanoseconds
+  id: UnixNanoseconds
+  parent: Meridian.Storage.Export.TimestampFormat
+  langs:
+  - csharp
+  - vb
+  name: UnixNanoseconds
+  nameWithType: TimestampFormat.UnixNanoseconds
+  fullName: Meridian.Storage.Export.TimestampFormat.UnixNanoseconds
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnixNanoseconds
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Unix timestamp in nanoseconds (for pandas datetime64[ns]).
+  example: []
+  syntax:
+    content: UnixNanoseconds = 3
+    return:
+      type: Meridian.Storage.Export.TimestampFormat
+- uid: Meridian.Storage.Export.TimestampFormat.ExcelSerial
+  commentId: F:Meridian.Storage.Export.TimestampFormat.ExcelSerial
+  id: ExcelSerial
+  parent: Meridian.Storage.Export.TimestampFormat
+  langs:
+  - csharp
+  - vb
+  name: ExcelSerial
+  nameWithType: TimestampFormat.ExcelSerial
+  fullName: Meridian.Storage.Export.TimestampFormat.ExcelSerial
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExcelSerial
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Excel serial date format.
+  example: []
+  syntax:
+    content: ExcelSerial = 4
+    return:
+      type: Meridian.Storage.Export.TimestampFormat
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.TimestampFormat
+  commentId: T:Meridian.Storage.Export.TimestampFormat
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.TimestampFormat.html
+  name: TimestampFormat
+  nameWithType: TimestampFormat
+  fullName: Meridian.Storage.Export.TimestampFormat

@@ -1,0 +1,1219 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.PortablePackagerService
+  commentId: T:Meridian.Ui.Services.PortablePackagerService
+  id: PortablePackagerService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.PortablePackagerService.#ctor(Meridian.Ui.Services.ManifestService,Meridian.Ui.Services.ArchiveHealthService,Meridian.Ui.Services.SchemaService)
+  - Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageCreationOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageRequest,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync(System.String,System.String,System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync
+  - Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync(Meridian.Ui.Services.PackageImportOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortablePackagerService.Instance
+  - Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync(System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: PortablePackagerService
+  nameWithType: PortablePackagerService
+  fullName: Meridian.Ui.Services.PortablePackagerService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortablePackagerService
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for creating portable, self-contained archive packages.
+
+    Implements Feature #28: Portable Data Packager
+  example: []
+  syntax:
+    content: public sealed class PortablePackagerService
+    content.vb: Public NotInheritable Class PortablePackagerService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.PortablePackagerService.Instance
+  commentId: P:Meridian.Ui.Services.PortablePackagerService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: PortablePackagerService.Instance
+  fullName: Meridian.Ui.Services.PortablePackagerService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static PortablePackagerService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.PortablePackagerService
+    content.vb: Public Shared ReadOnly Property Instance As PortablePackagerService
+  overload: Meridian.Ui.Services.PortablePackagerService.Instance*
+- uid: Meridian.Ui.Services.PortablePackagerService.#ctor(Meridian.Ui.Services.ManifestService,Meridian.Ui.Services.ArchiveHealthService,Meridian.Ui.Services.SchemaService)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.#ctor(Meridian.Ui.Services.ManifestService,Meridian.Ui.Services.ArchiveHealthService,Meridian.Ui.Services.SchemaService)
+  id: '#ctor(Meridian.Ui.Services.ManifestService,Meridian.Ui.Services.ArchiveHealthService,Meridian.Ui.Services.SchemaService)'
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: PortablePackagerService(ManifestService, ArchiveHealthService, SchemaService)
+  nameWithType: PortablePackagerService.PortablePackagerService(ManifestService, ArchiveHealthService, SchemaService)
+  fullName: Meridian.Ui.Services.PortablePackagerService.PortablePackagerService(Meridian.Ui.Services.ManifestService, Meridian.Ui.Services.ArchiveHealthService, Meridian.Ui.Services.SchemaService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public PortablePackagerService(ManifestService manifestService, ArchiveHealthService archiveHealthService, SchemaService schemaService)
+    parameters:
+    - id: manifestService
+      type: Meridian.Ui.Services.ManifestService
+    - id: archiveHealthService
+      type: Meridian.Ui.Services.ArchiveHealthService
+    - id: schemaService
+      type: Meridian.Ui.Services.SchemaService
+    content.vb: Public Sub New(manifestService As ManifestService, archiveHealthService As ArchiveHealthService, schemaService As SchemaService)
+  overload: Meridian.Ui.Services.PortablePackagerService.#ctor*
+  nameWithType.vb: PortablePackagerService.New(ManifestService, ArchiveHealthService, SchemaService)
+  fullName.vb: Meridian.Ui.Services.PortablePackagerService.New(Meridian.Ui.Services.ManifestService, Meridian.Ui.Services.ArchiveHealthService, Meridian.Ui.Services.SchemaService)
+  name.vb: New(ManifestService, ArchiveHealthService, SchemaService)
+- uid: Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync
+  id: GetRecentPackagesAsync
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: GetRecentPackagesAsync()
+  nameWithType: PortablePackagerService.GetRecentPackagesAsync()
+  fullName: Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentPackagesAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets recent packages that have been created or imported.
+  example: []
+  syntax:
+    content: public Task<List<RecentPackageInfo>> GetRecentPackagesAsync()
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.RecentPackageInfo}}
+    content.vb: Public Function GetRecentPackagesAsync() As Task(Of List(Of RecentPackageInfo))
+  overload: Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync*
+- uid: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageCreationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageCreationOptions,System.Threading.CancellationToken)
+  id: CreatePackageAsync(Meridian.Ui.Services.PackageCreationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: CreatePackageAsync(PackageCreationOptions, CancellationToken)
+  nameWithType: PortablePackagerService.CreatePackageAsync(PackageCreationOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageCreationOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatePackageAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a package with the specified options.
+  example: []
+  syntax:
+    content: public Task<PackageCreationResult> CreatePackageAsync(PackageCreationOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.PackageCreationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageCreationResult}
+    content.vb: Public Function CreatePackageAsync(options As PackageCreationOptions, ct As CancellationToken = Nothing) As Task(Of PackageCreationResult)
+  overload: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync*
+- uid: Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync(Meridian.Ui.Services.PackageImportOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync(Meridian.Ui.Services.PackageImportOptions,System.Threading.CancellationToken)
+  id: ImportPackageAsync(Meridian.Ui.Services.PackageImportOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: ImportPackageAsync(PackageImportOptions, CancellationToken)
+  nameWithType: PortablePackagerService.ImportPackageAsync(PackageImportOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync(Meridian.Ui.Services.PackageImportOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportPackageAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Imports a package from the specified path.
+  example: []
+  syntax:
+    content: public Task<PackageImportResult> ImportPackageAsync(PackageImportOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.PackageImportOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageImportResult}
+    content.vb: Public Function ImportPackageAsync(options As PackageImportOptions, ct As CancellationToken = Nothing) As Task(Of PackageImportResult)
+  overload: Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync*
+- uid: Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync(System.String,System.Threading.CancellationToken)
+  id: ValidatePackageAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: ValidatePackageAsync(string, CancellationToken)
+  nameWithType: PortablePackagerService.ValidatePackageAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidatePackageAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Validates a package and returns detailed validation results.
+  example: []
+  syntax:
+    content: public Task<PackageValidationResult> ValidatePackageAsync(string packagePath, CancellationToken ct = default)
+    parameters:
+    - id: packagePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageValidationResult}
+    content.vb: Public Function ValidatePackageAsync(packagePath As String, ct As CancellationToken = Nothing) As Task(Of PackageValidationResult)
+  overload: Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync*
+  nameWithType.vb: PortablePackagerService.ValidatePackageAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync(String, System.Threading.CancellationToken)
+  name.vb: ValidatePackageAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync(System.String,System.Threading.CancellationToken)
+  id: GetPackageInfoAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: GetPackageInfoAsync(string, CancellationToken)
+  nameWithType: PortablePackagerService.GetPackageInfoAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPackageInfoAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets information about a package without extracting it.
+  example: []
+  syntax:
+    content: public Task<PackageInfo?> GetPackageInfoAsync(string packagePath, CancellationToken ct = default)
+    parameters:
+    - id: packagePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageInfo}
+    content.vb: Public Function GetPackageInfoAsync(packagePath As String, ct As CancellationToken = Nothing) As Task(Of PackageInfo)
+  overload: Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync*
+  nameWithType.vb: PortablePackagerService.GetPackageInfoAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync(String, System.Threading.CancellationToken)
+  name.vb: GetPackageInfoAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageRequest,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageRequest,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  id: CreatePackageAsync(Meridian.Ui.Services.PackageRequest,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: CreatePackageAsync(PackageRequest, IProgress<PackageProgress>?, CancellationToken)
+  nameWithType: PortablePackagerService.CreatePackageAsync(PackageRequest, IProgress<PackageProgress>?, CancellationToken)
+  fullName: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageRequest, System.IProgress<Meridian.Ui.Services.PackageProgress>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatePackageAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a portable archive package from selected data.
+  example: []
+  syntax:
+    content: public Task<PackageResult> CreatePackageAsync(PackageRequest request, IProgress<PackageProgress>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Ui.Services.PackageRequest
+    - id: progress
+      type: System.IProgress{Meridian.Ui.Services.PackageProgress}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageResult}
+    content.vb: Public Function CreatePackageAsync(request As PackageRequest, progress As IProgress(Of PackageProgress) = Nothing, ct As CancellationToken = Nothing) As Task(Of PackageResult)
+  overload: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync*
+  nameWithType.vb: PortablePackagerService.CreatePackageAsync(PackageRequest, IProgress(Of PackageProgress), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync(Meridian.Ui.Services.PackageRequest, System.IProgress(Of Meridian.Ui.Services.PackageProgress), System.Threading.CancellationToken)
+  name.vb: CreatePackageAsync(PackageRequest, IProgress(Of PackageProgress), CancellationToken)
+- uid: Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync(System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync(System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  id: VerifyPackageAsync(System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: VerifyPackageAsync(string, IProgress<PackageProgress>?, CancellationToken)
+  nameWithType: PortablePackagerService.VerifyPackageAsync(string, IProgress<PackageProgress>?, CancellationToken)
+  fullName: Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync(string, System.IProgress<Meridian.Ui.Services.PackageProgress>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyPackageAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 334
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Verifies a portable package integrity.
+  example: []
+  syntax:
+    content: public Task<PackageVerificationResult> VerifyPackageAsync(string packagePath, IProgress<PackageProgress>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: packagePath
+      type: System.String
+    - id: progress
+      type: System.IProgress{Meridian.Ui.Services.PackageProgress}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageVerificationResult}
+    content.vb: Public Function VerifyPackageAsync(packagePath As String, progress As IProgress(Of PackageProgress) = Nothing, ct As CancellationToken = Nothing) As Task(Of PackageVerificationResult)
+  overload: Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync*
+  nameWithType.vb: PortablePackagerService.VerifyPackageAsync(String, IProgress(Of PackageProgress), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync(String, System.IProgress(Of Meridian.Ui.Services.PackageProgress), System.Threading.CancellationToken)
+  name.vb: VerifyPackageAsync(String, IProgress(Of PackageProgress), CancellationToken)
+- uid: Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync(System.String,System.String,System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync(System.String,System.String,System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  id: ExtractPackageAsync(System.String,System.String,System.String,System.IProgress{Meridian.Ui.Services.PackageProgress},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortablePackagerService
+  langs:
+  - csharp
+  - vb
+  name: ExtractPackageAsync(string, string, string?, IProgress<PackageProgress>?, CancellationToken)
+  nameWithType: PortablePackagerService.ExtractPackageAsync(string, string, string?, IProgress<PackageProgress>?, CancellationToken)
+  fullName: Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync(string, string, string?, System.IProgress<Meridian.Ui.Services.PackageProgress>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExtractPackageAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs
+    startLine: 387
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Extracts a portable package to a destination directory.
+  example: []
+  syntax:
+    content: public Task<bool> ExtractPackageAsync(string packagePath, string destinationPath, string? decryptionPassword = null, IProgress<PackageProgress>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: packagePath
+      type: System.String
+    - id: destinationPath
+      type: System.String
+    - id: decryptionPassword
+      type: System.String
+    - id: progress
+      type: System.IProgress{Meridian.Ui.Services.PackageProgress}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function ExtractPackageAsync(packagePath As String, destinationPath As String, decryptionPassword As String = Nothing, progress As IProgress(Of PackageProgress) = Nothing, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync*
+  nameWithType.vb: PortablePackagerService.ExtractPackageAsync(String, String, String, IProgress(Of PackageProgress), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync(String, String, String, System.IProgress(Of Meridian.Ui.Services.PackageProgress), System.Threading.CancellationToken)
+  name.vb: ExtractPackageAsync(String, String, String, IProgress(Of PackageProgress), CancellationToken)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.PortablePackagerService.Instance*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.Instance
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_Instance
+  name: Instance
+  nameWithType: PortablePackagerService.Instance
+  fullName: Meridian.Ui.Services.PortablePackagerService.Instance
+- uid: Meridian.Ui.Services.PortablePackagerService
+  commentId: T:Meridian.Ui.Services.PortablePackagerService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PortablePackagerService.html
+  name: PortablePackagerService
+  nameWithType: PortablePackagerService
+  fullName: Meridian.Ui.Services.PortablePackagerService
+- uid: Meridian.Ui.Services.PortablePackagerService.#ctor*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.#ctor
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService__ctor_Meridian_Ui_Services_ManifestService_Meridian_Ui_Services_ArchiveHealthService_Meridian_Ui_Services_SchemaService_
+  name: PortablePackagerService
+  nameWithType: PortablePackagerService.PortablePackagerService
+  fullName: Meridian.Ui.Services.PortablePackagerService.PortablePackagerService
+  nameWithType.vb: PortablePackagerService.New
+  fullName.vb: Meridian.Ui.Services.PortablePackagerService.New
+  name.vb: New
+- uid: Meridian.Ui.Services.ManifestService
+  commentId: T:Meridian.Ui.Services.ManifestService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ManifestService.html
+  name: ManifestService
+  nameWithType: ManifestService
+  fullName: Meridian.Ui.Services.ManifestService
+- uid: Meridian.Ui.Services.ArchiveHealthService
+  commentId: T:Meridian.Ui.Services.ArchiveHealthService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ArchiveHealthService.html
+  name: ArchiveHealthService
+  nameWithType: ArchiveHealthService
+  fullName: Meridian.Ui.Services.ArchiveHealthService
+- uid: Meridian.Ui.Services.SchemaService
+  commentId: T:Meridian.Ui.Services.SchemaService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SchemaService.html
+  name: SchemaService
+  nameWithType: SchemaService
+  fullName: Meridian.Ui.Services.SchemaService
+- uid: Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_GetRecentPackagesAsync
+  name: GetRecentPackagesAsync
+  nameWithType: PortablePackagerService.GetRecentPackagesAsync
+  fullName: Meridian.Ui.Services.PortablePackagerService.GetRecentPackagesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.RecentPackageInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.RecentPackageInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<RecentPackageInfo>>
+  nameWithType: Task<List<RecentPackageInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.RecentPackageInfo>>
+  nameWithType.vb: Task(Of List(Of RecentPackageInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.RecentPackageInfo))
+  name.vb: Task(Of List(Of RecentPackageInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.RecentPackageInfo
+    name: RecentPackageInfo
+    href: Meridian.Ui.Services.RecentPackageInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.RecentPackageInfo
+    name: RecentPackageInfo
+    href: Meridian.Ui.Services.RecentPackageInfo.html
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_CreatePackageAsync_Meridian_Ui_Services_PackageCreationOptions_System_Threading_CancellationToken_
+  name: CreatePackageAsync
+  nameWithType: PortablePackagerService.CreatePackageAsync
+  fullName: Meridian.Ui.Services.PortablePackagerService.CreatePackageAsync
+- uid: Meridian.Ui.Services.PackageCreationOptions
+  commentId: T:Meridian.Ui.Services.PackageCreationOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PackageCreationOptions.html
+  name: PackageCreationOptions
+  nameWithType: PackageCreationOptions
+  fullName: Meridian.Ui.Services.PackageCreationOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageCreationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PackageCreationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PackageCreationResult>
+  nameWithType: Task<PackageCreationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PackageCreationResult>
+  nameWithType.vb: Task(Of PackageCreationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PackageCreationResult)
+  name.vb: Task(Of PackageCreationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackageCreationResult
+    name: PackageCreationResult
+    href: Meridian.Ui.Services.PackageCreationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackageCreationResult
+    name: PackageCreationResult
+    href: Meridian.Ui.Services.PackageCreationResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_ImportPackageAsync_Meridian_Ui_Services_PackageImportOptions_System_Threading_CancellationToken_
+  name: ImportPackageAsync
+  nameWithType: PortablePackagerService.ImportPackageAsync
+  fullName: Meridian.Ui.Services.PortablePackagerService.ImportPackageAsync
+- uid: Meridian.Ui.Services.PackageImportOptions
+  commentId: T:Meridian.Ui.Services.PackageImportOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PackageImportOptions.html
+  name: PackageImportOptions
+  nameWithType: PackageImportOptions
+  fullName: Meridian.Ui.Services.PackageImportOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageImportResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PackageImportResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PackageImportResult>
+  nameWithType: Task<PackageImportResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PackageImportResult>
+  nameWithType.vb: Task(Of PackageImportResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PackageImportResult)
+  name.vb: Task(Of PackageImportResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackageImportResult
+    name: PackageImportResult
+    href: Meridian.Ui.Services.PackageImportResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackageImportResult
+    name: PackageImportResult
+    href: Meridian.Ui.Services.PackageImportResult.html
+  - name: )
+- uid: Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_ValidatePackageAsync_System_String_System_Threading_CancellationToken_
+  name: ValidatePackageAsync
+  nameWithType: PortablePackagerService.ValidatePackageAsync
+  fullName: Meridian.Ui.Services.PortablePackagerService.ValidatePackageAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PackageValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PackageValidationResult>
+  nameWithType: Task<PackageValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PackageValidationResult>
+  nameWithType.vb: Task(Of PackageValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PackageValidationResult)
+  name.vb: Task(Of PackageValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackageValidationResult
+    name: PackageValidationResult
+    href: Meridian.Ui.Services.PackageValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackageValidationResult
+    name: PackageValidationResult
+    href: Meridian.Ui.Services.PackageValidationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_GetPackageInfoAsync_System_String_System_Threading_CancellationToken_
+  name: GetPackageInfoAsync
+  nameWithType: PortablePackagerService.GetPackageInfoAsync
+  fullName: Meridian.Ui.Services.PortablePackagerService.GetPackageInfoAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageInfo}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PackageInfo}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PackageInfo>
+  nameWithType: Task<PackageInfo>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PackageInfo>
+  nameWithType.vb: Task(Of PackageInfo)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PackageInfo)
+  name.vb: Task(Of PackageInfo)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackageInfo
+    name: PackageInfo
+    href: Meridian.Ui.Services.PackageInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackageInfo
+    name: PackageInfo
+    href: Meridian.Ui.Services.PackageInfo.html
+  - name: )
+- uid: Meridian.Ui.Services.PackageRequest
+  commentId: T:Meridian.Ui.Services.PackageRequest
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PackageRequest.html
+  name: PackageRequest
+  nameWithType: PackageRequest
+  fullName: Meridian.Ui.Services.PackageRequest
+- uid: System.IProgress{Meridian.Ui.Services.PackageProgress}
+  commentId: T:System.IProgress{Meridian.Ui.Services.PackageProgress}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<PackageProgress>
+  nameWithType: IProgress<PackageProgress>
+  fullName: System.IProgress<Meridian.Ui.Services.PackageProgress>
+  nameWithType.vb: IProgress(Of PackageProgress)
+  fullName.vb: System.IProgress(Of Meridian.Ui.Services.PackageProgress)
+  name.vb: IProgress(Of PackageProgress)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackageProgress
+    name: PackageProgress
+    href: Meridian.Ui.Services.PackageProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackageProgress
+    name: PackageProgress
+    href: Meridian.Ui.Services.PackageProgress.html
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PackageResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PackageResult>
+  nameWithType: Task<PackageResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PackageResult>
+  nameWithType.vb: Task(Of PackageResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PackageResult)
+  name.vb: Task(Of PackageResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackageResult
+    name: PackageResult
+    href: Meridian.Ui.Services.PackageResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackageResult
+    name: PackageResult
+    href: Meridian.Ui.Services.PackageResult.html
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_VerifyPackageAsync_System_String_System_IProgress_Meridian_Ui_Services_PackageProgress__System_Threading_CancellationToken_
+  name: VerifyPackageAsync
+  nameWithType: PortablePackagerService.VerifyPackageAsync
+  fullName: Meridian.Ui.Services.PortablePackagerService.VerifyPackageAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PackageVerificationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PackageVerificationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PackageVerificationResult>
+  nameWithType: Task<PackageVerificationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PackageVerificationResult>
+  nameWithType.vb: Task(Of PackageVerificationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PackageVerificationResult)
+  name.vb: Task(Of PackageVerificationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PackageVerificationResult
+    name: PackageVerificationResult
+    href: Meridian.Ui.Services.PackageVerificationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PackageVerificationResult
+    name: PackageVerificationResult
+    href: Meridian.Ui.Services.PackageVerificationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync*
+  commentId: Overload:Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync
+  href: Meridian.Ui.Services.PortablePackagerService.html#Meridian_Ui_Services_PortablePackagerService_ExtractPackageAsync_System_String_System_String_System_String_System_IProgress_Meridian_Ui_Services_PackageProgress__System_Threading_CancellationToken_
+  name: ExtractPackageAsync
+  nameWithType: PortablePackagerService.ExtractPackageAsync
+  fullName: Meridian.Ui.Services.PortablePackagerService.ExtractPackageAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )

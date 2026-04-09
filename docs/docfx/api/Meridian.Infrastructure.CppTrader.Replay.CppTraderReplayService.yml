@@ -1,0 +1,714 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  commentId: T:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  id: CppTraderReplayService
+  parent: Meridian.Infrastructure.CppTrader.Replay
+  children:
+  - Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager,Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})
+  - Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: CppTraderReplayService
+  nameWithType: CppTraderReplayService
+  fullName: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderReplayService
+    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Replay
+  summary: >-
+    Creates replay sessions on the external CppTrader host process and returns the session identifier.
+
+    Callers use the returned session ID to correlate subsequent replay events received via the host.
+  example: []
+  syntax:
+    content: 'public sealed class CppTraderReplayService : ICppTraderReplayService'
+    content.vb: Public NotInheritable Class CppTraderReplayService Implements ICppTraderReplayService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager,Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})
+  commentId: M:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager,Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})
+  id: '#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager,Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})'
+  parent: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  langs:
+  - csharp
+  - vb
+  name: CppTraderReplayService(ICppTraderHostManager, IOptionsMonitor<CppTraderOptions>)
+  nameWithType: CppTraderReplayService.CppTraderReplayService(ICppTraderHostManager, IOptionsMonitor<CppTraderOptions>)
+  fullName: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CppTraderReplayService(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager, Microsoft.Extensions.Options.IOptionsMonitor<Meridian.Infrastructure.CppTrader.Options.CppTraderOptions>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Replay
+  summary: >-
+    Creates replay sessions on the external CppTrader host process and returns the session identifier.
+
+    Callers use the returned session ID to correlate subsequent replay events received via the host.
+  example: []
+  syntax:
+    content: public CppTraderReplayService(ICppTraderHostManager hostManager, IOptionsMonitor<CppTraderOptions> optionsMonitor)
+    parameters:
+    - id: hostManager
+      type: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+    - id: optionsMonitor
+      type: Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+    content.vb: Public Sub New(hostManager As ICppTraderHostManager, optionsMonitor As IOptionsMonitor(Of CppTraderOptions))
+  overload: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.#ctor*
+  nameWithType.vb: CppTraderReplayService.New(ICppTraderHostManager, IOptionsMonitor(Of CppTraderOptions))
+  fullName.vb: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.New(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager, Microsoft.Extensions.Options.IOptionsMonitor(Of Meridian.Infrastructure.CppTrader.Options.CppTraderOptions))
+  name.vb: New(ICppTraderHostManager, IOptionsMonitor(Of CppTraderOptions))
+- uid: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+  id: CreateReplaySessionAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService
+  langs:
+  - csharp
+  - vb
+  name: CreateReplaySessionAsync(CancellationToken)
+  nameWithType: CppTraderReplayService.CreateReplaySessionAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateReplaySessionAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Replay/CppTraderReplayService.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Replay
+  summary: Opens a new replay session on the CppTrader host and returns its session identifier.
+  example: []
+  syntax:
+    content: public Task<string> CreateReplaySessionAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: The session ID assigned by the host.
+    content.vb: Public Function CreateReplaySessionAsync(ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when replay is disabled in configuration.
+  implements:
+  - Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Infrastructure.CppTrader.Replay
+  commentId: N:Meridian.Infrastructure.CppTrader.Replay
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Replay
+  nameWithType: Meridian.Infrastructure.CppTrader.Replay
+  fullName: Meridian.Infrastructure.CppTrader.Replay
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Replay
+    name: Replay
+    href: Meridian.Infrastructure.CppTrader.Replay.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Replay
+    name: Replay
+    href: Meridian.Infrastructure.CppTrader.Replay.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+  commentId: T:Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+  parent: Meridian.Infrastructure.CppTrader.Replay
+  href: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.html
+  name: ICppTraderReplayService
+  nameWithType: ICppTraderReplayService
+  fullName: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.#ctor
+  href: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.html#Meridian_Infrastructure_CppTrader_Replay_CppTraderReplayService__ctor_Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_Microsoft_Extensions_Options_IOptionsMonitor_Meridian_Infrastructure_CppTrader_Options_CppTraderOptions__
+  name: CppTraderReplayService
+  nameWithType: CppTraderReplayService.CppTraderReplayService
+  fullName: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CppTraderReplayService
+  nameWithType.vb: CppTraderReplayService.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.New
+  name.vb: New
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  parent: Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html
+  name: ICppTraderHostManager
+  nameWithType: ICppTraderHostManager
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+- uid: Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+  commentId: T:Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+  parent: Microsoft.Extensions.Options
+  definition: Microsoft.Extensions.Options.IOptionsMonitor`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  name: IOptionsMonitor<CppTraderOptions>
+  nameWithType: IOptionsMonitor<CppTraderOptions>
+  fullName: Microsoft.Extensions.Options.IOptionsMonitor<Meridian.Infrastructure.CppTrader.Options.CppTraderOptions>
+  nameWithType.vb: IOptionsMonitor(Of CppTraderOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptionsMonitor(Of Meridian.Infrastructure.CppTrader.Options.CppTraderOptions)
+  name.vb: IOptionsMonitor(Of CppTraderOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+    name: CppTraderOptions
+    href: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+    name: CppTraderOptions
+    href: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions.html
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Host
+  commentId: N:Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Host
+  nameWithType: Meridian.Infrastructure.CppTrader.Host
+  fullName: Meridian.Infrastructure.CppTrader.Host
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+- uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+  commentId: T:Microsoft.Extensions.Options.IOptionsMonitor`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  name: IOptionsMonitor<TOptions>
+  nameWithType: IOptionsMonitor<TOptions>
+  fullName: Microsoft.Extensions.Options.IOptionsMonitor<TOptions>
+  nameWithType.vb: IOptionsMonitor(Of TOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptionsMonitor(Of TOptions)
+  name.vb: IOptionsMonitor(Of TOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: <
+  - name: TOptions
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TOptions
+  - name: )
+- uid: Microsoft.Extensions.Options
+  commentId: N:Microsoft.Extensions.Options
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Options
+  nameWithType: Microsoft.Extensions.Options
+  fullName: Microsoft.Extensions.Options
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync
+  href: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.html#Meridian_Infrastructure_CppTrader_Replay_CppTraderReplayService_CreateReplaySessionAsync_System_Threading_CancellationToken_
+  name: CreateReplaySessionAsync
+  nameWithType: CppTraderReplayService.CreateReplaySessionAsync
+  fullName: Meridian.Infrastructure.CppTrader.Replay.CppTraderReplayService.CreateReplaySessionAsync
+- uid: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.html#Meridian_Infrastructure_CppTrader_Replay_ICppTraderReplayService_CreateReplaySessionAsync_System_Threading_CancellationToken_
+  name: CreateReplaySessionAsync(CancellationToken)
+  nameWithType: ICppTraderReplayService.CreateReplaySessionAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+    name: CreateReplaySessionAsync
+    href: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.html#Meridian_Infrastructure_CppTrader_Replay_ICppTraderReplayService_CreateReplaySessionAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.CreateReplaySessionAsync(System.Threading.CancellationToken)
+    name: CreateReplaySessionAsync
+    href: Meridian.Infrastructure.CppTrader.Replay.ICppTraderReplayService.html#Meridian_Infrastructure_CppTrader_Replay_ICppTraderReplayService_CreateReplaySessionAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

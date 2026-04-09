@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.CurrencyCode
+  commentId: T:Meridian.Contracts.DirectLending.CurrencyCode
+  id: CurrencyCode
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.CurrencyCode.EUR
+  - Meridian.Contracts.DirectLending.CurrencyCode.GBP
+  - Meridian.Contracts.DirectLending.CurrencyCode.JPY
+  - Meridian.Contracts.DirectLending.CurrencyCode.Other
+  - Meridian.Contracts.DirectLending.CurrencyCode.USD
+  langs:
+  - csharp
+  - vb
+  name: CurrencyCode
+  nameWithType: CurrencyCode
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrencyCode
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum CurrencyCode : byte'
+    content.vb: Public Enum CurrencyCode As Byte
+- uid: Meridian.Contracts.DirectLending.CurrencyCode.USD
+  commentId: F:Meridian.Contracts.DirectLending.CurrencyCode.USD
+  id: USD
+  parent: Meridian.Contracts.DirectLending.CurrencyCode
+  langs:
+  - csharp
+  - vb
+  name: USD
+  nameWithType: CurrencyCode.USD
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode.USD
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: USD
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: USD = 0
+    return:
+      type: Meridian.Contracts.DirectLending.CurrencyCode
+- uid: Meridian.Contracts.DirectLending.CurrencyCode.EUR
+  commentId: F:Meridian.Contracts.DirectLending.CurrencyCode.EUR
+  id: EUR
+  parent: Meridian.Contracts.DirectLending.CurrencyCode
+  langs:
+  - csharp
+  - vb
+  name: EUR
+  nameWithType: CurrencyCode.EUR
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode.EUR
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EUR
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: EUR = 1
+    return:
+      type: Meridian.Contracts.DirectLending.CurrencyCode
+- uid: Meridian.Contracts.DirectLending.CurrencyCode.GBP
+  commentId: F:Meridian.Contracts.DirectLending.CurrencyCode.GBP
+  id: GBP
+  parent: Meridian.Contracts.DirectLending.CurrencyCode
+  langs:
+  - csharp
+  - vb
+  name: GBP
+  nameWithType: CurrencyCode.GBP
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode.GBP
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GBP
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: GBP = 2
+    return:
+      type: Meridian.Contracts.DirectLending.CurrencyCode
+- uid: Meridian.Contracts.DirectLending.CurrencyCode.JPY
+  commentId: F:Meridian.Contracts.DirectLending.CurrencyCode.JPY
+  id: JPY
+  parent: Meridian.Contracts.DirectLending.CurrencyCode
+  langs:
+  - csharp
+  - vb
+  name: JPY
+  nameWithType: CurrencyCode.JPY
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode.JPY
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JPY
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: JPY = 3
+    return:
+      type: Meridian.Contracts.DirectLending.CurrencyCode
+- uid: Meridian.Contracts.DirectLending.CurrencyCode.Other
+  commentId: F:Meridian.Contracts.DirectLending.CurrencyCode.Other
+  id: Other
+  parent: Meridian.Contracts.DirectLending.CurrencyCode
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: CurrencyCode.Other
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Other = 4
+    return:
+      type: Meridian.Contracts.DirectLending.CurrencyCode
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.CurrencyCode
+  commentId: T:Meridian.Contracts.DirectLending.CurrencyCode
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.CurrencyCode.html
+  name: CurrencyCode
+  nameWithType: CurrencyCode
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode

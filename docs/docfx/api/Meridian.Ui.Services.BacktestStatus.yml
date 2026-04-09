@@ -1,0 +1,621 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BacktestStatus
+  commentId: T:Meridian.Ui.Services.BacktestStatus
+  id: BacktestStatus
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BacktestStatus.BacktestId
+  - Meridian.Ui.Services.BacktestStatus.CurrentDate
+  - Meridian.Ui.Services.BacktestStatus.Elapsed
+  - Meridian.Ui.Services.BacktestStatus.Error
+  - Meridian.Ui.Services.BacktestStatus.Progress
+  - Meridian.Ui.Services.BacktestStatus.StartedAt
+  - Meridian.Ui.Services.BacktestStatus.State
+  langs:
+  - csharp
+  - vb
+  name: BacktestStatus
+  nameWithType: BacktestStatus
+  fullName: Meridian.Ui.Services.BacktestStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestStatus
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 522
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class BacktestStatus
+    content.vb: Public NotInheritable Class BacktestStatus
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.BacktestStatus.BacktestId
+  commentId: P:Meridian.Ui.Services.BacktestStatus.BacktestId
+  id: BacktestId
+  parent: Meridian.Ui.Services.BacktestStatus
+  langs:
+  - csharp
+  - vb
+  name: BacktestId
+  nameWithType: BacktestStatus.BacktestId
+  fullName: Meridian.Ui.Services.BacktestStatus.BacktestId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestId
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? BacktestId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BacktestId As String
+  overload: Meridian.Ui.Services.BacktestStatus.BacktestId*
+- uid: Meridian.Ui.Services.BacktestStatus.State
+  commentId: P:Meridian.Ui.Services.BacktestStatus.State
+  id: State
+  parent: Meridian.Ui.Services.BacktestStatus
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: BacktestStatus.State
+  fullName: Meridian.Ui.Services.BacktestStatus.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public BacktestState State { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.BacktestState
+    content.vb: Public Property State As BacktestState
+  overload: Meridian.Ui.Services.BacktestStatus.State*
+- uid: Meridian.Ui.Services.BacktestStatus.Progress
+  commentId: P:Meridian.Ui.Services.BacktestStatus.Progress
+  id: Progress
+  parent: Meridian.Ui.Services.BacktestStatus
+  langs:
+  - csharp
+  - vb
+  name: Progress
+  nameWithType: BacktestStatus.Progress
+  fullName: Meridian.Ui.Services.BacktestStatus.Progress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Progress
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 526
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double Progress { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Progress As Double
+  overload: Meridian.Ui.Services.BacktestStatus.Progress*
+- uid: Meridian.Ui.Services.BacktestStatus.CurrentDate
+  commentId: P:Meridian.Ui.Services.BacktestStatus.CurrentDate
+  id: CurrentDate
+  parent: Meridian.Ui.Services.BacktestStatus
+  langs:
+  - csharp
+  - vb
+  name: CurrentDate
+  nameWithType: BacktestStatus.CurrentDate
+  fullName: Meridian.Ui.Services.BacktestStatus.CurrentDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentDate
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 527
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? CurrentDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property CurrentDate As Date?
+  overload: Meridian.Ui.Services.BacktestStatus.CurrentDate*
+- uid: Meridian.Ui.Services.BacktestStatus.StartedAt
+  commentId: P:Meridian.Ui.Services.BacktestStatus.StartedAt
+  id: StartedAt
+  parent: Meridian.Ui.Services.BacktestStatus
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: BacktestStatus.StartedAt
+  fullName: Meridian.Ui.Services.BacktestStatus.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property StartedAt As Date?
+  overload: Meridian.Ui.Services.BacktestStatus.StartedAt*
+- uid: Meridian.Ui.Services.BacktestStatus.Elapsed
+  commentId: P:Meridian.Ui.Services.BacktestStatus.Elapsed
+  id: Elapsed
+  parent: Meridian.Ui.Services.BacktestStatus
+  langs:
+  - csharp
+  - vb
+  name: Elapsed
+  nameWithType: BacktestStatus.Elapsed
+  fullName: Meridian.Ui.Services.BacktestStatus.Elapsed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Elapsed
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 529
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public TimeSpan Elapsed { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Elapsed As TimeSpan
+  overload: Meridian.Ui.Services.BacktestStatus.Elapsed*
+- uid: Meridian.Ui.Services.BacktestStatus.Error
+  commentId: P:Meridian.Ui.Services.BacktestStatus.Error
+  id: Error
+  parent: Meridian.Ui.Services.BacktestStatus
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: BacktestStatus.Error
+  fullName: Meridian.Ui.Services.BacktestStatus.Error
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 530
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Error { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property [Error] As String
+  overload: Meridian.Ui.Services.BacktestStatus.Error*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.BacktestStatus.BacktestId*
+  commentId: Overload:Meridian.Ui.Services.BacktestStatus.BacktestId
+  href: Meridian.Ui.Services.BacktestStatus.html#Meridian_Ui_Services_BacktestStatus_BacktestId
+  name: BacktestId
+  nameWithType: BacktestStatus.BacktestId
+  fullName: Meridian.Ui.Services.BacktestStatus.BacktestId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.BacktestStatus.State*
+  commentId: Overload:Meridian.Ui.Services.BacktestStatus.State
+  href: Meridian.Ui.Services.BacktestStatus.html#Meridian_Ui_Services_BacktestStatus_State
+  name: State
+  nameWithType: BacktestStatus.State
+  fullName: Meridian.Ui.Services.BacktestStatus.State
+- uid: Meridian.Ui.Services.BacktestState
+  commentId: T:Meridian.Ui.Services.BacktestState
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BacktestState.html
+  name: BacktestState
+  nameWithType: BacktestState
+  fullName: Meridian.Ui.Services.BacktestState
+- uid: Meridian.Ui.Services.BacktestStatus.Progress*
+  commentId: Overload:Meridian.Ui.Services.BacktestStatus.Progress
+  href: Meridian.Ui.Services.BacktestStatus.html#Meridian_Ui_Services_BacktestStatus_Progress
+  name: Progress
+  nameWithType: BacktestStatus.Progress
+  fullName: Meridian.Ui.Services.BacktestStatus.Progress
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.BacktestStatus.CurrentDate*
+  commentId: Overload:Meridian.Ui.Services.BacktestStatus.CurrentDate
+  href: Meridian.Ui.Services.BacktestStatus.html#Meridian_Ui_Services_BacktestStatus_CurrentDate
+  name: CurrentDate
+  nameWithType: BacktestStatus.CurrentDate
+  fullName: Meridian.Ui.Services.BacktestStatus.CurrentDate
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.BacktestStatus.StartedAt*
+  commentId: Overload:Meridian.Ui.Services.BacktestStatus.StartedAt
+  href: Meridian.Ui.Services.BacktestStatus.html#Meridian_Ui_Services_BacktestStatus_StartedAt
+  name: StartedAt
+  nameWithType: BacktestStatus.StartedAt
+  fullName: Meridian.Ui.Services.BacktestStatus.StartedAt
+- uid: Meridian.Ui.Services.BacktestStatus.Elapsed*
+  commentId: Overload:Meridian.Ui.Services.BacktestStatus.Elapsed
+  href: Meridian.Ui.Services.BacktestStatus.html#Meridian_Ui_Services_BacktestStatus_Elapsed
+  name: Elapsed
+  nameWithType: BacktestStatus.Elapsed
+  fullName: Meridian.Ui.Services.BacktestStatus.Elapsed
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Ui.Services.BacktestStatus.Error*
+  commentId: Overload:Meridian.Ui.Services.BacktestStatus.Error
+  href: Meridian.Ui.Services.BacktestStatus.html#Meridian_Ui_Services_BacktestStatus_Error
+  name: Error
+  nameWithType: BacktestStatus.Error
+  fullName: Meridian.Ui.Services.BacktestStatus.Error

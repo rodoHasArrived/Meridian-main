@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind
+  commentId: T:Meridian.Backtesting.Sdk.BacktestCommissionKind
+  id: BacktestCommissionKind
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.BacktestCommissionKind.Free
+  - Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare
+  - Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage
+  langs:
+  - csharp
+  - vb
+  name: BacktestCommissionKind
+  nameWithType: BacktestCommissionKind
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestCommissionKind
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Selects the commission model used by the backtest engine when calculating execution costs.
+  example: []
+  syntax:
+    content: public enum BacktestCommissionKind
+    content.vb: Public Enum BacktestCommissionKind
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare
+  commentId: F:Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare
+  id: PerShare
+  parent: Meridian.Backtesting.Sdk.BacktestCommissionKind
+  langs:
+  - csharp
+  - vb
+  name: PerShare
+  nameWithType: BacktestCommissionKind.PerShare
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind.PerShare
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerShare
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Fixed dollar amount per share (default).
+  example: []
+  syntax:
+    content: PerShare = 0
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestCommissionKind
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage
+  commentId: F:Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage
+  id: Percentage
+  parent: Meridian.Backtesting.Sdk.BacktestCommissionKind
+  langs:
+  - csharp
+  - vb
+  name: Percentage
+  nameWithType: BacktestCommissionKind.Percentage
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind.Percentage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Percentage
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Percentage of notional value in basis points.
+  example: []
+  syntax:
+    content: Percentage = 1
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestCommissionKind
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind.Free
+  commentId: F:Meridian.Backtesting.Sdk.BacktestCommissionKind.Free
+  id: Free
+  parent: Meridian.Backtesting.Sdk.BacktestCommissionKind
+  langs:
+  - csharp
+  - vb
+  name: Free
+  nameWithType: BacktestCommissionKind.Free
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind.Free
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Free
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestRequest.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Zero commission — useful for strategy research without cost drag.
+  example: []
+  syntax:
+    content: Free = 2
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestCommissionKind
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.BacktestCommissionKind
+  commentId: T:Meridian.Backtesting.Sdk.BacktestCommissionKind
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestCommissionKind.html
+  name: BacktestCommissionKind
+  nameWithType: BacktestCommissionKind
+  fullName: Meridian.Backtesting.Sdk.BacktestCommissionKind

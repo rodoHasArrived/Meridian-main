@@ -1,0 +1,860 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Allocation.AllocationRule
+  commentId: T:Meridian.Execution.Allocation.AllocationRule
+  id: AllocationRule
+  parent: Meridian.Execution.Allocation
+  children:
+  - Meridian.Execution.Allocation.AllocationRule.#ctor(System.Guid,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  - Meridian.Execution.Allocation.AllocationRule.Create(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  - Meridian.Execution.Allocation.AllocationRule.EqualWeight(System.String,System.Collections.Generic.IEnumerable{System.String})
+  - Meridian.Execution.Allocation.AllocationRule.Name
+  - Meridian.Execution.Allocation.AllocationRule.NormalizedWeights
+  - Meridian.Execution.Allocation.AllocationRule.RuleId
+  - Meridian.Execution.Allocation.AllocationRule.SliceWeights
+  langs:
+  - csharp
+  - vb
+  name: AllocationRule
+  nameWithType: AllocationRule
+  fullName: Meridian.Execution.Allocation.AllocationRule
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocationRule
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    Defines how a block trade (or any pooled fill) should be distributed across
+
+    multiple sleeves, entities, or vehicles within a <code>FundLedgerBook</code>.
+  example: []
+  syntax:
+    content: 'public sealed record AllocationRule : IEquatable<AllocationRule>'
+    content.vb: Public NotInheritable Class AllocationRule Implements IEquatable(Of AllocationRule)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Allocation.AllocationRule}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Allocation.AllocationRule.#ctor(System.Guid,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  commentId: M:Meridian.Execution.Allocation.AllocationRule.#ctor(System.Guid,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  id: '#ctor(System.Guid,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})'
+  parent: Meridian.Execution.Allocation.AllocationRule
+  langs:
+  - csharp
+  - vb
+  name: AllocationRule(Guid, string, IReadOnlyDictionary<string, decimal>)
+  nameWithType: AllocationRule.AllocationRule(Guid, string, IReadOnlyDictionary<string, decimal>)
+  fullName: Meridian.Execution.Allocation.AllocationRule.AllocationRule(System.Guid, string, System.Collections.Generic.IReadOnlyDictionary<string, decimal>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    Defines how a block trade (or any pooled fill) should be distributed across
+
+    multiple sleeves, entities, or vehicles within a <code>FundLedgerBook</code>.
+  example: []
+  syntax:
+    content: public AllocationRule(Guid RuleId, string Name, IReadOnlyDictionary<string, decimal> SliceWeights)
+    parameters:
+    - id: RuleId
+      type: System.Guid
+      description: Unique identifier for this rule.
+    - id: Name
+      type: System.String
+      description: Human-readable description of the rule.
+    - id: SliceWeights
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+      description: >-
+        Mapping of destination ID (sleeve ID, entity ID, etc.) to its relative weight.
+
+        Weights need not sum to 1.0 — they are normalized internally.
+    content.vb: Public Sub New(RuleId As Guid, Name As String, SliceWeights As IReadOnlyDictionary(Of String, Decimal))
+  overload: Meridian.Execution.Allocation.AllocationRule.#ctor*
+  nameWithType.vb: AllocationRule.New(Guid, String, IReadOnlyDictionary(Of String, Decimal))
+  fullName.vb: Meridian.Execution.Allocation.AllocationRule.New(System.Guid, String, System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal))
+  name.vb: New(Guid, String, IReadOnlyDictionary(Of String, Decimal))
+- uid: Meridian.Execution.Allocation.AllocationRule.RuleId
+  commentId: P:Meridian.Execution.Allocation.AllocationRule.RuleId
+  id: RuleId
+  parent: Meridian.Execution.Allocation.AllocationRule
+  langs:
+  - csharp
+  - vb
+  name: RuleId
+  nameWithType: AllocationRule.RuleId
+  fullName: Meridian.Execution.Allocation.AllocationRule.RuleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RuleId
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Unique identifier for this rule.
+  example: []
+  syntax:
+    content: public Guid RuleId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property RuleId As Guid
+  overload: Meridian.Execution.Allocation.AllocationRule.RuleId*
+- uid: Meridian.Execution.Allocation.AllocationRule.Name
+  commentId: P:Meridian.Execution.Allocation.AllocationRule.Name
+  id: Name
+  parent: Meridian.Execution.Allocation.AllocationRule
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: AllocationRule.Name
+  fullName: Meridian.Execution.Allocation.AllocationRule.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Human-readable description of the rule.
+  example: []
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Execution.Allocation.AllocationRule.Name*
+- uid: Meridian.Execution.Allocation.AllocationRule.SliceWeights
+  commentId: P:Meridian.Execution.Allocation.AllocationRule.SliceWeights
+  id: SliceWeights
+  parent: Meridian.Execution.Allocation.AllocationRule
+  langs:
+  - csharp
+  - vb
+  name: SliceWeights
+  nameWithType: AllocationRule.SliceWeights
+  fullName: Meridian.Execution.Allocation.AllocationRule.SliceWeights
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SliceWeights
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    Mapping of destination ID (sleeve ID, entity ID, etc.) to its relative weight.
+
+    Weights need not sum to 1.0 — they are normalized internally.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, decimal> SliceWeights { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public Property SliceWeights As IReadOnlyDictionary(Of String, Decimal)
+  overload: Meridian.Execution.Allocation.AllocationRule.SliceWeights*
+- uid: Meridian.Execution.Allocation.AllocationRule.Create(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  commentId: M:Meridian.Execution.Allocation.AllocationRule.Create(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  id: Create(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal})
+  parent: Meridian.Execution.Allocation.AllocationRule
+  langs:
+  - csharp
+  - vb
+  name: Create(string, IReadOnlyDictionary<string, decimal>)
+  nameWithType: AllocationRule.Create(string, IReadOnlyDictionary<string, decimal>)
+  fullName: Meridian.Execution.Allocation.AllocationRule.Create(string, System.Collections.Generic.IReadOnlyDictionary<string, decimal>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Create
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Creates a new rule with an auto-generated ID.
+  example: []
+  syntax:
+    content: public static AllocationRule Create(string name, IReadOnlyDictionary<string, decimal> weights)
+    parameters:
+    - id: name
+      type: System.String
+    - id: weights
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    return:
+      type: Meridian.Execution.Allocation.AllocationRule
+    content.vb: Public Shared Function Create(name As String, weights As IReadOnlyDictionary(Of String, Decimal)) As AllocationRule
+  overload: Meridian.Execution.Allocation.AllocationRule.Create*
+  nameWithType.vb: AllocationRule.Create(String, IReadOnlyDictionary(Of String, Decimal))
+  fullName.vb: Meridian.Execution.Allocation.AllocationRule.Create(String, System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal))
+  name.vb: Create(String, IReadOnlyDictionary(Of String, Decimal))
+- uid: Meridian.Execution.Allocation.AllocationRule.EqualWeight(System.String,System.Collections.Generic.IEnumerable{System.String})
+  commentId: M:Meridian.Execution.Allocation.AllocationRule.EqualWeight(System.String,System.Collections.Generic.IEnumerable{System.String})
+  id: EqualWeight(System.String,System.Collections.Generic.IEnumerable{System.String})
+  parent: Meridian.Execution.Allocation.AllocationRule
+  langs:
+  - csharp
+  - vb
+  name: EqualWeight(string, IEnumerable<string>)
+  nameWithType: AllocationRule.EqualWeight(string, IEnumerable<string>)
+  fullName: Meridian.Execution.Allocation.AllocationRule.EqualWeight(string, System.Collections.Generic.IEnumerable<string>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EqualWeight
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    Creates an equal-weight rule that distributes evenly across all
+
+    <code class="paramref">destinationIds</code>.
+  example: []
+  syntax:
+    content: public static AllocationRule EqualWeight(string name, IEnumerable<string> destinationIds)
+    parameters:
+    - id: name
+      type: System.String
+    - id: destinationIds
+      type: System.Collections.Generic.IEnumerable{System.String}
+    return:
+      type: Meridian.Execution.Allocation.AllocationRule
+    content.vb: Public Shared Function EqualWeight(name As String, destinationIds As IEnumerable(Of String)) As AllocationRule
+  overload: Meridian.Execution.Allocation.AllocationRule.EqualWeight*
+  nameWithType.vb: AllocationRule.EqualWeight(String, IEnumerable(Of String))
+  fullName.vb: Meridian.Execution.Allocation.AllocationRule.EqualWeight(String, System.Collections.Generic.IEnumerable(Of String))
+  name.vb: EqualWeight(String, IEnumerable(Of String))
+- uid: Meridian.Execution.Allocation.AllocationRule.NormalizedWeights
+  commentId: M:Meridian.Execution.Allocation.AllocationRule.NormalizedWeights
+  id: NormalizedWeights
+  parent: Meridian.Execution.Allocation.AllocationRule
+  langs:
+  - csharp
+  - vb
+  name: NormalizedWeights()
+  nameWithType: AllocationRule.NormalizedWeights()
+  fullName: Meridian.Execution.Allocation.AllocationRule.NormalizedWeights()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/AllocationRule.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizedWeights
+    path: ../../src/Meridian.Execution/Allocation/AllocationRule.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: Returns the normalized weights (each weight divided by the total sum).
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, decimal> NormalizedWeights()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public Function NormalizedWeights() As IReadOnlyDictionary(Of String, Decimal)
+  overload: Meridian.Execution.Allocation.AllocationRule.NormalizedWeights*
+references:
+- uid: Meridian.Execution.Allocation
+  commentId: N:Meridian.Execution.Allocation
+  href: Meridian.html
+  name: Meridian.Execution.Allocation
+  nameWithType: Meridian.Execution.Allocation
+  fullName: Meridian.Execution.Allocation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Allocation.AllocationRule}
+  commentId: T:System.IEquatable{Meridian.Execution.Allocation.AllocationRule}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AllocationRule>
+  nameWithType: IEquatable<AllocationRule>
+  fullName: System.IEquatable<Meridian.Execution.Allocation.AllocationRule>
+  nameWithType.vb: IEquatable(Of AllocationRule)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Allocation.AllocationRule)
+  name.vb: IEquatable(Of AllocationRule)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Allocation.AllocationRule
+    name: AllocationRule
+    href: Meridian.Execution.Allocation.AllocationRule.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Allocation.AllocationRule
+    name: AllocationRule
+    href: Meridian.Execution.Allocation.AllocationRule.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Allocation.AllocationRule.#ctor*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationRule.#ctor
+  href: Meridian.Execution.Allocation.AllocationRule.html#Meridian_Execution_Allocation_AllocationRule__ctor_System_Guid_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__
+  name: AllocationRule
+  nameWithType: AllocationRule.AllocationRule
+  fullName: Meridian.Execution.Allocation.AllocationRule.AllocationRule
+  nameWithType.vb: AllocationRule.New
+  fullName.vb: Meridian.Execution.Allocation.AllocationRule.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, decimal>
+  nameWithType: IReadOnlyDictionary<string, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal)
+  name.vb: IReadOnlyDictionary(Of String, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Allocation.AllocationRule.RuleId*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationRule.RuleId
+  href: Meridian.Execution.Allocation.AllocationRule.html#Meridian_Execution_Allocation_AllocationRule_RuleId
+  name: RuleId
+  nameWithType: AllocationRule.RuleId
+  fullName: Meridian.Execution.Allocation.AllocationRule.RuleId
+- uid: Meridian.Execution.Allocation.AllocationRule.Name*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationRule.Name
+  href: Meridian.Execution.Allocation.AllocationRule.html#Meridian_Execution_Allocation_AllocationRule_Name
+  name: Name
+  nameWithType: AllocationRule.Name
+  fullName: Meridian.Execution.Allocation.AllocationRule.Name
+- uid: Meridian.Execution.Allocation.AllocationRule.SliceWeights*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationRule.SliceWeights
+  href: Meridian.Execution.Allocation.AllocationRule.html#Meridian_Execution_Allocation_AllocationRule_SliceWeights
+  name: SliceWeights
+  nameWithType: AllocationRule.SliceWeights
+  fullName: Meridian.Execution.Allocation.AllocationRule.SliceWeights
+- uid: Meridian.Execution.Allocation.AllocationRule.Create*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationRule.Create
+  href: Meridian.Execution.Allocation.AllocationRule.html#Meridian_Execution_Allocation_AllocationRule_Create_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__
+  name: Create
+  nameWithType: AllocationRule.Create
+  fullName: Meridian.Execution.Allocation.AllocationRule.Create
+- uid: Meridian.Execution.Allocation.AllocationRule
+  commentId: T:Meridian.Execution.Allocation.AllocationRule
+  parent: Meridian.Execution.Allocation
+  href: Meridian.Execution.Allocation.AllocationRule.html
+  name: AllocationRule
+  nameWithType: AllocationRule
+  fullName: Meridian.Execution.Allocation.AllocationRule
+- uid: Meridian.Execution.Allocation.AllocationRule.EqualWeight*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationRule.EqualWeight
+  href: Meridian.Execution.Allocation.AllocationRule.html#Meridian_Execution_Allocation_AllocationRule_EqualWeight_System_String_System_Collections_Generic_IEnumerable_System_String__
+  name: EqualWeight
+  nameWithType: AllocationRule.EqualWeight
+  fullName: Meridian.Execution.Allocation.AllocationRule.EqualWeight
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Allocation.AllocationRule.NormalizedWeights*
+  commentId: Overload:Meridian.Execution.Allocation.AllocationRule.NormalizedWeights
+  href: Meridian.Execution.Allocation.AllocationRule.html#Meridian_Execution_Allocation_AllocationRule_NormalizedWeights
+  name: NormalizedWeights
+  nameWithType: AllocationRule.NormalizedWeights
+  fullName: Meridian.Execution.Allocation.AllocationRule.NormalizedWeights

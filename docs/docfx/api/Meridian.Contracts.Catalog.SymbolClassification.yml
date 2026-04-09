@@ -1,0 +1,617 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.SymbolClassification
+  commentId: T:Meridian.Contracts.Catalog.SymbolClassification
+  id: SymbolClassification
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships
+  - Meridian.Contracts.Catalog.SymbolClassification.Industry
+  - Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup
+  - Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory
+  - Meridian.Contracts.Catalog.SymbolClassification.Sector
+  - Meridian.Contracts.Catalog.SymbolClassification.SubIndustry
+  langs:
+  - csharp
+  - vb
+  name: SymbolClassification
+  nameWithType: SymbolClassification
+  fullName: Meridian.Contracts.Catalog.SymbolClassification
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolClassification
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Symbol classification information.
+  example: []
+  syntax:
+    content: public sealed class SymbolClassification
+    content.vb: Public NotInheritable Class SymbolClassification
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.SymbolClassification.Sector
+  commentId: P:Meridian.Contracts.Catalog.SymbolClassification.Sector
+  id: Sector
+  parent: Meridian.Contracts.Catalog.SymbolClassification
+  langs:
+  - csharp
+  - vb
+  name: Sector
+  nameWithType: SymbolClassification.Sector
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.Sector
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sector
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: GICS Sector.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sector")]
+
+      public string? Sector { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("sector")>
+
+      Public Property Sector As String
+  overload: Meridian.Contracts.Catalog.SymbolClassification.Sector*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sector
+- uid: Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup
+  commentId: P:Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup
+  id: IndustryGroup
+  parent: Meridian.Contracts.Catalog.SymbolClassification
+  langs:
+  - csharp
+  - vb
+  name: IndustryGroup
+  nameWithType: SymbolClassification.IndustryGroup
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndustryGroup
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: GICS Industry Group.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("industryGroup")]
+
+      public string? IndustryGroup { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("industryGroup")>
+
+      Public Property IndustryGroup As String
+  overload: Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: industryGroup
+- uid: Meridian.Contracts.Catalog.SymbolClassification.Industry
+  commentId: P:Meridian.Contracts.Catalog.SymbolClassification.Industry
+  id: Industry
+  parent: Meridian.Contracts.Catalog.SymbolClassification
+  langs:
+  - csharp
+  - vb
+  name: Industry
+  nameWithType: SymbolClassification.Industry
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.Industry
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Industry
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: GICS Industry.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("industry")]
+
+      public string? Industry { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("industry")>
+
+      Public Property Industry As String
+  overload: Meridian.Contracts.Catalog.SymbolClassification.Industry*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: industry
+- uid: Meridian.Contracts.Catalog.SymbolClassification.SubIndustry
+  commentId: P:Meridian.Contracts.Catalog.SymbolClassification.SubIndustry
+  id: SubIndustry
+  parent: Meridian.Contracts.Catalog.SymbolClassification
+  langs:
+  - csharp
+  - vb
+  name: SubIndustry
+  nameWithType: SymbolClassification.SubIndustry
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.SubIndustry
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubIndustry
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: GICS Sub-Industry.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("subIndustry")]
+
+      public string? SubIndustry { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("subIndustry")>
+
+      Public Property SubIndustry As String
+  overload: Meridian.Contracts.Catalog.SymbolClassification.SubIndustry*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: subIndustry
+- uid: Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory
+  commentId: P:Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory
+  id: MarketCapCategory
+  parent: Meridian.Contracts.Catalog.SymbolClassification
+  langs:
+  - csharp
+  - vb
+  name: MarketCapCategory
+  nameWithType: SymbolClassification.MarketCapCategory
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketCapCategory
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Market cap category (mega, large, mid, small, micro).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("marketCapCategory")]
+
+      public string? MarketCapCategory { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("marketCapCategory")>
+
+      Public Property MarketCapCategory As String
+  overload: Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: marketCapCategory
+- uid: Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships
+  commentId: P:Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships
+  id: IndexMemberships
+  parent: Meridian.Contracts.Catalog.SymbolClassification
+  langs:
+  - csharp
+  - vb
+  name: IndexMemberships
+  nameWithType: SymbolClassification.IndexMemberships
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexMemberships
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 308
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Index memberships.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("indexMemberships")]
+
+      public string[]? IndexMemberships { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("indexMemberships")>
+
+      Public Property IndexMemberships As String()
+  overload: Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: indexMemberships
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.SymbolClassification.Sector*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolClassification.Sector
+  href: Meridian.Contracts.Catalog.SymbolClassification.html#Meridian_Contracts_Catalog_SymbolClassification_Sector
+  name: Sector
+  nameWithType: SymbolClassification.Sector
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.Sector
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup
+  href: Meridian.Contracts.Catalog.SymbolClassification.html#Meridian_Contracts_Catalog_SymbolClassification_IndustryGroup
+  name: IndustryGroup
+  nameWithType: SymbolClassification.IndustryGroup
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.IndustryGroup
+- uid: Meridian.Contracts.Catalog.SymbolClassification.Industry*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolClassification.Industry
+  href: Meridian.Contracts.Catalog.SymbolClassification.html#Meridian_Contracts_Catalog_SymbolClassification_Industry
+  name: Industry
+  nameWithType: SymbolClassification.Industry
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.Industry
+- uid: Meridian.Contracts.Catalog.SymbolClassification.SubIndustry*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolClassification.SubIndustry
+  href: Meridian.Contracts.Catalog.SymbolClassification.html#Meridian_Contracts_Catalog_SymbolClassification_SubIndustry
+  name: SubIndustry
+  nameWithType: SymbolClassification.SubIndustry
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.SubIndustry
+- uid: Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory
+  href: Meridian.Contracts.Catalog.SymbolClassification.html#Meridian_Contracts_Catalog_SymbolClassification_MarketCapCategory
+  name: MarketCapCategory
+  nameWithType: SymbolClassification.MarketCapCategory
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.MarketCapCategory
+- uid: Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships*
+  commentId: Overload:Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships
+  href: Meridian.Contracts.Catalog.SymbolClassification.html#Meridian_Contracts_Catalog_SymbolClassification_IndexMemberships
+  name: IndexMemberships
+  nameWithType: SymbolClassification.IndexMemberships
+  fullName: Meridian.Contracts.Catalog.SymbolClassification.IndexMemberships
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )

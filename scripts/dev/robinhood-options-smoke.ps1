@@ -70,6 +70,7 @@ Add-Type -ReferencedAssemblies @([System.Text.Json.JsonSerializer].Assembly.Loca
 using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+#nullable enable
 
 public static class MeridianSmokeJson
 {
@@ -575,6 +576,7 @@ function Invoke-SmokeCase {
     Write-Log "Launching published desktop executable for $($Case.Name)."
     $startProcessArgs = @{
         FilePath         = $ExecutablePath
+        ArgumentList     = @("--page=$($Case.PageTag)")
         PassThru         = $true
         WorkingDirectory = (Split-Path -Parent $ExecutablePath)
     }
@@ -798,3 +800,5 @@ try {
 $resultsPath = Join-Path $OutputDirectory "robinhood-options-smoke-results.json"
 Save-JsonHashtable -Path $resultsPath -Value $results
 Write-Log "Wrote smoke results to $resultsPath"
+
+

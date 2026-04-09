@@ -74,6 +74,7 @@ This directory contains guides for developers contributing to or extending Merid
 |----------|-------------|
 | [WPF Implementation Notes](wpf-implementation-notes.md) | WPF desktop app development |
 | [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | Offline development with mock data |
+| [Desktop Workflow Automation](desktop-workflow-automation.md) | Scripted desktop debug flows, screenshot capture, and manual generation |
 
 > **Desktop improvement evaluations** (executive summary, quick reference, implementation guide) have been moved to [`evaluations/`](../evaluations/README.md) where strategic assessments are maintained.
 

@@ -1,0 +1,646 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.SplitInfo
+  commentId: T:Meridian.Infrastructure.DataSources.SplitInfo
+  id: SplitInfo
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.SplitInfo.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  - Meridian.Infrastructure.DataSources.SplitInfo.ExDate
+  - Meridian.Infrastructure.DataSources.SplitInfo.Source
+  - Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom
+  - Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio
+  - Meridian.Infrastructure.DataSources.SplitInfo.SplitTo
+  - Meridian.Infrastructure.DataSources.SplitInfo.Symbol
+  langs:
+  - csharp
+  - vb
+  name: SplitInfo
+  nameWithType: SplitInfo
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitInfo
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 190
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Stock split information.
+  example: []
+  syntax:
+    content: 'public sealed record SplitInfo : IEquatable<SplitInfo>'
+    content.vb: Public NotInheritable Class SplitInfo Implements IEquatable(Of SplitInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.SplitInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Infrastructure.DataSources.SplitInfo.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Infrastructure.DataSources.SplitInfo
+  langs:
+  - csharp
+  - vb
+  name: SplitInfo(string, DateOnly, decimal, decimal, string)
+  nameWithType: SplitInfo.SplitInfo(string, DateOnly, decimal, decimal, string)
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitInfo(string, System.DateOnly, decimal, decimal, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 190
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Stock split information.
+  example: []
+  syntax:
+    content: public SplitInfo(string Symbol, DateOnly ExDate, decimal SplitFrom, decimal SplitTo, string Source = "unknown")
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: ExDate
+      type: System.DateOnly
+    - id: SplitFrom
+      type: System.Decimal
+    - id: SplitTo
+      type: System.Decimal
+    - id: Source
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, ExDate As DateOnly, SplitFrom As Decimal, SplitTo As Decimal, Source As String = "unknown")
+  overload: Meridian.Infrastructure.DataSources.SplitInfo.#ctor*
+  nameWithType.vb: SplitInfo.New(String, DateOnly, Decimal, Decimal, String)
+  fullName.vb: Meridian.Infrastructure.DataSources.SplitInfo.New(String, System.DateOnly, Decimal, Decimal, String)
+  name.vb: New(String, DateOnly, Decimal, Decimal, String)
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.Symbol
+  commentId: P:Meridian.Infrastructure.DataSources.SplitInfo.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.DataSources.SplitInfo
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SplitInfo.Symbol
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 191
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.DataSources.SplitInfo.Symbol*
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.ExDate
+  commentId: P:Meridian.Infrastructure.DataSources.SplitInfo.ExDate
+  id: ExDate
+  parent: Meridian.Infrastructure.DataSources.SplitInfo
+  langs:
+  - csharp
+  - vb
+  name: ExDate
+  nameWithType: SplitInfo.ExDate
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.ExDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExDate
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 192
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateOnly ExDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ExDate As DateOnly
+  overload: Meridian.Infrastructure.DataSources.SplitInfo.ExDate*
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom
+  commentId: P:Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom
+  id: SplitFrom
+  parent: Meridian.Infrastructure.DataSources.SplitInfo
+  langs:
+  - csharp
+  - vb
+  name: SplitFrom
+  nameWithType: SplitInfo.SplitFrom
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitFrom
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 193
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public decimal SplitFrom { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property SplitFrom As Decimal
+  overload: Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom*
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.SplitTo
+  commentId: P:Meridian.Infrastructure.DataSources.SplitInfo.SplitTo
+  id: SplitTo
+  parent: Meridian.Infrastructure.DataSources.SplitInfo
+  langs:
+  - csharp
+  - vb
+  name: SplitTo
+  nameWithType: SplitInfo.SplitTo
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitTo
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 194
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public decimal SplitTo { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property SplitTo As Decimal
+  overload: Meridian.Infrastructure.DataSources.SplitInfo.SplitTo*
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.Source
+  commentId: P:Meridian.Infrastructure.DataSources.SplitInfo.Source
+  id: Source
+  parent: Meridian.Infrastructure.DataSources.SplitInfo
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: SplitInfo.Source
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 195
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Infrastructure.DataSources.SplitInfo.Source*
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio
+  commentId: P:Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio
+  id: SplitRatio
+  parent: Meridian.Infrastructure.DataSources.SplitInfo
+  langs:
+  - csharp
+  - vb
+  name: SplitRatio
+  nameWithType: SplitInfo.SplitRatio
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitRatio
+    path: ../../src/Meridian.ProviderSdk/IHistoricalDataSource.cs
+    startLine: 201
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Split ratio as a decimal (e.g., 4:1 split = 4.0).
+  example: []
+  syntax:
+    content: public decimal SplitRatio { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property SplitRatio As Decimal
+  overload: Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.SplitInfo}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.SplitInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SplitInfo>
+  nameWithType: IEquatable<SplitInfo>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.SplitInfo>
+  nameWithType.vb: IEquatable(Of SplitInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.SplitInfo)
+  name.vb: IEquatable(Of SplitInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.SplitInfo
+    name: SplitInfo
+    href: Meridian.Infrastructure.DataSources.SplitInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.SplitInfo
+    name: SplitInfo
+    href: Meridian.Infrastructure.DataSources.SplitInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.SplitInfo.#ctor
+  href: Meridian.Infrastructure.DataSources.SplitInfo.html#Meridian_Infrastructure_DataSources_SplitInfo__ctor_System_String_System_DateOnly_System_Decimal_System_Decimal_System_String_
+  name: SplitInfo
+  nameWithType: SplitInfo.SplitInfo
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitInfo
+  nameWithType.vb: SplitInfo.New
+  fullName.vb: Meridian.Infrastructure.DataSources.SplitInfo.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.Symbol*
+  commentId: Overload:Meridian.Infrastructure.DataSources.SplitInfo.Symbol
+  href: Meridian.Infrastructure.DataSources.SplitInfo.html#Meridian_Infrastructure_DataSources_SplitInfo_Symbol
+  name: Symbol
+  nameWithType: SplitInfo.Symbol
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.Symbol
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.ExDate*
+  commentId: Overload:Meridian.Infrastructure.DataSources.SplitInfo.ExDate
+  href: Meridian.Infrastructure.DataSources.SplitInfo.html#Meridian_Infrastructure_DataSources_SplitInfo_ExDate
+  name: ExDate
+  nameWithType: SplitInfo.ExDate
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.ExDate
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom*
+  commentId: Overload:Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom
+  href: Meridian.Infrastructure.DataSources.SplitInfo.html#Meridian_Infrastructure_DataSources_SplitInfo_SplitFrom
+  name: SplitFrom
+  nameWithType: SplitInfo.SplitFrom
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitFrom
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.SplitTo*
+  commentId: Overload:Meridian.Infrastructure.DataSources.SplitInfo.SplitTo
+  href: Meridian.Infrastructure.DataSources.SplitInfo.html#Meridian_Infrastructure_DataSources_SplitInfo_SplitTo
+  name: SplitTo
+  nameWithType: SplitInfo.SplitTo
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitTo
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.Source*
+  commentId: Overload:Meridian.Infrastructure.DataSources.SplitInfo.Source
+  href: Meridian.Infrastructure.DataSources.SplitInfo.html#Meridian_Infrastructure_DataSources_SplitInfo_Source
+  name: Source
+  nameWithType: SplitInfo.Source
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.Source
+- uid: Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio*
+  commentId: Overload:Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio
+  href: Meridian.Infrastructure.DataSources.SplitInfo.html#Meridian_Infrastructure_DataSources_SplitInfo_SplitRatio
+  name: SplitRatio
+  nameWithType: SplitInfo.SplitRatio
+  fullName: Meridian.Infrastructure.DataSources.SplitInfo.SplitRatio

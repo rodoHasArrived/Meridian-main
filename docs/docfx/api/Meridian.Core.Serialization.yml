@@ -1,0 +1,54 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Serialization
+  commentId: N:Meridian.Core.Serialization
+  id: Meridian.Core.Serialization
+  children:
+  - Meridian.Core.Serialization.SecurityMasterJsonContext
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Core.Serialization
+  nameWithType: Meridian.Core.Serialization
+  fullName: Meridian.Core.Serialization
+  type: Namespace
+  assemblies:
+  - Meridian.Core
+references:
+- uid: Meridian.Core.Serialization.SecurityMasterJsonContext
+  commentId: T:Meridian.Core.Serialization.SecurityMasterJsonContext
+  parent: Meridian.Core.Serialization
+  href: Meridian.Core.Serialization.SecurityMasterJsonContext.html
+  name: SecurityMasterJsonContext
+  nameWithType: SecurityMasterJsonContext
+  fullName: Meridian.Core.Serialization.SecurityMasterJsonContext
+- uid: Meridian.Core.Serialization
+  commentId: N:Meridian.Core.Serialization
+  href: Meridian.html
+  name: Meridian.Core.Serialization
+  nameWithType: Meridian.Core.Serialization
+  fullName: Meridian.Core.Serialization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Serialization
+    name: Serialization
+    href: Meridian.Core.Serialization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Serialization
+    name: Serialization
+    href: Meridian.Core.Serialization.html

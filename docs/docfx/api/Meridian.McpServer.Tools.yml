@@ -1,0 +1,51 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Tools
+  commentId: N:Meridian.McpServer.Tools
+  id: Meridian.McpServer.Tools
+  children:
+  - Meridian.McpServer.Tools.BackfillTools
+  - Meridian.McpServer.Tools.ProviderTools
+  - Meridian.McpServer.Tools.RepoNavigationTools
+  - Meridian.McpServer.Tools.StorageTools
+  - Meridian.McpServer.Tools.SymbolTools
+  langs:
+  - csharp
+  - vb
+  name: Meridian.McpServer.Tools
+  nameWithType: Meridian.McpServer.Tools
+  fullName: Meridian.McpServer.Tools
+  type: Namespace
+  assemblies:
+  - Meridian.McpServer
+references:
+- uid: Meridian.McpServer.Tools.BackfillTools
+  commentId: T:Meridian.McpServer.Tools.BackfillTools
+  href: Meridian.McpServer.Tools.BackfillTools.html
+  name: BackfillTools
+  nameWithType: BackfillTools
+  fullName: Meridian.McpServer.Tools.BackfillTools
+- uid: Meridian.McpServer.Tools.ProviderTools
+  commentId: T:Meridian.McpServer.Tools.ProviderTools
+  href: Meridian.McpServer.Tools.ProviderTools.html
+  name: ProviderTools
+  nameWithType: ProviderTools
+  fullName: Meridian.McpServer.Tools.ProviderTools
+- uid: Meridian.McpServer.Tools.RepoNavigationTools
+  commentId: T:Meridian.McpServer.Tools.RepoNavigationTools
+  href: Meridian.McpServer.Tools.RepoNavigationTools.html
+  name: RepoNavigationTools
+  nameWithType: RepoNavigationTools
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools
+- uid: Meridian.McpServer.Tools.StorageTools
+  commentId: T:Meridian.McpServer.Tools.StorageTools
+  href: Meridian.McpServer.Tools.StorageTools.html
+  name: StorageTools
+  nameWithType: StorageTools
+  fullName: Meridian.McpServer.Tools.StorageTools
+- uid: Meridian.McpServer.Tools.SymbolTools
+  commentId: T:Meridian.McpServer.Tools.SymbolTools
+  href: Meridian.McpServer.Tools.SymbolTools.html
+  name: SymbolTools
+  nameWithType: SymbolTools
+  fullName: Meridian.McpServer.Tools.SymbolTools

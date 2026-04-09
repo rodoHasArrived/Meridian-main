@@ -1,0 +1,234 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.ConflictStrategy
+  commentId: T:Meridian.Storage.ConflictStrategy
+  id: ConflictStrategy
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.ConflictStrategy.FirstWins
+  - Meridian.Storage.ConflictStrategy.HighestPriority
+  - Meridian.Storage.ConflictStrategy.LastWins
+  - Meridian.Storage.ConflictStrategy.LowestLatency
+  - Meridian.Storage.ConflictStrategy.Merge
+  - Meridian.Storage.ConflictStrategy.MostComplete
+  langs:
+  - csharp
+  - vb
+  name: ConflictStrategy
+  nameWithType: ConflictStrategy
+  fullName: Meridian.Storage.ConflictStrategy
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConflictStrategy
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Conflict resolution strategy for multi-source data.
+  example: []
+  syntax:
+    content: 'public enum ConflictStrategy : byte'
+    content.vb: Public Enum ConflictStrategy As Byte
+- uid: Meridian.Storage.ConflictStrategy.FirstWins
+  commentId: F:Meridian.Storage.ConflictStrategy.FirstWins
+  id: FirstWins
+  parent: Meridian.Storage.ConflictStrategy
+  langs:
+  - csharp
+  - vb
+  name: FirstWins
+  nameWithType: ConflictStrategy.FirstWins
+  fullName: Meridian.Storage.ConflictStrategy.FirstWins
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstWins
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Keep first source's data.
+  example: []
+  syntax:
+    content: FirstWins = 0
+    return:
+      type: Meridian.Storage.ConflictStrategy
+- uid: Meridian.Storage.ConflictStrategy.LastWins
+  commentId: F:Meridian.Storage.ConflictStrategy.LastWins
+  id: LastWins
+  parent: Meridian.Storage.ConflictStrategy
+  langs:
+  - csharp
+  - vb
+  name: LastWins
+  nameWithType: ConflictStrategy.LastWins
+  fullName: Meridian.Storage.ConflictStrategy.LastWins
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastWins
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 294
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Keep latest source's data.
+  example: []
+  syntax:
+    content: LastWins = 1
+    return:
+      type: Meridian.Storage.ConflictStrategy
+- uid: Meridian.Storage.ConflictStrategy.HighestPriority
+  commentId: F:Meridian.Storage.ConflictStrategy.HighestPriority
+  id: HighestPriority
+  parent: Meridian.Storage.ConflictStrategy
+  langs:
+  - csharp
+  - vb
+  name: HighestPriority
+  nameWithType: ConflictStrategy.HighestPriority
+  fullName: Meridian.Storage.ConflictStrategy.HighestPriority
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighestPriority
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Use priority order.
+  example: []
+  syntax:
+    content: HighestPriority = 2
+    return:
+      type: Meridian.Storage.ConflictStrategy
+- uid: Meridian.Storage.ConflictStrategy.LowestLatency
+  commentId: F:Meridian.Storage.ConflictStrategy.LowestLatency
+  id: LowestLatency
+  parent: Meridian.Storage.ConflictStrategy
+  langs:
+  - csharp
+  - vb
+  name: LowestLatency
+  nameWithType: ConflictStrategy.LowestLatency
+  fullName: Meridian.Storage.ConflictStrategy.LowestLatency
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowestLatency
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 298
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Prefer lowest-latency source.
+  example: []
+  syntax:
+    content: LowestLatency = 3
+    return:
+      type: Meridian.Storage.ConflictStrategy
+- uid: Meridian.Storage.ConflictStrategy.MostComplete
+  commentId: F:Meridian.Storage.ConflictStrategy.MostComplete
+  id: MostComplete
+  parent: Meridian.Storage.ConflictStrategy
+  langs:
+  - csharp
+  - vb
+  name: MostComplete
+  nameWithType: ConflictStrategy.MostComplete
+  fullName: Meridian.Storage.ConflictStrategy.MostComplete
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MostComplete
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 300
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Source with most fields populated.
+  example: []
+  syntax:
+    content: MostComplete = 4
+    return:
+      type: Meridian.Storage.ConflictStrategy
+- uid: Meridian.Storage.ConflictStrategy.Merge
+  commentId: F:Meridian.Storage.ConflictStrategy.Merge
+  id: Merge
+  parent: Meridian.Storage.ConflictStrategy
+  langs:
+  - csharp
+  - vb
+  name: Merge
+  nameWithType: ConflictStrategy.Merge
+  fullName: Meridian.Storage.ConflictStrategy.Merge
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Merge
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Combine and deduplicate.
+  example: []
+  syntax:
+    content: Merge = 5
+    return:
+      type: Meridian.Storage.ConflictStrategy
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.ConflictStrategy
+  commentId: T:Meridian.Storage.ConflictStrategy
+  parent: Meridian.Storage
+  href: Meridian.Storage.ConflictStrategy.html
+  name: ConflictStrategy
+  nameWithType: ConflictStrategy
+  fullName: Meridian.Storage.ConflictStrategy

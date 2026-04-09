@@ -1,0 +1,1159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  id: CppTraderHostManager
+  parent: Meridian.Infrastructure.CppTrader.Host
+  children:
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager})
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault(System.String)
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat
+  - Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CppTraderHostManager
+  nameWithType: CppTraderHostManager
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderHostManager
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: 'public sealed class CppTraderHostManager : ICppTraderHostManager'
+    content.vb: Public NotInheritable Class CppTraderHostManager Implements ICppTraderHostManager
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager})
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager})
+  id: '#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions},Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager})'
+  parent: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  langs:
+  - csharp
+  - vb
+  name: CppTraderHostManager(IOptionsMonitor<CppTraderOptions>, ILogger<CppTraderHostManager>)
+  nameWithType: CppTraderHostManager.CppTraderHostManager(IOptionsMonitor<CppTraderOptions>, ILogger<CppTraderHostManager>)
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CppTraderHostManager(Microsoft.Extensions.Options.IOptionsMonitor<Meridian.Infrastructure.CppTrader.Options.CppTraderOptions>, Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: public CppTraderHostManager(IOptionsMonitor<CppTraderOptions> optionsMonitor, ILogger<CppTraderHostManager> logger)
+    parameters:
+    - id: optionsMonitor
+      type: Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager}
+    content.vb: Public Sub New(optionsMonitor As IOptionsMonitor(Of CppTraderOptions), logger As ILogger(Of CppTraderHostManager))
+  overload: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.#ctor*
+  nameWithType.vb: CppTraderHostManager.New(IOptionsMonitor(Of CppTraderOptions), ILogger(Of CppTraderHostManager))
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.New(Microsoft.Extensions.Options.IOptionsMonitor(Of Meridian.Infrastructure.CppTrader.Options.CppTraderOptions), Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager))
+  name.vb: New(IOptionsMonitor(Of CppTraderOptions), ILogger(Of CppTraderHostManager))
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+  id: CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  langs:
+  - csharp
+  - vb
+  name: CreateSessionAsync(CppTraderSessionKind, string?, CancellationToken)
+  nameWithType: CppTraderHostManager.CreateSessionAsync(CppTraderSessionKind, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSessionAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  example: []
+  syntax:
+    content: public Task<ICppTraderSessionClient> CreateSessionAsync(CppTraderSessionKind sessionKind, string? sessionName = null, CancellationToken ct = default)
+    parameters:
+    - id: sessionKind
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    - id: sessionName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient}
+    content.vb: Public Function CreateSessionAsync(sessionKind As CppTraderSessionKind, sessionName As String = Nothing, ct As CancellationToken = Nothing) As Task(Of ICppTraderSessionClient)
+  overload: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+  nameWithType.vb: CppTraderHostManager.CreateSessionAsync(CppTraderSessionKind, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, String, System.Threading.CancellationToken)
+  name.vb: CreateSessionAsync(CppTraderSessionKind, String, CancellationToken)
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot
+  id: GetHealthSnapshot
+  parent: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  langs:
+  - csharp
+  - vb
+  name: GetHealthSnapshot()
+  nameWithType: CppTraderHostManager.GetHealthSnapshot()
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHealthSnapshot
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  example: []
+  syntax:
+    content: public HostHealthSnapshot GetHealthSnapshot()
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+    content.vb: Public Function GetHealthSnapshot() As HostHealthSnapshot
+  overload: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.GetHealthSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault(System.String)
+  id: RecordFault(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  langs:
+  - csharp
+  - vb
+  name: RecordFault(string)
+  nameWithType: CppTraderHostManager.RecordFault(string)
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordFault
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  example: []
+  syntax:
+    content: public void RecordFault(string message)
+    parameters:
+    - id: message
+      type: System.String
+    content.vb: Public Sub RecordFault(message As String)
+  overload: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordFault(System.String)
+  nameWithType.vb: CppTraderHostManager.RecordFault(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault(String)
+  name.vb: RecordFault(String)
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat
+  id: RecordHeartbeat
+  parent: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  langs:
+  - csharp
+  - vb
+  name: RecordHeartbeat()
+  nameWithType: CppTraderHostManager.RecordHeartbeat()
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordHeartbeat
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  example: []
+  syntax:
+    content: public void RecordHeartbeat()
+    content.vb: Public Sub RecordHeartbeat()
+  overload: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordHeartbeat
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+  id: RecordExecutionUpdate(System.Boolean)
+  parent: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  langs:
+  - csharp
+  - vb
+  name: RecordExecutionUpdate(bool)
+  nameWithType: CppTraderHostManager.RecordExecutionUpdate(bool)
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate(bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordExecutionUpdate
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  example: []
+  syntax:
+    content: public void RecordExecutionUpdate(bool rejected)
+    parameters:
+    - id: rejected
+      type: System.Boolean
+    content.vb: Public Sub RecordExecutionUpdate(rejected As Boolean)
+  overload: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+  nameWithType.vb: CppTraderHostManager.RecordExecutionUpdate(Boolean)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate(Boolean)
+  name.vb: RecordExecutionUpdate(Boolean)
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot
+  id: RecordSnapshot
+  parent: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+  langs:
+  - csharp
+  - vb
+  name: RecordSnapshot()
+  nameWithType: CppTraderHostManager.RecordSnapshot()
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordSnapshot
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  example: []
+  syntax:
+    content: public void RecordSnapshot()
+    content.vb: Public Sub RecordSnapshot()
+  overload: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordSnapshot
+references:
+- uid: Meridian.Infrastructure.CppTrader.Host
+  commentId: N:Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Host
+  nameWithType: Meridian.Infrastructure.CppTrader.Host
+  fullName: Meridian.Infrastructure.CppTrader.Host
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  parent: Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html
+  name: ICppTraderHostManager
+  nameWithType: ICppTraderHostManager
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.#ctor
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager__ctor_Microsoft_Extensions_Options_IOptionsMonitor_Meridian_Infrastructure_CppTrader_Options_CppTraderOptions__Microsoft_Extensions_Logging_ILogger_Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager__
+  name: CppTraderHostManager
+  nameWithType: CppTraderHostManager.CppTraderHostManager
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CppTraderHostManager
+  nameWithType.vb: CppTraderHostManager.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.New
+  name.vb: New
+- uid: Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+  commentId: T:Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+  parent: Microsoft.Extensions.Options
+  definition: Microsoft.Extensions.Options.IOptionsMonitor`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  name: IOptionsMonitor<CppTraderOptions>
+  nameWithType: IOptionsMonitor<CppTraderOptions>
+  fullName: Microsoft.Extensions.Options.IOptionsMonitor<Meridian.Infrastructure.CppTrader.Options.CppTraderOptions>
+  nameWithType.vb: IOptionsMonitor(Of CppTraderOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptionsMonitor(Of Meridian.Infrastructure.CppTrader.Options.CppTraderOptions)
+  name.vb: IOptionsMonitor(Of CppTraderOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+    name: CppTraderOptions
+    href: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+    name: CppTraderOptions
+    href: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<CppTraderHostManager>
+  nameWithType: ILogger<CppTraderHostManager>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager>
+  nameWithType.vb: ILogger(Of CppTraderHostManager)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager)
+  name.vb: ILogger(Of CppTraderHostManager)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+    name: CppTraderHostManager
+    href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager
+    name: CppTraderHostManager
+    href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html
+  - name: )
+- uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+  commentId: T:Microsoft.Extensions.Options.IOptionsMonitor`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  name: IOptionsMonitor<TOptions>
+  nameWithType: IOptionsMonitor<TOptions>
+  fullName: Microsoft.Extensions.Options.IOptionsMonitor<TOptions>
+  nameWithType.vb: IOptionsMonitor(Of TOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptionsMonitor(Of TOptions)
+  name.vb: IOptionsMonitor(Of TOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: <
+  - name: TOptions
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TOptions
+  - name: )
+- uid: Microsoft.Extensions.Options
+  commentId: N:Microsoft.Extensions.Options
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Options
+  nameWithType: Microsoft.Extensions.Options
+  fullName: Microsoft.Extensions.Options
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager_CreateSessionAsync_Meridian_Infrastructure_CppTrader_Protocol_CppTraderSessionKind_System_String_System_Threading_CancellationToken_
+  name: CreateSessionAsync
+  nameWithType: CppTraderHostManager.CreateSessionAsync
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.CreateSessionAsync
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_CreateSessionAsync_Meridian_Infrastructure_CppTrader_Protocol_CppTraderSessionKind_System_String_System_Threading_CancellationToken_
+  name: CreateSessionAsync(CppTraderSessionKind, string, CancellationToken)
+  nameWithType: ICppTraderHostManager.CreateSessionAsync(CppTraderSessionKind, string, CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, string, System.Threading.CancellationToken)
+  nameWithType.vb: ICppTraderHostManager.CreateSessionAsync(CppTraderSessionKind, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, String, System.Threading.CancellationToken)
+  name.vb: CreateSessionAsync(CppTraderSessionKind, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+    name: CreateSessionAsync
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_CreateSessionAsync_Meridian_Infrastructure_CppTrader_Protocol_CppTraderSessionKind_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    name: CppTraderSessionKind
+    href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.CreateSessionAsync(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String,System.Threading.CancellationToken)
+    name: CreateSessionAsync
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_CreateSessionAsync_Meridian_Infrastructure_CppTrader_Protocol_CppTraderSessionKind_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    name: CppTraderSessionKind
+    href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.html
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.html
+  name: CppTraderSessionKind
+  nameWithType: CppTraderSessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ICppTraderSessionClient>
+  nameWithType: Task<ICppTraderSessionClient>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient>
+  nameWithType.vb: Task(Of ICppTraderSessionClient)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient)
+  name.vb: Task(Of ICppTraderSessionClient)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+    name: ICppTraderSessionClient
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+    name: ICppTraderSessionClient
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager_GetHealthSnapshot
+  name: GetHealthSnapshot
+  nameWithType: CppTraderHostManager.GetHealthSnapshot
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.GetHealthSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.GetHealthSnapshot
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.GetHealthSnapshot
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_GetHealthSnapshot
+  name: GetHealthSnapshot()
+  nameWithType: ICppTraderHostManager.GetHealthSnapshot()
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.GetHealthSnapshot()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.GetHealthSnapshot
+    name: GetHealthSnapshot
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_GetHealthSnapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.GetHealthSnapshot
+    name: GetHealthSnapshot
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_GetHealthSnapshot
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot.html
+  name: HostHealthSnapshot
+  nameWithType: HostHealthSnapshot
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager_RecordFault_System_String_
+  name: RecordFault
+  nameWithType: CppTraderHostManager.RecordFault
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordFault
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordFault(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordFault(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordFault_System_String_
+  name: RecordFault(string)
+  nameWithType: ICppTraderHostManager.RecordFault(string)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordFault(string)
+  nameWithType.vb: ICppTraderHostManager.RecordFault(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordFault(String)
+  name.vb: RecordFault(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordFault(System.String)
+    name: RecordFault
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordFault_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordFault(System.String)
+    name: RecordFault
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordFault_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager_RecordHeartbeat
+  name: RecordHeartbeat
+  nameWithType: CppTraderHostManager.RecordHeartbeat
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordHeartbeat
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordHeartbeat
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordHeartbeat
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordHeartbeat
+  name: RecordHeartbeat()
+  nameWithType: ICppTraderHostManager.RecordHeartbeat()
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordHeartbeat()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordHeartbeat
+    name: RecordHeartbeat
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordHeartbeat
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordHeartbeat
+    name: RecordHeartbeat
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordHeartbeat
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager_RecordExecutionUpdate_System_Boolean_
+  name: RecordExecutionUpdate
+  nameWithType: CppTraderHostManager.RecordExecutionUpdate
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordExecutionUpdate
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordExecutionUpdate_System_Boolean_
+  name: RecordExecutionUpdate(bool)
+  nameWithType: ICppTraderHostManager.RecordExecutionUpdate(bool)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordExecutionUpdate(bool)
+  nameWithType.vb: ICppTraderHostManager.RecordExecutionUpdate(Boolean)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordExecutionUpdate(Boolean)
+  name.vb: RecordExecutionUpdate(Boolean)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+    name: RecordExecutionUpdate
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordExecutionUpdate_System_Boolean_
+  - name: (
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordExecutionUpdate(System.Boolean)
+    name: RecordExecutionUpdate
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordExecutionUpdate_System_Boolean_
+  - name: (
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot
+  href: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_CppTraderHostManager_RecordSnapshot
+  name: RecordSnapshot
+  nameWithType: CppTraderHostManager.RecordSnapshot
+  fullName: Meridian.Infrastructure.CppTrader.Host.CppTraderHostManager.RecordSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordSnapshot
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordSnapshot
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordSnapshot
+  name: RecordSnapshot()
+  nameWithType: ICppTraderHostManager.RecordSnapshot()
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordSnapshot()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordSnapshot
+    name: RecordSnapshot
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordSnapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.RecordSnapshot
+    name: RecordSnapshot
+    href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_RecordSnapshot
+  - name: (
+  - name: )

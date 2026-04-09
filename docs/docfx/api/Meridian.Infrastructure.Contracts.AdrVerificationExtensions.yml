@@ -1,0 +1,598 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  commentId: T:Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  id: AdrVerificationExtensions
+  parent: Meridian.Infrastructure.Contracts
+  children:
+  - Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Reflection.Assembly,System.String)
+  - Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Type)
+  - Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr(System.Type,System.String)
+  langs:
+  - csharp
+  - vb
+  name: AdrVerificationExtensions
+  nameWithType: AdrVerificationExtensions
+  fullName: Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdrVerificationExtensions
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 96
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Extension methods for ADR verification.
+  example: []
+  syntax:
+    content: public static class AdrVerificationExtensions
+    content.vb: Public Module AdrVerificationExtensions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Type)
+  commentId: M:Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Type)
+  id: GetAdrImplementations(System.Type)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetAdrImplementations(Type)
+  nameWithType: AdrVerificationExtensions.GetAdrImplementations(Type)
+  fullName: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Type)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAdrImplementations
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 101
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Gets all ADR implementations from a type.
+  example: []
+  syntax:
+    content: public static IEnumerable<AdrImplementation> GetAdrImplementations(this Type type)
+    parameters:
+    - id: type
+      type: System.Type
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Contracts.AdrImplementation}
+    content.vb: Public Shared Function GetAdrImplementations(type As Type) As IEnumerable(Of AdrImplementation)
+  overload: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations*
+- uid: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr(System.Type,System.String)
+  commentId: M:Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr(System.Type,System.String)
+  id: ImplementsAdr(System.Type,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  langs:
+  - csharp
+  - vb
+  name: ImplementsAdr(Type, string)
+  nameWithType: AdrVerificationExtensions.ImplementsAdr(Type, string)
+  fullName: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr(System.Type, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImplementsAdr
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 111
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Checks if a type implements a specific ADR.
+  example: []
+  syntax:
+    content: public static bool ImplementsAdr(this Type type, string adrId)
+    parameters:
+    - id: type
+      type: System.Type
+    - id: adrId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function ImplementsAdr(type As Type, adrId As String) As Boolean
+  overload: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr*
+  nameWithType.vb: AdrVerificationExtensions.ImplementsAdr(Type, String)
+  fullName.vb: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr(System.Type, String)
+  name.vb: ImplementsAdr(Type, String)
+- uid: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Reflection.Assembly,System.String)
+  commentId: M:Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Reflection.Assembly,System.String)
+  id: GetAdrImplementations(System.Reflection.Assembly,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetAdrImplementations(Assembly, string?)
+  nameWithType: AdrVerificationExtensions.GetAdrImplementations(Assembly, string?)
+  fullName: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Reflection.Assembly, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAdrImplementations
+    path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
+    startLine: 119
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Gets all types implementing a specific ADR from an assembly.
+  example: []
+  syntax:
+    content: public static IEnumerable<AdrImplementation> GetAdrImplementations(this Assembly assembly, string? adrIdFilter = null)
+    parameters:
+    - id: assembly
+      type: System.Reflection.Assembly
+    - id: adrIdFilter
+      type: System.String
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Contracts.AdrImplementation}
+    content.vb: Public Shared Function GetAdrImplementations(assembly As Assembly, adrIdFilter As String = Nothing) As IEnumerable(Of AdrImplementation)
+  overload: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations*
+  nameWithType.vb: AdrVerificationExtensions.GetAdrImplementations(Assembly, String)
+  fullName.vb: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations(System.Reflection.Assembly, String)
+  name.vb: GetAdrImplementations(Assembly, String)
+references:
+- uid: Meridian.Infrastructure.Contracts
+  commentId: N:Meridian.Infrastructure.Contracts
+  href: Meridian.html
+  name: Meridian.Infrastructure.Contracts
+  nameWithType: Meridian.Infrastructure.Contracts
+  fullName: Meridian.Infrastructure.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations
+  href: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.html#Meridian_Infrastructure_Contracts_AdrVerificationExtensions_GetAdrImplementations_System_Type_
+  name: GetAdrImplementations
+  nameWithType: AdrVerificationExtensions.GetAdrImplementations
+  fullName: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.GetAdrImplementations
+- uid: System.Type
+  commentId: T:System.Type
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.type
+  name: Type
+  nameWithType: Type
+  fullName: System.Type
+- uid: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Contracts.AdrImplementation}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Contracts.AdrImplementation}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<AdrImplementation>
+  nameWithType: IEnumerable<AdrImplementation>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Infrastructure.Contracts.AdrImplementation>
+  nameWithType.vb: IEnumerable(Of AdrImplementation)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Infrastructure.Contracts.AdrImplementation)
+  name.vb: IEnumerable(Of AdrImplementation)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Contracts.AdrImplementation
+    name: AdrImplementation
+    href: Meridian.Infrastructure.Contracts.AdrImplementation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Contracts.AdrImplementation
+    name: AdrImplementation
+    href: Meridian.Infrastructure.Contracts.AdrImplementation.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr*
+  commentId: Overload:Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr
+  href: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.html#Meridian_Infrastructure_Contracts_AdrVerificationExtensions_ImplementsAdr_System_Type_System_String_
+  name: ImplementsAdr
+  nameWithType: AdrVerificationExtensions.ImplementsAdr
+  fullName: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.ImplementsAdr
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Reflection.Assembly
+  commentId: T:System.Reflection.Assembly
+  parent: System.Reflection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.reflection.assembly
+  name: Assembly
+  nameWithType: Assembly
+  fullName: System.Reflection.Assembly
+- uid: System.Reflection
+  commentId: N:System.Reflection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Reflection
+  nameWithType: System.Reflection
+  fullName: System.Reflection
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Reflection
+    name: Reflection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.reflection
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Reflection
+    name: Reflection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.reflection

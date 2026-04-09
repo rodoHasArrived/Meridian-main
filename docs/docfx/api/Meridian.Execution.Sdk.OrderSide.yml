@@ -1,0 +1,122 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.OrderSide
+  commentId: T:Meridian.Execution.Sdk.OrderSide
+  id: OrderSide
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.OrderSide.Buy
+  - Meridian.Execution.Sdk.OrderSide.Sell
+  langs:
+  - csharp
+  - vb
+  name: OrderSide
+  nameWithType: OrderSide
+  fullName: Meridian.Execution.Sdk.OrderSide
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderSide
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Order side.
+  example: []
+  syntax:
+    content: public enum OrderSide
+    content.vb: Public Enum OrderSide
+- uid: Meridian.Execution.Sdk.OrderSide.Buy
+  commentId: F:Meridian.Execution.Sdk.OrderSide.Buy
+  id: Buy
+  parent: Meridian.Execution.Sdk.OrderSide
+  langs:
+  - csharp
+  - vb
+  name: Buy
+  nameWithType: OrderSide.Buy
+  fullName: Meridian.Execution.Sdk.OrderSide.Buy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Buy
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Buy = 0
+    return:
+      type: Meridian.Execution.Sdk.OrderSide
+- uid: Meridian.Execution.Sdk.OrderSide.Sell
+  commentId: F:Meridian.Execution.Sdk.OrderSide.Sell
+  id: Sell
+  parent: Meridian.Execution.Sdk.OrderSide
+  langs:
+  - csharp
+  - vb
+  name: Sell
+  nameWithType: OrderSide.Sell
+  fullName: Meridian.Execution.Sdk.OrderSide.Sell
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sell
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Sell = 1
+    return:
+      type: Meridian.Execution.Sdk.OrderSide
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.OrderSide
+  commentId: T:Meridian.Execution.Sdk.OrderSide
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderSide.html
+  name: OrderSide
+  nameWithType: OrderSide
+  fullName: Meridian.Execution.Sdk.OrderSide

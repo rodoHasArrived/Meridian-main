@@ -1,0 +1,1067 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore
+  commentId: T:Meridian.Ui.Services.Services.QualityArchiveStore
+  id: QualityArchiveStore
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.QualityArchiveStore.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Services.Services.QualityArchiveStore})
+  - Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync
+  - Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: QualityArchiveStore
+  nameWithType: QualityArchiveStore
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityArchiveStore
+    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    JSON file-backed archive store using %LOCALAPPDATA%\Meridian\quality-archive.json.
+
+    Stores data as Dictionary&lt;symbol -&gt; Dictionary&lt;date string -&gt; score&gt;&gt;.
+
+    Thread-safe using concurrent dictionary wrapper.
+  example: []
+  syntax:
+    content: 'public sealed class QualityArchiveStore : IQualityArchiveStore, IAsyncDisposable'
+    content.vb: Public NotInheritable Class QualityArchiveStore Implements IQualityArchiveStore, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Ui.Services.Services.IQualityArchiveStore
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Services.Services.QualityArchiveStore})
+  commentId: M:Meridian.Ui.Services.Services.QualityArchiveStore.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Services.Services.QualityArchiveStore})
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Services.Services.QualityArchiveStore})'
+  parent: Meridian.Ui.Services.Services.QualityArchiveStore
+  langs:
+  - csharp
+  - vb
+  name: QualityArchiveStore(ILogger<QualityArchiveStore>)
+  nameWithType: QualityArchiveStore.QualityArchiveStore(ILogger<QualityArchiveStore>)
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.QualityArchiveStore(Microsoft.Extensions.Logging.ILogger<Meridian.Ui.Services.Services.QualityArchiveStore>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public QualityArchiveStore(ILogger<QualityArchiveStore> logger)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Services.Services.QualityArchiveStore}
+    content.vb: Public Sub New(logger As ILogger(Of QualityArchiveStore))
+  overload: Meridian.Ui.Services.Services.QualityArchiveStore.#ctor*
+  nameWithType.vb: QualityArchiveStore.New(ILogger(Of QualityArchiveStore))
+  fullName.vb: Meridian.Ui.Services.Services.QualityArchiveStore.New(Microsoft.Extensions.Logging.ILogger(Of Meridian.Ui.Services.Services.QualityArchiveStore))
+  name.vb: New(ILogger(Of QualityArchiveStore))
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+  id: RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.QualityArchiveStore
+  langs:
+  - csharp
+  - vb
+  name: RecordAsync(string, DateOnly, double, CancellationToken)
+  nameWithType: QualityArchiveStore.RecordAsync(string, DateOnly, double, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync(string, System.DateOnly, double, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordAsync
+    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Records a daily quality score, updating in-memory cache and persisting to disk.
+  example: []
+  syntax:
+    content: public Task RecordAsync(string symbol, DateOnly date, double completenessScore, CancellationToken ct)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateOnly
+    - id: completenessScore
+      type: System.Double
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordAsync(symbol As String, [date] As DateOnly, completenessScore As Double, ct As CancellationToken) As Task
+  overload: Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync*
+  implements:
+  - Meridian.Ui.Services.Services.IQualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+  nameWithType.vb: QualityArchiveStore.RecordAsync(String, DateOnly, Double, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync(String, System.DateOnly, Double, System.Threading.CancellationToken)
+  name.vb: RecordAsync(String, DateOnly, Double, CancellationToken)
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  id: GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.QualityArchiveStore
+  langs:
+  - csharp
+  - vb
+  name: GetHistoryAsync(string, DateOnly, DateOnly, CancellationToken)
+  nameWithType: QualityArchiveStore.GetHistoryAsync(string, DateOnly, DateOnly, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync(string, System.DateOnly, System.DateOnly, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistoryAsync
+    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Retrieves historical records for a symbol within a date range.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<DailyQualityRecord>> GetHistoryAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.DateOnly
+    - id: to
+      type: System.DateOnly
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Services.DailyQualityRecord}}
+    content.vb: Public Function GetHistoryAsync(symbol As String, from As DateOnly, [to] As DateOnly, ct As CancellationToken) As Task(Of IReadOnlyList(Of DailyQualityRecord))
+  overload: Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync*
+  implements:
+  - Meridian.Ui.Services.Services.IQualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  nameWithType.vb: QualityArchiveStore.GetHistoryAsync(String, DateOnly, DateOnly, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync(String, System.DateOnly, System.DateOnly, System.Threading.CancellationToken)
+  name.vb: GetHistoryAsync(String, DateOnly, DateOnly, CancellationToken)
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+  id: GetSymbolsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.QualityArchiveStore
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolsAsync(CancellationToken)
+  nameWithType: QualityArchiveStore.GetSymbolsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolsAsync
+    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets all tracked symbols.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<string>> GetSymbolsAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+    content.vb: Public Function GetSymbolsAsync(ct As CancellationToken) As Task(Of IReadOnlyList(Of String))
+  overload: Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync*
+  implements:
+  - Meridian.Ui.Services.Services.IQualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync
+  commentId: M:Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Ui.Services.Services.QualityArchiveStore
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: QualityArchiveStore.DisposeAsync()
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Ui.Services.Services.IQualityArchiveStore
+  commentId: T:Meridian.Ui.Services.Services.IQualityArchiveStore
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.IQualityArchiveStore.html
+  name: IQualityArchiveStore
+  nameWithType: IQualityArchiveStore
+  fullName: Meridian.Ui.Services.Services.IQualityArchiveStore
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityArchiveStore.#ctor
+  href: Meridian.Ui.Services.Services.QualityArchiveStore.html#Meridian_Ui_Services_Services_QualityArchiveStore__ctor_Microsoft_Extensions_Logging_ILogger_Meridian_Ui_Services_Services_QualityArchiveStore__
+  name: QualityArchiveStore
+  nameWithType: QualityArchiveStore.QualityArchiveStore
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.QualityArchiveStore
+  nameWithType.vb: QualityArchiveStore.New
+  fullName.vb: Meridian.Ui.Services.Services.QualityArchiveStore.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Services.Services.QualityArchiveStore}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Ui.Services.Services.QualityArchiveStore}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<QualityArchiveStore>
+  nameWithType: ILogger<QualityArchiveStore>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Ui.Services.Services.QualityArchiveStore>
+  nameWithType.vb: ILogger(Of QualityArchiveStore)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Ui.Services.Services.QualityArchiveStore)
+  name.vb: ILogger(Of QualityArchiveStore)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.QualityArchiveStore
+    name: QualityArchiveStore
+    href: Meridian.Ui.Services.Services.QualityArchiveStore.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.QualityArchiveStore
+    name: QualityArchiveStore
+    href: Meridian.Ui.Services.Services.QualityArchiveStore.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync
+  href: Meridian.Ui.Services.Services.QualityArchiveStore.html#Meridian_Ui_Services_Services_QualityArchiveStore_RecordAsync_System_String_System_DateOnly_System_Double_System_Threading_CancellationToken_
+  name: RecordAsync
+  nameWithType: QualityArchiveStore.RecordAsync
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.RecordAsync
+- uid: Meridian.Ui.Services.Services.IQualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.IQualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.IQualityArchiveStore
+  isExternal: true
+  href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_RecordAsync_System_String_System_DateOnly_System_Double_System_Threading_CancellationToken_
+  name: RecordAsync(string, DateOnly, double, CancellationToken)
+  nameWithType: IQualityArchiveStore.RecordAsync(string, DateOnly, double, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.IQualityArchiveStore.RecordAsync(string, System.DateOnly, double, System.Threading.CancellationToken)
+  nameWithType.vb: IQualityArchiveStore.RecordAsync(String, DateOnly, Double, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.IQualityArchiveStore.RecordAsync(String, System.DateOnly, Double, System.Threading.CancellationToken)
+  name.vb: RecordAsync(String, DateOnly, Double, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Services.IQualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+    name: RecordAsync
+    href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_RecordAsync_System_String_System_DateOnly_System_Double_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.Services.IQualityArchiveStore.RecordAsync(System.String,System.DateOnly,System.Double,System.Threading.CancellationToken)
+    name: RecordAsync
+    href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_RecordAsync_System_String_System_DateOnly_System_Double_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync
+  href: Meridian.Ui.Services.Services.QualityArchiveStore.html#Meridian_Ui_Services_Services_QualityArchiveStore_GetHistoryAsync_System_String_System_DateOnly_System_DateOnly_System_Threading_CancellationToken_
+  name: GetHistoryAsync
+  nameWithType: QualityArchiveStore.GetHistoryAsync
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.GetHistoryAsync
+- uid: Meridian.Ui.Services.Services.IQualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.IQualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.IQualityArchiveStore
+  isExternal: true
+  href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_GetHistoryAsync_System_String_System_DateOnly_System_DateOnly_System_Threading_CancellationToken_
+  name: GetHistoryAsync(string, DateOnly, DateOnly, CancellationToken)
+  nameWithType: IQualityArchiveStore.GetHistoryAsync(string, DateOnly, DateOnly, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.IQualityArchiveStore.GetHistoryAsync(string, System.DateOnly, System.DateOnly, System.Threading.CancellationToken)
+  nameWithType.vb: IQualityArchiveStore.GetHistoryAsync(String, DateOnly, DateOnly, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.IQualityArchiveStore.GetHistoryAsync(String, System.DateOnly, System.DateOnly, System.Threading.CancellationToken)
+  name.vb: GetHistoryAsync(String, DateOnly, DateOnly, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Services.IQualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+    name: GetHistoryAsync
+    href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_GetHistoryAsync_System_String_System_DateOnly_System_DateOnly_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.Services.IQualityArchiveStore.GetHistoryAsync(System.String,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+    name: GetHistoryAsync
+    href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_GetHistoryAsync_System_String_System_DateOnly_System_DateOnly_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Services.DailyQualityRecord}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Services.DailyQualityRecord}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<DailyQualityRecord>>
+  nameWithType: Task<IReadOnlyList<DailyQualityRecord>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.Services.DailyQualityRecord>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of DailyQualityRecord))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.Services.DailyQualityRecord))
+  name.vb: Task(Of IReadOnlyList(Of DailyQualityRecord))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.DailyQualityRecord
+    name: DailyQualityRecord
+    href: Meridian.Ui.Services.Services.DailyQualityRecord.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.DailyQualityRecord
+    name: DailyQualityRecord
+    href: Meridian.Ui.Services.Services.DailyQualityRecord.html
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync
+  href: Meridian.Ui.Services.Services.QualityArchiveStore.html#Meridian_Ui_Services_Services_QualityArchiveStore_GetSymbolsAsync_System_Threading_CancellationToken_
+  name: GetSymbolsAsync
+  nameWithType: QualityArchiveStore.GetSymbolsAsync
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.GetSymbolsAsync
+- uid: Meridian.Ui.Services.Services.IQualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.IQualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.IQualityArchiveStore
+  isExternal: true
+  href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_GetSymbolsAsync_System_Threading_CancellationToken_
+  name: GetSymbolsAsync(CancellationToken)
+  nameWithType: IQualityArchiveStore.GetSymbolsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.IQualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Services.IQualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+    name: GetSymbolsAsync
+    href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_GetSymbolsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.Services.IQualityArchiveStore.GetSymbolsAsync(System.Threading.CancellationToken)
+    name: GetSymbolsAsync
+    href: Meridian.Ui.Services.Services.IQualityArchiveStore.html#Meridian_Ui_Services_Services_IQualityArchiveStore_GetSymbolsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<string>>
+  nameWithType: Task<IReadOnlyList<string>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of String))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: Task(Of IReadOnlyList(Of String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync
+  href: Meridian.Ui.Services.Services.QualityArchiveStore.html#Meridian_Ui_Services_Services_QualityArchiveStore_DisposeAsync
+  name: DisposeAsync
+  nameWithType: QualityArchiveStore.DisposeAsync
+  fullName: Meridian.Ui.Services.Services.QualityArchiveStore.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

@@ -1,0 +1,115 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Tools
+  commentId: N:Meridian.Tools
+  id: Meridian.Tools
+  children:
+  - Meridian.Tools.DataValidator
+  - Meridian.Tools.DataValidator.GapInfo
+  - Meridian.Tools.DataValidator.ValidationResult
+  - Meridian.Tools.DataValidator.ValidationSummary
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Tools
+  nameWithType: Meridian.Tools
+  fullName: Meridian.Tools
+  type: Namespace
+  assemblies:
+  - Meridian
+references:
+- uid: Meridian.Tools.DataValidator
+  commentId: T:Meridian.Tools.DataValidator
+  href: Meridian.Tools.DataValidator.html
+  name: DataValidator
+  nameWithType: DataValidator
+  fullName: Meridian.Tools.DataValidator
+- uid: Meridian.Tools.DataValidator.ValidationResult
+  commentId: T:Meridian.Tools.DataValidator.ValidationResult
+  href: Meridian.Tools.DataValidator.html
+  name: DataValidator.ValidationResult
+  nameWithType: DataValidator.ValidationResult
+  fullName: Meridian.Tools.DataValidator.ValidationResult
+  spec.csharp:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+  spec.vb:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationResult
+    name: ValidationResult
+    href: Meridian.Tools.DataValidator.ValidationResult.html
+- uid: Meridian.Tools.DataValidator.GapInfo
+  commentId: T:Meridian.Tools.DataValidator.GapInfo
+  href: Meridian.Tools.DataValidator.html
+  name: DataValidator.GapInfo
+  nameWithType: DataValidator.GapInfo
+  fullName: Meridian.Tools.DataValidator.GapInfo
+  spec.csharp:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.GapInfo
+    name: GapInfo
+    href: Meridian.Tools.DataValidator.GapInfo.html
+  spec.vb:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.GapInfo
+    name: GapInfo
+    href: Meridian.Tools.DataValidator.GapInfo.html
+- uid: Meridian.Tools.DataValidator.ValidationSummary
+  commentId: T:Meridian.Tools.DataValidator.ValidationSummary
+  parent: Meridian.Tools
+  href: Meridian.Tools.DataValidator.html
+  name: DataValidator.ValidationSummary
+  nameWithType: DataValidator.ValidationSummary
+  fullName: Meridian.Tools.DataValidator.ValidationSummary
+  spec.csharp:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationSummary
+    name: ValidationSummary
+    href: Meridian.Tools.DataValidator.ValidationSummary.html
+  spec.vb:
+  - uid: Meridian.Tools.DataValidator
+    name: DataValidator
+    href: Meridian.Tools.DataValidator.html
+  - name: .
+  - uid: Meridian.Tools.DataValidator.ValidationSummary
+    name: ValidationSummary
+    href: Meridian.Tools.DataValidator.ValidationSummary.html
+- uid: Meridian.Tools
+  commentId: N:Meridian.Tools
+  href: Meridian.html
+  name: Meridian.Tools
+  nameWithType: Meridian.Tools
+  fullName: Meridian.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Tools
+    name: Tools
+    href: Meridian.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Tools
+    name: Tools
+    href: Meridian.Tools.html

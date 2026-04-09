@@ -1,0 +1,84 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.TaxLotAccounting
+  commentId: N:Meridian.Execution.TaxLotAccounting
+  id: Meridian.Execution.TaxLotAccounting
+  children:
+  - Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  - Meridian.Execution.TaxLotAccounting.RelievedLot
+  - Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  - Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  - Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.TaxLotAccounting
+  nameWithType: Meridian.Execution.TaxLotAccounting
+  fullName: Meridian.Execution.TaxLotAccounting
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  commentId: T:Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  parent: Meridian.Execution.TaxLotAccounting
+  href: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.html
+  name: ITaxLotSelector
+  nameWithType: ITaxLotSelector
+  fullName: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  parent: Meridian.Execution.TaxLotAccounting
+  href: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.html
+  name: TaxLotAccountingMethod
+  nameWithType: TaxLotAccountingMethod
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+- uid: Meridian.Execution.TaxLotAccounting.RelievedLot
+  commentId: T:Meridian.Execution.TaxLotAccounting.RelievedLot
+  href: Meridian.Execution.TaxLotAccounting.RelievedLot.html
+  name: RelievedLot
+  nameWithType: RelievedLot
+  fullName: Meridian.Execution.TaxLotAccounting.RelievedLot
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  parent: Meridian.Execution.TaxLotAccounting
+  href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html
+  name: TaxLotReliefResult
+  nameWithType: TaxLotReliefResult
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  href: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.html
+  name: TaxLotSelectors
+  nameWithType: TaxLotSelectors
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+- uid: Meridian.Execution.TaxLotAccounting
+  commentId: N:Meridian.Execution.TaxLotAccounting
+  href: Meridian.html
+  name: Meridian.Execution.TaxLotAccounting
+  nameWithType: Meridian.Execution.TaxLotAccounting
+  fullName: Meridian.Execution.TaxLotAccounting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html

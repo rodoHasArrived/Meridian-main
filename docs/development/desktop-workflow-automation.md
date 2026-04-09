@@ -83,8 +83,11 @@ pwsh -File scripts/dev/run-desktop.ps1
 
 Then use `run-desktop-workflow.ps1 -NoFixture -ReuseExistingApp` if you want to drive the already-open shell without rebuilding or relaunching it.
 
+<<<<<<< HEAD
 For a specialized operator-facing smoke pass that validates Robinhood setup and the options workflow end to end, use `scripts/dev/robinhood-options-smoke.ps1`. That harness seeds and restores the desktop session files around each case so it can jump directly into `AddProviderWizard`, `Options`, and `PositionBlotter` without leaving the workstation in a modified state.
 
+=======
+>>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3
 ## Adding a New Workflow
 
 Add a new entry to `scripts/dev/desktop-workflows.json`:

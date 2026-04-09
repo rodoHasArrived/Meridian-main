@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.MaintenancePriority
+  commentId: T:Meridian.Storage.Maintenance.MaintenancePriority
+  id: MaintenancePriority
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.MaintenancePriority.Background
+  - Meridian.Storage.Maintenance.MaintenancePriority.Critical
+  - Meridian.Storage.Maintenance.MaintenancePriority.High
+  - Meridian.Storage.Maintenance.MaintenancePriority.Low
+  - Meridian.Storage.Maintenance.MaintenancePriority.Normal
+  langs:
+  - csharp
+  - vb
+  name: MaintenancePriority
+  nameWithType: MaintenancePriority
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenancePriority
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Priority level for maintenance tasks.
+  example: []
+  syntax:
+    content: 'public enum MaintenancePriority : byte'
+    content.vb: Public Enum MaintenancePriority As Byte
+- uid: Meridian.Storage.Maintenance.MaintenancePriority.Critical
+  commentId: F:Meridian.Storage.Maintenance.MaintenancePriority.Critical
+  id: Critical
+  parent: Meridian.Storage.Maintenance.MaintenancePriority
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: MaintenancePriority.Critical
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Critical - execute immediately, skip queue.
+  example: []
+  syntax:
+    content: Critical = 0
+    return:
+      type: Meridian.Storage.Maintenance.MaintenancePriority
+- uid: Meridian.Storage.Maintenance.MaintenancePriority.High
+  commentId: F:Meridian.Storage.Maintenance.MaintenancePriority.High
+  id: High
+  parent: Meridian.Storage.Maintenance.MaintenancePriority
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: MaintenancePriority.High
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: High - process before normal tasks.
+  example: []
+  syntax:
+    content: High = 10
+    return:
+      type: Meridian.Storage.Maintenance.MaintenancePriority
+- uid: Meridian.Storage.Maintenance.MaintenancePriority.Normal
+  commentId: F:Meridian.Storage.Maintenance.MaintenancePriority.Normal
+  id: Normal
+  parent: Meridian.Storage.Maintenance.MaintenancePriority
+  langs:
+  - csharp
+  - vb
+  name: Normal
+  nameWithType: MaintenancePriority.Normal
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority.Normal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normal
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Normal - default priority.
+  example: []
+  syntax:
+    content: Normal = 50
+    return:
+      type: Meridian.Storage.Maintenance.MaintenancePriority
+- uid: Meridian.Storage.Maintenance.MaintenancePriority.Low
+  commentId: F:Meridian.Storage.Maintenance.MaintenancePriority.Low
+  id: Low
+  parent: Meridian.Storage.Maintenance.MaintenancePriority
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: MaintenancePriority.Low
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Low - process when system is less busy.
+  example: []
+  syntax:
+    content: Low = 100
+    return:
+      type: Meridian.Storage.Maintenance.MaintenancePriority
+- uid: Meridian.Storage.Maintenance.MaintenancePriority.Background
+  commentId: F:Meridian.Storage.Maintenance.MaintenancePriority.Background
+  id: Background
+  parent: Meridian.Storage.Maintenance.MaintenancePriority
+  langs:
+  - csharp
+  - vb
+  name: Background
+  nameWithType: MaintenancePriority.Background
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority.Background
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Background
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Background - only run when completely idle.
+  example: []
+  syntax:
+    content: Background = 200
+    return:
+      type: Meridian.Storage.Maintenance.MaintenancePriority
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: Meridian.Storage.Maintenance.MaintenancePriority
+  commentId: T:Meridian.Storage.Maintenance.MaintenancePriority
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenancePriority.html
+  name: MaintenancePriority
+  nameWithType: MaintenancePriority
+  fullName: Meridian.Storage.Maintenance.MaintenancePriority

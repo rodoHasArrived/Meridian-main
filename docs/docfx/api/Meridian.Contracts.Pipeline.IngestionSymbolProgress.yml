@@ -1,0 +1,783 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  commentId: T:Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  id: IngestionSymbolProgress
+  parent: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.State
+  - Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol
+  langs:
+  - csharp
+  - vb
+  name: IngestionSymbolProgress
+  nameWithType: IngestionSymbolProgress
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestionSymbolProgress
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 335
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Per-symbol progress within an ingestion job.
+  example: []
+  syntax:
+    content: public sealed class IngestionSymbolProgress
+    content.vb: Public NotInheritable Class IngestionSymbolProgress
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: IngestionSymbolProgress.Symbol
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: The symbol being processed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.State
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.State
+  id: State
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: IngestionSymbolProgress.State
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Current state of this symbol's processing.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("state")]
+
+      public IngestionJobState State { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+    content.vb: >-
+      <JsonPropertyName("state")>
+
+      Public Property State As IngestionJobState
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.State*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: state
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed
+  id: DataPointsProcessed
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: DataPointsProcessed
+  nameWithType: IngestionSymbolProgress.DataPointsProcessed
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataPointsProcessed
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Number of data points (bars, ticks, etc.) processed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("dataPointsProcessed")]
+
+      public long DataPointsProcessed { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("dataPointsProcessed")>
+
+      Public Property DataPointsProcessed As Long
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dataPointsProcessed
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints
+  id: ExpectedDataPoints
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: ExpectedDataPoints
+  nameWithType: IngestionSymbolProgress.ExpectedDataPoints
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedDataPoints
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Expected total data points (if known).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("expectedDataPoints")]
+
+      public long ExpectedDataPoints { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("expectedDataPoints")>
+
+      Public Property ExpectedDataPoints As Long
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: expectedDataPoints
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate
+  id: LastCommittedDate
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: LastCommittedDate
+  nameWithType: IngestionSymbolProgress.LastCommittedDate
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastCommittedDate
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 364
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Last date/offset successfully committed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastCommittedDate")]
+
+      public DateTime? LastCommittedDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastCommittedDate")>
+
+      Public Property LastCommittedDate As Date?
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastCommittedDate
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: IngestionSymbolProgress.ErrorMessage
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 370
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Error message if this symbol failed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("errorMessage")]
+
+      public string? ErrorMessage { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("errorMessage")>
+
+      Public Property ErrorMessage As String
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorMessage
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount
+  id: RetryCount
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: RetryCount
+  nameWithType: IngestionSymbolProgress.RetryCount
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryCount
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Number of retries for this specific symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("retryCount")]
+
+      public int RetryCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("retryCount")>
+
+      Public Property RetryCount As Integer
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: retryCount
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent
+  commentId: P:Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent
+  id: ProgressPercent
+  parent: Meridian.Contracts.Pipeline.IngestionSymbolProgress
+  langs:
+  - csharp
+  - vb
+  name: ProgressPercent
+  nameWithType: IngestionSymbolProgress.ProgressPercent
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProgressPercent
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Progress percentage (0-100).
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public double ProgressPercent { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property ProgressPercent As Double
+  overload: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+references:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_Symbol
+  name: Symbol
+  nameWithType: IngestionSymbolProgress.Symbol
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.State*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.State
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_State
+  name: State
+  nameWithType: IngestionSymbolProgress.State
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.State
+- uid: Meridian.Contracts.Pipeline.IngestionJobState
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJobState
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJobState.html
+  name: IngestionJobState
+  nameWithType: IngestionJobState
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_DataPointsProcessed
+  name: DataPointsProcessed
+  nameWithType: IngestionSymbolProgress.DataPointsProcessed
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.DataPointsProcessed
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_ExpectedDataPoints
+  name: ExpectedDataPoints
+  nameWithType: IngestionSymbolProgress.ExpectedDataPoints
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ExpectedDataPoints
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_LastCommittedDate
+  name: LastCommittedDate
+  nameWithType: IngestionSymbolProgress.LastCommittedDate
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.LastCommittedDate
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_ErrorMessage
+  name: ErrorMessage
+  nameWithType: IngestionSymbolProgress.ErrorMessage
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ErrorMessage
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_RetryCount
+  name: RetryCount
+  nameWithType: IngestionSymbolProgress.RetryCount
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.RetryCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent*
+  commentId: Overload:Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent
+  href: Meridian.Contracts.Pipeline.IngestionSymbolProgress.html#Meridian_Contracts_Pipeline_IngestionSymbolProgress_ProgressPercent
+  name: ProgressPercent
+  nameWithType: IngestionSymbolProgress.ProgressPercent
+  fullName: Meridian.Contracts.Pipeline.IngestionSymbolProgress.ProgressPercent
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

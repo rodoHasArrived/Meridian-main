@@ -1,0 +1,614 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+  commentId: T:Meridian.Contracts.Treasury.MmfLiquidityDto
+  id: MmfLiquidityDto
+  parent: Meridian.Contracts.Treasury
+  children:
+  - Meridian.Contracts.Treasury.MmfLiquidityDto.#ctor(System.Guid,Meridian.Contracts.Treasury.MmfLiquidityState,System.Nullable{System.Int32},System.DateTimeOffset)
+  - Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf
+  - Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId
+  - Meridian.Contracts.Treasury.MmfLiquidityDto.State
+  - Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays
+  langs:
+  - csharp
+  - vb
+  name: MmfLiquidityDto
+  nameWithType: MmfLiquidityDto
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MmfLiquidityDto
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  summary: Liquidity projection for a money market fund derived from WAM and operational state.
+  example: []
+  syntax:
+    content: 'public sealed record MmfLiquidityDto : IEquatable<MmfLiquidityDto>'
+    content.vb: Public NotInheritable Class MmfLiquidityDto Implements IEquatable(Of MmfLiquidityDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Treasury.MmfLiquidityDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.#ctor(System.Guid,Meridian.Contracts.Treasury.MmfLiquidityState,System.Nullable{System.Int32},System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.Treasury.MmfLiquidityDto.#ctor(System.Guid,Meridian.Contracts.Treasury.MmfLiquidityState,System.Nullable{System.Int32},System.DateTimeOffset)
+  id: '#ctor(System.Guid,Meridian.Contracts.Treasury.MmfLiquidityState,System.Nullable{System.Int32},System.DateTimeOffset)'
+  parent: Meridian.Contracts.Treasury.MmfLiquidityDto
+  langs:
+  - csharp
+  - vb
+  name: MmfLiquidityDto(Guid, MmfLiquidityState, int?, DateTimeOffset)
+  nameWithType: MmfLiquidityDto.MmfLiquidityDto(Guid, MmfLiquidityState, int?, DateTimeOffset)
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.MmfLiquidityDto(System.Guid, Meridian.Contracts.Treasury.MmfLiquidityState, int?, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  summary: Liquidity projection for a money market fund derived from WAM and operational state.
+  example: []
+  syntax:
+    content: public MmfLiquidityDto(Guid SecurityId, MmfLiquidityState State, int? WeightedAverageMaturityDays, DateTimeOffset AsOf)
+    parameters:
+    - id: SecurityId
+      type: System.Guid
+    - id: State
+      type: Meridian.Contracts.Treasury.MmfLiquidityState
+    - id: WeightedAverageMaturityDays
+      type: System.Nullable{System.Int32}
+    - id: AsOf
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(SecurityId As Guid, State As MmfLiquidityState, WeightedAverageMaturityDays As Integer?, AsOf As DateTimeOffset)
+  overload: Meridian.Contracts.Treasury.MmfLiquidityDto.#ctor*
+  nameWithType.vb: MmfLiquidityDto.New(Guid, MmfLiquidityState, Integer?, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.Treasury.MmfLiquidityDto.New(System.Guid, Meridian.Contracts.Treasury.MmfLiquidityState, Integer?, System.DateTimeOffset)
+  name.vb: New(Guid, MmfLiquidityState, Integer?, DateTimeOffset)
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId
+  commentId: P:Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.Treasury.MmfLiquidityDto
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: MmfLiquidityDto.SecurityId
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId*
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.State
+  commentId: P:Meridian.Contracts.Treasury.MmfLiquidityDto.State
+  id: State
+  parent: Meridian.Contracts.Treasury.MmfLiquidityDto
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: MmfLiquidityDto.State
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public MmfLiquidityState State { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Treasury.MmfLiquidityState
+    content.vb: Public Property State As MmfLiquidityState
+  overload: Meridian.Contracts.Treasury.MmfLiquidityDto.State*
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays
+  commentId: P:Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays
+  id: WeightedAverageMaturityDays
+  parent: Meridian.Contracts.Treasury.MmfLiquidityDto
+  langs:
+  - csharp
+  - vb
+  name: WeightedAverageMaturityDays
+  nameWithType: MmfLiquidityDto.WeightedAverageMaturityDays
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WeightedAverageMaturityDays
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public int? WeightedAverageMaturityDays { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property WeightedAverageMaturityDays As Integer?
+  overload: Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays*
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf
+  commentId: P:Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.Treasury.MmfLiquidityDto
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: MmfLiquidityDto.AsOf
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf*
+references:
+- uid: Meridian.Contracts.Treasury
+  commentId: N:Meridian.Contracts.Treasury
+  href: Meridian.html
+  name: Meridian.Contracts.Treasury
+  nameWithType: Meridian.Contracts.Treasury
+  fullName: Meridian.Contracts.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Treasury.MmfLiquidityDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Treasury.MmfLiquidityDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MmfLiquidityDto>
+  nameWithType: IEquatable<MmfLiquidityDto>
+  fullName: System.IEquatable<Meridian.Contracts.Treasury.MmfLiquidityDto>
+  nameWithType.vb: IEquatable(Of MmfLiquidityDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Treasury.MmfLiquidityDto)
+  name.vb: IEquatable(Of MmfLiquidityDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+    href: Meridian.Contracts.Treasury.MmfLiquidityDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+    href: Meridian.Contracts.Treasury.MmfLiquidityDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfLiquidityDto.#ctor
+  href: Meridian.Contracts.Treasury.MmfLiquidityDto.html#Meridian_Contracts_Treasury_MmfLiquidityDto__ctor_System_Guid_Meridian_Contracts_Treasury_MmfLiquidityState_System_Nullable_System_Int32__System_DateTimeOffset_
+  name: MmfLiquidityDto
+  nameWithType: MmfLiquidityDto.MmfLiquidityDto
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.MmfLiquidityDto
+  nameWithType.vb: MmfLiquidityDto.New
+  fullName.vb: Meridian.Contracts.Treasury.MmfLiquidityDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState
+  commentId: T:Meridian.Contracts.Treasury.MmfLiquidityState
+  parent: Meridian.Contracts.Treasury
+  href: Meridian.Contracts.Treasury.MmfLiquidityState.html
+  name: MmfLiquidityState
+  nameWithType: MmfLiquidityState
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId
+  href: Meridian.Contracts.Treasury.MmfLiquidityDto.html#Meridian_Contracts_Treasury_MmfLiquidityDto_SecurityId
+  name: SecurityId
+  nameWithType: MmfLiquidityDto.SecurityId
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.SecurityId
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.State*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfLiquidityDto.State
+  href: Meridian.Contracts.Treasury.MmfLiquidityDto.html#Meridian_Contracts_Treasury_MmfLiquidityDto_State
+  name: State
+  nameWithType: MmfLiquidityDto.State
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.State
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays
+  href: Meridian.Contracts.Treasury.MmfLiquidityDto.html#Meridian_Contracts_Treasury_MmfLiquidityDto_WeightedAverageMaturityDays
+  name: WeightedAverageMaturityDays
+  nameWithType: MmfLiquidityDto.WeightedAverageMaturityDays
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.WeightedAverageMaturityDays
+- uid: Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf*
+  commentId: Overload:Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf
+  href: Meridian.Contracts.Treasury.MmfLiquidityDto.html#Meridian_Contracts_Treasury_MmfLiquidityDto_AsOf
+  name: AsOf
+  nameWithType: MmfLiquidityDto.AsOf
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityDto.AsOf

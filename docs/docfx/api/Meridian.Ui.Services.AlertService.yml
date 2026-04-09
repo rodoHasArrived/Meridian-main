@@ -1,0 +1,1050 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.AlertService
+  commentId: T:Meridian.Ui.Services.AlertService
+  id: AlertService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.AlertService.AddSuppressionRule(System.String,System.String,System.TimeSpan)
+  - Meridian.Ui.Services.AlertService.AlertRaised
+  - Meridian.Ui.Services.AlertService.AlertResolved
+  - Meridian.Ui.Services.AlertService.GetActiveAlerts
+  - Meridian.Ui.Services.AlertService.GetGroupedAlerts
+  - Meridian.Ui.Services.AlertService.GetResolvedAlerts
+  - Meridian.Ui.Services.AlertService.GetSummary
+  - Meridian.Ui.Services.AlertService.Instance
+  - Meridian.Ui.Services.AlertService.RaiseAlert(System.String,System.String,Meridian.Ui.Services.AlertSeverity,Meridian.Ui.Services.BusinessImpact,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String)
+  - Meridian.Ui.Services.AlertService.RegisterPlaybook(System.String,Meridian.Ui.Services.AlertPlaybook)
+  - Meridian.Ui.Services.AlertService.ResolveAlert(System.String)
+  - Meridian.Ui.Services.AlertService.SnoozeAlert(System.String,System.TimeSpan)
+  langs:
+  - csharp
+  - vb
+  name: AlertService
+  nameWithType: AlertService
+  fullName: Meridian.Ui.Services.AlertService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertService
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Unified alert management service with classification, grouping, deduplication,
+
+    playbook-based remediation, and smart suppression.
+
+    Reduces alert fatigue by intelligently consolidating and prioritizing alerts.
+  example: []
+  syntax:
+    content: public sealed class AlertService
+    content.vb: Public NotInheritable Class AlertService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.AlertService.Instance
+  commentId: P:Meridian.Ui.Services.AlertService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: AlertService.Instance
+  fullName: Meridian.Ui.Services.AlertService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static AlertService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.AlertService
+    content.vb: Public Shared ReadOnly Property Instance As AlertService
+  overload: Meridian.Ui.Services.AlertService.Instance*
+- uid: Meridian.Ui.Services.AlertService.AlertRaised
+  commentId: E:Meridian.Ui.Services.AlertService.AlertRaised
+  id: AlertRaised
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: AlertRaised
+  nameWithType: AlertService.AlertRaised
+  fullName: Meridian.Ui.Services.AlertService.AlertRaised
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertRaised
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a new alert is created or an existing alert is updated.
+  example: []
+  syntax:
+    content: public event EventHandler<AlertEventArgs>? AlertRaised
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.AlertEventArgs}
+    content.vb: Public Event AlertRaised As EventHandler(Of AlertEventArgs)
+- uid: Meridian.Ui.Services.AlertService.AlertResolved
+  commentId: E:Meridian.Ui.Services.AlertService.AlertResolved
+  id: AlertResolved
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: AlertResolved
+  nameWithType: AlertService.AlertResolved
+  fullName: Meridian.Ui.Services.AlertService.AlertResolved
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertResolved
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when an alert is resolved.
+  example: []
+  syntax:
+    content: public event EventHandler<AlertEventArgs>? AlertResolved
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.AlertEventArgs}
+    content.vb: Public Event AlertResolved As EventHandler(Of AlertEventArgs)
+- uid: Meridian.Ui.Services.AlertService.RaiseAlert(System.String,System.String,Meridian.Ui.Services.AlertSeverity,Meridian.Ui.Services.BusinessImpact,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String)
+  commentId: M:Meridian.Ui.Services.AlertService.RaiseAlert(System.String,System.String,Meridian.Ui.Services.AlertSeverity,Meridian.Ui.Services.BusinessImpact,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String)
+  id: RaiseAlert(System.String,System.String,Meridian.Ui.Services.AlertSeverity,Meridian.Ui.Services.BusinessImpact,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String)
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: RaiseAlert(string, string, AlertSeverity, BusinessImpact, string, IReadOnlyList<string>?, string?)
+  nameWithType: AlertService.RaiseAlert(string, string, AlertSeverity, BusinessImpact, string, IReadOnlyList<string>?, string?)
+  fullName: Meridian.Ui.Services.AlertService.RaiseAlert(string, string, Meridian.Ui.Services.AlertSeverity, Meridian.Ui.Services.BusinessImpact, string, System.Collections.Generic.IReadOnlyList<string>?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RaiseAlert
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Raises a new alert or updates an existing one if a matching alert is already active.
+
+    Handles deduplication, grouping, and smart suppression automatically.
+  example: []
+  syntax:
+    content: public Alert RaiseAlert(string title, string description, AlertSeverity severity, BusinessImpact impact, string category, IReadOnlyList<string>? affectedResources = null, string? playbookId = null)
+    parameters:
+    - id: title
+      type: System.String
+    - id: description
+      type: System.String
+    - id: severity
+      type: Meridian.Ui.Services.AlertSeverity
+    - id: impact
+      type: Meridian.Ui.Services.BusinessImpact
+    - id: category
+      type: System.String
+    - id: affectedResources
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: playbookId
+      type: System.String
+    return:
+      type: Meridian.Ui.Services.Alert
+    content.vb: Public Function RaiseAlert(title As String, description As String, severity As AlertSeverity, impact As BusinessImpact, category As String, affectedResources As IReadOnlyList(Of String) = Nothing, playbookId As String = Nothing) As Alert
+  overload: Meridian.Ui.Services.AlertService.RaiseAlert*
+  nameWithType.vb: AlertService.RaiseAlert(String, String, AlertSeverity, BusinessImpact, String, IReadOnlyList(Of String), String)
+  fullName.vb: Meridian.Ui.Services.AlertService.RaiseAlert(String, String, Meridian.Ui.Services.AlertSeverity, Meridian.Ui.Services.BusinessImpact, String, System.Collections.Generic.IReadOnlyList(Of String), String)
+  name.vb: RaiseAlert(String, String, AlertSeverity, BusinessImpact, String, IReadOnlyList(Of String), String)
+- uid: Meridian.Ui.Services.AlertService.ResolveAlert(System.String)
+  commentId: M:Meridian.Ui.Services.AlertService.ResolveAlert(System.String)
+  id: ResolveAlert(System.String)
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: ResolveAlert(string)
+  nameWithType: AlertService.ResolveAlert(string)
+  fullName: Meridian.Ui.Services.AlertService.ResolveAlert(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveAlert
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Resolves an active alert by its ID.
+  example: []
+  syntax:
+    content: public void ResolveAlert(string alertId)
+    parameters:
+    - id: alertId
+      type: System.String
+    content.vb: Public Sub ResolveAlert(alertId As String)
+  overload: Meridian.Ui.Services.AlertService.ResolveAlert*
+  nameWithType.vb: AlertService.ResolveAlert(String)
+  fullName.vb: Meridian.Ui.Services.AlertService.ResolveAlert(String)
+  name.vb: ResolveAlert(String)
+- uid: Meridian.Ui.Services.AlertService.SnoozeAlert(System.String,System.TimeSpan)
+  commentId: M:Meridian.Ui.Services.AlertService.SnoozeAlert(System.String,System.TimeSpan)
+  id: SnoozeAlert(System.String,System.TimeSpan)
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: SnoozeAlert(string, TimeSpan)
+  nameWithType: AlertService.SnoozeAlert(string, TimeSpan)
+  fullName: Meridian.Ui.Services.AlertService.SnoozeAlert(string, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SnoozeAlert
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Snoozes an alert for the specified duration.
+  example: []
+  syntax:
+    content: public void SnoozeAlert(string alertId, TimeSpan duration)
+    parameters:
+    - id: alertId
+      type: System.String
+    - id: duration
+      type: System.TimeSpan
+    content.vb: Public Sub SnoozeAlert(alertId As String, duration As TimeSpan)
+  overload: Meridian.Ui.Services.AlertService.SnoozeAlert*
+  nameWithType.vb: AlertService.SnoozeAlert(String, TimeSpan)
+  fullName.vb: Meridian.Ui.Services.AlertService.SnoozeAlert(String, System.TimeSpan)
+  name.vb: SnoozeAlert(String, TimeSpan)
+- uid: Meridian.Ui.Services.AlertService.AddSuppressionRule(System.String,System.String,System.TimeSpan)
+  commentId: M:Meridian.Ui.Services.AlertService.AddSuppressionRule(System.String,System.String,System.TimeSpan)
+  id: AddSuppressionRule(System.String,System.String,System.TimeSpan)
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: AddSuppressionRule(string, string?, TimeSpan)
+  nameWithType: AlertService.AddSuppressionRule(string, string?, TimeSpan)
+  fullName: Meridian.Ui.Services.AlertService.AddSuppressionRule(string, string?, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddSuppressionRule
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Adds a suppression rule to automatically suppress similar alerts.
+  example: []
+  syntax:
+    content: public void AddSuppressionRule(string category, string? titlePattern, TimeSpan duration)
+    parameters:
+    - id: category
+      type: System.String
+    - id: titlePattern
+      type: System.String
+    - id: duration
+      type: System.TimeSpan
+    content.vb: Public Sub AddSuppressionRule(category As String, titlePattern As String, duration As TimeSpan)
+  overload: Meridian.Ui.Services.AlertService.AddSuppressionRule*
+  nameWithType.vb: AlertService.AddSuppressionRule(String, String, TimeSpan)
+  fullName.vb: Meridian.Ui.Services.AlertService.AddSuppressionRule(String, String, System.TimeSpan)
+  name.vb: AddSuppressionRule(String, String, TimeSpan)
+- uid: Meridian.Ui.Services.AlertService.GetGroupedAlerts
+  commentId: M:Meridian.Ui.Services.AlertService.GetGroupedAlerts
+  id: GetGroupedAlerts
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: GetGroupedAlerts()
+  nameWithType: AlertService.GetGroupedAlerts()
+  fullName: Meridian.Ui.Services.AlertService.GetGroupedAlerts()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGroupedAlerts
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all active (non-resolved) alerts, grouped by category and sorted by severity.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AlertGroup> GetGroupedAlerts()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.AlertGroup}
+    content.vb: Public Function GetGroupedAlerts() As IReadOnlyList(Of AlertGroup)
+  overload: Meridian.Ui.Services.AlertService.GetGroupedAlerts*
+- uid: Meridian.Ui.Services.AlertService.GetActiveAlerts
+  commentId: M:Meridian.Ui.Services.AlertService.GetActiveAlerts
+  id: GetActiveAlerts
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: GetActiveAlerts()
+  nameWithType: AlertService.GetActiveAlerts()
+  fullName: Meridian.Ui.Services.AlertService.GetActiveAlerts()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActiveAlerts
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all active alerts without grouping.
+  example: []
+  syntax:
+    content: public IReadOnlyList<Alert> GetActiveAlerts()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Alert}
+    content.vb: Public Function GetActiveAlerts() As IReadOnlyList(Of Alert)
+  overload: Meridian.Ui.Services.AlertService.GetActiveAlerts*
+- uid: Meridian.Ui.Services.AlertService.GetResolvedAlerts
+  commentId: M:Meridian.Ui.Services.AlertService.GetResolvedAlerts
+  id: GetResolvedAlerts
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: GetResolvedAlerts()
+  nameWithType: AlertService.GetResolvedAlerts()
+  fullName: Meridian.Ui.Services.AlertService.GetResolvedAlerts()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetResolvedAlerts
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets resolved alert history.
+  example: []
+  syntax:
+    content: public IReadOnlyList<Alert> GetResolvedAlerts()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Alert}
+    content.vb: Public Function GetResolvedAlerts() As IReadOnlyList(Of Alert)
+  overload: Meridian.Ui.Services.AlertService.GetResolvedAlerts*
+- uid: Meridian.Ui.Services.AlertService.RegisterPlaybook(System.String,Meridian.Ui.Services.AlertPlaybook)
+  commentId: M:Meridian.Ui.Services.AlertService.RegisterPlaybook(System.String,Meridian.Ui.Services.AlertPlaybook)
+  id: RegisterPlaybook(System.String,Meridian.Ui.Services.AlertPlaybook)
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: RegisterPlaybook(string, AlertPlaybook)
+  nameWithType: AlertService.RegisterPlaybook(string, AlertPlaybook)
+  fullName: Meridian.Ui.Services.AlertService.RegisterPlaybook(string, Meridian.Ui.Services.AlertPlaybook)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterPlaybook
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Registers a remediation playbook.
+  example: []
+  syntax:
+    content: public void RegisterPlaybook(string id, AlertPlaybook playbook)
+    parameters:
+    - id: id
+      type: System.String
+    - id: playbook
+      type: Meridian.Ui.Services.AlertPlaybook
+    content.vb: Public Sub RegisterPlaybook(id As String, playbook As AlertPlaybook)
+  overload: Meridian.Ui.Services.AlertService.RegisterPlaybook*
+  nameWithType.vb: AlertService.RegisterPlaybook(String, AlertPlaybook)
+  fullName.vb: Meridian.Ui.Services.AlertService.RegisterPlaybook(String, Meridian.Ui.Services.AlertPlaybook)
+  name.vb: RegisterPlaybook(String, AlertPlaybook)
+- uid: Meridian.Ui.Services.AlertService.GetSummary
+  commentId: M:Meridian.Ui.Services.AlertService.GetSummary
+  id: GetSummary
+  parent: Meridian.Ui.Services.AlertService
+  langs:
+  - csharp
+  - vb
+  name: GetSummary()
+  nameWithType: AlertService.GetSummary()
+  fullName: Meridian.Ui.Services.AlertService.GetSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSummary
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the count of active alerts by severity.
+  example: []
+  syntax:
+    content: public AlertSummary GetSummary()
+    return:
+      type: Meridian.Ui.Services.AlertSummary
+    content.vb: Public Function GetSummary() As AlertSummary
+  overload: Meridian.Ui.Services.AlertService.GetSummary*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.AlertService.Instance*
+  commentId: Overload:Meridian.Ui.Services.AlertService.Instance
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_Instance
+  name: Instance
+  nameWithType: AlertService.Instance
+  fullName: Meridian.Ui.Services.AlertService.Instance
+- uid: Meridian.Ui.Services.AlertService
+  commentId: T:Meridian.Ui.Services.AlertService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlertService.html
+  name: AlertService
+  nameWithType: AlertService
+  fullName: Meridian.Ui.Services.AlertService
+- uid: System.EventHandler{Meridian.Ui.Services.AlertEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.AlertEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<AlertEventArgs>
+  nameWithType: EventHandler<AlertEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.AlertEventArgs>
+  nameWithType.vb: EventHandler(Of AlertEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.AlertEventArgs)
+  name.vb: EventHandler(Of AlertEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlertEventArgs
+    name: AlertEventArgs
+    href: Meridian.Ui.Services.AlertEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlertEventArgs
+    name: AlertEventArgs
+    href: Meridian.Ui.Services.AlertEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.AlertService.RaiseAlert*
+  commentId: Overload:Meridian.Ui.Services.AlertService.RaiseAlert
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_RaiseAlert_System_String_System_String_Meridian_Ui_Services_AlertSeverity_Meridian_Ui_Services_BusinessImpact_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_String_
+  name: RaiseAlert
+  nameWithType: AlertService.RaiseAlert
+  fullName: Meridian.Ui.Services.AlertService.RaiseAlert
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.AlertSeverity
+  commentId: T:Meridian.Ui.Services.AlertSeverity
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlertSeverity.html
+  name: AlertSeverity
+  nameWithType: AlertSeverity
+  fullName: Meridian.Ui.Services.AlertSeverity
+- uid: Meridian.Ui.Services.BusinessImpact
+  commentId: T:Meridian.Ui.Services.BusinessImpact
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BusinessImpact.html
+  name: BusinessImpact
+  nameWithType: BusinessImpact
+  fullName: Meridian.Ui.Services.BusinessImpact
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ui.Services.Alert
+  commentId: T:Meridian.Ui.Services.Alert
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.Alert.html
+  name: Alert
+  nameWithType: Alert
+  fullName: Meridian.Ui.Services.Alert
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.AlertService.ResolveAlert*
+  commentId: Overload:Meridian.Ui.Services.AlertService.ResolveAlert
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_ResolveAlert_System_String_
+  name: ResolveAlert
+  nameWithType: AlertService.ResolveAlert
+  fullName: Meridian.Ui.Services.AlertService.ResolveAlert
+- uid: Meridian.Ui.Services.AlertService.SnoozeAlert*
+  commentId: Overload:Meridian.Ui.Services.AlertService.SnoozeAlert
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_SnoozeAlert_System_String_System_TimeSpan_
+  name: SnoozeAlert
+  nameWithType: AlertService.SnoozeAlert
+  fullName: Meridian.Ui.Services.AlertService.SnoozeAlert
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Ui.Services.AlertService.AddSuppressionRule*
+  commentId: Overload:Meridian.Ui.Services.AlertService.AddSuppressionRule
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_AddSuppressionRule_System_String_System_String_System_TimeSpan_
+  name: AddSuppressionRule
+  nameWithType: AlertService.AddSuppressionRule
+  fullName: Meridian.Ui.Services.AlertService.AddSuppressionRule
+- uid: Meridian.Ui.Services.AlertService.GetGroupedAlerts*
+  commentId: Overload:Meridian.Ui.Services.AlertService.GetGroupedAlerts
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_GetGroupedAlerts
+  name: GetGroupedAlerts
+  nameWithType: AlertService.GetGroupedAlerts
+  fullName: Meridian.Ui.Services.AlertService.GetGroupedAlerts
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.AlertGroup}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.AlertGroup}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AlertGroup>
+  nameWithType: IReadOnlyList<AlertGroup>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.AlertGroup>
+  nameWithType.vb: IReadOnlyList(Of AlertGroup)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.AlertGroup)
+  name.vb: IReadOnlyList(Of AlertGroup)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlertGroup
+    name: AlertGroup
+    href: Meridian.Ui.Services.AlertGroup.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlertGroup
+    name: AlertGroup
+    href: Meridian.Ui.Services.AlertGroup.html
+  - name: )
+- uid: Meridian.Ui.Services.AlertService.GetActiveAlerts*
+  commentId: Overload:Meridian.Ui.Services.AlertService.GetActiveAlerts
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_GetActiveAlerts
+  name: GetActiveAlerts
+  nameWithType: AlertService.GetActiveAlerts
+  fullName: Meridian.Ui.Services.AlertService.GetActiveAlerts
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Alert}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Alert}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<Alert>
+  nameWithType: IReadOnlyList<Alert>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.Alert>
+  nameWithType.vb: IReadOnlyList(Of Alert)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.Alert)
+  name.vb: IReadOnlyList(Of Alert)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.Alert
+    name: Alert
+    href: Meridian.Ui.Services.Alert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Alert
+    name: Alert
+    href: Meridian.Ui.Services.Alert.html
+  - name: )
+- uid: Meridian.Ui.Services.AlertService.GetResolvedAlerts*
+  commentId: Overload:Meridian.Ui.Services.AlertService.GetResolvedAlerts
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_GetResolvedAlerts
+  name: GetResolvedAlerts
+  nameWithType: AlertService.GetResolvedAlerts
+  fullName: Meridian.Ui.Services.AlertService.GetResolvedAlerts
+- uid: Meridian.Ui.Services.AlertService.RegisterPlaybook*
+  commentId: Overload:Meridian.Ui.Services.AlertService.RegisterPlaybook
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_RegisterPlaybook_System_String_Meridian_Ui_Services_AlertPlaybook_
+  name: RegisterPlaybook
+  nameWithType: AlertService.RegisterPlaybook
+  fullName: Meridian.Ui.Services.AlertService.RegisterPlaybook
+- uid: Meridian.Ui.Services.AlertPlaybook
+  commentId: T:Meridian.Ui.Services.AlertPlaybook
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlertPlaybook.html
+  name: AlertPlaybook
+  nameWithType: AlertPlaybook
+  fullName: Meridian.Ui.Services.AlertPlaybook
+- uid: Meridian.Ui.Services.AlertService.GetSummary*
+  commentId: Overload:Meridian.Ui.Services.AlertService.GetSummary
+  href: Meridian.Ui.Services.AlertService.html#Meridian_Ui_Services_AlertService_GetSummary
+  name: GetSummary
+  nameWithType: AlertService.GetSummary
+  fullName: Meridian.Ui.Services.AlertService.GetSummary
+- uid: Meridian.Ui.Services.AlertSummary
+  commentId: T:Meridian.Ui.Services.AlertSummary
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlertSummary.html
+  name: AlertSummary
+  nameWithType: AlertSummary
+  fullName: Meridian.Ui.Services.AlertSummary

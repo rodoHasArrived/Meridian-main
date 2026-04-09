@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.OrderType
+  commentId: T:Meridian.Backtesting.Sdk.OrderType
+  id: OrderType
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.OrderType.Limit
+  - Meridian.Backtesting.Sdk.OrderType.Market
+  - Meridian.Backtesting.Sdk.OrderType.StopLimit
+  - Meridian.Backtesting.Sdk.OrderType.StopMarket
+  langs:
+  - csharp
+  - vb
+  name: OrderType
+  nameWithType: OrderType
+  fullName: Meridian.Backtesting.Sdk.OrderType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderType
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Order type classification.
+  example: []
+  syntax:
+    content: public enum OrderType
+    content.vb: Public Enum OrderType
+- uid: Meridian.Backtesting.Sdk.OrderType.Market
+  commentId: F:Meridian.Backtesting.Sdk.OrderType.Market
+  id: Market
+  parent: Meridian.Backtesting.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: Market
+  nameWithType: OrderType.Market
+  fullName: Meridian.Backtesting.Sdk.OrderType.Market
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Market
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Market = 0
+    return:
+      type: Meridian.Backtesting.Sdk.OrderType
+- uid: Meridian.Backtesting.Sdk.OrderType.Limit
+  commentId: F:Meridian.Backtesting.Sdk.OrderType.Limit
+  id: Limit
+  parent: Meridian.Backtesting.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: Limit
+  nameWithType: OrderType.Limit
+  fullName: Meridian.Backtesting.Sdk.OrderType.Limit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Limit
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Limit = 1
+    return:
+      type: Meridian.Backtesting.Sdk.OrderType
+- uid: Meridian.Backtesting.Sdk.OrderType.StopMarket
+  commentId: F:Meridian.Backtesting.Sdk.OrderType.StopMarket
+  id: StopMarket
+  parent: Meridian.Backtesting.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: StopMarket
+  nameWithType: OrderType.StopMarket
+  fullName: Meridian.Backtesting.Sdk.OrderType.StopMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopMarket
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: StopMarket = 2
+    return:
+      type: Meridian.Backtesting.Sdk.OrderType
+- uid: Meridian.Backtesting.Sdk.OrderType.StopLimit
+  commentId: F:Meridian.Backtesting.Sdk.OrderType.StopLimit
+  id: StopLimit
+  parent: Meridian.Backtesting.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: StopLimit
+  nameWithType: OrderType.StopLimit
+  fullName: Meridian.Backtesting.Sdk.OrderType.StopLimit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Order.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopLimit
+    path: ../../src/Meridian.Backtesting.Sdk/Order.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: StopLimit = 3
+    return:
+      type: Meridian.Backtesting.Sdk.OrderType
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.OrderType
+  commentId: T:Meridian.Backtesting.Sdk.OrderType
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.OrderType.html
+  name: OrderType
+  nameWithType: OrderType
+  fullName: Meridian.Backtesting.Sdk.OrderType

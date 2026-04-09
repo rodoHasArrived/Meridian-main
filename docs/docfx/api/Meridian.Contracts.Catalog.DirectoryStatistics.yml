@@ -1,0 +1,820 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics
+  commentId: T:Meridian.Contracts.Catalog.DirectoryStatistics
+  id: DirectoryStatistics
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType
+  - Meridian.Contracts.Catalog.DirectoryStatistics.FileCount
+  - Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol
+  - Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount
+  - Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed
+  - Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw
+  - Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents
+  langs:
+  - csharp
+  - vb
+  name: DirectoryStatistics
+  nameWithType: DirectoryStatistics
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectoryStatistics
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Statistics for a directory.
+  example: []
+  syntax:
+    content: public sealed class DirectoryStatistics
+    content.vb: Public NotInheritable Class DirectoryStatistics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.FileCount
+  commentId: P:Meridian.Contracts.Catalog.DirectoryStatistics.FileCount
+  id: FileCount
+  parent: Meridian.Contracts.Catalog.DirectoryStatistics
+  langs:
+  - csharp
+  - vb
+  name: FileCount
+  nameWithType: DirectoryStatistics.FileCount
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.FileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCount
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Number of data files.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("fileCount")]
+
+      public int FileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("fileCount")>
+
+      Public Property FileCount As Integer
+  overload: Meridian.Contracts.Catalog.DirectoryStatistics.FileCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fileCount
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents
+  commentId: P:Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Contracts.Catalog.DirectoryStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: DirectoryStatistics.TotalEvents
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Total events across all files.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalEvents")]
+
+      public long TotalEvents { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalEvents")>
+
+      Public Property TotalEvents As Long
+  overload: Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalEvents
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed
+  commentId: P:Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed
+  id: TotalBytesCompressed
+  parent: Meridian.Contracts.Catalog.DirectoryStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalBytesCompressed
+  nameWithType: DirectoryStatistics.TotalBytesCompressed
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytesCompressed
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Total compressed size in bytes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalBytesCompressed")]
+
+      public long TotalBytesCompressed { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalBytesCompressed")>
+
+      Public Property TotalBytesCompressed As Long
+  overload: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalBytesCompressed
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw
+  commentId: P:Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw
+  id: TotalBytesRaw
+  parent: Meridian.Contracts.Catalog.DirectoryStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalBytesRaw
+  nameWithType: DirectoryStatistics.TotalBytesRaw
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytesRaw
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Total uncompressed size in bytes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("totalBytesRaw")]
+
+      public long TotalBytesRaw { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalBytesRaw")>
+
+      Public Property TotalBytesRaw As Long
+  overload: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalBytesRaw
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount
+  commentId: P:Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount
+  id: SubdirectoryCount
+  parent: Meridian.Contracts.Catalog.DirectoryStatistics
+  langs:
+  - csharp
+  - vb
+  name: SubdirectoryCount
+  nameWithType: DirectoryStatistics.SubdirectoryCount
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubdirectoryCount
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Number of subdirectories.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("subdirectoryCount")]
+
+      public int SubdirectoryCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("subdirectoryCount")>
+
+      Public Property SubdirectoryCount As Integer
+  overload: Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: subdirectoryCount
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType
+  commentId: P:Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType
+  id: EventCountsByType
+  parent: Meridian.Contracts.Catalog.DirectoryStatistics
+  langs:
+  - csharp
+  - vb
+  name: EventCountsByType
+  nameWithType: DirectoryStatistics.EventCountsByType
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCountsByType
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Event counts by type.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventCountsByType")]
+
+      public Dictionary<string, long> EventCountsByType { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int64}
+    content.vb: >-
+      <JsonPropertyName("eventCountsByType")>
+
+      Public Property EventCountsByType As Dictionary(Of String, Long)
+  overload: Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventCountsByType
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol
+  commentId: P:Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol
+  id: FileCountsBySymbol
+  parent: Meridian.Contracts.Catalog.DirectoryStatistics
+  langs:
+  - csharp
+  - vb
+  name: FileCountsBySymbol
+  nameWithType: DirectoryStatistics.FileCountsBySymbol
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCountsBySymbol
+    path: ../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: File counts by symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("fileCountsBySymbol")]
+
+      public Dictionary<string, int> FileCountsBySymbol { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: >-
+      <JsonPropertyName("fileCountsBySymbol")>
+
+      Public Property FileCountsBySymbol As Dictionary(Of String, Integer)
+  overload: Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fileCountsBySymbol
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.FileCount*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryStatistics.FileCount
+  href: Meridian.Contracts.Catalog.DirectoryStatistics.html#Meridian_Contracts_Catalog_DirectoryStatistics_FileCount
+  name: FileCount
+  nameWithType: DirectoryStatistics.FileCount
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.FileCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents
+  href: Meridian.Contracts.Catalog.DirectoryStatistics.html#Meridian_Contracts_Catalog_DirectoryStatistics_TotalEvents
+  name: TotalEvents
+  nameWithType: DirectoryStatistics.TotalEvents
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.TotalEvents
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed
+  href: Meridian.Contracts.Catalog.DirectoryStatistics.html#Meridian_Contracts_Catalog_DirectoryStatistics_TotalBytesCompressed
+  name: TotalBytesCompressed
+  nameWithType: DirectoryStatistics.TotalBytesCompressed
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesCompressed
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw
+  href: Meridian.Contracts.Catalog.DirectoryStatistics.html#Meridian_Contracts_Catalog_DirectoryStatistics_TotalBytesRaw
+  name: TotalBytesRaw
+  nameWithType: DirectoryStatistics.TotalBytesRaw
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.TotalBytesRaw
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount
+  href: Meridian.Contracts.Catalog.DirectoryStatistics.html#Meridian_Contracts_Catalog_DirectoryStatistics_SubdirectoryCount
+  name: SubdirectoryCount
+  nameWithType: DirectoryStatistics.SubdirectoryCount
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.SubdirectoryCount
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType
+  href: Meridian.Contracts.Catalog.DirectoryStatistics.html#Meridian_Contracts_Catalog_DirectoryStatistics_EventCountsByType
+  name: EventCountsByType
+  nameWithType: DirectoryStatistics.EventCountsByType
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.EventCountsByType
+- uid: System.Collections.Generic.Dictionary{System.String,System.Int64}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, long>
+  nameWithType: Dictionary<string, long>
+  fullName: System.Collections.Generic.Dictionary<string, long>
+  nameWithType.vb: Dictionary(Of String, Long)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Long)
+  name.vb: Dictionary(Of String, Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol*
+  commentId: Overload:Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol
+  href: Meridian.Contracts.Catalog.DirectoryStatistics.html#Meridian_Contracts_Catalog_DirectoryStatistics_FileCountsBySymbol
+  name: FileCountsBySymbol
+  nameWithType: DirectoryStatistics.FileCountsBySymbol
+  fullName: Meridian.Contracts.Catalog.DirectoryStatistics.FileCountsBySymbol
+- uid: System.Collections.Generic.Dictionary{System.String,System.Int32}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, int>
+  nameWithType: Dictionary<string, int>
+  fullName: System.Collections.Generic.Dictionary<string, int>
+  nameWithType.vb: Dictionary(Of String, Integer)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Integer)
+  name.vb: Dictionary(Of String, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )

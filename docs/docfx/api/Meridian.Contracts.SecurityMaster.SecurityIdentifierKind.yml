@@ -1,0 +1,267 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  id: SecurityIdentifierKind
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Cusip
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Figi
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.InternalCode
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Isin
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.ProviderSymbol
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Sedol
+  - Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker
+  langs:
+  - csharp
+  - vb
+  name: SecurityIdentifierKind
+  nameWithType: SecurityIdentifierKind
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityIdentifierKind
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<SecurityIdentifierKind>))]
+
+      public enum SecurityIdentifierKind
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of SecurityIdentifierKind)))>
+
+      Public Enum SecurityIdentifierKind
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.SecurityMaster.SecurityIdentifierKind}
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker
+  id: Ticker
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Ticker
+  nameWithType: SecurityIdentifierKind.Ticker
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Ticker
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ticker
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Ticker = 0
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Isin
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Isin
+  id: Isin
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Isin
+  nameWithType: SecurityIdentifierKind.Isin
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Isin
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Isin
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Isin = 1
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Cusip
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Cusip
+  id: Cusip
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Cusip
+  nameWithType: SecurityIdentifierKind.Cusip
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Cusip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cusip
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Cusip = 2
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Sedol
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Sedol
+  id: Sedol
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Sedol
+  nameWithType: SecurityIdentifierKind.Sedol
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Sedol
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sedol
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Sedol = 3
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Figi
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Figi
+  id: Figi
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: Figi
+  nameWithType: SecurityIdentifierKind.Figi
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.Figi
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Figi
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Figi = 4
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.ProviderSymbol
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.ProviderSymbol
+  id: ProviderSymbol
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: ProviderSymbol
+  nameWithType: SecurityIdentifierKind.ProviderSymbol
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.ProviderSymbol
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderSymbol
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: ProviderSymbol = 5
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.InternalCode
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.InternalCode
+  id: InternalCode
+  parent: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  langs:
+  - csharp
+  - vb
+  name: InternalCode
+  nameWithType: SecurityIdentifierKind.InternalCode
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.InternalCode
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InternalCode
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: InternalCode = 6
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.html
+  name: SecurityIdentifierKind
+  nameWithType: SecurityIdentifierKind
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind

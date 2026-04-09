@@ -1,0 +1,472 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Portfolio.FixedCommissionModel
+  commentId: T:Meridian.Backtesting.Portfolio.FixedCommissionModel
+  id: FixedCommissionModel
+  parent: Meridian.Backtesting.Portfolio
+  children:
+  - Meridian.Backtesting.Portfolio.FixedCommissionModel.#ctor(System.Decimal)
+  - Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  langs:
+  - csharp
+  - vb
+  name: FixedCommissionModel
+  nameWithType: FixedCommissionModel
+  fullName: Meridian.Backtesting.Portfolio.FixedCommissionModel
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FixedCommissionModel
+    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Portfolio
+  summary: Fixed commission per order regardless of size.
+  example: []
+  syntax:
+    content: 'public sealed class FixedCommissionModel : ICommissionModel'
+    content.vb: Public NotInheritable Class FixedCommissionModel Implements ICommissionModel
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Backtesting.Portfolio.ICommissionModel
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Portfolio.FixedCommissionModel.#ctor(System.Decimal)
+  commentId: M:Meridian.Backtesting.Portfolio.FixedCommissionModel.#ctor(System.Decimal)
+  id: '#ctor(System.Decimal)'
+  parent: Meridian.Backtesting.Portfolio.FixedCommissionModel
+  langs:
+  - csharp
+  - vb
+  name: FixedCommissionModel(decimal)
+  nameWithType: FixedCommissionModel.FixedCommissionModel(decimal)
+  fullName: Meridian.Backtesting.Portfolio.FixedCommissionModel.FixedCommissionModel(decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Portfolio
+  summary: Fixed commission per order regardless of size.
+  example: []
+  syntax:
+    content: public FixedCommissionModel(decimal commissionPerOrder = 0)
+    parameters:
+    - id: commissionPerOrder
+      type: System.Decimal
+    content.vb: Public Sub New(commissionPerOrder As Decimal = 0)
+  overload: Meridian.Backtesting.Portfolio.FixedCommissionModel.#ctor*
+  nameWithType.vb: FixedCommissionModel.New(Decimal)
+  fullName.vb: Meridian.Backtesting.Portfolio.FixedCommissionModel.New(Decimal)
+  name.vb: New(Decimal)
+- uid: Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  commentId: M:Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  id: Calculate(System.String,System.Int64,System.Decimal)
+  parent: Meridian.Backtesting.Portfolio.FixedCommissionModel
+  langs:
+  - csharp
+  - vb
+  name: Calculate(string, long, decimal)
+  nameWithType: FixedCommissionModel.Calculate(string, long, decimal)
+  fullName: Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate(string, long, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Calculate
+    path: ../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting.Portfolio
+  example: []
+  syntax:
+    content: public decimal Calculate(string symbol, long quantity, decimal fillPrice)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: fillPrice
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Public Function Calculate(symbol As String, quantity As Long, fillPrice As Decimal) As Decimal
+  overload: Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate*
+  implements:
+  - Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  nameWithType.vb: FixedCommissionModel.Calculate(String, Long, Decimal)
+  fullName.vb: Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate(String, Long, Decimal)
+  name.vb: Calculate(String, Long, Decimal)
+references:
+- uid: Meridian.Backtesting.Portfolio
+  commentId: N:Meridian.Backtesting.Portfolio
+  href: Meridian.html
+  name: Meridian.Backtesting.Portfolio
+  nameWithType: Meridian.Backtesting.Portfolio
+  fullName: Meridian.Backtesting.Portfolio
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Portfolio
+    name: Portfolio
+    href: Meridian.Backtesting.Portfolio.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Portfolio
+    name: Portfolio
+    href: Meridian.Backtesting.Portfolio.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.Portfolio.ICommissionModel
+  commentId: T:Meridian.Backtesting.Portfolio.ICommissionModel
+  parent: Meridian.Backtesting.Portfolio
+  href: Meridian.Backtesting.Portfolio.ICommissionModel.html
+  name: ICommissionModel
+  nameWithType: ICommissionModel
+  fullName: Meridian.Backtesting.Portfolio.ICommissionModel
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.Portfolio.FixedCommissionModel.#ctor*
+  commentId: Overload:Meridian.Backtesting.Portfolio.FixedCommissionModel.#ctor
+  href: Meridian.Backtesting.Portfolio.FixedCommissionModel.html#Meridian_Backtesting_Portfolio_FixedCommissionModel__ctor_System_Decimal_
+  name: FixedCommissionModel
+  nameWithType: FixedCommissionModel.FixedCommissionModel
+  fullName: Meridian.Backtesting.Portfolio.FixedCommissionModel.FixedCommissionModel
+  nameWithType.vb: FixedCommissionModel.New
+  fullName.vb: Meridian.Backtesting.Portfolio.FixedCommissionModel.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate*
+  commentId: Overload:Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate
+  href: Meridian.Backtesting.Portfolio.FixedCommissionModel.html#Meridian_Backtesting_Portfolio_FixedCommissionModel_Calculate_System_String_System_Int64_System_Decimal_
+  name: Calculate
+  nameWithType: FixedCommissionModel.Calculate
+  fullName: Meridian.Backtesting.Portfolio.FixedCommissionModel.Calculate
+- uid: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  commentId: M:Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+  parent: Meridian.Backtesting.Portfolio.ICommissionModel
+  isExternal: true
+  href: Meridian.Backtesting.Portfolio.ICommissionModel.html#Meridian_Backtesting_Portfolio_ICommissionModel_Calculate_System_String_System_Int64_System_Decimal_
+  name: Calculate(string, long, decimal)
+  nameWithType: ICommissionModel.Calculate(string, long, decimal)
+  fullName: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(string, long, decimal)
+  nameWithType.vb: ICommissionModel.Calculate(String, Long, Decimal)
+  fullName.vb: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(String, Long, Decimal)
+  name.vb: Calculate(String, Long, Decimal)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+    name: Calculate
+    href: Meridian.Backtesting.Portfolio.ICommissionModel.html#Meridian_Backtesting_Portfolio_ICommissionModel_Calculate_System_String_System_Int64_System_Decimal_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Portfolio.ICommissionModel.Calculate(System.String,System.Int64,System.Decimal)
+    name: Calculate
+    href: Meridian.Backtesting.Portfolio.ICommissionModel.html#Meridian_Backtesting_Portfolio_ICommissionModel_Calculate_System_String_System_Int64_System_Decimal_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long

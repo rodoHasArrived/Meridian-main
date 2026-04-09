@@ -1,0 +1,622 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  id: ExecutionSlice
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.#ctor(System.DateTimeOffset,System.Int64,System.Nullable{System.Decimal},System.Int64)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity
+  langs:
+  - csharp
+  - vb
+  name: ExecutionSlice
+  nameWithType: ExecutionSlice
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionSlice
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record ExecutionSlice : IEquatable<ExecutionSlice>'
+    content.vb: Public NotInheritable Class ExecutionSlice Implements IEquatable(Of ExecutionSlice)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.#ctor(System.DateTimeOffset,System.Int64,System.Nullable{System.Decimal},System.Int64)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.#ctor(System.DateTimeOffset,System.Int64,System.Nullable{System.Decimal},System.Int64)
+  id: '#ctor(System.DateTimeOffset,System.Int64,System.Nullable{System.Decimal},System.Int64)'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  langs:
+  - csharp
+  - vb
+  name: ExecutionSlice(DateTimeOffset, long, decimal?, long)
+  nameWithType: ExecutionSlice.ExecutionSlice(DateTimeOffset, long, decimal?, long)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.ExecutionSlice(System.DateTimeOffset, long, decimal?, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public ExecutionSlice(DateTimeOffset PlannedAt, long Quantity, decimal? LimitPrice, long DisplayQuantity)
+    parameters:
+    - id: PlannedAt
+      type: System.DateTimeOffset
+    - id: Quantity
+      type: System.Int64
+    - id: LimitPrice
+      type: System.Nullable{System.Decimal}
+    - id: DisplayQuantity
+      type: System.Int64
+    content.vb: Public Sub New(PlannedAt As DateTimeOffset, Quantity As Long, LimitPrice As Decimal?, DisplayQuantity As Long)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.#ctor*
+  nameWithType.vb: ExecutionSlice.New(DateTimeOffset, Long, Decimal?, Long)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.New(System.DateTimeOffset, Long, Decimal?, Long)
+  name.vb: New(DateTimeOffset, Long, Decimal?, Long)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt
+  id: PlannedAt
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  langs:
+  - csharp
+  - vb
+  name: PlannedAt
+  nameWithType: ExecutionSlice.PlannedAt
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlannedAt
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public DateTimeOffset PlannedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property PlannedAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity
+  id: Quantity
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: ExecutionSlice.Quantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public long Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Quantity As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice
+  id: LimitPrice
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  langs:
+  - csharp
+  - vb
+  name: LimitPrice
+  nameWithType: ExecutionSlice.LimitPrice
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LimitPrice
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public decimal? LimitPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property LimitPrice As Decimal?
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity
+  id: DisplayQuantity
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+  langs:
+  - csharp
+  - vb
+  name: DisplayQuantity
+  nameWithType: ExecutionSlice.DisplayQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public long DisplayQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DisplayQuantity As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionSlice>
+  nameWithType: IEquatable<ExecutionSlice>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice>
+  nameWithType.vb: IEquatable(Of ExecutionSlice)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice)
+  name.vb: IEquatable(Of ExecutionSlice)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+    name: ExecutionSlice
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
+    name: ExecutionSlice
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ExecutionSlice__ctor_System_DateTimeOffset_System_Int64_System_Nullable_System_Decimal__System_Int64_
+  name: ExecutionSlice
+  nameWithType: ExecutionSlice.ExecutionSlice
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.ExecutionSlice
+  nameWithType.vb: ExecutionSlice.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ExecutionSlice_PlannedAt
+  name: PlannedAt
+  nameWithType: ExecutionSlice.PlannedAt
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.PlannedAt
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ExecutionSlice_Quantity
+  name: Quantity
+  nameWithType: ExecutionSlice.Quantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.Quantity
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ExecutionSlice_LimitPrice
+  name: LimitPrice
+  nameWithType: ExecutionSlice.LimitPrice
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.LimitPrice
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ExecutionSlice_DisplayQuantity
+  name: DisplayQuantity
+  nameWithType: ExecutionSlice.DisplayQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice.DisplayQuantity

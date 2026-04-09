@@ -226,7 +226,7 @@
                         <ProgressBar x:Name="CheckProgress"
                                      Height="6"
                                      Margin="0,12,0,0"
-                                     Value="{Binding CheckProgressValue}"
+                                     Value="{Binding CheckProgressValue, Mode=OneWay}"
                                      Maximum="100" />
                     </StackPanel>
                 </Border>

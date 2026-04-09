@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ScheduleFrequency
+  commentId: T:Meridian.Ui.Services.ScheduleFrequency
+  id: ScheduleFrequency
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ScheduleFrequency.Daily
+  - Meridian.Ui.Services.ScheduleFrequency.Hourly
+  - Meridian.Ui.Services.ScheduleFrequency.Monthly
+  - Meridian.Ui.Services.ScheduleFrequency.Weekly
+  langs:
+  - csharp
+  - vb
+  name: ScheduleFrequency
+  nameWithType: ScheduleFrequency
+  fullName: Meridian.Ui.Services.ScheduleFrequency
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleFrequency
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 692
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum ScheduleFrequency : byte'
+    content.vb: Public Enum ScheduleFrequency As Byte
+- uid: Meridian.Ui.Services.ScheduleFrequency.Hourly
+  commentId: F:Meridian.Ui.Services.ScheduleFrequency.Hourly
+  id: Hourly
+  parent: Meridian.Ui.Services.ScheduleFrequency
+  langs:
+  - csharp
+  - vb
+  name: Hourly
+  nameWithType: ScheduleFrequency.Hourly
+  fullName: Meridian.Ui.Services.ScheduleFrequency.Hourly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hourly
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 694
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Hourly = 0
+    return:
+      type: Meridian.Ui.Services.ScheduleFrequency
+- uid: Meridian.Ui.Services.ScheduleFrequency.Daily
+  commentId: F:Meridian.Ui.Services.ScheduleFrequency.Daily
+  id: Daily
+  parent: Meridian.Ui.Services.ScheduleFrequency
+  langs:
+  - csharp
+  - vb
+  name: Daily
+  nameWithType: ScheduleFrequency.Daily
+  fullName: Meridian.Ui.Services.ScheduleFrequency.Daily
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Daily
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 695
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Daily = 1
+    return:
+      type: Meridian.Ui.Services.ScheduleFrequency
+- uid: Meridian.Ui.Services.ScheduleFrequency.Weekly
+  commentId: F:Meridian.Ui.Services.ScheduleFrequency.Weekly
+  id: Weekly
+  parent: Meridian.Ui.Services.ScheduleFrequency
+  langs:
+  - csharp
+  - vb
+  name: Weekly
+  nameWithType: ScheduleFrequency.Weekly
+  fullName: Meridian.Ui.Services.ScheduleFrequency.Weekly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weekly
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 696
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Weekly = 2
+    return:
+      type: Meridian.Ui.Services.ScheduleFrequency
+- uid: Meridian.Ui.Services.ScheduleFrequency.Monthly
+  commentId: F:Meridian.Ui.Services.ScheduleFrequency.Monthly
+  id: Monthly
+  parent: Meridian.Ui.Services.ScheduleFrequency
+  langs:
+  - csharp
+  - vb
+  name: Monthly
+  nameWithType: ScheduleFrequency.Monthly
+  fullName: Meridian.Ui.Services.ScheduleFrequency.Monthly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Monthly
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 697
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Monthly = 3
+    return:
+      type: Meridian.Ui.Services.ScheduleFrequency
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ScheduleFrequency
+  commentId: T:Meridian.Ui.Services.ScheduleFrequency
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ScheduleFrequency.html
+  name: ScheduleFrequency
+  nameWithType: ScheduleFrequency
+  fullName: Meridian.Ui.Services.ScheduleFrequency

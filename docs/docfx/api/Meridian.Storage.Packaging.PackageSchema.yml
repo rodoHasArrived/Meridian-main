@@ -1,0 +1,507 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageSchema
+  commentId: T:Meridian.Storage.Packaging.PackageSchema
+  id: PackageSchema
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageSchema.EventType
+  - Meridian.Storage.Packaging.PackageSchema.Fields
+  - Meridian.Storage.Packaging.PackageSchema.JsonSchema
+  - Meridian.Storage.Packaging.PackageSchema.Version
+  langs:
+  - csharp
+  - vb
+  name: PackageSchema
+  nameWithType: PackageSchema
+  fullName: Meridian.Storage.Packaging.PackageSchema
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageSchema
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Schema definition for an event type.
+  example: []
+  syntax:
+    content: public sealed class PackageSchema
+    content.vb: Public NotInheritable Class PackageSchema
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Packaging.PackageSchema.EventType
+  commentId: P:Meridian.Storage.Packaging.PackageSchema.EventType
+  id: EventType
+  parent: Meridian.Storage.Packaging.PackageSchema
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: PackageSchema.EventType
+  fullName: Meridian.Storage.Packaging.PackageSchema.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("eventType")]
+
+      public string EventType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("eventType")>
+
+      Public Property EventType As String
+  overload: Meridian.Storage.Packaging.PackageSchema.EventType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventType
+- uid: Meridian.Storage.Packaging.PackageSchema.Version
+  commentId: P:Meridian.Storage.Packaging.PackageSchema.Version
+  id: Version
+  parent: Meridian.Storage.Packaging.PackageSchema
+  langs:
+  - csharp
+  - vb
+  name: Version
+  nameWithType: PackageSchema.Version
+  fullName: Meridian.Storage.Packaging.PackageSchema.Version
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Version
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("version")]
+
+      public string Version { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("version")>
+
+      Public Property Version As String
+  overload: Meridian.Storage.Packaging.PackageSchema.Version*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: version
+- uid: Meridian.Storage.Packaging.PackageSchema.Fields
+  commentId: P:Meridian.Storage.Packaging.PackageSchema.Fields
+  id: Fields
+  parent: Meridian.Storage.Packaging.PackageSchema
+  langs:
+  - csharp
+  - vb
+  name: Fields
+  nameWithType: PackageSchema.Fields
+  fullName: Meridian.Storage.Packaging.PackageSchema.Fields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fields
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("fields")]
+
+      public PackageSchemaField[] Fields { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Packaging.PackageSchemaField[]
+    content.vb: >-
+      <JsonPropertyName("fields")>
+
+      Public Property Fields As PackageSchemaField()
+  overload: Meridian.Storage.Packaging.PackageSchema.Fields*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fields
+- uid: Meridian.Storage.Packaging.PackageSchema.JsonSchema
+  commentId: P:Meridian.Storage.Packaging.PackageSchema.JsonSchema
+  id: JsonSchema
+  parent: Meridian.Storage.Packaging.PackageSchema
+  langs:
+  - csharp
+  - vb
+  name: JsonSchema
+  nameWithType: PackageSchema.JsonSchema
+  fullName: Meridian.Storage.Packaging.PackageSchema.JsonSchema
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageManifest.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JsonSchema
+    path: ../../src/Meridian.Storage/Packaging/PackageManifest.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("jsonSchema")]
+
+      public string? JsonSchema { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("jsonSchema")>
+
+      Public Property JsonSchema As String
+  overload: Meridian.Storage.Packaging.PackageSchema.JsonSchema*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: jsonSchema
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Packaging.PackageSchema.EventType*
+  commentId: Overload:Meridian.Storage.Packaging.PackageSchema.EventType
+  href: Meridian.Storage.Packaging.PackageSchema.html#Meridian_Storage_Packaging_PackageSchema_EventType
+  name: EventType
+  nameWithType: PackageSchema.EventType
+  fullName: Meridian.Storage.Packaging.PackageSchema.EventType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Packaging.PackageSchema.Version*
+  commentId: Overload:Meridian.Storage.Packaging.PackageSchema.Version
+  href: Meridian.Storage.Packaging.PackageSchema.html#Meridian_Storage_Packaging_PackageSchema_Version
+  name: Version
+  nameWithType: PackageSchema.Version
+  fullName: Meridian.Storage.Packaging.PackageSchema.Version
+- uid: Meridian.Storage.Packaging.PackageSchema.Fields*
+  commentId: Overload:Meridian.Storage.Packaging.PackageSchema.Fields
+  href: Meridian.Storage.Packaging.PackageSchema.html#Meridian_Storage_Packaging_PackageSchema_Fields
+  name: Fields
+  nameWithType: PackageSchema.Fields
+  fullName: Meridian.Storage.Packaging.PackageSchema.Fields
+- uid: Meridian.Storage.Packaging.PackageSchemaField[]
+  isExternal: true
+  href: Meridian.Storage.Packaging.PackageSchemaField.html
+  name: PackageSchemaField[]
+  nameWithType: PackageSchemaField[]
+  fullName: Meridian.Storage.Packaging.PackageSchemaField[]
+  nameWithType.vb: PackageSchemaField()
+  fullName.vb: Meridian.Storage.Packaging.PackageSchemaField()
+  name.vb: PackageSchemaField()
+  spec.csharp:
+  - uid: Meridian.Storage.Packaging.PackageSchemaField
+    name: PackageSchemaField
+    href: Meridian.Storage.Packaging.PackageSchemaField.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Storage.Packaging.PackageSchemaField
+    name: PackageSchemaField
+    href: Meridian.Storage.Packaging.PackageSchemaField.html
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Packaging.PackageSchema.JsonSchema*
+  commentId: Overload:Meridian.Storage.Packaging.PackageSchema.JsonSchema
+  href: Meridian.Storage.Packaging.PackageSchema.html#Meridian_Storage_Packaging_PackageSchema_JsonSchema
+  name: JsonSchema
+  nameWithType: PackageSchema.JsonSchema
+  fullName: Meridian.Storage.Packaging.PackageSchema.JsonSchema

@@ -506,5 +506,5 @@ If two candidate names are both correct, choose the one that:
 *See also:*
 - [`CLAUDE.fsharp.md`](CLAUDE.fsharp.md) — F# domain module patterns and interop rules
 - [`CLAUDE.providers.md`](CLAUDE.providers.md) — provider adapter naming (different conventions)
-- [`../_shared/project-context.md`](../../../docs/generated/project-context.md) — codebase statistics and key abstractions
+- [`../_shared/project-context.md`](../../generated/project-context.md) — codebase statistics and key abstractions
 - [`../../../docs/plans/ufl-supported-assets-index.md`](../../plans/ufl-supported-assets-index.md) — UFL asset package index

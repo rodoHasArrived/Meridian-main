@@ -1,0 +1,450 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService
+  commentId: T:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService
+  id: IOfflineTrackingPersistenceService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync``1(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync``1(System.String,``0,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IOfflineTrackingPersistenceService
+  nameWithType: IOfflineTrackingPersistenceService
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IOfflineTrackingPersistenceService
+    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for persisting offline tracking data.
+
+    Shared between WPF desktop applications.
+  example: []
+  syntax:
+    content: public interface IOfflineTrackingPersistenceService
+    content.vb: Public Interface IOfflineTrackingPersistenceService
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync``1(System.String,``0,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync``1(System.String,``0,System.Threading.CancellationToken)
+  id: SaveOfflineDataAsync``1(System.String,``0,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: SaveOfflineDataAsync<T>(string, T, CancellationToken)
+  nameWithType: IOfflineTrackingPersistenceService.SaveOfflineDataAsync<T>(string, T, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync<T>(string, T, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveOfflineDataAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task SaveOfflineDataAsync<T>(string key, T data, CancellationToken cancellationToken = default)
+    parameters:
+    - id: key
+      type: System.String
+    - id: data
+      type: '{T}'
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveOfflineDataAsync(Of T)(key As String, data As T, cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync*
+  nameWithType.vb: IOfflineTrackingPersistenceService.SaveOfflineDataAsync(Of T)(String, T, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync(Of T)(String, T, System.Threading.CancellationToken)
+  name.vb: SaveOfflineDataAsync(Of T)(String, T, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync``1(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync``1(System.String,System.Threading.CancellationToken)
+  id: LoadOfflineDataAsync``1(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: LoadOfflineDataAsync<T>(string, CancellationToken)
+  nameWithType: IOfflineTrackingPersistenceService.LoadOfflineDataAsync<T>(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync<T>(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadOfflineDataAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task<T?> LoadOfflineDataAsync<T>(string key, CancellationToken cancellationToken = default)
+    parameters:
+    - id: key
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: T
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+    content.vb: Function LoadOfflineDataAsync(Of T)(key As String, cancellationToken As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync*
+  nameWithType.vb: IOfflineTrackingPersistenceService.LoadOfflineDataAsync(Of T)(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync(Of T)(String, System.Threading.CancellationToken)
+  name.vb: LoadOfflineDataAsync(Of T)(String, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: DeleteOfflineDataAsync(string, CancellationToken)
+  nameWithType: IOfflineTrackingPersistenceService.DeleteOfflineDataAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteOfflineDataAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task DeleteOfflineDataAsync(string key, CancellationToken cancellationToken = default)
+    parameters:
+    - id: key
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function DeleteOfflineDataAsync(key As String, cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync*
+  nameWithType.vb: IOfflineTrackingPersistenceService.DeleteOfflineDataAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteOfflineDataAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  id: HasOfflineDataAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService
+  langs:
+  - csharp
+  - vb
+  name: HasOfflineDataAsync(string, CancellationToken)
+  nameWithType: IOfflineTrackingPersistenceService.HasOfflineDataAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasOfflineDataAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IOfflineTrackingPersistenceService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task<bool> HasOfflineDataAsync(string key, CancellationToken cancellationToken = default)
+    parameters:
+    - id: key
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function HasOfflineDataAsync(key As String, cancellationToken As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync*
+  nameWithType.vb: IOfflineTrackingPersistenceService.HasOfflineDataAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync(String, System.Threading.CancellationToken)
+  name.vb: HasOfflineDataAsync(String, CancellationToken)
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync
+  href: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.html#Meridian_Ui_Services_Contracts_IOfflineTrackingPersistenceService_SaveOfflineDataAsync__1_System_String___0_System_Threading_CancellationToken_
+  name: SaveOfflineDataAsync
+  nameWithType: IOfflineTrackingPersistenceService.SaveOfflineDataAsync
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.SaveOfflineDataAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync
+  href: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.html#Meridian_Ui_Services_Contracts_IOfflineTrackingPersistenceService_LoadOfflineDataAsync__1_System_String_System_Threading_CancellationToken_
+  name: LoadOfflineDataAsync
+  nameWithType: IOfflineTrackingPersistenceService.LoadOfflineDataAsync
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.LoadOfflineDataAsync
+- uid: System.Threading.Tasks.Task{{T}}
+  commentId: T:System.Threading.Tasks.Task{``0}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<T>
+  nameWithType: Task<T>
+  fullName: System.Threading.Tasks.Task<T>
+  nameWithType.vb: Task(Of T)
+  fullName.vb: System.Threading.Tasks.Task(Of T)
+  name.vb: Task(Of T)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync
+  href: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.html#Meridian_Ui_Services_Contracts_IOfflineTrackingPersistenceService_DeleteOfflineDataAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteOfflineDataAsync
+  nameWithType: IOfflineTrackingPersistenceService.DeleteOfflineDataAsync
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.DeleteOfflineDataAsync
+- uid: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync
+  href: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.html#Meridian_Ui_Services_Contracts_IOfflineTrackingPersistenceService_HasOfflineDataAsync_System_String_System_Threading_CancellationToken_
+  name: HasOfflineDataAsync
+  nameWithType: IOfflineTrackingPersistenceService.HasOfflineDataAsync
+  fullName: Meridian.Ui.Services.Contracts.IOfflineTrackingPersistenceService.HasOfflineDataAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )

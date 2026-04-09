@@ -1,0 +1,1603 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.ExportPreset
+  commentId: T:Meridian.Contracts.Export.ExportPreset
+  id: ExportPreset
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.ExportPreset.Columns
+  - Meridian.Contracts.Export.ExportPreset.Compression
+  - Meridian.Contracts.Export.ExportPreset.CreatedAt
+  - Meridian.Contracts.Export.ExportPreset.Description
+  - Meridian.Contracts.Export.ExportPreset.Destination
+  - Meridian.Contracts.Export.ExportPreset.FilenamePattern
+  - Meridian.Contracts.Export.ExportPreset.Filters
+  - Meridian.Contracts.Export.ExportPreset.Format
+  - Meridian.Contracts.Export.ExportPreset.Id
+  - Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary
+  - Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript
+  - Meridian.Contracts.Export.ExportPreset.IncludeManifest
+  - Meridian.Contracts.Export.ExportPreset.IsBuiltIn
+  - Meridian.Contracts.Export.ExportPreset.LastUsedAt
+  - Meridian.Contracts.Export.ExportPreset.Name
+  - Meridian.Contracts.Export.ExportPreset.NotifyOnComplete
+  - Meridian.Contracts.Export.ExportPreset.OverwriteExisting
+  - Meridian.Contracts.Export.ExportPreset.PostExportHook
+  - Meridian.Contracts.Export.ExportPreset.Schedule
+  - Meridian.Contracts.Export.ExportPreset.ScheduleEnabled
+  - Meridian.Contracts.Export.ExportPreset.UpdatedAt
+  - Meridian.Contracts.Export.ExportPreset.UseCount
+  - Meridian.Contracts.Export.ExportPreset.Validation
+  langs:
+  - csharp
+  - vb
+  name: ExportPreset
+  nameWithType: ExportPreset
+  fullName: Meridian.Contracts.Export.ExportPreset
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportPreset
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Represents a saveable export preset configuration.
+
+    Implements Feature Refinement #69 - Archive Export Presets.
+  example: []
+  syntax:
+    content: public sealed class ExportPreset
+    content.vb: Public NotInheritable Class ExportPreset
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Export.ExportPreset.Id
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Id
+  id: Id
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: ExportPreset.Id
+  fullName: Meridian.Contracts.Export.ExportPreset.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Unique identifier for this preset.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("id")]
+
+      public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("id")>
+
+      Public Property Id As String
+  overload: Meridian.Contracts.Export.ExportPreset.Id*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: id
+- uid: Meridian.Contracts.Export.ExportPreset.Name
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Name
+  id: Name
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ExportPreset.Name
+  fullName: Meridian.Contracts.Export.ExportPreset.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Human-readable name for the preset.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("name")]
+
+      public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("name")>
+
+      Public Property Name As String
+  overload: Meridian.Contracts.Export.ExportPreset.Name*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: name
+- uid: Meridian.Contracts.Export.ExportPreset.Description
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Description
+  id: Description
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ExportPreset.Description
+  fullName: Meridian.Contracts.Export.ExportPreset.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Description of what this preset does.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Contracts.Export.ExportPreset.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Contracts.Export.ExportPreset.Format
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Format
+  id: Format
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: ExportPreset.Format
+  fullName: Meridian.Contracts.Export.ExportPreset.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Export format (Parquet, CSV, JSONL, Lean, XLSX, SQL).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("format")]
+
+      public ExportPresetFormat Format { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+    content.vb: >-
+      <JsonPropertyName("format")>
+
+      Public Property Format As ExportPresetFormat
+  overload: Meridian.Contracts.Export.ExportPreset.Format*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: format
+- uid: Meridian.Contracts.Export.ExportPreset.Compression
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Compression
+  id: Compression
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Compression
+  nameWithType: ExportPreset.Compression
+  fullName: Meridian.Contracts.Export.ExportPreset.Compression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compression
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Compression type.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compression")]
+
+      public ExportPresetCompression Compression { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Export.ExportPresetCompression
+    content.vb: >-
+      <JsonPropertyName("compression")>
+
+      Public Property Compression As ExportPresetCompression
+  overload: Meridian.Contracts.Export.ExportPreset.Compression*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compression
+- uid: Meridian.Contracts.Export.ExportPreset.Destination
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Destination
+  id: Destination
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Destination
+  nameWithType: ExportPreset.Destination
+  fullName: Meridian.Contracts.Export.ExportPreset.Destination
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Destination
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Destination path template with variable support.
+
+    Variables: {year}, {month}, {day}, {symbol}, {date}, {format}
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("destination")]
+
+      public string Destination { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("destination")>
+
+      Public Property Destination As String
+  overload: Meridian.Contracts.Export.ExportPreset.Destination*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: destination
+- uid: Meridian.Contracts.Export.ExportPreset.FilenamePattern
+  commentId: P:Meridian.Contracts.Export.ExportPreset.FilenamePattern
+  id: FilenamePattern
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: FilenamePattern
+  nameWithType: ExportPreset.FilenamePattern
+  fullName: Meridian.Contracts.Export.ExportPreset.FilenamePattern
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilenamePattern
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Filename pattern template.
+
+    Variables: {symbol}, {date}, {type}, {format}
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("filenamePattern")]
+
+      public string FilenamePattern { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("filenamePattern")>
+
+      Public Property FilenamePattern As String
+  overload: Meridian.Contracts.Export.ExportPreset.FilenamePattern*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: filenamePattern
+- uid: Meridian.Contracts.Export.ExportPreset.Filters
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Filters
+  id: Filters
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Filters
+  nameWithType: ExportPreset.Filters
+  fullName: Meridian.Contracts.Export.ExportPreset.Filters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Filters
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Filter settings for the export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("filters")]
+
+      public ExportPresetFilters Filters { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFilters
+    content.vb: >-
+      <JsonPropertyName("filters")>
+
+      Public Property Filters As ExportPresetFilters
+  overload: Meridian.Contracts.Export.ExportPreset.Filters*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: filters
+- uid: Meridian.Contracts.Export.ExportPreset.Schedule
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Schedule
+  id: Schedule
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Schedule
+  nameWithType: ExportPreset.Schedule
+  fullName: Meridian.Contracts.Export.ExportPreset.Schedule
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Schedule
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Optional cron schedule for automated exports.
+
+    Format: "0 6 * * *" (minute hour day month weekday)
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("schedule")]
+
+      public string? Schedule { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("schedule")>
+
+      Public Property Schedule As String
+  overload: Meridian.Contracts.Export.ExportPreset.Schedule*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: schedule
+- uid: Meridian.Contracts.Export.ExportPreset.ScheduleEnabled
+  commentId: P:Meridian.Contracts.Export.ExportPreset.ScheduleEnabled
+  id: ScheduleEnabled
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: ScheduleEnabled
+  nameWithType: ExportPreset.ScheduleEnabled
+  fullName: Meridian.Contracts.Export.ExportPreset.ScheduleEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleEnabled
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Whether the scheduled export is enabled.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("scheduleEnabled")]
+
+      public bool ScheduleEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("scheduleEnabled")>
+
+      Public Property ScheduleEnabled As Boolean
+  overload: Meridian.Contracts.Export.ExportPreset.ScheduleEnabled*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: scheduleEnabled
+- uid: Meridian.Contracts.Export.ExportPreset.PostExportHook
+  commentId: P:Meridian.Contracts.Export.ExportPreset.PostExportHook
+  id: PostExportHook
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: PostExportHook
+  nameWithType: ExportPreset.PostExportHook
+  fullName: Meridian.Contracts.Export.ExportPreset.PostExportHook
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostExportHook
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Post-export hook command to run after export completes.
+
+    Variables: {date}, {destination}, {symbol}, {files}
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("postExportHook")]
+
+      public string? PostExportHook { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("postExportHook")>
+
+      Public Property PostExportHook As String
+  overload: Meridian.Contracts.Export.ExportPreset.PostExportHook*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: postExportHook
+- uid: Meridian.Contracts.Export.ExportPreset.NotifyOnComplete
+  commentId: P:Meridian.Contracts.Export.ExportPreset.NotifyOnComplete
+  id: NotifyOnComplete
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: NotifyOnComplete
+  nameWithType: ExportPreset.NotifyOnComplete
+  fullName: Meridian.Contracts.Export.ExportPreset.NotifyOnComplete
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyOnComplete
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Whether to send a notification when export completes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("notifyOnComplete")]
+
+      public bool NotifyOnComplete { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("notifyOnComplete")>
+
+      Public Property NotifyOnComplete As Boolean
+  overload: Meridian.Contracts.Export.ExportPreset.NotifyOnComplete*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: notifyOnComplete
+- uid: Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary
+  commentId: P:Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary
+  id: IncludeDataDictionary
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: IncludeDataDictionary
+  nameWithType: ExportPreset.IncludeDataDictionary
+  fullName: Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeDataDictionary
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Whether to include a data dictionary with the export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeDataDictionary")]
+
+      public bool IncludeDataDictionary { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeDataDictionary")>
+
+      Public Property IncludeDataDictionary As Boolean
+  overload: Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeDataDictionary
+- uid: Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript
+  commentId: P:Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript
+  id: IncludeLoaderScript
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: IncludeLoaderScript
+  nameWithType: ExportPreset.IncludeLoaderScript
+  fullName: Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeLoaderScript
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Whether to include loader scripts for the target format.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeLoaderScript")]
+
+      public bool IncludeLoaderScript { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeLoaderScript")>
+
+      Public Property IncludeLoaderScript As Boolean
+  overload: Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeLoaderScript
+- uid: Meridian.Contracts.Export.ExportPreset.OverwriteExisting
+  commentId: P:Meridian.Contracts.Export.ExportPreset.OverwriteExisting
+  id: OverwriteExisting
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: OverwriteExisting
+  nameWithType: ExportPreset.OverwriteExisting
+  fullName: Meridian.Contracts.Export.ExportPreset.OverwriteExisting
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverwriteExisting
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Whether to overwrite existing files.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("overwriteExisting")]
+
+      public bool OverwriteExisting { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("overwriteExisting")>
+
+      Public Property OverwriteExisting As Boolean
+  overload: Meridian.Contracts.Export.ExportPreset.OverwriteExisting*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: overwriteExisting
+- uid: Meridian.Contracts.Export.ExportPreset.CreatedAt
+  commentId: P:Meridian.Contracts.Export.ExportPreset.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: ExportPreset.CreatedAt
+  fullName: Meridian.Contracts.Export.ExportPreset.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: When this preset was created.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("createdAt")]
+
+      public DateTime CreatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("createdAt")>
+
+      Public Property CreatedAt As Date
+  overload: Meridian.Contracts.Export.ExportPreset.CreatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: createdAt
+- uid: Meridian.Contracts.Export.ExportPreset.UpdatedAt
+  commentId: P:Meridian.Contracts.Export.ExportPreset.UpdatedAt
+  id: UpdatedAt
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: UpdatedAt
+  nameWithType: ExportPreset.UpdatedAt
+  fullName: Meridian.Contracts.Export.ExportPreset.UpdatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdatedAt
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: When this preset was last modified.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("updatedAt")]
+
+      public DateTime UpdatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("updatedAt")>
+
+      Public Property UpdatedAt As Date
+  overload: Meridian.Contracts.Export.ExportPreset.UpdatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: updatedAt
+- uid: Meridian.Contracts.Export.ExportPreset.LastUsedAt
+  commentId: P:Meridian.Contracts.Export.ExportPreset.LastUsedAt
+  id: LastUsedAt
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: LastUsedAt
+  nameWithType: ExportPreset.LastUsedAt
+  fullName: Meridian.Contracts.Export.ExportPreset.LastUsedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUsedAt
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: When this preset was last used for an export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastUsedAt")]
+
+      public DateTime? LastUsedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastUsedAt")>
+
+      Public Property LastUsedAt As Date?
+  overload: Meridian.Contracts.Export.ExportPreset.LastUsedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastUsedAt
+- uid: Meridian.Contracts.Export.ExportPreset.UseCount
+  commentId: P:Meridian.Contracts.Export.ExportPreset.UseCount
+  id: UseCount
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: UseCount
+  nameWithType: ExportPreset.UseCount
+  fullName: Meridian.Contracts.Export.ExportPreset.UseCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseCount
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Number of times this preset has been used.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("useCount")]
+
+      public int UseCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("useCount")>
+
+      Public Property UseCount As Integer
+  overload: Meridian.Contracts.Export.ExportPreset.UseCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: useCount
+- uid: Meridian.Contracts.Export.ExportPreset.IsBuiltIn
+  commentId: P:Meridian.Contracts.Export.ExportPreset.IsBuiltIn
+  id: IsBuiltIn
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: IsBuiltIn
+  nameWithType: ExportPreset.IsBuiltIn
+  fullName: Meridian.Contracts.Export.ExportPreset.IsBuiltIn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsBuiltIn
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Whether this is a built-in preset (read-only).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isBuiltIn")]
+
+      public bool IsBuiltIn { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isBuiltIn")>
+
+      Public Property IsBuiltIn As Boolean
+  overload: Meridian.Contracts.Export.ExportPreset.IsBuiltIn*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isBuiltIn
+- uid: Meridian.Contracts.Export.ExportPreset.Columns
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Columns
+  id: Columns
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Columns
+  nameWithType: ExportPreset.Columns
+  fullName: Meridian.Contracts.Export.ExportPreset.Columns
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Columns
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Specific columns to include in the export.
+
+    Empty array means all available columns.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("columns")]
+
+      public string[] Columns { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("columns")>
+
+      Public Property Columns As String()
+  overload: Meridian.Contracts.Export.ExportPreset.Columns*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: columns
+- uid: Meridian.Contracts.Export.ExportPreset.IncludeManifest
+  commentId: P:Meridian.Contracts.Export.ExportPreset.IncludeManifest
+  id: IncludeManifest
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: IncludeManifest
+  nameWithType: ExportPreset.IncludeManifest
+  fullName: Meridian.Contracts.Export.ExportPreset.IncludeManifest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeManifest
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Whether to include a manifest file with the export.
+
+    The manifest documents what data was exported, quality metrics, and file checksums.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeManifest")]
+
+      public bool IncludeManifest { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeManifest")>
+
+      Public Property IncludeManifest As Boolean
+  overload: Meridian.Contracts.Export.ExportPreset.IncludeManifest*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeManifest
+- uid: Meridian.Contracts.Export.ExportPreset.Validation
+  commentId: P:Meridian.Contracts.Export.ExportPreset.Validation
+  id: Validation
+  parent: Meridian.Contracts.Export.ExportPreset
+  langs:
+  - csharp
+  - vb
+  name: Validation
+  nameWithType: ExportPreset.Validation
+  fullName: Meridian.Contracts.Export.ExportPreset.Validation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validation
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: >-
+    Pre-export validation rules. When set, the export validates these conditions
+
+    before writing any files and aborts if any error-level issues are found.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("validation")]
+
+      public ExportValidationRules? Validation { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Export.ExportValidationRules
+    content.vb: >-
+      <JsonPropertyName("validation")>
+
+      Public Property Validation As ExportValidationRules
+  overload: Meridian.Contracts.Export.ExportPreset.Validation*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: validation
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Export.ExportPreset.Id*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Id
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Id
+  name: Id
+  nameWithType: ExportPreset.Id
+  fullName: Meridian.Contracts.Export.ExportPreset.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Export.ExportPreset.Name*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Name
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Name
+  name: Name
+  nameWithType: ExportPreset.Name
+  fullName: Meridian.Contracts.Export.ExportPreset.Name
+- uid: Meridian.Contracts.Export.ExportPreset.Description*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Description
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Description
+  name: Description
+  nameWithType: ExportPreset.Description
+  fullName: Meridian.Contracts.Export.ExportPreset.Description
+- uid: Meridian.Contracts.Export.ExportPreset.Format*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Format
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Format
+  name: Format
+  nameWithType: ExportPreset.Format
+  fullName: Meridian.Contracts.Export.ExportPreset.Format
+- uid: Meridian.Contracts.Export.ExportPresetFormat
+  commentId: T:Meridian.Contracts.Export.ExportPresetFormat
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportPresetFormat.html
+  name: ExportPresetFormat
+  nameWithType: ExportPresetFormat
+  fullName: Meridian.Contracts.Export.ExportPresetFormat
+- uid: Meridian.Contracts.Export.ExportPreset.Compression*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Compression
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Compression
+  name: Compression
+  nameWithType: ExportPreset.Compression
+  fullName: Meridian.Contracts.Export.ExportPreset.Compression
+- uid: Meridian.Contracts.Export.ExportPresetCompression
+  commentId: T:Meridian.Contracts.Export.ExportPresetCompression
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportPresetCompression.html
+  name: ExportPresetCompression
+  nameWithType: ExportPresetCompression
+  fullName: Meridian.Contracts.Export.ExportPresetCompression
+- uid: Meridian.Contracts.Export.ExportPreset.Destination*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Destination
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Destination
+  name: Destination
+  nameWithType: ExportPreset.Destination
+  fullName: Meridian.Contracts.Export.ExportPreset.Destination
+- uid: Meridian.Contracts.Export.ExportPreset.FilenamePattern*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.FilenamePattern
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_FilenamePattern
+  name: FilenamePattern
+  nameWithType: ExportPreset.FilenamePattern
+  fullName: Meridian.Contracts.Export.ExportPreset.FilenamePattern
+- uid: Meridian.Contracts.Export.ExportPreset.Filters*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Filters
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Filters
+  name: Filters
+  nameWithType: ExportPreset.Filters
+  fullName: Meridian.Contracts.Export.ExportPreset.Filters
+- uid: Meridian.Contracts.Export.ExportPresetFilters
+  commentId: T:Meridian.Contracts.Export.ExportPresetFilters
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportPresetFilters.html
+  name: ExportPresetFilters
+  nameWithType: ExportPresetFilters
+  fullName: Meridian.Contracts.Export.ExportPresetFilters
+- uid: Meridian.Contracts.Export.ExportPreset.Schedule*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Schedule
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Schedule
+  name: Schedule
+  nameWithType: ExportPreset.Schedule
+  fullName: Meridian.Contracts.Export.ExportPreset.Schedule
+- uid: Meridian.Contracts.Export.ExportPreset.ScheduleEnabled*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.ScheduleEnabled
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_ScheduleEnabled
+  name: ScheduleEnabled
+  nameWithType: ExportPreset.ScheduleEnabled
+  fullName: Meridian.Contracts.Export.ExportPreset.ScheduleEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Export.ExportPreset.PostExportHook*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.PostExportHook
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_PostExportHook
+  name: PostExportHook
+  nameWithType: ExportPreset.PostExportHook
+  fullName: Meridian.Contracts.Export.ExportPreset.PostExportHook
+- uid: Meridian.Contracts.Export.ExportPreset.NotifyOnComplete*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.NotifyOnComplete
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_NotifyOnComplete
+  name: NotifyOnComplete
+  nameWithType: ExportPreset.NotifyOnComplete
+  fullName: Meridian.Contracts.Export.ExportPreset.NotifyOnComplete
+- uid: Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_IncludeDataDictionary
+  name: IncludeDataDictionary
+  nameWithType: ExportPreset.IncludeDataDictionary
+  fullName: Meridian.Contracts.Export.ExportPreset.IncludeDataDictionary
+- uid: Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_IncludeLoaderScript
+  name: IncludeLoaderScript
+  nameWithType: ExportPreset.IncludeLoaderScript
+  fullName: Meridian.Contracts.Export.ExportPreset.IncludeLoaderScript
+- uid: Meridian.Contracts.Export.ExportPreset.OverwriteExisting*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.OverwriteExisting
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_OverwriteExisting
+  name: OverwriteExisting
+  nameWithType: ExportPreset.OverwriteExisting
+  fullName: Meridian.Contracts.Export.ExportPreset.OverwriteExisting
+- uid: Meridian.Contracts.Export.ExportPreset.CreatedAt*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.CreatedAt
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_CreatedAt
+  name: CreatedAt
+  nameWithType: ExportPreset.CreatedAt
+  fullName: Meridian.Contracts.Export.ExportPreset.CreatedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Export.ExportPreset.UpdatedAt*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.UpdatedAt
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_UpdatedAt
+  name: UpdatedAt
+  nameWithType: ExportPreset.UpdatedAt
+  fullName: Meridian.Contracts.Export.ExportPreset.UpdatedAt
+- uid: Meridian.Contracts.Export.ExportPreset.LastUsedAt*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.LastUsedAt
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_LastUsedAt
+  name: LastUsedAt
+  nameWithType: ExportPreset.LastUsedAt
+  fullName: Meridian.Contracts.Export.ExportPreset.LastUsedAt
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Export.ExportPreset.UseCount*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.UseCount
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_UseCount
+  name: UseCount
+  nameWithType: ExportPreset.UseCount
+  fullName: Meridian.Contracts.Export.ExportPreset.UseCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Export.ExportPreset.IsBuiltIn*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.IsBuiltIn
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_IsBuiltIn
+  name: IsBuiltIn
+  nameWithType: ExportPreset.IsBuiltIn
+  fullName: Meridian.Contracts.Export.ExportPreset.IsBuiltIn
+- uid: Meridian.Contracts.Export.ExportPreset.Columns*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Columns
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Columns
+  name: Columns
+  nameWithType: ExportPreset.Columns
+  fullName: Meridian.Contracts.Export.ExportPreset.Columns
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Export.ExportPreset.IncludeManifest*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.IncludeManifest
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_IncludeManifest
+  name: IncludeManifest
+  nameWithType: ExportPreset.IncludeManifest
+  fullName: Meridian.Contracts.Export.ExportPreset.IncludeManifest
+- uid: Meridian.Contracts.Export.ExportPreset.Validation*
+  commentId: Overload:Meridian.Contracts.Export.ExportPreset.Validation
+  href: Meridian.Contracts.Export.ExportPreset.html#Meridian_Contracts_Export_ExportPreset_Validation
+  name: Validation
+  nameWithType: ExportPreset.Validation
+  fullName: Meridian.Contracts.Export.ExportPreset.Validation
+- uid: Meridian.Contracts.Export.ExportValidationRules
+  commentId: T:Meridian.Contracts.Export.ExportValidationRules
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportValidationRules.html
+  name: ExportValidationRules
+  nameWithType: ExportValidationRules
+  fullName: Meridian.Contracts.Export.ExportValidationRules

@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.JobStatus
+  commentId: T:Meridian.Storage.Services.JobStatus
+  id: JobStatus
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.JobStatus.Cancelled
+  - Meridian.Storage.Services.JobStatus.Completed
+  - Meridian.Storage.Services.JobStatus.Failed
+  - Meridian.Storage.Services.JobStatus.Pending
+  - Meridian.Storage.Services.JobStatus.Running
+  langs:
+  - csharp
+  - vb
+  name: JobStatus
+  nameWithType: JobStatus
+  fullName: Meridian.Storage.Services.JobStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobStatus
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 688
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum JobStatus : byte'
+    content.vb: Public Enum JobStatus As Byte
+- uid: Meridian.Storage.Services.JobStatus.Pending
+  commentId: F:Meridian.Storage.Services.JobStatus.Pending
+  id: Pending
+  parent: Meridian.Storage.Services.JobStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: JobStatus.Pending
+  fullName: Meridian.Storage.Services.JobStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 690
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Storage.Services.JobStatus
+- uid: Meridian.Storage.Services.JobStatus.Running
+  commentId: F:Meridian.Storage.Services.JobStatus.Running
+  id: Running
+  parent: Meridian.Storage.Services.JobStatus
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: JobStatus.Running
+  fullName: Meridian.Storage.Services.JobStatus.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 691
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Running = 1
+    return:
+      type: Meridian.Storage.Services.JobStatus
+- uid: Meridian.Storage.Services.JobStatus.Completed
+  commentId: F:Meridian.Storage.Services.JobStatus.Completed
+  id: Completed
+  parent: Meridian.Storage.Services.JobStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: JobStatus.Completed
+  fullName: Meridian.Storage.Services.JobStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 692
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Completed = 2
+    return:
+      type: Meridian.Storage.Services.JobStatus
+- uid: Meridian.Storage.Services.JobStatus.Failed
+  commentId: F:Meridian.Storage.Services.JobStatus.Failed
+  id: Failed
+  parent: Meridian.Storage.Services.JobStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: JobStatus.Failed
+  fullName: Meridian.Storage.Services.JobStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 693
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Failed = 3
+    return:
+      type: Meridian.Storage.Services.JobStatus
+- uid: Meridian.Storage.Services.JobStatus.Cancelled
+  commentId: F:Meridian.Storage.Services.JobStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Storage.Services.JobStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: JobStatus.Cancelled
+  fullName: Meridian.Storage.Services.JobStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 694
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Cancelled = 4
+    return:
+      type: Meridian.Storage.Services.JobStatus
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.JobStatus
+  commentId: T:Meridian.Storage.Services.JobStatus
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.JobStatus.html
+  name: JobStatus
+  nameWithType: JobStatus
+  fullName: Meridian.Storage.Services.JobStatus

@@ -1,0 +1,200 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.LedgerViewKind
+  commentId: T:Meridian.Ledger.LedgerViewKind
+  id: LedgerViewKind
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.LedgerViewKind.Actual
+  - Meridian.Ledger.LedgerViewKind.Historical
+  - Meridian.Ledger.LedgerViewKind.Other
+  - Meridian.Ledger.LedgerViewKind.ParameterizedPnL
+  - Meridian.Ledger.LedgerViewKind.SecurityMaster
+  langs:
+  - csharp
+  - vb
+  name: LedgerViewKind
+  nameWithType: LedgerViewKind
+  fullName: Meridian.Ledger.LedgerViewKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerViewKind.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerViewKind
+    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    High-level purpose or valuation basis for a ledger within a project.
+
+    This allows one project to hold parallel ledgers for actuals, historical replay,
+
+    parameterized P&amp;L scenarios, security-master contractual projections, and future views.
+  example: []
+  syntax:
+    content: public enum LedgerViewKind
+    content.vb: Public Enum LedgerViewKind
+- uid: Meridian.Ledger.LedgerViewKind.Actual
+  commentId: F:Meridian.Ledger.LedgerViewKind.Actual
+  id: Actual
+  parent: Meridian.Ledger.LedgerViewKind
+  langs:
+  - csharp
+  - vb
+  name: Actual
+  nameWithType: LedgerViewKind.Actual
+  fullName: Meridian.Ledger.LedgerViewKind.Actual
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerViewKind.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Actual
+    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: Actual = 0
+    return:
+      type: Meridian.Ledger.LedgerViewKind
+- uid: Meridian.Ledger.LedgerViewKind.Historical
+  commentId: F:Meridian.Ledger.LedgerViewKind.Historical
+  id: Historical
+  parent: Meridian.Ledger.LedgerViewKind
+  langs:
+  - csharp
+  - vb
+  name: Historical
+  nameWithType: LedgerViewKind.Historical
+  fullName: Meridian.Ledger.LedgerViewKind.Historical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerViewKind.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Historical
+    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: Historical = 1
+    return:
+      type: Meridian.Ledger.LedgerViewKind
+- uid: Meridian.Ledger.LedgerViewKind.ParameterizedPnL
+  commentId: F:Meridian.Ledger.LedgerViewKind.ParameterizedPnL
+  id: ParameterizedPnL
+  parent: Meridian.Ledger.LedgerViewKind
+  langs:
+  - csharp
+  - vb
+  name: ParameterizedPnL
+  nameWithType: LedgerViewKind.ParameterizedPnL
+  fullName: Meridian.Ledger.LedgerViewKind.ParameterizedPnL
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerViewKind.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParameterizedPnL
+    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: ParameterizedPnL = 2
+    return:
+      type: Meridian.Ledger.LedgerViewKind
+- uid: Meridian.Ledger.LedgerViewKind.SecurityMaster
+  commentId: F:Meridian.Ledger.LedgerViewKind.SecurityMaster
+  id: SecurityMaster
+  parent: Meridian.Ledger.LedgerViewKind
+  langs:
+  - csharp
+  - vb
+  name: SecurityMaster
+  nameWithType: LedgerViewKind.SecurityMaster
+  fullName: Meridian.Ledger.LedgerViewKind.SecurityMaster
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerViewKind.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMaster
+    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: SecurityMaster = 3
+    return:
+      type: Meridian.Ledger.LedgerViewKind
+- uid: Meridian.Ledger.LedgerViewKind.Other
+  commentId: F:Meridian.Ledger.LedgerViewKind.Other
+  id: Other
+  parent: Meridian.Ledger.LedgerViewKind
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: LedgerViewKind.Other
+  fullName: Meridian.Ledger.LedgerViewKind.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerViewKind.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Ledger/LedgerViewKind.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: Other = 4
+    return:
+      type: Meridian.Ledger.LedgerViewKind
+references:
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: Meridian.Ledger.LedgerViewKind
+  commentId: T:Meridian.Ledger.LedgerViewKind
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerViewKind.html
+  name: LedgerViewKind
+  nameWithType: LedgerViewKind
+  fullName: Meridian.Ledger.LedgerViewKind

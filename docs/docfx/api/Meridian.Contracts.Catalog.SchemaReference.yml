@@ -1,0 +1,685 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.SchemaReference
+  commentId: T:Meridian.Contracts.Catalog.SchemaReference
+  id: SchemaReference
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.SchemaReference.CurrentVersion
+  - Meridian.Contracts.Catalog.SchemaReference.EventType
+  - Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion
+  - Meridian.Contracts.Catalog.SchemaReference.SchemaPath
+  - Meridian.Contracts.Catalog.SchemaReference.VersionsInUse
+  langs:
+  - csharp
+  - vb
+  name: SchemaReference
+  nameWithType: SchemaReference
+  fullName: Meridian.Contracts.Catalog.SchemaReference
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaReference
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Reference to a schema version.
+  example: []
+  syntax:
+    content: public sealed class SchemaReference
+    content.vb: Public NotInheritable Class SchemaReference
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.SchemaReference.EventType
+  commentId: P:Meridian.Contracts.Catalog.SchemaReference.EventType
+  id: EventType
+  parent: Meridian.Contracts.Catalog.SchemaReference
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: SchemaReference.EventType
+  fullName: Meridian.Contracts.Catalog.SchemaReference.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Event type name.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventType")]
+
+      public string EventType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("eventType")>
+
+      Public Property EventType As String
+  overload: Meridian.Contracts.Catalog.SchemaReference.EventType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventType
+- uid: Meridian.Contracts.Catalog.SchemaReference.CurrentVersion
+  commentId: P:Meridian.Contracts.Catalog.SchemaReference.CurrentVersion
+  id: CurrentVersion
+  parent: Meridian.Contracts.Catalog.SchemaReference
+  langs:
+  - csharp
+  - vb
+  name: CurrentVersion
+  nameWithType: SchemaReference.CurrentVersion
+  fullName: Meridian.Contracts.Catalog.SchemaReference.CurrentVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentVersion
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 307
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Current version in use.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("currentVersion")]
+
+      public string CurrentVersion { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("currentVersion")>
+
+      Public Property CurrentVersion As String
+  overload: Meridian.Contracts.Catalog.SchemaReference.CurrentVersion*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: currentVersion
+- uid: Meridian.Contracts.Catalog.SchemaReference.VersionsInUse
+  commentId: P:Meridian.Contracts.Catalog.SchemaReference.VersionsInUse
+  id: VersionsInUse
+  parent: Meridian.Contracts.Catalog.SchemaReference
+  langs:
+  - csharp
+  - vb
+  name: VersionsInUse
+  nameWithType: SchemaReference.VersionsInUse
+  fullName: Meridian.Contracts.Catalog.SchemaReference.VersionsInUse
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VersionsInUse
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: All versions present in storage.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("versionsInUse")]
+
+      public string[] VersionsInUse { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("versionsInUse")>
+
+      Public Property VersionsInUse As String()
+  overload: Meridian.Contracts.Catalog.SchemaReference.VersionsInUse*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: versionsInUse
+- uid: Meridian.Contracts.Catalog.SchemaReference.SchemaPath
+  commentId: P:Meridian.Contracts.Catalog.SchemaReference.SchemaPath
+  id: SchemaPath
+  parent: Meridian.Contracts.Catalog.SchemaReference
+  langs:
+  - csharp
+  - vb
+  name: SchemaPath
+  nameWithType: SchemaReference.SchemaPath
+  fullName: Meridian.Contracts.Catalog.SchemaReference.SchemaPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaPath
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Path to schema definition file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("schemaPath")]
+
+      public string? SchemaPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("schemaPath")>
+
+      Public Property SchemaPath As String
+  overload: Meridian.Contracts.Catalog.SchemaReference.SchemaPath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: schemaPath
+- uid: Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion
+  commentId: P:Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion
+  id: FileCountByVersion
+  parent: Meridian.Contracts.Catalog.SchemaReference
+  langs:
+  - csharp
+  - vb
+  name: FileCountByVersion
+  nameWithType: SchemaReference.FileCountByVersion
+  fullName: Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCountByVersion
+    path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
+    startLine: 325
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: File count by version.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("fileCountByVersion")]
+
+      public Dictionary<string, int> FileCountByVersion { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: >-
+      <JsonPropertyName("fileCountByVersion")>
+
+      Public Property FileCountByVersion As Dictionary(Of String, Integer)
+  overload: Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fileCountByVersion
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.SchemaReference.EventType*
+  commentId: Overload:Meridian.Contracts.Catalog.SchemaReference.EventType
+  href: Meridian.Contracts.Catalog.SchemaReference.html#Meridian_Contracts_Catalog_SchemaReference_EventType
+  name: EventType
+  nameWithType: SchemaReference.EventType
+  fullName: Meridian.Contracts.Catalog.SchemaReference.EventType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.SchemaReference.CurrentVersion*
+  commentId: Overload:Meridian.Contracts.Catalog.SchemaReference.CurrentVersion
+  href: Meridian.Contracts.Catalog.SchemaReference.html#Meridian_Contracts_Catalog_SchemaReference_CurrentVersion
+  name: CurrentVersion
+  nameWithType: SchemaReference.CurrentVersion
+  fullName: Meridian.Contracts.Catalog.SchemaReference.CurrentVersion
+- uid: Meridian.Contracts.Catalog.SchemaReference.VersionsInUse*
+  commentId: Overload:Meridian.Contracts.Catalog.SchemaReference.VersionsInUse
+  href: Meridian.Contracts.Catalog.SchemaReference.html#Meridian_Contracts_Catalog_SchemaReference_VersionsInUse
+  name: VersionsInUse
+  nameWithType: SchemaReference.VersionsInUse
+  fullName: Meridian.Contracts.Catalog.SchemaReference.VersionsInUse
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Catalog.SchemaReference.SchemaPath*
+  commentId: Overload:Meridian.Contracts.Catalog.SchemaReference.SchemaPath
+  href: Meridian.Contracts.Catalog.SchemaReference.html#Meridian_Contracts_Catalog_SchemaReference_SchemaPath
+  name: SchemaPath
+  nameWithType: SchemaReference.SchemaPath
+  fullName: Meridian.Contracts.Catalog.SchemaReference.SchemaPath
+- uid: Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion*
+  commentId: Overload:Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion
+  href: Meridian.Contracts.Catalog.SchemaReference.html#Meridian_Contracts_Catalog_SchemaReference_FileCountByVersion
+  name: FileCountByVersion
+  nameWithType: SchemaReference.FileCountByVersion
+  fullName: Meridian.Contracts.Catalog.SchemaReference.FileCountByVersion
+- uid: System.Collections.Generic.Dictionary{System.String,System.Int32}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, int>
+  nameWithType: Dictionary<string, int>
+  fullName: System.Collections.Generic.Dictionary<string, int>
+  nameWithType.vb: Dictionary(Of String, Integer)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Integer)
+  name.vb: Dictionary(Of String, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

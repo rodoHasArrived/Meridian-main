@@ -1,0 +1,163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.OrderSide
+  commentId: T:Meridian.Contracts.Domain.Enums.OrderSide
+  id: OrderSide
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.OrderSide.Buy
+  - Meridian.Contracts.Domain.Enums.OrderSide.Sell
+  - Meridian.Contracts.Domain.Enums.OrderSide.Unknown
+  langs:
+  - csharp
+  - vb
+  name: OrderSide
+  nameWithType: OrderSide
+  fullName: Meridian.Contracts.Domain.Enums.OrderSide
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderSide
+    path: ../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Represents the side (direction) of an order.
+  example: []
+  syntax:
+    content: 'public enum OrderSide : byte'
+    content.vb: Public Enum OrderSide As Byte
+- uid: Meridian.Contracts.Domain.Enums.OrderSide.Unknown
+  commentId: F:Meridian.Contracts.Domain.Enums.OrderSide.Unknown
+  id: Unknown
+  parent: Meridian.Contracts.Domain.Enums.OrderSide
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: OrderSide.Unknown
+  fullName: Meridian.Contracts.Domain.Enums.OrderSide.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: The order side could not be determined.
+  example: []
+  syntax:
+    content: Unknown = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.OrderSide
+- uid: Meridian.Contracts.Domain.Enums.OrderSide.Buy
+  commentId: F:Meridian.Contracts.Domain.Enums.OrderSide.Buy
+  id: Buy
+  parent: Meridian.Contracts.Domain.Enums.OrderSide
+  langs:
+  - csharp
+  - vb
+  name: Buy
+  nameWithType: OrderSide.Buy
+  fullName: Meridian.Contracts.Domain.Enums.OrderSide.Buy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Buy
+    path: ../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: A buy order (bid side).
+  example: []
+  syntax:
+    content: Buy = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.OrderSide
+- uid: Meridian.Contracts.Domain.Enums.OrderSide.Sell
+  commentId: F:Meridian.Contracts.Domain.Enums.OrderSide.Sell
+  id: Sell
+  parent: Meridian.Contracts.Domain.Enums.OrderSide
+  langs:
+  - csharp
+  - vb
+  name: Sell
+  nameWithType: OrderSide.Sell
+  fullName: Meridian.Contracts.Domain.Enums.OrderSide.Sell
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sell
+    path: ../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: A sell order (ask side).
+  example: []
+  syntax:
+    content: Sell = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.OrderSide
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.OrderSide
+  commentId: T:Meridian.Contracts.Domain.Enums.OrderSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OrderSide.html
+  name: OrderSide
+  nameWithType: OrderSide
+  fullName: Meridian.Contracts.Domain.Enums.OrderSide

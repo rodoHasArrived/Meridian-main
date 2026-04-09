@@ -1,0 +1,349 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.MultiCurrency.IFxRateProvider
+  commentId: T:Meridian.Execution.MultiCurrency.IFxRateProvider
+  id: IFxRateProvider
+  parent: Meridian.Execution.MultiCurrency
+  children:
+  - Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IFxRateProvider
+  nameWithType: IFxRateProvider
+  fullName: Meridian.Execution.MultiCurrency.IFxRateProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IFxRateProvider
+    path: ../../src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: >-
+    Provides FX exchange rates on demand, enabling the execution and ledger layers
+
+    to translate foreign-currency cash flows into a base (reporting) currency.
+  example: []
+  syntax:
+    content: public interface IFxRateProvider
+    content.vb: Public Interface IFxRateProvider
+- uid: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: GetRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Execution.MultiCurrency.IFxRateProvider
+  langs:
+  - csharp
+  - vb
+  name: GetRateAsync(string, string, DateTimeOffset, CancellationToken)
+  nameWithType: IFxRateProvider.GetRateAsync(string, string, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync(string, string, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRateAsync
+    path: ../../src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: >-
+    Returns the exchange rate from <code class="paramref">fromCurrency</code> to
+
+    <code class="paramref">toCurrency</code> as of <code class="paramref">asOf</code>.
+  example: []
+  syntax:
+    content: ValueTask<FxRate?> GetRateAsync(string fromCurrency, string toCurrency, DateTimeOffset asOf, CancellationToken ct = default)
+    parameters:
+    - id: fromCurrency
+      type: System.String
+      description: ISO 4217 source currency code (e.g., "EUR").
+    - id: toCurrency
+      type: System.String
+      description: ISO 4217 target currency code (e.g., "USD").
+    - id: asOf
+      type: System.DateTimeOffset
+      description: Point in time for the rate lookup.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.ValueTask{Meridian.Execution.MultiCurrency.FxRate}
+      description: A <xref href="Meridian.Execution.MultiCurrency.FxRate" data-throw-if-not-resolved="false"></xref> when a rate is available; <code>null</code> otherwise.
+    content.vb: Function GetRateAsync(fromCurrency As String, toCurrency As String, asOf As DateTimeOffset, ct As CancellationToken = Nothing) As ValueTask(Of FxRate)
+  overload: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync*
+  nameWithType.vb: IFxRateProvider.GetRateAsync(String, String, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync(String, String, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: GetRateAsync(String, String, DateTimeOffset, CancellationToken)
+- uid: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: GetRequiredRateAsync(System.String,System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Execution.MultiCurrency.IFxRateProvider
+  langs:
+  - csharp
+  - vb
+  name: GetRequiredRateAsync(string, string, DateTimeOffset, CancellationToken)
+  nameWithType: IFxRateProvider.GetRequiredRateAsync(string, string, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync(string, string, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRequiredRateAsync
+    path: ../../src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: >-
+    Returns the exchange rate from <code class="paramref">fromCurrency</code> to
+
+    <code class="paramref">toCurrency</code> as of <code class="paramref">asOf</code>, or throws
+
+    <xref href="System.InvalidOperationException" data-throw-if-not-resolved="false"></xref> when no rate is available.
+  example: []
+  syntax:
+    content: ValueTask<FxRate> GetRequiredRateAsync(string fromCurrency, string toCurrency, DateTimeOffset asOf, CancellationToken ct = default)
+    parameters:
+    - id: fromCurrency
+      type: System.String
+    - id: toCurrency
+      type: System.String
+    - id: asOf
+      type: System.DateTimeOffset
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask{Meridian.Execution.MultiCurrency.FxRate}
+    content.vb: Function GetRequiredRateAsync(fromCurrency As String, toCurrency As String, asOf As DateTimeOffset, ct As CancellationToken = Nothing) As ValueTask(Of FxRate)
+  overload: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync*
+  nameWithType.vb: IFxRateProvider.GetRequiredRateAsync(String, String, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync(String, String, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: GetRequiredRateAsync(String, String, DateTimeOffset, CancellationToken)
+references:
+- uid: Meridian.Execution.MultiCurrency
+  commentId: N:Meridian.Execution.MultiCurrency
+  href: Meridian.html
+  name: Meridian.Execution.MultiCurrency
+  nameWithType: Meridian.Execution.MultiCurrency
+  fullName: Meridian.Execution.MultiCurrency
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html
+- uid: Meridian.Execution.MultiCurrency.FxRate
+  commentId: T:Meridian.Execution.MultiCurrency.FxRate
+  parent: Meridian.Execution.MultiCurrency
+  href: Meridian.Execution.MultiCurrency.FxRate.html
+  name: FxRate
+  nameWithType: FxRate
+  fullName: Meridian.Execution.MultiCurrency.FxRate
+- uid: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync*
+  commentId: Overload:Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync
+  href: Meridian.Execution.MultiCurrency.IFxRateProvider.html#Meridian_Execution_MultiCurrency_IFxRateProvider_GetRateAsync_System_String_System_String_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: GetRateAsync
+  nameWithType: IFxRateProvider.GetRateAsync
+  fullName: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRateAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.ValueTask{Meridian.Execution.MultiCurrency.FxRate}
+  commentId: T:System.Threading.Tasks.ValueTask{Meridian.Execution.MultiCurrency.FxRate}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.ValueTask`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<FxRate>
+  nameWithType: ValueTask<FxRate>
+  fullName: System.Threading.Tasks.ValueTask<Meridian.Execution.MultiCurrency.FxRate>
+  nameWithType.vb: ValueTask(Of FxRate)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of Meridian.Execution.MultiCurrency.FxRate)
+  name.vb: ValueTask(Of FxRate)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - uid: Meridian.Execution.MultiCurrency.FxRate
+    name: FxRate
+    href: Meridian.Execution.MultiCurrency.FxRate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.MultiCurrency.FxRate
+    name: FxRate
+    href: Meridian.Execution.MultiCurrency.FxRate.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.ValueTask`1
+  commentId: T:System.Threading.Tasks.ValueTask`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<TResult>
+  nameWithType: ValueTask<TResult>
+  fullName: System.Threading.Tasks.ValueTask<TResult>
+  nameWithType.vb: ValueTask(Of TResult)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of TResult)
+  name.vb: ValueTask(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync*
+  commentId: Overload:Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync
+  href: Meridian.Execution.MultiCurrency.IFxRateProvider.html#Meridian_Execution_MultiCurrency_IFxRateProvider_GetRequiredRateAsync_System_String_System_String_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: GetRequiredRateAsync
+  nameWithType: IFxRateProvider.GetRequiredRateAsync
+  fullName: Meridian.Execution.MultiCurrency.IFxRateProvider.GetRequiredRateAsync

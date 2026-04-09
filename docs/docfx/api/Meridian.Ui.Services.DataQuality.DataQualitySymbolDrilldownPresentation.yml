@@ -1,0 +1,755 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  commentId: T:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  id: DataQualitySymbolDrilldownPresentation
+  parent: Meridian.Ui.Services.DataQuality
+  children:
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText
+  - Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone
+  langs:
+  - csharp
+  - vb
+  name: DataQualitySymbolDrilldownPresentation
+  nameWithType: DataQualitySymbolDrilldownPresentation
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualitySymbolDrilldownPresentation
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public sealed class DataQualitySymbolDrilldownPresentation
+    content.vb: Public NotInheritable Class DataQualitySymbolDrilldownPresentation
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText
+  id: HeaderText
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: HeaderText
+  nameWithType: DataQualitySymbolDrilldownPresentation.HeaderText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeaderText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string HeaderText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property HeaderText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText
+  id: ScoreText
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: ScoreText
+  nameWithType: DataQualitySymbolDrilldownPresentation.ScoreText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScoreText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string ScoreText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScoreText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone
+  id: ScoreTone
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: ScoreTone
+  nameWithType: DataQualitySymbolDrilldownPresentation.ScoreTone
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScoreTone
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string ScoreTone { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScoreTone As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText
+  id: CompletenessText
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: CompletenessText
+  nameWithType: DataQualitySymbolDrilldownPresentation.CompletenessText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string CompletenessText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CompletenessText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText
+  id: GapsText
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: GapsText
+  nameWithType: DataQualitySymbolDrilldownPresentation.GapsText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string GapsText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property GapsText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText
+  id: ErrorsText
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: ErrorsText
+  nameWithType: DataQualitySymbolDrilldownPresentation.ErrorsText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorsText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string ErrorsText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorsText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText
+  id: LatencyText
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: LatencyText
+  nameWithType: DataQualitySymbolDrilldownPresentation.LatencyText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyText
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string LatencyText { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LatencyText As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells
+  id: HeatmapCells
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: HeatmapCells
+  nameWithType: DataQualitySymbolDrilldownPresentation.HeatmapCells
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeatmapCells
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public IReadOnlyList<DataQualityHeatmapCellPresentation> HeatmapCells { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation}
+    content.vb: Public Property HeatmapCells As IReadOnlyList(Of DataQualityHeatmapCellPresentation)
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells*
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues
+  id: Issues
+  parent: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: DataQualitySymbolDrilldownPresentation.Issues
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public IReadOnlyList<DataQualityDrilldownIssuePresentation> Issues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation}
+    content.vb: Public Property Issues As IReadOnlyList(Of DataQualityDrilldownIssuePresentation)
+  overload: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues*
+references:
+- uid: Meridian.Ui.Services.DataQuality
+  commentId: N:Meridian.Ui.Services.DataQuality
+  href: Meridian.html
+  name: Meridian.Ui.Services.DataQuality
+  nameWithType: Meridian.Ui.Services.DataQuality
+  fullName: Meridian.Ui.Services.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_HeaderText
+  name: HeaderText
+  nameWithType: DataQualitySymbolDrilldownPresentation.HeaderText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeaderText
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_ScoreText
+  name: ScoreText
+  nameWithType: DataQualitySymbolDrilldownPresentation.ScoreText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreText
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_ScoreTone
+  name: ScoreTone
+  nameWithType: DataQualitySymbolDrilldownPresentation.ScoreTone
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ScoreTone
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_CompletenessText
+  name: CompletenessText
+  nameWithType: DataQualitySymbolDrilldownPresentation.CompletenessText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.CompletenessText
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_GapsText
+  name: GapsText
+  nameWithType: DataQualitySymbolDrilldownPresentation.GapsText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.GapsText
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_ErrorsText
+  name: ErrorsText
+  nameWithType: DataQualitySymbolDrilldownPresentation.ErrorsText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.ErrorsText
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_LatencyText
+  name: LatencyText
+  nameWithType: DataQualitySymbolDrilldownPresentation.LatencyText
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.LatencyText
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_HeatmapCells
+  name: HeatmapCells
+  nameWithType: DataQualitySymbolDrilldownPresentation.HeatmapCells
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.HeatmapCells
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataQualityHeatmapCellPresentation>
+  nameWithType: IReadOnlyList<DataQualityHeatmapCellPresentation>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation>
+  nameWithType.vb: IReadOnlyList(Of DataQualityHeatmapCellPresentation)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation)
+  name.vb: IReadOnlyList(Of DataQualityHeatmapCellPresentation)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+    name: DataQualityHeatmapCellPresentation
+    href: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+    name: DataQualityHeatmapCellPresentation
+    href: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues
+  href: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.html#Meridian_Ui_Services_DataQuality_DataQualitySymbolDrilldownPresentation_Issues
+  name: Issues
+  nameWithType: DataQualitySymbolDrilldownPresentation.Issues
+  fullName: Meridian.Ui.Services.DataQuality.DataQualitySymbolDrilldownPresentation.Issues
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataQualityDrilldownIssuePresentation>
+  nameWithType: IReadOnlyList<DataQualityDrilldownIssuePresentation>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation>
+  nameWithType.vb: IReadOnlyList(Of DataQualityDrilldownIssuePresentation)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation)
+  name.vb: IReadOnlyList(Of DataQualityDrilldownIssuePresentation)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation
+    name: DataQualityDrilldownIssuePresentation
+    href: Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation
+    name: DataQualityDrilldownIssuePresentation
+    href: Meridian.Ui.Services.DataQuality.DataQualityDrilldownIssuePresentation.html
+  - name: )

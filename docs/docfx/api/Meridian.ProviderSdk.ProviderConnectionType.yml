@@ -1,0 +1,234 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ProviderConnectionType
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionType
+  id: ProviderConnectionType
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ProviderConnectionType.Bank
+  - Meridian.ProviderSdk.ProviderConnectionType.Brokerage
+  - Meridian.ProviderSdk.ProviderConnectionType.Custodian
+  - Meridian.ProviderSdk.ProviderConnectionType.DataVendor
+  - Meridian.ProviderSdk.ProviderConnectionType.Exchange
+  - Meridian.ProviderSdk.ProviderConnectionType.Other
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnectionType
+  nameWithType: ProviderConnectionType
+  fullName: Meridian.ProviderSdk.ProviderConnectionType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnectionType
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 44
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: High-level relationship type for a provider connection.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ProviderConnectionType>))]
+
+      public enum ProviderConnectionType : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ProviderConnectionType)))>
+
+      Public Enum ProviderConnectionType As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.ProviderSdk.ProviderConnectionType}
+- uid: Meridian.ProviderSdk.ProviderConnectionType.Brokerage
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionType.Brokerage
+  id: Brokerage
+  parent: Meridian.ProviderSdk.ProviderConnectionType
+  langs:
+  - csharp
+  - vb
+  name: Brokerage
+  nameWithType: ProviderConnectionType.Brokerage
+  fullName: Meridian.ProviderSdk.ProviderConnectionType.Brokerage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Brokerage
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 47
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Brokerage = 0
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionType
+- uid: Meridian.ProviderSdk.ProviderConnectionType.Custodian
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionType.Custodian
+  id: Custodian
+  parent: Meridian.ProviderSdk.ProviderConnectionType
+  langs:
+  - csharp
+  - vb
+  name: Custodian
+  nameWithType: ProviderConnectionType.Custodian
+  fullName: Meridian.ProviderSdk.ProviderConnectionType.Custodian
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custodian
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 48
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Custodian = 1
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionType
+- uid: Meridian.ProviderSdk.ProviderConnectionType.Bank
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionType.Bank
+  id: Bank
+  parent: Meridian.ProviderSdk.ProviderConnectionType
+  langs:
+  - csharp
+  - vb
+  name: Bank
+  nameWithType: ProviderConnectionType.Bank
+  fullName: Meridian.ProviderSdk.ProviderConnectionType.Bank
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bank
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 49
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Bank = 2
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionType
+- uid: Meridian.ProviderSdk.ProviderConnectionType.DataVendor
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionType.DataVendor
+  id: DataVendor
+  parent: Meridian.ProviderSdk.ProviderConnectionType
+  langs:
+  - csharp
+  - vb
+  name: DataVendor
+  nameWithType: ProviderConnectionType.DataVendor
+  fullName: Meridian.ProviderSdk.ProviderConnectionType.DataVendor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataVendor
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 50
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: DataVendor = 3
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionType
+- uid: Meridian.ProviderSdk.ProviderConnectionType.Exchange
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionType.Exchange
+  id: Exchange
+  parent: Meridian.ProviderSdk.ProviderConnectionType
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: ProviderConnectionType.Exchange
+  fullName: Meridian.ProviderSdk.ProviderConnectionType.Exchange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 51
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Exchange = 4
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionType
+- uid: Meridian.ProviderSdk.ProviderConnectionType.Other
+  commentId: F:Meridian.ProviderSdk.ProviderConnectionType.Other
+  id: Other
+  parent: Meridian.ProviderSdk.ProviderConnectionType
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: ProviderConnectionType.Other
+  fullName: Meridian.ProviderSdk.ProviderConnectionType.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 52
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Other = 5
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionType
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.ProviderConnectionType
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionType
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderConnectionType.html
+  name: ProviderConnectionType
+  nameWithType: ProviderConnectionType
+  fullName: Meridian.ProviderSdk.ProviderConnectionType

@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Prompts
+  commentId: N:Meridian.McpServer.Prompts
+  id: Meridian.McpServer.Prompts
+  children:
+  - Meridian.McpServer.Prompts.MarketDataPrompts
+  langs:
+  - csharp
+  - vb
+  name: Meridian.McpServer.Prompts
+  nameWithType: Meridian.McpServer.Prompts
+  fullName: Meridian.McpServer.Prompts
+  type: Namespace
+  assemblies:
+  - Meridian.McpServer
+references:
+- uid: Meridian.McpServer.Prompts.MarketDataPrompts
+  commentId: T:Meridian.McpServer.Prompts.MarketDataPrompts
+  href: Meridian.McpServer.Prompts.MarketDataPrompts.html
+  name: MarketDataPrompts
+  nameWithType: MarketDataPrompts
+  fullName: Meridian.McpServer.Prompts.MarketDataPrompts

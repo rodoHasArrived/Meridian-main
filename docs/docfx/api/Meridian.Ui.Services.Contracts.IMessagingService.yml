@@ -1,0 +1,270 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IMessagingService
+  commentId: T:Meridian.Ui.Services.Contracts.IMessagingService
+  id: IMessagingService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IMessagingService.Publish``1(``0)
+  - Meridian.Ui.Services.Contracts.IMessagingService.Subscribe``1(System.Action{``0})
+  - Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe``1(System.Action{``0})
+  langs:
+  - csharp
+  - vb
+  name: IMessagingService
+  nameWithType: IMessagingService
+  fullName: Meridian.Ui.Services.Contracts.IMessagingService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IMessagingService
+    path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for in-process pub/sub messaging between UI components.
+
+    Shared between WPF desktop applications.
+  example: []
+  syntax:
+    content: public interface IMessagingService
+    content.vb: Public Interface IMessagingService
+- uid: Meridian.Ui.Services.Contracts.IMessagingService.Subscribe``1(System.Action{``0})
+  commentId: M:Meridian.Ui.Services.Contracts.IMessagingService.Subscribe``1(System.Action{``0})
+  id: Subscribe``1(System.Action{``0})
+  parent: Meridian.Ui.Services.Contracts.IMessagingService
+  langs:
+  - csharp
+  - vb
+  name: Subscribe<TMessage>(Action<TMessage>)
+  nameWithType: IMessagingService.Subscribe<TMessage>(Action<TMessage>)
+  fullName: Meridian.Ui.Services.Contracts.IMessagingService.Subscribe<TMessage>(System.Action<TMessage>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subscribe
+    path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: 'void Subscribe<TMessage>(Action<TMessage> handler) where TMessage : class'
+    parameters:
+    - id: handler
+      type: System.Action{{TMessage}}
+    typeParameters:
+    - id: TMessage
+    content.vb: Sub Subscribe(Of TMessage As Class)(handler As Action(Of TMessage))
+  overload: Meridian.Ui.Services.Contracts.IMessagingService.Subscribe*
+  nameWithType.vb: IMessagingService.Subscribe(Of TMessage)(Action(Of TMessage))
+  fullName.vb: Meridian.Ui.Services.Contracts.IMessagingService.Subscribe(Of TMessage)(System.Action(Of TMessage))
+  name.vb: Subscribe(Of TMessage)(Action(Of TMessage))
+- uid: Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe``1(System.Action{``0})
+  commentId: M:Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe``1(System.Action{``0})
+  id: Unsubscribe``1(System.Action{``0})
+  parent: Meridian.Ui.Services.Contracts.IMessagingService
+  langs:
+  - csharp
+  - vb
+  name: Unsubscribe<TMessage>(Action<TMessage>)
+  nameWithType: IMessagingService.Unsubscribe<TMessage>(Action<TMessage>)
+  fullName: Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe<TMessage>(System.Action<TMessage>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unsubscribe
+    path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: 'void Unsubscribe<TMessage>(Action<TMessage> handler) where TMessage : class'
+    parameters:
+    - id: handler
+      type: System.Action{{TMessage}}
+    typeParameters:
+    - id: TMessage
+    content.vb: Sub Unsubscribe(Of TMessage As Class)(handler As Action(Of TMessage))
+  overload: Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe*
+  nameWithType.vb: IMessagingService.Unsubscribe(Of TMessage)(Action(Of TMessage))
+  fullName.vb: Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe(Of TMessage)(System.Action(Of TMessage))
+  name.vb: Unsubscribe(Of TMessage)(Action(Of TMessage))
+- uid: Meridian.Ui.Services.Contracts.IMessagingService.Publish``1(``0)
+  commentId: M:Meridian.Ui.Services.Contracts.IMessagingService.Publish``1(``0)
+  id: Publish``1(``0)
+  parent: Meridian.Ui.Services.Contracts.IMessagingService
+  langs:
+  - csharp
+  - vb
+  name: Publish<TMessage>(TMessage)
+  nameWithType: IMessagingService.Publish<TMessage>(TMessage)
+  fullName: Meridian.Ui.Services.Contracts.IMessagingService.Publish<TMessage>(TMessage)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Publish
+    path: ../../src/Meridian.Ui.Services/Contracts/IMessagingService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: 'void Publish<TMessage>(TMessage message) where TMessage : class'
+    parameters:
+    - id: message
+      type: '{TMessage}'
+    typeParameters:
+    - id: TMessage
+    content.vb: Sub Publish(Of TMessage As Class)(message As TMessage)
+  overload: Meridian.Ui.Services.Contracts.IMessagingService.Publish*
+  nameWithType.vb: IMessagingService.Publish(Of TMessage)(TMessage)
+  fullName.vb: Meridian.Ui.Services.Contracts.IMessagingService.Publish(Of TMessage)(TMessage)
+  name.vb: Publish(Of TMessage)(TMessage)
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.IMessagingService.Subscribe*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IMessagingService.Subscribe
+  href: Meridian.Ui.Services.Contracts.IMessagingService.html#Meridian_Ui_Services_Contracts_IMessagingService_Subscribe__1_System_Action___0__
+  name: Subscribe
+  nameWithType: IMessagingService.Subscribe
+  fullName: Meridian.Ui.Services.Contracts.IMessagingService.Subscribe
+- uid: System.Action{{TMessage}}
+  commentId: T:System.Action{``0}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<TMessage>
+  nameWithType: Action<TMessage>
+  fullName: System.Action<TMessage>
+  nameWithType.vb: Action(Of TMessage)
+  fullName.vb: System.Action(Of TMessage)
+  name.vb: Action(Of TMessage)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: TMessage
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TMessage
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe
+  href: Meridian.Ui.Services.Contracts.IMessagingService.html#Meridian_Ui_Services_Contracts_IMessagingService_Unsubscribe__1_System_Action___0__
+  name: Unsubscribe
+  nameWithType: IMessagingService.Unsubscribe
+  fullName: Meridian.Ui.Services.Contracts.IMessagingService.Unsubscribe
+- uid: Meridian.Ui.Services.Contracts.IMessagingService.Publish*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IMessagingService.Publish
+  href: Meridian.Ui.Services.Contracts.IMessagingService.html#Meridian_Ui_Services_Contracts_IMessagingService_Publish__1___0_
+  name: Publish
+  nameWithType: IMessagingService.Publish
+  fullName: Meridian.Ui.Services.Contracts.IMessagingService.Publish
+- uid: '{TMessage}'
+  commentId: '!:TMessage'
+  definition: TMessage
+  name: TMessage
+  nameWithType: TMessage
+  fullName: TMessage
+- uid: TMessage
+  commentId: '!:TMessage'
+  name: TMessage
+  nameWithType: TMessage
+  fullName: TMessage

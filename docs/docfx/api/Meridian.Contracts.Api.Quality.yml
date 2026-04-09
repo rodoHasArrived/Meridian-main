@@ -1,0 +1,186 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.Quality
+  commentId: N:Meridian.Contracts.Api.Quality
+  id: Meridian.Contracts.Api.Quality
+  children:
+  - Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgeRequest
+  - Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgementResponse
+  - Meridian.Contracts.Api.Quality.QualityAnomalyResponse
+  - Meridian.Contracts.Api.Quality.QualityAnomalyStatisticsResponse
+  - Meridian.Contracts.Api.Quality.QualityComparisonRequest
+  - Meridian.Contracts.Api.Quality.QualityComparisonResponse
+  - Meridian.Contracts.Api.Quality.QualityCompletenessSummaryResponse
+  - Meridian.Contracts.Api.Quality.QualityCountBySymbolResponse
+  - Meridian.Contracts.Api.Quality.QualityDashboardResponse
+  - Meridian.Contracts.Api.Quality.QualityGapResponse
+  - Meridian.Contracts.Api.Quality.QualityGapStatisticsResponse
+  - Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  - Meridian.Contracts.Api.Quality.QualityProviderDataSummaryResponse
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  - Meridian.Contracts.Api.Quality.QualityRealTimeMetricsResponse
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorResponse
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  - Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Api.Quality
+  nameWithType: Meridian.Contracts.Api.Quality
+  fullName: Meridian.Contracts.Api.Quality
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Api.Quality.QualityComparisonRequest
+  commentId: T:Meridian.Contracts.Api.Quality.QualityComparisonRequest
+  href: Meridian.Contracts.Api.Quality.QualityComparisonRequest.html
+  name: QualityComparisonRequest
+  nameWithType: QualityComparisonRequest
+  fullName: Meridian.Contracts.Api.Quality.QualityComparisonRequest
+- uid: Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgeRequest
+  commentId: T:Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgeRequest
+  href: Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgeRequest.html
+  name: QualityAnomalyAcknowledgeRequest
+  nameWithType: QualityAnomalyAcknowledgeRequest
+  fullName: Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgeRequest
+- uid: Meridian.Contracts.Api.Quality.QualityDashboardResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityDashboardResponse
+  href: Meridian.Contracts.Api.Quality.QualityDashboardResponse.html
+  name: QualityDashboardResponse
+  nameWithType: QualityDashboardResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityDashboardResponse
+- uid: Meridian.Contracts.Api.Quality.QualityRealTimeMetricsResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityRealTimeMetricsResponse
+  parent: Meridian.Contracts.Api.Quality
+  href: Meridian.Contracts.Api.Quality.QualityRealTimeMetricsResponse.html
+  name: QualityRealTimeMetricsResponse
+  nameWithType: QualityRealTimeMetricsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityRealTimeMetricsResponse
+- uid: Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse
+  href: Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse.html
+  name: QualitySymbolHealthResponse
+  nameWithType: QualitySymbolHealthResponse
+  fullName: Meridian.Contracts.Api.Quality.QualitySymbolHealthResponse
+- uid: Meridian.Contracts.Api.Quality.QualityCompletenessSummaryResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityCompletenessSummaryResponse
+  parent: Meridian.Contracts.Api.Quality
+  href: Meridian.Contracts.Api.Quality.QualityCompletenessSummaryResponse.html
+  name: QualityCompletenessSummaryResponse
+  nameWithType: QualityCompletenessSummaryResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityCompletenessSummaryResponse
+- uid: Meridian.Contracts.Api.Quality.QualityGapStatisticsResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityGapStatisticsResponse
+  parent: Meridian.Contracts.Api.Quality
+  href: Meridian.Contracts.Api.Quality.QualityGapStatisticsResponse.html
+  name: QualityGapStatisticsResponse
+  nameWithType: QualityGapStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityGapStatisticsResponse
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  parent: Meridian.Contracts.Api.Quality
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html
+  name: QualitySequenceErrorStatisticsResponse
+  nameWithType: QualitySequenceErrorStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+- uid: Meridian.Contracts.Api.Quality.QualityAnomalyStatisticsResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityAnomalyStatisticsResponse
+  parent: Meridian.Contracts.Api.Quality
+  href: Meridian.Contracts.Api.Quality.QualityAnomalyStatisticsResponse.html
+  name: QualityAnomalyStatisticsResponse
+  nameWithType: QualityAnomalyStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityAnomalyStatisticsResponse
+- uid: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+  parent: Meridian.Contracts.Api.Quality
+  href: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse.html
+  name: QualityLatencyStatisticsResponse
+  nameWithType: QualityLatencyStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityLatencyStatisticsResponse
+- uid: Meridian.Contracts.Api.Quality.QualityGapResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityGapResponse
+  href: Meridian.Contracts.Api.Quality.QualityGapResponse.html
+  name: QualityGapResponse
+  nameWithType: QualityGapResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityGapResponse
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualitySequenceErrorResponse
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorResponse.html
+  name: QualitySequenceErrorResponse
+  nameWithType: QualitySequenceErrorResponse
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorResponse
+- uid: Meridian.Contracts.Api.Quality.QualityAnomalyResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityAnomalyResponse
+  href: Meridian.Contracts.Api.Quality.QualityAnomalyResponse.html
+  name: QualityAnomalyResponse
+  nameWithType: QualityAnomalyResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityAnomalyResponse
+- uid: Meridian.Contracts.Api.Quality.QualityCountBySymbolResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityCountBySymbolResponse
+  href: Meridian.Contracts.Api.Quality.QualityCountBySymbolResponse.html
+  name: QualityCountBySymbolResponse
+  nameWithType: QualityCountBySymbolResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityCountBySymbolResponse
+- uid: Meridian.Contracts.Api.Quality.QualityComparisonResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityComparisonResponse
+  href: Meridian.Contracts.Api.Quality.QualityComparisonResponse.html
+  name: QualityComparisonResponse
+  nameWithType: QualityComparisonResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityComparisonResponse
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDataSummaryResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityProviderDataSummaryResponse
+  href: Meridian.Contracts.Api.Quality.QualityProviderDataSummaryResponse.html
+  name: QualityProviderDataSummaryResponse
+  nameWithType: QualityProviderDataSummaryResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDataSummaryResponse
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html
+  name: QualityProviderDiscrepancyResponse
+  nameWithType: QualityProviderDiscrepancyResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+- uid: Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgementResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgementResponse
+  href: Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgementResponse.html
+  name: QualityAnomalyAcknowledgementResponse
+  nameWithType: QualityAnomalyAcknowledgementResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgementResponse
+- uid: Meridian.Contracts.Api.Quality
+  commentId: N:Meridian.Contracts.Api.Quality
+  href: Meridian.html
+  name: Meridian.Contracts.Api.Quality
+  nameWithType: Meridian.Contracts.Api.Quality
+  fullName: Meridian.Contracts.Api.Quality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html

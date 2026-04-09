@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Stooq
+  commentId: N:Meridian.Infrastructure.Adapters.Stooq
+  id: Meridian.Infrastructure.Adapters.Stooq
+  children:
+  - Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Stooq
+  nameWithType: Meridian.Infrastructure.Adapters.Stooq
+  fullName: Meridian.Infrastructure.Adapters.Stooq
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider.html
+  name: StooqHistoricalDataProvider
+  nameWithType: StooqHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider

@@ -1,0 +1,215 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunEngine
+  id: StrategyRunEngine
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunEngine.BrokerLive
+  - Meridian.Contracts.Workstation.StrategyRunEngine.BrokerPaper
+  - Meridian.Contracts.Workstation.StrategyRunEngine.Lean
+  - Meridian.Contracts.Workstation.StrategyRunEngine.MeridianNative
+  - Meridian.Contracts.Workstation.StrategyRunEngine.Unknown
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunEngine
+  nameWithType: StrategyRunEngine
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunEngine
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared workstation-facing execution engine for a strategy run.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<StrategyRunEngine>))]
+
+      public enum StrategyRunEngine : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of StrategyRunEngine)))>
+
+      Public Enum StrategyRunEngine As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.StrategyRunEngine}
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine.Unknown
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunEngine.Unknown
+  id: Unknown
+  parent: Meridian.Contracts.Workstation.StrategyRunEngine
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: StrategyRunEngine.Unknown
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Unknown = 0
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine.MeridianNative
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunEngine.MeridianNative
+  id: MeridianNative
+  parent: Meridian.Contracts.Workstation.StrategyRunEngine
+  langs:
+  - csharp
+  - vb
+  name: MeridianNative
+  nameWithType: StrategyRunEngine.MeridianNative
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine.MeridianNative
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MeridianNative
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: MeridianNative = 1
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine.Lean
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunEngine.Lean
+  id: Lean
+  parent: Meridian.Contracts.Workstation.StrategyRunEngine
+  langs:
+  - csharp
+  - vb
+  name: Lean
+  nameWithType: StrategyRunEngine.Lean
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine.Lean
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lean
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Lean = 2
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine.BrokerPaper
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunEngine.BrokerPaper
+  id: BrokerPaper
+  parent: Meridian.Contracts.Workstation.StrategyRunEngine
+  langs:
+  - csharp
+  - vb
+  name: BrokerPaper
+  nameWithType: StrategyRunEngine.BrokerPaper
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine.BrokerPaper
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerPaper
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: BrokerPaper = 3
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine.BrokerLive
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunEngine.BrokerLive
+  id: BrokerLive
+  parent: Meridian.Contracts.Workstation.StrategyRunEngine
+  langs:
+  - csharp
+  - vb
+  name: BrokerLive
+  nameWithType: StrategyRunEngine.BrokerLive
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine.BrokerLive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerLive
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: BrokerLive = 4
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunEngine
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.StrategyRunEngine
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunEngine
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunEngine.html
+  name: StrategyRunEngine
+  nameWithType: StrategyRunEngine
+  fullName: Meridian.Contracts.Workstation.StrategyRunEngine

@@ -1,0 +1,974 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.TierMigrationService
+  commentId: T:Meridian.Storage.Services.TierMigrationService
+  id: TierMigrationService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.TierMigrationService.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry)
+  - Meridian.Storage.Services.TierMigrationService.DetermineTargetTier(System.String)
+  - Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Services.TierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: TierMigrationService
+  nameWithType: TierMigrationService
+  fullName: Meridian.Storage.Services.TierMigrationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TierMigrationService
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Service for managing data migration between storage tiers.
+  example: []
+  syntax:
+    content: 'public sealed class TierMigrationService : ITierMigrationService'
+    content.vb: Public NotInheritable Class TierMigrationService Implements ITierMigrationService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Services.ITierMigrationService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.TierMigrationService.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry)
+  commentId: M:Meridian.Storage.Services.TierMigrationService.#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry)
+  id: '#ctor(Meridian.Storage.StorageOptions,Meridian.Storage.Interfaces.ISourceRegistry)'
+  parent: Meridian.Storage.Services.TierMigrationService
+  langs:
+  - csharp
+  - vb
+  name: TierMigrationService(StorageOptions, ISourceRegistry?)
+  nameWithType: TierMigrationService.TierMigrationService(StorageOptions, ISourceRegistry?)
+  fullName: Meridian.Storage.Services.TierMigrationService.TierMigrationService(Meridian.Storage.StorageOptions, Meridian.Storage.Interfaces.ISourceRegistry?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TierMigrationService(StorageOptions options, ISourceRegistry? sourceRegistry = null)
+    parameters:
+    - id: options
+      type: Meridian.Storage.StorageOptions
+    - id: sourceRegistry
+      type: Meridian.Storage.Interfaces.ISourceRegistry
+    content.vb: Public Sub New(options As StorageOptions, sourceRegistry As ISourceRegistry = Nothing)
+  overload: Meridian.Storage.Services.TierMigrationService.#ctor*
+  nameWithType.vb: TierMigrationService.New(StorageOptions, ISourceRegistry)
+  fullName.vb: Meridian.Storage.Services.TierMigrationService.New(Meridian.Storage.StorageOptions, Meridian.Storage.Interfaces.ISourceRegistry)
+  name.vb: New(StorageOptions, ISourceRegistry)
+- uid: Meridian.Storage.Services.TierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.TierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+  id: MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.TierMigrationService
+  langs:
+  - csharp
+  - vb
+  name: MigrateAsync(string, StorageTier, MigrationOptions, CancellationToken)
+  nameWithType: TierMigrationService.MigrateAsync(string, StorageTier, MigrationOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.TierMigrationService.MigrateAsync(string, Meridian.Storage.StorageTier, Meridian.Storage.Services.MigrationOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MigrateAsync
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<MigrationResult> MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default)
+    parameters:
+    - id: sourcePath
+      type: System.String
+    - id: targetTier
+      type: Meridian.Storage.StorageTier
+    - id: options
+      type: Meridian.Storage.Services.MigrationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.MigrationResult}
+    content.vb: Public Function MigrateAsync(sourcePath As String, targetTier As StorageTier, options As MigrationOptions, ct As CancellationToken = Nothing) As Task(Of MigrationResult)
+  overload: Meridian.Storage.Services.TierMigrationService.MigrateAsync*
+  implements:
+  - Meridian.Storage.Services.ITierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+  nameWithType.vb: TierMigrationService.MigrateAsync(String, StorageTier, MigrationOptions, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.TierMigrationService.MigrateAsync(String, Meridian.Storage.StorageTier, Meridian.Storage.Services.MigrationOptions, System.Threading.CancellationToken)
+  name.vb: MigrateAsync(String, StorageTier, MigrationOptions, CancellationToken)
+- uid: Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+  id: PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.TierMigrationService
+  langs:
+  - csharp
+  - vb
+  name: PlanMigrationAsync(TimeSpan, CancellationToken)
+  nameWithType: TierMigrationService.PlanMigrationAsync(TimeSpan, CancellationToken)
+  fullName: Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync(System.TimeSpan, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlanMigrationAsync
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<MigrationPlan> PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default)
+    parameters:
+    - id: horizon
+      type: System.TimeSpan
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.MigrationPlan}
+    content.vb: Public Function PlanMigrationAsync(horizon As TimeSpan, ct As CancellationToken = Nothing) As Task(Of MigrationPlan)
+  overload: Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync*
+  implements:
+  - Meridian.Storage.Services.ITierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Services.TierMigrationService.DetermineTargetTier(System.String)
+  commentId: M:Meridian.Storage.Services.TierMigrationService.DetermineTargetTier(System.String)
+  id: DetermineTargetTier(System.String)
+  parent: Meridian.Storage.Services.TierMigrationService
+  langs:
+  - csharp
+  - vb
+  name: DetermineTargetTier(string)
+  nameWithType: TierMigrationService.DetermineTargetTier(string)
+  fullName: Meridian.Storage.Services.TierMigrationService.DetermineTargetTier(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetermineTargetTier
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public StorageTier DetermineTargetTier(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: Meridian.Storage.StorageTier
+    content.vb: Public Function DetermineTargetTier(filePath As String) As StorageTier
+  overload: Meridian.Storage.Services.TierMigrationService.DetermineTargetTier*
+  implements:
+  - Meridian.Storage.Services.ITierMigrationService.DetermineTargetTier(System.String)
+  nameWithType.vb: TierMigrationService.DetermineTargetTier(String)
+  fullName.vb: Meridian.Storage.Services.TierMigrationService.DetermineTargetTier(String)
+  name.vb: DetermineTargetTier(String)
+- uid: Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+  id: GetTierStatisticsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.TierMigrationService
+  langs:
+  - csharp
+  - vb
+  name: GetTierStatisticsAsync(CancellationToken)
+  nameWithType: TierMigrationService.GetTierStatisticsAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTierStatisticsAsync
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  example: []
+  syntax:
+    content: public Task<TierStatistics> GetTierStatisticsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.TierStatistics}
+    content.vb: Public Function GetTierStatisticsAsync(ct As CancellationToken = Nothing) As Task(Of TierStatistics)
+  overload: Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync*
+  implements:
+  - Meridian.Storage.Services.ITierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Services.ITierMigrationService
+  commentId: T:Meridian.Storage.Services.ITierMigrationService
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.ITierMigrationService.html
+  name: ITierMigrationService
+  nameWithType: ITierMigrationService
+  fullName: Meridian.Storage.Services.ITierMigrationService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.TierMigrationService.#ctor*
+  commentId: Overload:Meridian.Storage.Services.TierMigrationService.#ctor
+  href: Meridian.Storage.Services.TierMigrationService.html#Meridian_Storage_Services_TierMigrationService__ctor_Meridian_Storage_StorageOptions_Meridian_Storage_Interfaces_ISourceRegistry_
+  name: TierMigrationService
+  nameWithType: TierMigrationService.TierMigrationService
+  fullName: Meridian.Storage.Services.TierMigrationService.TierMigrationService
+  nameWithType.vb: TierMigrationService.New
+  fullName.vb: Meridian.Storage.Services.TierMigrationService.New
+  name.vb: New
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: Meridian.Storage.Interfaces.ISourceRegistry
+  commentId: T:Meridian.Storage.Interfaces.ISourceRegistry
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.ISourceRegistry.html
+  name: ISourceRegistry
+  nameWithType: ISourceRegistry
+  fullName: Meridian.Storage.Interfaces.ISourceRegistry
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Services.TierMigrationService.MigrateAsync*
+  commentId: Overload:Meridian.Storage.Services.TierMigrationService.MigrateAsync
+  href: Meridian.Storage.Services.TierMigrationService.html#Meridian_Storage_Services_TierMigrationService_MigrateAsync_System_String_Meridian_Storage_StorageTier_Meridian_Storage_Services_MigrationOptions_System_Threading_CancellationToken_
+  name: MigrateAsync
+  nameWithType: TierMigrationService.MigrateAsync
+  fullName: Meridian.Storage.Services.TierMigrationService.MigrateAsync
+- uid: Meridian.Storage.Services.ITierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.ITierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.ITierMigrationService
+  isExternal: true
+  href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_MigrateAsync_System_String_Meridian_Storage_StorageTier_Meridian_Storage_Services_MigrationOptions_System_Threading_CancellationToken_
+  name: MigrateAsync(string, StorageTier, MigrationOptions, CancellationToken)
+  nameWithType: ITierMigrationService.MigrateAsync(string, StorageTier, MigrationOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.ITierMigrationService.MigrateAsync(string, Meridian.Storage.StorageTier, Meridian.Storage.Services.MigrationOptions, System.Threading.CancellationToken)
+  nameWithType.vb: ITierMigrationService.MigrateAsync(String, StorageTier, MigrationOptions, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.ITierMigrationService.MigrateAsync(String, Meridian.Storage.StorageTier, Meridian.Storage.Services.MigrationOptions, System.Threading.CancellationToken)
+  name.vb: MigrateAsync(String, StorageTier, MigrationOptions, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.ITierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+    name: MigrateAsync
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_MigrateAsync_System_String_Meridian_Storage_StorageTier_Meridian_Storage_Services_MigrationOptions_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.StorageTier
+    name: StorageTier
+    href: Meridian.Storage.StorageTier.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.MigrationOptions
+    name: MigrationOptions
+    href: Meridian.Storage.Services.MigrationOptions.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.ITierMigrationService.MigrateAsync(System.String,Meridian.Storage.StorageTier,Meridian.Storage.Services.MigrationOptions,System.Threading.CancellationToken)
+    name: MigrateAsync
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_MigrateAsync_System_String_Meridian_Storage_StorageTier_Meridian_Storage_Services_MigrationOptions_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.StorageTier
+    name: StorageTier
+    href: Meridian.Storage.StorageTier.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Storage.Services.MigrationOptions
+    name: MigrationOptions
+    href: Meridian.Storage.Services.MigrationOptions.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.StorageTier
+  commentId: T:Meridian.Storage.StorageTier
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageTier.html
+  name: StorageTier
+  nameWithType: StorageTier
+  fullName: Meridian.Storage.StorageTier
+- uid: Meridian.Storage.Services.MigrationOptions
+  commentId: T:Meridian.Storage.Services.MigrationOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.MigrationOptions.html
+  name: MigrationOptions
+  nameWithType: MigrationOptions
+  fullName: Meridian.Storage.Services.MigrationOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.MigrationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.MigrationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MigrationResult>
+  nameWithType: Task<MigrationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.MigrationResult>
+  nameWithType.vb: Task(Of MigrationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.MigrationResult)
+  name.vb: Task(Of MigrationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.MigrationResult
+    name: MigrationResult
+    href: Meridian.Storage.Services.MigrationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.MigrationResult
+    name: MigrationResult
+    href: Meridian.Storage.Services.MigrationResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync*
+  commentId: Overload:Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync
+  href: Meridian.Storage.Services.TierMigrationService.html#Meridian_Storage_Services_TierMigrationService_PlanMigrationAsync_System_TimeSpan_System_Threading_CancellationToken_
+  name: PlanMigrationAsync
+  nameWithType: TierMigrationService.PlanMigrationAsync
+  fullName: Meridian.Storage.Services.TierMigrationService.PlanMigrationAsync
+- uid: Meridian.Storage.Services.ITierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.ITierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.ITierMigrationService
+  isExternal: true
+  href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_PlanMigrationAsync_System_TimeSpan_System_Threading_CancellationToken_
+  name: PlanMigrationAsync(TimeSpan, CancellationToken)
+  nameWithType: ITierMigrationService.PlanMigrationAsync(TimeSpan, CancellationToken)
+  fullName: Meridian.Storage.Services.ITierMigrationService.PlanMigrationAsync(System.TimeSpan, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.ITierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+    name: PlanMigrationAsync
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_PlanMigrationAsync_System_TimeSpan_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.ITierMigrationService.PlanMigrationAsync(System.TimeSpan,System.Threading.CancellationToken)
+    name: PlanMigrationAsync
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_PlanMigrationAsync_System_TimeSpan_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.MigrationPlan}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.MigrationPlan}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MigrationPlan>
+  nameWithType: Task<MigrationPlan>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.MigrationPlan>
+  nameWithType.vb: Task(Of MigrationPlan)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.MigrationPlan)
+  name.vb: Task(Of MigrationPlan)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.MigrationPlan
+    name: MigrationPlan
+    href: Meridian.Storage.Services.MigrationPlan.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.MigrationPlan
+    name: MigrationPlan
+    href: Meridian.Storage.Services.MigrationPlan.html
+  - name: )
+- uid: Meridian.Storage.Services.TierMigrationService.DetermineTargetTier*
+  commentId: Overload:Meridian.Storage.Services.TierMigrationService.DetermineTargetTier
+  href: Meridian.Storage.Services.TierMigrationService.html#Meridian_Storage_Services_TierMigrationService_DetermineTargetTier_System_String_
+  name: DetermineTargetTier
+  nameWithType: TierMigrationService.DetermineTargetTier
+  fullName: Meridian.Storage.Services.TierMigrationService.DetermineTargetTier
+- uid: Meridian.Storage.Services.ITierMigrationService.DetermineTargetTier(System.String)
+  commentId: M:Meridian.Storage.Services.ITierMigrationService.DetermineTargetTier(System.String)
+  parent: Meridian.Storage.Services.ITierMigrationService
+  isExternal: true
+  href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_DetermineTargetTier_System_String_
+  name: DetermineTargetTier(string)
+  nameWithType: ITierMigrationService.DetermineTargetTier(string)
+  fullName: Meridian.Storage.Services.ITierMigrationService.DetermineTargetTier(string)
+  nameWithType.vb: ITierMigrationService.DetermineTargetTier(String)
+  fullName.vb: Meridian.Storage.Services.ITierMigrationService.DetermineTargetTier(String)
+  name.vb: DetermineTargetTier(String)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.ITierMigrationService.DetermineTargetTier(System.String)
+    name: DetermineTargetTier
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_DetermineTargetTier_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.ITierMigrationService.DetermineTargetTier(System.String)
+    name: DetermineTargetTier
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_DetermineTargetTier_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync*
+  commentId: Overload:Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync
+  href: Meridian.Storage.Services.TierMigrationService.html#Meridian_Storage_Services_TierMigrationService_GetTierStatisticsAsync_System_Threading_CancellationToken_
+  name: GetTierStatisticsAsync
+  nameWithType: TierMigrationService.GetTierStatisticsAsync
+  fullName: Meridian.Storage.Services.TierMigrationService.GetTierStatisticsAsync
+- uid: Meridian.Storage.Services.ITierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.ITierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.ITierMigrationService
+  isExternal: true
+  href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_GetTierStatisticsAsync_System_Threading_CancellationToken_
+  name: GetTierStatisticsAsync(CancellationToken)
+  nameWithType: ITierMigrationService.GetTierStatisticsAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.ITierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.ITierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+    name: GetTierStatisticsAsync
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_GetTierStatisticsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.ITierMigrationService.GetTierStatisticsAsync(System.Threading.CancellationToken)
+    name: GetTierStatisticsAsync
+    href: Meridian.Storage.Services.ITierMigrationService.html#Meridian_Storage_Services_ITierMigrationService_GetTierStatisticsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.TierStatistics}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.TierStatistics}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TierStatistics>
+  nameWithType: Task<TierStatistics>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.TierStatistics>
+  nameWithType.vb: Task(Of TierStatistics)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.TierStatistics)
+  name.vb: Task(Of TierStatistics)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.TierStatistics
+    name: TierStatistics
+    href: Meridian.Storage.Services.TierStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.TierStatistics
+    name: TierStatistics
+    href: Meridian.Storage.Services.TierStatistics.html
+  - name: )

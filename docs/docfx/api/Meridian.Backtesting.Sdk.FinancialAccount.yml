@@ -1,0 +1,756 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.FinancialAccount
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccount
+  id: FinancialAccount
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.FinancialAccount.#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,Meridian.Backtesting.Sdk.FinancialAccountRules)
+  - Meridian.Backtesting.Sdk.FinancialAccount.AccountId
+  - Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage(System.Decimal,System.Double,System.Double,System.String,System.String,System.String)
+  - Meridian.Backtesting.Sdk.FinancialAccount.DisplayName
+  - Meridian.Backtesting.Sdk.FinancialAccount.InitialCash
+  - Meridian.Backtesting.Sdk.FinancialAccount.Institution
+  - Meridian.Backtesting.Sdk.FinancialAccount.Kind
+  - Meridian.Backtesting.Sdk.FinancialAccount.Normalize
+  - Meridian.Backtesting.Sdk.FinancialAccount.Rules
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccount
+  nameWithType: FinancialAccount
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAccount
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Configures a user-owned cash or brokerage account participating in a simulation.
+  example: []
+  syntax:
+    content: 'public sealed record FinancialAccount : IEquatable<FinancialAccount>'
+    content.vb: Public NotInheritable Class FinancialAccount Implements IEquatable(Of FinancialAccount)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccount}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,Meridian.Backtesting.Sdk.FinancialAccountRules)
+  commentId: M:Meridian.Backtesting.Sdk.FinancialAccount.#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,Meridian.Backtesting.Sdk.FinancialAccountRules)
+  id: '#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,Meridian.Backtesting.Sdk.FinancialAccountRules)'
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccount(string, string, FinancialAccountKind, string?, decimal, FinancialAccountRules?)
+  nameWithType: FinancialAccount.FinancialAccount(string, string, FinancialAccountKind, string?, decimal, FinancialAccountRules?)
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.FinancialAccount(string, string, Meridian.Backtesting.Sdk.FinancialAccountKind, string?, decimal, Meridian.Backtesting.Sdk.FinancialAccountRules?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Configures a user-owned cash or brokerage account participating in a simulation.
+  example: []
+  syntax:
+    content: public FinancialAccount(string AccountId, string DisplayName, FinancialAccountKind Kind, string? Institution = null, decimal InitialCash = 0, FinancialAccountRules? Rules = null)
+    parameters:
+    - id: AccountId
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: Kind
+      type: Meridian.Backtesting.Sdk.FinancialAccountKind
+    - id: Institution
+      type: System.String
+    - id: InitialCash
+      type: System.Decimal
+    - id: Rules
+      type: Meridian.Backtesting.Sdk.FinancialAccountRules
+    content.vb: Public Sub New(AccountId As String, DisplayName As String, Kind As FinancialAccountKind, Institution As String = Nothing, InitialCash As Decimal = 0, Rules As FinancialAccountRules = Nothing)
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.#ctor*
+  nameWithType.vb: FinancialAccount.New(String, String, FinancialAccountKind, String, Decimal, FinancialAccountRules)
+  fullName.vb: Meridian.Backtesting.Sdk.FinancialAccount.New(String, String, Meridian.Backtesting.Sdk.FinancialAccountKind, String, Decimal, Meridian.Backtesting.Sdk.FinancialAccountRules)
+  name.vb: New(String, String, FinancialAccountKind, String, Decimal, FinancialAccountRules)
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccount.AccountId
+  id: AccountId
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: FinancialAccount.AccountId
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.AccountId*
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.DisplayName
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccount.DisplayName
+  id: DisplayName
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: FinancialAccount.DisplayName
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.DisplayName*
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Kind
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccount.Kind
+  id: Kind
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: FinancialAccount.Kind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public FinancialAccountKind Kind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccountKind
+    content.vb: Public Property Kind As FinancialAccountKind
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.Kind*
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Institution
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccount.Institution
+  id: Institution
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: Institution
+  nameWithType: FinancialAccount.Institution
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Institution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Institution
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? Institution { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Institution As String
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.Institution*
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.InitialCash
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccount.InitialCash
+  id: InitialCash
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: InitialCash
+  nameWithType: FinancialAccount.InitialCash
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.InitialCash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialCash
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal InitialCash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property InitialCash As Decimal
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.InitialCash*
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Rules
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccount.Rules
+  id: Rules
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: Rules
+  nameWithType: FinancialAccount.Rules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Rules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rules
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public FinancialAccountRules? Rules { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccountRules
+    content.vb: Public Property Rules As FinancialAccountRules
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.Rules*
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Normalize
+  commentId: M:Meridian.Backtesting.Sdk.FinancialAccount.Normalize
+  id: Normalize
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: Normalize()
+  nameWithType: FinancialAccount.Normalize()
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Normalize()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normalize
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public FinancialAccount Normalize()
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccount
+    content.vb: Public Function Normalize() As FinancialAccount
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.Normalize*
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage(System.Decimal,System.Double,System.Double,System.String,System.String,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage(System.Decimal,System.Double,System.Double,System.String,System.String,System.String)
+  id: CreateDefaultBrokerage(System.Decimal,System.Double,System.Double,System.String,System.String,System.String)
+  parent: Meridian.Backtesting.Sdk.FinancialAccount
+  langs:
+  - csharp
+  - vb
+  name: CreateDefaultBrokerage(decimal, double, double, string, string, string)
+  nameWithType: FinancialAccount.CreateDefaultBrokerage(decimal, double, double, string, string, string)
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage(decimal, double, double, string, string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateDefaultBrokerage
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public static FinancialAccount CreateDefaultBrokerage(decimal initialCash, double annualMarginRate, double annualShortRebateRate, string accountId = "primary-brokerage", string displayName = "Primary Brokerage", string institution = "Simulated Broker")
+    parameters:
+    - id: initialCash
+      type: System.Decimal
+    - id: annualMarginRate
+      type: System.Double
+    - id: annualShortRebateRate
+      type: System.Double
+    - id: accountId
+      type: System.String
+    - id: displayName
+      type: System.String
+    - id: institution
+      type: System.String
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccount
+    content.vb: Public Shared Function CreateDefaultBrokerage(initialCash As Decimal, annualMarginRate As Double, annualShortRebateRate As Double, accountId As String = "primary-brokerage", displayName As String = "Primary Brokerage", institution As String = "Simulated Broker") As FinancialAccount
+  overload: Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage*
+  nameWithType.vb: FinancialAccount.CreateDefaultBrokerage(Decimal, Double, Double, String, String, String)
+  fullName.vb: Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage(Decimal, Double, Double, String, String, String)
+  name.vb: CreateDefaultBrokerage(Decimal, Double, Double, String, String, String)
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccount}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccount}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FinancialAccount>
+  nameWithType: IEquatable<FinancialAccount>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.FinancialAccount>
+  nameWithType.vb: IEquatable(Of FinancialAccount)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.FinancialAccount)
+  name.vb: IEquatable(Of FinancialAccount)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.FinancialAccount
+    name: FinancialAccount
+    href: Meridian.Backtesting.Sdk.FinancialAccount.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.FinancialAccount
+    name: FinancialAccount
+    href: Meridian.Backtesting.Sdk.FinancialAccount.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.#ctor
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount__ctor_System_String_System_String_Meridian_Backtesting_Sdk_FinancialAccountKind_System_String_System_Decimal_Meridian_Backtesting_Sdk_FinancialAccountRules_
+  name: FinancialAccount
+  nameWithType: FinancialAccount.FinancialAccount
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.FinancialAccount
+  nameWithType.vb: FinancialAccount.New
+  fullName.vb: Meridian.Backtesting.Sdk.FinancialAccount.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.FinancialAccountKind
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountKind
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FinancialAccountKind.html
+  name: FinancialAccountKind
+  nameWithType: FinancialAccountKind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountKind
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountRules
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html
+  name: FinancialAccountRules
+  nameWithType: FinancialAccountRules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.AccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.AccountId
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_AccountId
+  name: AccountId
+  nameWithType: FinancialAccount.AccountId
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.AccountId
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.DisplayName*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.DisplayName
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_DisplayName
+  name: DisplayName
+  nameWithType: FinancialAccount.DisplayName
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.DisplayName
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Kind*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.Kind
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_Kind
+  name: Kind
+  nameWithType: FinancialAccount.Kind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Kind
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Institution*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.Institution
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_Institution
+  name: Institution
+  nameWithType: FinancialAccount.Institution
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Institution
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.InitialCash*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.InitialCash
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_InitialCash
+  name: InitialCash
+  nameWithType: FinancialAccount.InitialCash
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.InitialCash
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Rules*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.Rules
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_Rules
+  name: Rules
+  nameWithType: FinancialAccount.Rules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Rules
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.Normalize*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.Normalize
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_Normalize
+  name: Normalize
+  nameWithType: FinancialAccount.Normalize
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.Normalize
+- uid: Meridian.Backtesting.Sdk.FinancialAccount
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccount
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html
+  name: FinancialAccount
+  nameWithType: FinancialAccount
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount
+- uid: Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage
+  href: Meridian.Backtesting.Sdk.FinancialAccount.html#Meridian_Backtesting_Sdk_FinancialAccount_CreateDefaultBrokerage_System_Decimal_System_Double_System_Double_System_String_System_String_System_String_
+  name: CreateDefaultBrokerage
+  nameWithType: FinancialAccount.CreateDefaultBrokerage
+  fullName: Meridian.Backtesting.Sdk.FinancialAccount.CreateDefaultBrokerage
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

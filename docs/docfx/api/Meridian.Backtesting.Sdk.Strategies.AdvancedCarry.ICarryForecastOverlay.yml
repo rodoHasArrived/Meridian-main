@@ -1,0 +1,129 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  id: ICarryForecastOverlay
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput)
+  langs:
+  - csharp
+  - vb
+  name: ICarryForecastOverlay
+  nameWithType: ICarryForecastOverlay
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICarryForecastOverlay
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public interface ICarryForecastOverlay
+    content.vb: Public Interface ICarryForecastOverlay
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput)
+  id: Apply(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  langs:
+  - csharp
+  - vb
+  name: Apply(CarryAssetSnapshot, AdvancedCarryInput)
+  nameWithType: ICarryForecastOverlay.Apply(CarryAssetSnapshot, AdvancedCarryInput)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot, Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Apply
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: CarryAssetSnapshot Apply(CarryAssetSnapshot asset, AdvancedCarryInput input)
+    parameters:
+    - id: asset
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+    - id: input
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+    content.vb: Function Apply(asset As CarryAssetSnapshot, input As AdvancedCarryInput) As CarryAssetSnapshot
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ICarryForecastOverlay_Apply_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryInput_
+  name: Apply
+  nameWithType: ICarryForecastOverlay.Apply
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.Apply
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html
+  name: CarryAssetSnapshot
+  nameWithType: CarryAssetSnapshot
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html
+  name: AdvancedCarryInput
+  nameWithType: AdvancedCarryInput
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput

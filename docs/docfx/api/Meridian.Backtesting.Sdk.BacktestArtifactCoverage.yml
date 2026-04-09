@@ -1,0 +1,666 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  id: BacktestArtifactCoverage
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.#ctor(Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus)
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets
+  - Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
+  langs:
+  - csharp
+  - vb
+  name: BacktestArtifactCoverage
+  nameWithType: BacktestArtifactCoverage
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestArtifactCoverage
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Coverage summary for the main artifacts that make up a canonical backtest result.
+  example: []
+  syntax:
+    content: 'public sealed record BacktestArtifactCoverage : IEquatable<BacktestArtifactCoverage>'
+    content.vb: Public NotInheritable Class BacktestArtifactCoverage Implements IEquatable(Of BacktestArtifactCoverage)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.BacktestArtifactCoverage}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.#ctor(Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus)
+  commentId: M:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.#ctor(Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus)
+  id: '#ctor(Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus,Meridian.Backtesting.Sdk.BacktestArtifactStatus)'
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: BacktestArtifactCoverage(BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus)
+  nameWithType: BacktestArtifactCoverage.BacktestArtifactCoverage(BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus)
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.BacktestArtifactCoverage(Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Coverage summary for the main artifacts that make up a canonical backtest result.
+  example: []
+  syntax:
+    content: public BacktestArtifactCoverage(BacktestArtifactStatus Snapshots, BacktestArtifactStatus CashFlows, BacktestArtifactStatus Fills, BacktestArtifactStatus TradeTickets, BacktestArtifactStatus Ledger, BacktestArtifactStatus TcaReport)
+    parameters:
+    - id: Snapshots
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    - id: CashFlows
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    - id: Fills
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    - id: TradeTickets
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    - id: Ledger
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    - id: TcaReport
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    content.vb: Public Sub New(Snapshots As BacktestArtifactStatus, CashFlows As BacktestArtifactStatus, Fills As BacktestArtifactStatus, TradeTickets As BacktestArtifactStatus, Ledger As BacktestArtifactStatus, TcaReport As BacktestArtifactStatus)
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.#ctor*
+  nameWithType.vb: BacktestArtifactCoverage.New(BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus)
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.New(Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus, Meridian.Backtesting.Sdk.BacktestArtifactStatus)
+  name.vb: New(BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus, BacktestArtifactStatus)
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots
+  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots
+  id: Snapshots
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: Snapshots
+  nameWithType: BacktestArtifactCoverage.Snapshots
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snapshots
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public BacktestArtifactStatus Snapshots { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    content.vb: Public Property Snapshots As BacktestArtifactStatus
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots*
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows
+  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows
+  id: CashFlows
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: CashFlows
+  nameWithType: BacktestArtifactCoverage.CashFlows
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFlows
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public BacktestArtifactStatus CashFlows { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    content.vb: Public Property CashFlows As BacktestArtifactStatus
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows*
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills
+  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills
+  id: Fills
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: Fills
+  nameWithType: BacktestArtifactCoverage.Fills
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fills
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public BacktestArtifactStatus Fills { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    content.vb: Public Property Fills As BacktestArtifactStatus
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills*
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets
+  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets
+  id: TradeTickets
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: TradeTickets
+  nameWithType: BacktestArtifactCoverage.TradeTickets
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeTickets
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public BacktestArtifactStatus TradeTickets { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    content.vb: Public Property TradeTickets As BacktestArtifactStatus
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets*
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger
+  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger
+  id: Ledger
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: BacktestArtifactCoverage.Ledger
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public BacktestArtifactStatus Ledger { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    content.vb: Public Property Ledger As BacktestArtifactStatus
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger*
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport
+  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport
+  id: TcaReport
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: TcaReport
+  nameWithType: BacktestArtifactCoverage.TcaReport
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TcaReport
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public BacktestArtifactStatus TcaReport { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+    content.vb: Public Property TcaReport As BacktestArtifactStatus
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport*
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
+  commentId: P:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
+  id: Unknown
+  parent: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: BacktestArtifactCoverage.Unknown
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public static BacktestArtifactCoverage Unknown { get; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+    content.vb: Public Shared ReadOnly Property Unknown As BacktestArtifactCoverage
+  overload: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.BacktestArtifactCoverage}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.BacktestArtifactCoverage}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BacktestArtifactCoverage>
+  nameWithType: IEquatable<BacktestArtifactCoverage>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.BacktestArtifactCoverage>
+  nameWithType.vb: IEquatable(Of BacktestArtifactCoverage)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.BacktestArtifactCoverage)
+  name.vb: IEquatable(Of BacktestArtifactCoverage)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+    name: BacktestArtifactCoverage
+    href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+    name: BacktestArtifactCoverage
+    href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.#ctor
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage__ctor_Meridian_Backtesting_Sdk_BacktestArtifactStatus_Meridian_Backtesting_Sdk_BacktestArtifactStatus_Meridian_Backtesting_Sdk_BacktestArtifactStatus_Meridian_Backtesting_Sdk_BacktestArtifactStatus_Meridian_Backtesting_Sdk_BacktestArtifactStatus_Meridian_Backtesting_Sdk_BacktestArtifactStatus_
+  name: BacktestArtifactCoverage
+  nameWithType: BacktestArtifactCoverage.BacktestArtifactCoverage
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.BacktestArtifactCoverage
+  nameWithType.vb: BacktestArtifactCoverage.New
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.New
+  name.vb: New
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactStatus
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestArtifactStatus.html
+  name: BacktestArtifactStatus
+  nameWithType: BacktestArtifactStatus
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactStatus
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_Snapshots
+  name: Snapshots
+  nameWithType: BacktestArtifactCoverage.Snapshots
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Snapshots
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_CashFlows
+  name: CashFlows
+  nameWithType: BacktestArtifactCoverage.CashFlows
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.CashFlows
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_Fills
+  name: Fills
+  nameWithType: BacktestArtifactCoverage.Fills
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Fills
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_TradeTickets
+  name: TradeTickets
+  nameWithType: BacktestArtifactCoverage.TradeTickets
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TradeTickets
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_Ledger
+  name: Ledger
+  nameWithType: BacktestArtifactCoverage.Ledger
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Ledger
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_TcaReport
+  name: TcaReport
+  nameWithType: BacktestArtifactCoverage.TcaReport
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.TcaReport
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html#Meridian_Backtesting_Sdk_BacktestArtifactCoverage_Unknown
+  name: Unknown
+  nameWithType: BacktestArtifactCoverage.Unknown
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.Unknown
+- uid: Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  commentId: T:Meridian.Backtesting.Sdk.BacktestArtifactCoverage
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestArtifactCoverage.html
+  name: BacktestArtifactCoverage
+  nameWithType: BacktestArtifactCoverage
+  fullName: Meridian.Backtesting.Sdk.BacktestArtifactCoverage

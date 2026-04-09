@@ -1,0 +1,720 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  id: WebSocketHeartbeat
+  parent: Meridian.Infrastructure.Resilience
+  children:
+  - Meridian.Infrastructure.Resilience.WebSocketHeartbeat.#ctor(System.Net.WebSockets.ClientWebSocket,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})
+  - Meridian.Infrastructure.Resilience.WebSocketHeartbeat.ConnectionLost
+  - Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync
+  - Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent
+  - Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived
+  langs:
+  - csharp
+  - vb
+  name: WebSocketHeartbeat
+  nameWithType: WebSocketHeartbeat
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebSocketHeartbeat
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Heartbeat manager for WebSocket connections.
+
+    Implements ping/pong pattern to detect stale connections.
+
+    Based on best practices: send ping every 30-60 seconds, expect pong within 10 seconds.
+  example: []
+  syntax:
+    content: 'public sealed class WebSocketHeartbeat : IAsyncDisposable'
+    content.vb: Public NotInheritable Class WebSocketHeartbeat Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.ConnectionLost
+  commentId: E:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.ConnectionLost
+  id: ConnectionLost
+  parent: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  langs:
+  - csharp
+  - vb
+  name: ConnectionLost
+  nameWithType: WebSocketHeartbeat.ConnectionLost
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.ConnectionLost
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionLost
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  syntax:
+    content: public event Func<Task>? ConnectionLost
+    return:
+      type: System.Func{System.Threading.Tasks.Task}
+    content.vb: Public Event ConnectionLost As Func(Of Task)
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent
+  id: PingsSent
+  parent: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  langs:
+  - csharp
+  - vb
+  name: PingsSent
+  nameWithType: WebSocketHeartbeat.PingsSent
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PingsSent
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Gets the total number of heartbeat pings sent during this connection's lifetime.
+  example: []
+  syntax:
+    content: public long PingsSent { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property PingsSent As Long
+  overload: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent*
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.#ctor(System.Net.WebSockets.ClientWebSocket,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.#ctor(System.Net.WebSockets.ClientWebSocket,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})
+  id: '#ctor(System.Net.WebSockets.ClientWebSocket,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})'
+  parent: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  langs:
+  - csharp
+  - vb
+  name: WebSocketHeartbeat(ClientWebSocket, TimeSpan?, TimeSpan?)
+  nameWithType: WebSocketHeartbeat.WebSocketHeartbeat(ClientWebSocket, TimeSpan?, TimeSpan?)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.WebSocketHeartbeat(System.Net.WebSockets.ClientWebSocket, System.TimeSpan?, System.TimeSpan?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  syntax:
+    content: public WebSocketHeartbeat(ClientWebSocket ws, TimeSpan? pingInterval = null, TimeSpan? pongTimeout = null)
+    parameters:
+    - id: ws
+      type: System.Net.WebSockets.ClientWebSocket
+    - id: pingInterval
+      type: System.Nullable{System.TimeSpan}
+    - id: pongTimeout
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Sub New(ws As ClientWebSocket, pingInterval As TimeSpan? = Nothing, pongTimeout As TimeSpan? = Nothing)
+  overload: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.#ctor*
+  nameWithType.vb: WebSocketHeartbeat.New(ClientWebSocket, TimeSpan?, TimeSpan?)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.New(System.Net.WebSockets.ClientWebSocket, System.TimeSpan?, System.TimeSpan?)
+  name.vb: New(ClientWebSocket, TimeSpan?, TimeSpan?)
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived
+  id: RecordPongReceived
+  parent: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  langs:
+  - csharp
+  - vb
+  name: RecordPongReceived()
+  nameWithType: WebSocketHeartbeat.RecordPongReceived()
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordPongReceived
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    startLine: 327
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  syntax:
+    content: public void RecordPongReceived()
+    content.vb: Public Sub RecordPongReceived()
+  overload: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived*
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: WebSocketHeartbeat.DisposeAsync()
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Infrastructure.Resilience
+  commentId: N:Meridian.Infrastructure.Resilience
+  href: Meridian.html
+  name: Meridian.Infrastructure.Resilience
+  nameWithType: Meridian.Infrastructure.Resilience
+  fullName: Meridian.Infrastructure.Resilience
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Func{System.Threading.Tasks.Task}
+  commentId: T:System.Func{System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<Task>
+  nameWithType: Func<Task>
+  fullName: System.Func<System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of Task)
+  fullName.vb: System.Func(Of System.Threading.Tasks.Task)
+  name.vb: Func(Of Task)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent
+  href: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.html#Meridian_Infrastructure_Resilience_WebSocketHeartbeat_PingsSent
+  name: PingsSent
+  nameWithType: WebSocketHeartbeat.PingsSent
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.PingsSent
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.#ctor
+  href: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.html#Meridian_Infrastructure_Resilience_WebSocketHeartbeat__ctor_System_Net_WebSockets_ClientWebSocket_System_Nullable_System_TimeSpan__System_Nullable_System_TimeSpan__
+  name: WebSocketHeartbeat
+  nameWithType: WebSocketHeartbeat.WebSocketHeartbeat
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.WebSocketHeartbeat
+  nameWithType.vb: WebSocketHeartbeat.New
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.New
+  name.vb: New
+- uid: System.Net.WebSockets.ClientWebSocket
+  commentId: T:System.Net.WebSockets.ClientWebSocket
+  parent: System.Net.WebSockets
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  name: ClientWebSocket
+  nameWithType: ClientWebSocket
+  fullName: System.Net.WebSockets.ClientWebSocket
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Net.WebSockets
+  commentId: N:System.Net.WebSockets
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.WebSockets
+  nameWithType: System.Net.WebSockets
+  fullName: System.Net.WebSockets
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.WebSockets
+    name: WebSockets
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.WebSockets
+    name: WebSockets
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived
+  href: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.html#Meridian_Infrastructure_Resilience_WebSocketHeartbeat_RecordPongReceived
+  name: RecordPongReceived
+  nameWithType: WebSocketHeartbeat.RecordPongReceived
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.RecordPongReceived
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync
+  href: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.html#Meridian_Infrastructure_Resilience_WebSocketHeartbeat_DisposeAsync
+  name: DisposeAsync
+  nameWithType: WebSocketHeartbeat.DisposeAsync
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

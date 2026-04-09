@@ -1,0 +1,712 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  id: BacktestEngineMetadata
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.BacktestEngineMetadata.#ctor(System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics
+  - Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId
+  - Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion
+  - Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat
+  - Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
+  langs:
+  - csharp
+  - vb
+  name: BacktestEngineMetadata
+  nameWithType: BacktestEngineMetadata
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestEngineMetadata
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Engine identity and diagnostics captured alongside a canonical backtest result.
+  example: []
+  syntax:
+    content: 'public sealed record BacktestEngineMetadata : IEquatable<BacktestEngineMetadata>'
+    content.vb: Public NotInheritable Class BacktestEngineMetadata Implements IEquatable(Of BacktestEngineMetadata)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.BacktestEngineMetadata}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.#ctor(System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Backtesting.Sdk.BacktestEngineMetadata.#ctor(System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: '#ctor(System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})'
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  langs:
+  - csharp
+  - vb
+  name: BacktestEngineMetadata(string, string, string, IReadOnlyDictionary<string, string>)
+  nameWithType: BacktestEngineMetadata.BacktestEngineMetadata(string, string, string, IReadOnlyDictionary<string, string>)
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.BacktestEngineMetadata(string, string, string, System.Collections.Generic.IReadOnlyDictionary<string, string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Engine identity and diagnostics captured alongside a canonical backtest result.
+  example: []
+  syntax:
+    content: public BacktestEngineMetadata(string EngineId, string EngineVersion, string SourceFormat, IReadOnlyDictionary<string, string> Diagnostics)
+    parameters:
+    - id: EngineId
+      type: System.String
+    - id: EngineVersion
+      type: System.String
+    - id: SourceFormat
+      type: System.String
+    - id: Diagnostics
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Sub New(EngineId As String, EngineVersion As String, SourceFormat As String, Diagnostics As IReadOnlyDictionary(Of String, String))
+  overload: Meridian.Backtesting.Sdk.BacktestEngineMetadata.#ctor*
+  nameWithType.vb: BacktestEngineMetadata.New(String, String, String, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestEngineMetadata.New(String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: New(String, String, String, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId
+  commentId: P:Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId
+  id: EngineId
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  langs:
+  - csharp
+  - vb
+  name: EngineId
+  nameWithType: BacktestEngineMetadata.EngineId
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EngineId
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string EngineId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EngineId As String
+  overload: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId*
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion
+  commentId: P:Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion
+  id: EngineVersion
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  langs:
+  - csharp
+  - vb
+  name: EngineVersion
+  nameWithType: BacktestEngineMetadata.EngineVersion
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EngineVersion
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string EngineVersion { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EngineVersion As String
+  overload: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion*
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat
+  commentId: P:Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat
+  id: SourceFormat
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  langs:
+  - csharp
+  - vb
+  name: SourceFormat
+  nameWithType: BacktestEngineMetadata.SourceFormat
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceFormat
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string SourceFormat { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceFormat As String
+  overload: Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat*
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics
+  commentId: P:Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics
+  id: Diagnostics
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  langs:
+  - csharp
+  - vb
+  name: Diagnostics
+  nameWithType: BacktestEngineMetadata.Diagnostics
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Diagnostics
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public IReadOnlyDictionary<string, string> Diagnostics { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Diagnostics As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics*
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
+  commentId: P:Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
+  id: Unknown
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: BacktestEngineMetadata.Unknown
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestResult.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestResult.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public static BacktestEngineMetadata Unknown { get; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+    content.vb: Public Shared ReadOnly Property Unknown As BacktestEngineMetadata
+  overload: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.BacktestEngineMetadata}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.BacktestEngineMetadata}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BacktestEngineMetadata>
+  nameWithType: IEquatable<BacktestEngineMetadata>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.BacktestEngineMetadata>
+  nameWithType.vb: IEquatable(Of BacktestEngineMetadata)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.BacktestEngineMetadata)
+  name.vb: IEquatable(Of BacktestEngineMetadata)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+    name: BacktestEngineMetadata
+    href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+    name: BacktestEngineMetadata
+    href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestEngineMetadata.#ctor
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html#Meridian_Backtesting_Sdk_BacktestEngineMetadata__ctor_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: BacktestEngineMetadata
+  nameWithType: BacktestEngineMetadata.BacktestEngineMetadata
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.BacktestEngineMetadata
+  nameWithType.vb: BacktestEngineMetadata.New
+  fullName.vb: Meridian.Backtesting.Sdk.BacktestEngineMetadata.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html#Meridian_Backtesting_Sdk_BacktestEngineMetadata_EngineId
+  name: EngineId
+  nameWithType: BacktestEngineMetadata.EngineId
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineId
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html#Meridian_Backtesting_Sdk_BacktestEngineMetadata_EngineVersion
+  name: EngineVersion
+  nameWithType: BacktestEngineMetadata.EngineVersion
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.EngineVersion
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html#Meridian_Backtesting_Sdk_BacktestEngineMetadata_SourceFormat
+  name: SourceFormat
+  nameWithType: BacktestEngineMetadata.SourceFormat
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.SourceFormat
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html#Meridian_Backtesting_Sdk_BacktestEngineMetadata_Diagnostics
+  name: Diagnostics
+  nameWithType: BacktestEngineMetadata.Diagnostics
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Diagnostics
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown*
+  commentId: Overload:Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html#Meridian_Backtesting_Sdk_BacktestEngineMetadata_Unknown
+  name: Unknown
+  nameWithType: BacktestEngineMetadata.Unknown
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata.Unknown
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMetadata
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestEngineMetadata.html
+  name: BacktestEngineMetadata
+  nameWithType: BacktestEngineMetadata
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMetadata

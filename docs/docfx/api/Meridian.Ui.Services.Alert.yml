@@ -1,0 +1,1075 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Alert
+  commentId: T:Meridian.Ui.Services.Alert
+  id: Alert
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.Alert.AffectedResources
+  - Meridian.Ui.Services.Alert.Category
+  - Meridian.Ui.Services.Alert.Description
+  - Meridian.Ui.Services.Alert.FirstOccurred
+  - Meridian.Ui.Services.Alert.Id
+  - Meridian.Ui.Services.Alert.Impact
+  - Meridian.Ui.Services.Alert.IsResolved
+  - Meridian.Ui.Services.Alert.IsSnoozed
+  - Meridian.Ui.Services.Alert.IsSuppressed
+  - Meridian.Ui.Services.Alert.LastOccurred
+  - Meridian.Ui.Services.Alert.OccurrenceCount
+  - Meridian.Ui.Services.Alert.Playbook
+  - Meridian.Ui.Services.Alert.ResolvedAt
+  - Meridian.Ui.Services.Alert.Severity
+  - Meridian.Ui.Services.Alert.SnoozedUntil
+  - Meridian.Ui.Services.Alert.Title
+  langs:
+  - csharp
+  - vb
+  name: Alert
+  nameWithType: Alert
+  fullName: Meridian.Ui.Services.Alert
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alert
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 487
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: An alert raised by the system.
+  example: []
+  syntax:
+    content: public sealed class Alert
+    content.vb: Public NotInheritable Class Alert
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Alert.Id
+  commentId: P:Meridian.Ui.Services.Alert.Id
+  id: Id
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: Alert.Id
+  fullName: Meridian.Ui.Services.Alert.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 489
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Ui.Services.Alert.Id*
+- uid: Meridian.Ui.Services.Alert.Title
+  commentId: P:Meridian.Ui.Services.Alert.Title
+  id: Title
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: Alert.Title
+  fullName: Meridian.Ui.Services.Alert.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 490
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Title { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Ui.Services.Alert.Title*
+- uid: Meridian.Ui.Services.Alert.Description
+  commentId: P:Meridian.Ui.Services.Alert.Description
+  id: Description
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: Alert.Description
+  fullName: Meridian.Ui.Services.Alert.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 491
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Ui.Services.Alert.Description*
+- uid: Meridian.Ui.Services.Alert.Severity
+  commentId: P:Meridian.Ui.Services.Alert.Severity
+  id: Severity
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: Alert.Severity
+  fullName: Meridian.Ui.Services.Alert.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 492
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public AlertSeverity Severity { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.AlertSeverity
+    content.vb: Public Property Severity As AlertSeverity
+  overload: Meridian.Ui.Services.Alert.Severity*
+- uid: Meridian.Ui.Services.Alert.Impact
+  commentId: P:Meridian.Ui.Services.Alert.Impact
+  id: Impact
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: Impact
+  nameWithType: Alert.Impact
+  fullName: Meridian.Ui.Services.Alert.Impact
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Impact
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 493
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public BusinessImpact Impact { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.BusinessImpact
+    content.vb: Public Property Impact As BusinessImpact
+  overload: Meridian.Ui.Services.Alert.Impact*
+- uid: Meridian.Ui.Services.Alert.Category
+  commentId: P:Meridian.Ui.Services.Alert.Category
+  id: Category
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: Alert.Category
+  fullName: Meridian.Ui.Services.Alert.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 494
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Category { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Category As String
+  overload: Meridian.Ui.Services.Alert.Category*
+- uid: Meridian.Ui.Services.Alert.FirstOccurred
+  commentId: P:Meridian.Ui.Services.Alert.FirstOccurred
+  id: FirstOccurred
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: FirstOccurred
+  nameWithType: Alert.FirstOccurred
+  fullName: Meridian.Ui.Services.Alert.FirstOccurred
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstOccurred
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 495
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime FirstOccurred { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property FirstOccurred As Date
+  overload: Meridian.Ui.Services.Alert.FirstOccurred*
+- uid: Meridian.Ui.Services.Alert.LastOccurred
+  commentId: P:Meridian.Ui.Services.Alert.LastOccurred
+  id: LastOccurred
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: LastOccurred
+  nameWithType: Alert.LastOccurred
+  fullName: Meridian.Ui.Services.Alert.LastOccurred
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastOccurred
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 496
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime LastOccurred { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property LastOccurred As Date
+  overload: Meridian.Ui.Services.Alert.LastOccurred*
+- uid: Meridian.Ui.Services.Alert.OccurrenceCount
+  commentId: P:Meridian.Ui.Services.Alert.OccurrenceCount
+  id: OccurrenceCount
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: OccurrenceCount
+  nameWithType: Alert.OccurrenceCount
+  fullName: Meridian.Ui.Services.Alert.OccurrenceCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OccurrenceCount
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int OccurrenceCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property OccurrenceCount As Integer
+  overload: Meridian.Ui.Services.Alert.OccurrenceCount*
+- uid: Meridian.Ui.Services.Alert.AffectedResources
+  commentId: P:Meridian.Ui.Services.Alert.AffectedResources
+  id: AffectedResources
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: AffectedResources
+  nameWithType: Alert.AffectedResources
+  fullName: Meridian.Ui.Services.Alert.AffectedResources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AffectedResources
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 498
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string> AffectedResources { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property AffectedResources As List(Of String)
+  overload: Meridian.Ui.Services.Alert.AffectedResources*
+- uid: Meridian.Ui.Services.Alert.Playbook
+  commentId: P:Meridian.Ui.Services.Alert.Playbook
+  id: Playbook
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: Playbook
+  nameWithType: Alert.Playbook
+  fullName: Meridian.Ui.Services.Alert.Playbook
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Playbook
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 499
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public AlertPlaybook? Playbook { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.AlertPlaybook
+    content.vb: Public Property Playbook As AlertPlaybook
+  overload: Meridian.Ui.Services.Alert.Playbook*
+- uid: Meridian.Ui.Services.Alert.IsResolved
+  commentId: P:Meridian.Ui.Services.Alert.IsResolved
+  id: IsResolved
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: IsResolved
+  nameWithType: Alert.IsResolved
+  fullName: Meridian.Ui.Services.Alert.IsResolved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsResolved
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsResolved { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsResolved As Boolean
+  overload: Meridian.Ui.Services.Alert.IsResolved*
+- uid: Meridian.Ui.Services.Alert.ResolvedAt
+  commentId: P:Meridian.Ui.Services.Alert.ResolvedAt
+  id: ResolvedAt
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: ResolvedAt
+  nameWithType: Alert.ResolvedAt
+  fullName: Meridian.Ui.Services.Alert.ResolvedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedAt
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 501
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? ResolvedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property ResolvedAt As Date?
+  overload: Meridian.Ui.Services.Alert.ResolvedAt*
+- uid: Meridian.Ui.Services.Alert.IsSnoozed
+  commentId: P:Meridian.Ui.Services.Alert.IsSnoozed
+  id: IsSnoozed
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: IsSnoozed
+  nameWithType: Alert.IsSnoozed
+  fullName: Meridian.Ui.Services.Alert.IsSnoozed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSnoozed
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 502
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsSnoozed { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsSnoozed As Boolean
+  overload: Meridian.Ui.Services.Alert.IsSnoozed*
+- uid: Meridian.Ui.Services.Alert.SnoozedUntil
+  commentId: P:Meridian.Ui.Services.Alert.SnoozedUntil
+  id: SnoozedUntil
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: SnoozedUntil
+  nameWithType: Alert.SnoozedUntil
+  fullName: Meridian.Ui.Services.Alert.SnoozedUntil
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SnoozedUntil
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? SnoozedUntil { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property SnoozedUntil As Date?
+  overload: Meridian.Ui.Services.Alert.SnoozedUntil*
+- uid: Meridian.Ui.Services.Alert.IsSuppressed
+  commentId: P:Meridian.Ui.Services.Alert.IsSuppressed
+  id: IsSuppressed
+  parent: Meridian.Ui.Services.Alert
+  langs:
+  - csharp
+  - vb
+  name: IsSuppressed
+  nameWithType: Alert.IsSuppressed
+  fullName: Meridian.Ui.Services.Alert.IsSuppressed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSuppressed
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 504
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsSuppressed { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsSuppressed As Boolean
+  overload: Meridian.Ui.Services.Alert.IsSuppressed*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Alert.Id*
+  commentId: Overload:Meridian.Ui.Services.Alert.Id
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_Id
+  name: Id
+  nameWithType: Alert.Id
+  fullName: Meridian.Ui.Services.Alert.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Alert.Title*
+  commentId: Overload:Meridian.Ui.Services.Alert.Title
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_Title
+  name: Title
+  nameWithType: Alert.Title
+  fullName: Meridian.Ui.Services.Alert.Title
+- uid: Meridian.Ui.Services.Alert.Description*
+  commentId: Overload:Meridian.Ui.Services.Alert.Description
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_Description
+  name: Description
+  nameWithType: Alert.Description
+  fullName: Meridian.Ui.Services.Alert.Description
+- uid: Meridian.Ui.Services.Alert.Severity*
+  commentId: Overload:Meridian.Ui.Services.Alert.Severity
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_Severity
+  name: Severity
+  nameWithType: Alert.Severity
+  fullName: Meridian.Ui.Services.Alert.Severity
+- uid: Meridian.Ui.Services.AlertSeverity
+  commentId: T:Meridian.Ui.Services.AlertSeverity
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlertSeverity.html
+  name: AlertSeverity
+  nameWithType: AlertSeverity
+  fullName: Meridian.Ui.Services.AlertSeverity
+- uid: Meridian.Ui.Services.Alert.Impact*
+  commentId: Overload:Meridian.Ui.Services.Alert.Impact
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_Impact
+  name: Impact
+  nameWithType: Alert.Impact
+  fullName: Meridian.Ui.Services.Alert.Impact
+- uid: Meridian.Ui.Services.BusinessImpact
+  commentId: T:Meridian.Ui.Services.BusinessImpact
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BusinessImpact.html
+  name: BusinessImpact
+  nameWithType: BusinessImpact
+  fullName: Meridian.Ui.Services.BusinessImpact
+- uid: Meridian.Ui.Services.Alert.Category*
+  commentId: Overload:Meridian.Ui.Services.Alert.Category
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_Category
+  name: Category
+  nameWithType: Alert.Category
+  fullName: Meridian.Ui.Services.Alert.Category
+- uid: Meridian.Ui.Services.Alert.FirstOccurred*
+  commentId: Overload:Meridian.Ui.Services.Alert.FirstOccurred
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_FirstOccurred
+  name: FirstOccurred
+  nameWithType: Alert.FirstOccurred
+  fullName: Meridian.Ui.Services.Alert.FirstOccurred
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.Alert.LastOccurred*
+  commentId: Overload:Meridian.Ui.Services.Alert.LastOccurred
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_LastOccurred
+  name: LastOccurred
+  nameWithType: Alert.LastOccurred
+  fullName: Meridian.Ui.Services.Alert.LastOccurred
+- uid: Meridian.Ui.Services.Alert.OccurrenceCount*
+  commentId: Overload:Meridian.Ui.Services.Alert.OccurrenceCount
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_OccurrenceCount
+  name: OccurrenceCount
+  nameWithType: Alert.OccurrenceCount
+  fullName: Meridian.Ui.Services.Alert.OccurrenceCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Alert.AffectedResources*
+  commentId: Overload:Meridian.Ui.Services.Alert.AffectedResources
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_AffectedResources
+  name: AffectedResources
+  nameWithType: Alert.AffectedResources
+  fullName: Meridian.Ui.Services.Alert.AffectedResources
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.Alert.Playbook*
+  commentId: Overload:Meridian.Ui.Services.Alert.Playbook
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_Playbook
+  name: Playbook
+  nameWithType: Alert.Playbook
+  fullName: Meridian.Ui.Services.Alert.Playbook
+- uid: Meridian.Ui.Services.AlertPlaybook
+  commentId: T:Meridian.Ui.Services.AlertPlaybook
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlertPlaybook.html
+  name: AlertPlaybook
+  nameWithType: AlertPlaybook
+  fullName: Meridian.Ui.Services.AlertPlaybook
+- uid: Meridian.Ui.Services.Alert.IsResolved*
+  commentId: Overload:Meridian.Ui.Services.Alert.IsResolved
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_IsResolved
+  name: IsResolved
+  nameWithType: Alert.IsResolved
+  fullName: Meridian.Ui.Services.Alert.IsResolved
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Alert.ResolvedAt*
+  commentId: Overload:Meridian.Ui.Services.Alert.ResolvedAt
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_ResolvedAt
+  name: ResolvedAt
+  nameWithType: Alert.ResolvedAt
+  fullName: Meridian.Ui.Services.Alert.ResolvedAt
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Alert.IsSnoozed*
+  commentId: Overload:Meridian.Ui.Services.Alert.IsSnoozed
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_IsSnoozed
+  name: IsSnoozed
+  nameWithType: Alert.IsSnoozed
+  fullName: Meridian.Ui.Services.Alert.IsSnoozed
+- uid: Meridian.Ui.Services.Alert.SnoozedUntil*
+  commentId: Overload:Meridian.Ui.Services.Alert.SnoozedUntil
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_SnoozedUntil
+  name: SnoozedUntil
+  nameWithType: Alert.SnoozedUntil
+  fullName: Meridian.Ui.Services.Alert.SnoozedUntil
+- uid: Meridian.Ui.Services.Alert.IsSuppressed*
+  commentId: Overload:Meridian.Ui.Services.Alert.IsSuppressed
+  href: Meridian.Ui.Services.Alert.html#Meridian_Ui_Services_Alert_IsSuppressed
+  name: IsSuppressed
+  nameWithType: Alert.IsSuppressed
+  fullName: Meridian.Ui.Services.Alert.IsSuppressed

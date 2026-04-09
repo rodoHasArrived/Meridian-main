@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Templates
+  commentId: N:Meridian.Infrastructure.Adapters.Templates
+  id: Meridian.Infrastructure.Adapters.Templates
+  children:
+  - Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Templates
+  nameWithType: Meridian.Infrastructure.Adapters.Templates
+  fullName: Meridian.Infrastructure.Adapters.Templates
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway
+  commentId: T:Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway
+  href: Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway.html
+  name: TemplateBrokerageGateway
+  nameWithType: TemplateBrokerageGateway
+  fullName: Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway

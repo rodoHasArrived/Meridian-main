@@ -1,0 +1,777 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ExportJobRequest
+  commentId: T:Meridian.Ui.Services.ExportJobRequest
+  id: ExportJobRequest
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ExportJobRequest.DateRange
+  - Meridian.Ui.Services.ExportJobRequest.DestinationPath
+  - Meridian.Ui.Services.ExportJobRequest.EventTypes
+  - Meridian.Ui.Services.ExportJobRequest.Format
+  - Meridian.Ui.Services.ExportJobRequest.IncrementalMode
+  - Meridian.Ui.Services.ExportJobRequest.Name
+  - Meridian.Ui.Services.ExportJobRequest.Priority
+  - Meridian.Ui.Services.ExportJobRequest.Schedule
+  - Meridian.Ui.Services.ExportJobRequest.SourcePath
+  - Meridian.Ui.Services.ExportJobRequest.Symbols
+  langs:
+  - csharp
+  - vb
+  name: ExportJobRequest
+  nameWithType: ExportJobRequest
+  fullName: Meridian.Ui.Services.ExportJobRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportJobRequest
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 613
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public sealed record ExportJobRequest : IEquatable<ExportJobRequest>'
+    content.vb: Public NotInheritable Class ExportJobRequest Implements IEquatable(Of ExportJobRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Services.ExportJobRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ExportJobRequest.Name
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.Name
+  id: Name
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ExportJobRequest.Name
+  fullName: Meridian.Ui.Services.ExportJobRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 615
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Ui.Services.ExportJobRequest.Name*
+- uid: Meridian.Ui.Services.ExportJobRequest.SourcePath
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.SourcePath
+  id: SourcePath
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: SourcePath
+  nameWithType: ExportJobRequest.SourcePath
+  fullName: Meridian.Ui.Services.ExportJobRequest.SourcePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourcePath
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public required string SourcePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourcePath As String
+  overload: Meridian.Ui.Services.ExportJobRequest.SourcePath*
+- uid: Meridian.Ui.Services.ExportJobRequest.DestinationPath
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.DestinationPath
+  id: DestinationPath
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: DestinationPath
+  nameWithType: ExportJobRequest.DestinationPath
+  fullName: Meridian.Ui.Services.ExportJobRequest.DestinationPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DestinationPath
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 617
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public required string DestinationPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DestinationPath As String
+  overload: Meridian.Ui.Services.ExportJobRequest.DestinationPath*
+- uid: Meridian.Ui.Services.ExportJobRequest.Symbols
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.Symbols
+  id: Symbols
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: ExportJobRequest.Symbols
+  fullName: Meridian.Ui.Services.ExportJobRequest.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 618
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Ui.Services.ExportJobRequest.Symbols*
+- uid: Meridian.Ui.Services.ExportJobRequest.EventTypes
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.EventTypes
+  id: EventTypes
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: ExportJobRequest.EventTypes
+  fullName: Meridian.Ui.Services.ExportJobRequest.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 619
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[]? EventTypes { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property EventTypes As String()
+  overload: Meridian.Ui.Services.ExportJobRequest.EventTypes*
+- uid: Meridian.Ui.Services.ExportJobRequest.DateRange
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.DateRange
+  id: DateRange
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: DateRange
+  nameWithType: ExportJobRequest.DateRange
+  fullName: Meridian.Ui.Services.ExportJobRequest.DateRange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRange
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 620
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ExportDateRange? DateRange { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportDateRange
+    content.vb: Public Property DateRange As ExportDateRange
+  overload: Meridian.Ui.Services.ExportJobRequest.DateRange*
+- uid: Meridian.Ui.Services.ExportJobRequest.Format
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.Format
+  id: Format
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: ExportJobRequest.Format
+  fullName: Meridian.Ui.Services.ExportJobRequest.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 621
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ExportFormat Format { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportFormat
+    content.vb: Public Property Format As ExportFormat
+  overload: Meridian.Ui.Services.ExportJobRequest.Format*
+- uid: Meridian.Ui.Services.ExportJobRequest.Schedule
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.Schedule
+  id: Schedule
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: Schedule
+  nameWithType: ExportJobRequest.Schedule
+  fullName: Meridian.Ui.Services.ExportJobRequest.Schedule
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Schedule
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 622
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ExportSchedule? Schedule { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportSchedule
+    content.vb: Public Property Schedule As ExportSchedule
+  overload: Meridian.Ui.Services.ExportJobRequest.Schedule*
+- uid: Meridian.Ui.Services.ExportJobRequest.IncrementalMode
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.IncrementalMode
+  id: IncrementalMode
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: IncrementalMode
+  nameWithType: ExportJobRequest.IncrementalMode
+  fullName: Meridian.Ui.Services.ExportJobRequest.IncrementalMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncrementalMode
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 623
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IncrementalMode { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncrementalMode As Boolean
+  overload: Meridian.Ui.Services.ExportJobRequest.IncrementalMode*
+- uid: Meridian.Ui.Services.ExportJobRequest.Priority
+  commentId: P:Meridian.Ui.Services.ExportJobRequest.Priority
+  id: Priority
+  parent: Meridian.Ui.Services.ExportJobRequest
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: ExportJobRequest.Priority
+  fullName: Meridian.Ui.Services.ExportJobRequest.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 624
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ExportPriority Priority { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportPriority
+    content.vb: Public Property Priority As ExportPriority
+  overload: Meridian.Ui.Services.ExportJobRequest.Priority*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Services.ExportJobRequest}
+  commentId: T:System.IEquatable{Meridian.Ui.Services.ExportJobRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExportJobRequest>
+  nameWithType: IEquatable<ExportJobRequest>
+  fullName: System.IEquatable<Meridian.Ui.Services.ExportJobRequest>
+  nameWithType.vb: IEquatable(Of ExportJobRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Services.ExportJobRequest)
+  name.vb: IEquatable(Of ExportJobRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Services.ExportJobRequest
+    name: ExportJobRequest
+    href: Meridian.Ui.Services.ExportJobRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJobRequest
+    name: ExportJobRequest
+    href: Meridian.Ui.Services.ExportJobRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.ExportJobRequest.Name*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.Name
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_Name
+  name: Name
+  nameWithType: ExportJobRequest.Name
+  fullName: Meridian.Ui.Services.ExportJobRequest.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ExportJobRequest.SourcePath*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.SourcePath
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_SourcePath
+  name: SourcePath
+  nameWithType: ExportJobRequest.SourcePath
+  fullName: Meridian.Ui.Services.ExportJobRequest.SourcePath
+- uid: Meridian.Ui.Services.ExportJobRequest.DestinationPath*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.DestinationPath
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_DestinationPath
+  name: DestinationPath
+  nameWithType: ExportJobRequest.DestinationPath
+  fullName: Meridian.Ui.Services.ExportJobRequest.DestinationPath
+- uid: Meridian.Ui.Services.ExportJobRequest.Symbols*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.Symbols
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_Symbols
+  name: Symbols
+  nameWithType: ExportJobRequest.Symbols
+  fullName: Meridian.Ui.Services.ExportJobRequest.Symbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.ExportJobRequest.EventTypes*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.EventTypes
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_EventTypes
+  name: EventTypes
+  nameWithType: ExportJobRequest.EventTypes
+  fullName: Meridian.Ui.Services.ExportJobRequest.EventTypes
+- uid: Meridian.Ui.Services.ExportJobRequest.DateRange*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.DateRange
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_DateRange
+  name: DateRange
+  nameWithType: ExportJobRequest.DateRange
+  fullName: Meridian.Ui.Services.ExportJobRequest.DateRange
+- uid: Meridian.Ui.Services.ExportDateRange
+  commentId: T:Meridian.Ui.Services.ExportDateRange
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportDateRange.html
+  name: ExportDateRange
+  nameWithType: ExportDateRange
+  fullName: Meridian.Ui.Services.ExportDateRange
+- uid: Meridian.Ui.Services.ExportJobRequest.Format*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.Format
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_Format
+  name: Format
+  nameWithType: ExportJobRequest.Format
+  fullName: Meridian.Ui.Services.ExportJobRequest.Format
+- uid: Meridian.Ui.Services.ExportFormat
+  commentId: T:Meridian.Ui.Services.ExportFormat
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportFormat.html
+  name: ExportFormat
+  nameWithType: ExportFormat
+  fullName: Meridian.Ui.Services.ExportFormat
+- uid: Meridian.Ui.Services.ExportJobRequest.Schedule*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.Schedule
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_Schedule
+  name: Schedule
+  nameWithType: ExportJobRequest.Schedule
+  fullName: Meridian.Ui.Services.ExportJobRequest.Schedule
+- uid: Meridian.Ui.Services.ExportSchedule
+  commentId: T:Meridian.Ui.Services.ExportSchedule
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportSchedule.html
+  name: ExportSchedule
+  nameWithType: ExportSchedule
+  fullName: Meridian.Ui.Services.ExportSchedule
+- uid: Meridian.Ui.Services.ExportJobRequest.IncrementalMode*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.IncrementalMode
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_IncrementalMode
+  name: IncrementalMode
+  nameWithType: ExportJobRequest.IncrementalMode
+  fullName: Meridian.Ui.Services.ExportJobRequest.IncrementalMode
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.ExportJobRequest.Priority*
+  commentId: Overload:Meridian.Ui.Services.ExportJobRequest.Priority
+  href: Meridian.Ui.Services.ExportJobRequest.html#Meridian_Ui_Services_ExportJobRequest_Priority
+  name: Priority
+  nameWithType: ExportJobRequest.Priority
+  fullName: Meridian.Ui.Services.ExportJobRequest.Priority
+- uid: Meridian.Ui.Services.ExportPriority
+  commentId: T:Meridian.Ui.Services.ExportPriority
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportPriority.html
+  name: ExportPriority
+  nameWithType: ExportPriority
+  fullName: Meridian.Ui.Services.ExportPriority

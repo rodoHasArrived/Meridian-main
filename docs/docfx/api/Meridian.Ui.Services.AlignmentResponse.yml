@@ -1,0 +1,631 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.AlignmentResponse
+  commentId: T:Meridian.Ui.Services.AlignmentResponse
+  id: AlignmentResponse
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.AlignmentResponse.AlignedRecords
+  - Meridian.Ui.Services.AlignmentResponse.DurationSeconds
+  - Meridian.Ui.Services.AlignmentResponse.GapsDetected
+  - Meridian.Ui.Services.AlignmentResponse.GapsFilled
+  - Meridian.Ui.Services.AlignmentResponse.Metadata
+  - Meridian.Ui.Services.AlignmentResponse.OutputPath
+  - Meridian.Ui.Services.AlignmentResponse.Success
+  - Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords
+  langs:
+  - csharp
+  - vb
+  name: AlignmentResponse
+  nameWithType: AlignmentResponse
+  fullName: Meridian.Ui.Services.AlignmentResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlignmentResponse
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 561
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class AlignmentResponse
+    content.vb: Public NotInheritable Class AlignmentResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.AlignmentResponse.Success
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.Success
+  id: Success
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: AlignmentResponse.Success
+  fullName: Meridian.Ui.Services.AlignmentResponse.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 563
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool Success { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Success As Boolean
+  overload: Meridian.Ui.Services.AlignmentResponse.Success*
+- uid: Meridian.Ui.Services.AlignmentResponse.OutputPath
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.OutputPath
+  id: OutputPath
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: OutputPath
+  nameWithType: AlignmentResponse.OutputPath
+  fullName: Meridian.Ui.Services.AlignmentResponse.OutputPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputPath
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 564
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? OutputPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OutputPath As String
+  overload: Meridian.Ui.Services.AlignmentResponse.OutputPath*
+- uid: Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords
+  id: TotalSourceRecords
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: TotalSourceRecords
+  nameWithType: AlignmentResponse.TotalSourceRecords
+  fullName: Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSourceRecords
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 565
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalSourceRecords { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalSourceRecords As Long
+  overload: Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords*
+- uid: Meridian.Ui.Services.AlignmentResponse.AlignedRecords
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.AlignedRecords
+  id: AlignedRecords
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: AlignedRecords
+  nameWithType: AlignmentResponse.AlignedRecords
+  fullName: Meridian.Ui.Services.AlignmentResponse.AlignedRecords
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlignedRecords
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 566
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long AlignedRecords { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property AlignedRecords As Long
+  overload: Meridian.Ui.Services.AlignmentResponse.AlignedRecords*
+- uid: Meridian.Ui.Services.AlignmentResponse.GapsDetected
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.GapsDetected
+  id: GapsDetected
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: GapsDetected
+  nameWithType: AlignmentResponse.GapsDetected
+  fullName: Meridian.Ui.Services.AlignmentResponse.GapsDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsDetected
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 567
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int GapsDetected { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapsDetected As Integer
+  overload: Meridian.Ui.Services.AlignmentResponse.GapsDetected*
+- uid: Meridian.Ui.Services.AlignmentResponse.GapsFilled
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.GapsFilled
+  id: GapsFilled
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: GapsFilled
+  nameWithType: AlignmentResponse.GapsFilled
+  fullName: Meridian.Ui.Services.AlignmentResponse.GapsFilled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsFilled
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 568
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int GapsFilled { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapsFilled As Integer
+  overload: Meridian.Ui.Services.AlignmentResponse.GapsFilled*
+- uid: Meridian.Ui.Services.AlignmentResponse.DurationSeconds
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.DurationSeconds
+  id: DurationSeconds
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: DurationSeconds
+  nameWithType: AlignmentResponse.DurationSeconds
+  fullName: Meridian.Ui.Services.AlignmentResponse.DurationSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DurationSeconds
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 569
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double DurationSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DurationSeconds As Double
+  overload: Meridian.Ui.Services.AlignmentResponse.DurationSeconds*
+- uid: Meridian.Ui.Services.AlignmentResponse.Metadata
+  commentId: P:Meridian.Ui.Services.AlignmentResponse.Metadata
+  id: Metadata
+  parent: Meridian.Ui.Services.AlignmentResponse
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: AlignmentResponse.Metadata
+  fullName: Meridian.Ui.Services.AlignmentResponse.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+    startLine: 570
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public AlignmentMetadata? Metadata { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.AlignmentMetadata
+    content.vb: Public Property Metadata As AlignmentMetadata
+  overload: Meridian.Ui.Services.AlignmentResponse.Metadata*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.AlignmentResponse.Success*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.Success
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_Success
+  name: Success
+  nameWithType: AlignmentResponse.Success
+  fullName: Meridian.Ui.Services.AlignmentResponse.Success
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.AlignmentResponse.OutputPath*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.OutputPath
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_OutputPath
+  name: OutputPath
+  nameWithType: AlignmentResponse.OutputPath
+  fullName: Meridian.Ui.Services.AlignmentResponse.OutputPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_TotalSourceRecords
+  name: TotalSourceRecords
+  nameWithType: AlignmentResponse.TotalSourceRecords
+  fullName: Meridian.Ui.Services.AlignmentResponse.TotalSourceRecords
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.AlignmentResponse.AlignedRecords*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.AlignedRecords
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_AlignedRecords
+  name: AlignedRecords
+  nameWithType: AlignmentResponse.AlignedRecords
+  fullName: Meridian.Ui.Services.AlignmentResponse.AlignedRecords
+- uid: Meridian.Ui.Services.AlignmentResponse.GapsDetected*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.GapsDetected
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_GapsDetected
+  name: GapsDetected
+  nameWithType: AlignmentResponse.GapsDetected
+  fullName: Meridian.Ui.Services.AlignmentResponse.GapsDetected
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.AlignmentResponse.GapsFilled*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.GapsFilled
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_GapsFilled
+  name: GapsFilled
+  nameWithType: AlignmentResponse.GapsFilled
+  fullName: Meridian.Ui.Services.AlignmentResponse.GapsFilled
+- uid: Meridian.Ui.Services.AlignmentResponse.DurationSeconds*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.DurationSeconds
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_DurationSeconds
+  name: DurationSeconds
+  nameWithType: AlignmentResponse.DurationSeconds
+  fullName: Meridian.Ui.Services.AlignmentResponse.DurationSeconds
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.AlignmentResponse.Metadata*
+  commentId: Overload:Meridian.Ui.Services.AlignmentResponse.Metadata
+  href: Meridian.Ui.Services.AlignmentResponse.html#Meridian_Ui_Services_AlignmentResponse_Metadata
+  name: Metadata
+  nameWithType: AlignmentResponse.Metadata
+  fullName: Meridian.Ui.Services.AlignmentResponse.Metadata
+- uid: Meridian.Ui.Services.AlignmentMetadata
+  commentId: T:Meridian.Ui.Services.AlignmentMetadata
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AlignmentMetadata.html
+  name: AlignmentMetadata
+  nameWithType: AlignmentMetadata
+  fullName: Meridian.Ui.Services.AlignmentMetadata

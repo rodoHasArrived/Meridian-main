@@ -1,0 +1,954 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.OrderReplace
+  commentId: T:Meridian.Contracts.Domain.Models.OrderReplace
+  id: OrderReplace
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.OrderReplace.#ctor(System.String,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Boolean,System.String,System.String)
+  - Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority
+  - Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize
+  - Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize
+  - Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId
+  - Meridian.Contracts.Domain.Models.OrderReplace.NewPrice
+  - Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId
+  - Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber
+  - Meridian.Contracts.Domain.Models.OrderReplace.StreamId
+  - Meridian.Contracts.Domain.Models.OrderReplace.Venue
+  langs:
+  - csharp
+  - vb
+  name: OrderReplace
+  nameWithType: OrderReplace
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderReplace
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Represents a venue-side order replace, where the venue cancels the original order
+
+    and immediately re-enters it under a new order identifier.
+
+    This is distinct from <xref href="Meridian.Contracts.Domain.Models.OrderModify" data-throw-if-not-resolved="false"></xref> because the venue reassigns the
+
+    order ID, which breaks continuity of the original order's life cycle.
+  example: []
+  syntax:
+    content: 'public sealed record OrderReplace : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<OrderReplace>'
+    content.vb: Public NotInheritable Class OrderReplace Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of OrderReplace)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Models.OrderReplace}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.#ctor(System.String,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Boolean,System.String,System.String)
+  commentId: M:Meridian.Contracts.Domain.Models.OrderReplace.#ctor(System.String,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Boolean,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Boolean,System.String,System.String)'
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: OrderReplace(string, string, long, decimal?, long?, long?, bool, string?, string?)
+  nameWithType: OrderReplace.OrderReplace(string, string, long, decimal?, long?, long?, bool, string?, string?)
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.OrderReplace(string, string, long, decimal?, long?, long?, bool, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Represents a venue-side order replace, where the venue cancels the original order
+
+    and immediately re-enters it under a new order identifier.
+
+    This is distinct from <xref href="Meridian.Contracts.Domain.Models.OrderModify" data-throw-if-not-resolved="false"></xref> because the venue reassigns the
+
+    order ID, which breaks continuity of the original order's life cycle.
+  example: []
+  syntax:
+    content: public OrderReplace(string OldOrderId, string NewOrderId, long SequenceNumber, decimal? NewPrice = null, long? NewDisplayedSize = null, long? NewHiddenSize = null, bool LosesPriority = true, string? StreamId = null, string? Venue = null)
+    parameters:
+    - id: OldOrderId
+      type: System.String
+    - id: NewOrderId
+      type: System.String
+    - id: SequenceNumber
+      type: System.Int64
+    - id: NewPrice
+      type: System.Nullable{System.Decimal}
+    - id: NewDisplayedSize
+      type: System.Nullable{System.Int64}
+    - id: NewHiddenSize
+      type: System.Nullable{System.Int64}
+    - id: LosesPriority
+      type: System.Boolean
+    - id: StreamId
+      type: System.String
+    - id: Venue
+      type: System.String
+    content.vb: Public Sub New(OldOrderId As String, NewOrderId As String, SequenceNumber As Long, NewPrice As Decimal? = Nothing, NewDisplayedSize As Long? = Nothing, NewHiddenSize As Long? = Nothing, LosesPriority As Boolean = True, StreamId As String = Nothing, Venue As String = Nothing)
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.#ctor*
+  nameWithType.vb: OrderReplace.New(String, String, Long, Decimal?, Long?, Long?, Boolean, String, String)
+  fullName.vb: Meridian.Contracts.Domain.Models.OrderReplace.New(String, String, Long, Decimal?, Long?, Long?, Boolean, String, String)
+  name.vb: New(String, String, Long, Decimal?, Long?, Long?, Boolean, String, String)
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId
+  id: OldOrderId
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: OldOrderId
+  nameWithType: OrderReplace.OldOrderId
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OldOrderId
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string OldOrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OldOrderId As String
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId
+  id: NewOrderId
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: NewOrderId
+  nameWithType: OrderReplace.NewOrderId
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NewOrderId
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string NewOrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property NewOrderId As String
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: OrderReplace.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewPrice
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.NewPrice
+  id: NewPrice
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: NewPrice
+  nameWithType: OrderReplace.NewPrice
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NewPrice
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public decimal? NewPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property NewPrice As Decimal?
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.NewPrice*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize
+  id: NewDisplayedSize
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: NewDisplayedSize
+  nameWithType: OrderReplace.NewDisplayedSize
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NewDisplayedSize
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long? NewDisplayedSize { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property NewDisplayedSize As Long?
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize
+  id: NewHiddenSize
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: NewHiddenSize
+  nameWithType: OrderReplace.NewHiddenSize
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NewHiddenSize
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public long? NewHiddenSize { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property NewHiddenSize As Long?
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority
+  id: LosesPriority
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: LosesPriority
+  nameWithType: OrderReplace.LosesPriority
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LosesPriority
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public bool LosesPriority { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property LosesPriority As Boolean
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.StreamId
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.StreamId
+  id: StreamId
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: StreamId
+  nameWithType: OrderReplace.StreamId
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.StreamId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamId
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string? StreamId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StreamId As String
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.StreamId*
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.Venue
+  commentId: P:Meridian.Contracts.Domain.Models.OrderReplace.Venue
+  id: Venue
+  parent: Meridian.Contracts.Domain.Models.OrderReplace
+  langs:
+  - csharp
+  - vb
+  name: Venue
+  nameWithType: OrderReplace.Venue
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.Venue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Venue
+    path: ../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  syntax:
+    content: public string? Venue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Venue As String
+  overload: Meridian.Contracts.Domain.Models.OrderReplace.Venue*
+references:
+- uid: Meridian.Contracts.Domain.Models.OrderModify
+  commentId: T:Meridian.Contracts.Domain.Models.OrderModify
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OrderModify.html
+  name: OrderModify
+  nameWithType: OrderModify
+  fullName: Meridian.Contracts.Domain.Models.OrderModify
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.OrderReplace}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.OrderReplace}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrderReplace>
+  nameWithType: IEquatable<OrderReplace>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.OrderReplace>
+  nameWithType.vb: IEquatable(Of OrderReplace)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.OrderReplace)
+  name.vb: IEquatable(Of OrderReplace)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OrderReplace
+    name: OrderReplace
+    href: Meridian.Contracts.Domain.Models.OrderReplace.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OrderReplace
+    name: OrderReplace
+    href: Meridian.Contracts.Domain.Models.OrderReplace.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.#ctor
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace__ctor_System_String_System_String_System_Int64_System_Nullable_System_Decimal__System_Nullable_System_Int64__System_Nullable_System_Int64__System_Boolean_System_String_System_String_
+  name: OrderReplace
+  nameWithType: OrderReplace.OrderReplace
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.OrderReplace
+  nameWithType.vb: OrderReplace.New
+  fullName.vb: Meridian.Contracts.Domain.Models.OrderReplace.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_OldOrderId
+  name: OldOrderId
+  nameWithType: OrderReplace.OldOrderId
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.OldOrderId
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_NewOrderId
+  name: NewOrderId
+  nameWithType: OrderReplace.NewOrderId
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewOrderId
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_SequenceNumber
+  name: SequenceNumber
+  nameWithType: OrderReplace.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.SequenceNumber
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewPrice*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.NewPrice
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_NewPrice
+  name: NewPrice
+  nameWithType: OrderReplace.NewPrice
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewPrice
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_NewDisplayedSize
+  name: NewDisplayedSize
+  nameWithType: OrderReplace.NewDisplayedSize
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewDisplayedSize
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_NewHiddenSize
+  name: NewHiddenSize
+  nameWithType: OrderReplace.NewHiddenSize
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.NewHiddenSize
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_LosesPriority
+  name: LosesPriority
+  nameWithType: OrderReplace.LosesPriority
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.LosesPriority
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.StreamId*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.StreamId
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_StreamId
+  name: StreamId
+  nameWithType: OrderReplace.StreamId
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.StreamId
+- uid: Meridian.Contracts.Domain.Models.OrderReplace.Venue*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OrderReplace.Venue
+  href: Meridian.Contracts.Domain.Models.OrderReplace.html#Meridian_Contracts_Domain_Models_OrderReplace_Venue
+  name: Venue
+  nameWithType: OrderReplace.Venue
+  fullName: Meridian.Contracts.Domain.Models.OrderReplace.Venue

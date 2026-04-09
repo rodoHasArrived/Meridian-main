@@ -1,0 +1,649 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  commentId: T:Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  id: LoanTermsVersionDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.LoanTermsVersionDto.#ctor(System.Int32,System.String,Meridian.Contracts.DirectLending.DirectLendingTermsDto,System.String,System.String,System.DateTimeOffset)
+  - Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason
+  - Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt
+  - Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction
+  - Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms
+  - Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash
+  - Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber
+  langs:
+  - csharp
+  - vb
+  name: LoanTermsVersionDto
+  nameWithType: LoanTermsVersionDto
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoanTermsVersionDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record LoanTermsVersionDto : IEquatable<LoanTermsVersionDto>'
+    content.vb: Public NotInheritable Class LoanTermsVersionDto Implements IEquatable(Of LoanTermsVersionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.LoanTermsVersionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.#ctor(System.Int32,System.String,Meridian.Contracts.DirectLending.DirectLendingTermsDto,System.String,System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.DirectLending.LoanTermsVersionDto.#ctor(System.Int32,System.String,Meridian.Contracts.DirectLending.DirectLendingTermsDto,System.String,System.String,System.DateTimeOffset)
+  id: '#ctor(System.Int32,System.String,Meridian.Contracts.DirectLending.DirectLendingTermsDto,System.String,System.String,System.DateTimeOffset)'
+  parent: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  langs:
+  - csharp
+  - vb
+  name: LoanTermsVersionDto(int, string, DirectLendingTermsDto, string, string?, DateTimeOffset)
+  nameWithType: LoanTermsVersionDto.LoanTermsVersionDto(int, string, DirectLendingTermsDto, string, string?, DateTimeOffset)
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.LoanTermsVersionDto(int, string, Meridian.Contracts.DirectLending.DirectLendingTermsDto, string, string?, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public LoanTermsVersionDto(int VersionNumber, string TermsHash, DirectLendingTermsDto Terms, string SourceAction, string? AmendmentReason, DateTimeOffset RecordedAt)
+    parameters:
+    - id: VersionNumber
+      type: System.Int32
+    - id: TermsHash
+      type: System.String
+    - id: Terms
+      type: Meridian.Contracts.DirectLending.DirectLendingTermsDto
+    - id: SourceAction
+      type: System.String
+    - id: AmendmentReason
+      type: System.String
+    - id: RecordedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(VersionNumber As Integer, TermsHash As String, Terms As DirectLendingTermsDto, SourceAction As String, AmendmentReason As String, RecordedAt As DateTimeOffset)
+  overload: Meridian.Contracts.DirectLending.LoanTermsVersionDto.#ctor*
+  nameWithType.vb: LoanTermsVersionDto.New(Integer, String, DirectLendingTermsDto, String, String, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.DirectLending.LoanTermsVersionDto.New(Integer, String, Meridian.Contracts.DirectLending.DirectLendingTermsDto, String, String, System.DateTimeOffset)
+  name.vb: New(Integer, String, DirectLendingTermsDto, String, String, DateTimeOffset)
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber
+  commentId: P:Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber
+  id: VersionNumber
+  parent: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  langs:
+  - csharp
+  - vb
+  name: VersionNumber
+  nameWithType: LoanTermsVersionDto.VersionNumber
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VersionNumber
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public int VersionNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property VersionNumber As Integer
+  overload: Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber*
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash
+  commentId: P:Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash
+  id: TermsHash
+  parent: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  langs:
+  - csharp
+  - vb
+  name: TermsHash
+  nameWithType: LoanTermsVersionDto.TermsHash
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TermsHash
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string TermsHash { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TermsHash As String
+  overload: Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash*
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms
+  commentId: P:Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms
+  id: Terms
+  parent: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  langs:
+  - csharp
+  - vb
+  name: Terms
+  nameWithType: LoanTermsVersionDto.Terms
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Terms
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DirectLendingTermsDto Terms { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.DirectLendingTermsDto
+    content.vb: Public Property Terms As DirectLendingTermsDto
+  overload: Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms*
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction
+  commentId: P:Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction
+  id: SourceAction
+  parent: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  langs:
+  - csharp
+  - vb
+  name: SourceAction
+  nameWithType: LoanTermsVersionDto.SourceAction
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceAction
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string SourceAction { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceAction As String
+  overload: Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction*
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason
+  commentId: P:Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason
+  id: AmendmentReason
+  parent: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  langs:
+  - csharp
+  - vb
+  name: AmendmentReason
+  nameWithType: LoanTermsVersionDto.AmendmentReason
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmendmentReason
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? AmendmentReason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AmendmentReason As String
+  overload: Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason*
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt
+  commentId: P:Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt
+  id: RecordedAt
+  parent: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+  langs:
+  - csharp
+  - vb
+  name: RecordedAt
+  nameWithType: LoanTermsVersionDto.RecordedAt
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordedAt
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateTimeOffset RecordedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property RecordedAt As DateTimeOffset
+  overload: Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.LoanTermsVersionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.LoanTermsVersionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LoanTermsVersionDto>
+  nameWithType: IEquatable<LoanTermsVersionDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.LoanTermsVersionDto>
+  nameWithType.vb: IEquatable(Of LoanTermsVersionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.LoanTermsVersionDto)
+  name.vb: IEquatable(Of LoanTermsVersionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+    name: LoanTermsVersionDto
+    href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto
+    name: LoanTermsVersionDto
+    href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanTermsVersionDto.#ctor
+  href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html#Meridian_Contracts_DirectLending_LoanTermsVersionDto__ctor_System_Int32_System_String_Meridian_Contracts_DirectLending_DirectLendingTermsDto_System_String_System_String_System_DateTimeOffset_
+  name: LoanTermsVersionDto
+  nameWithType: LoanTermsVersionDto.LoanTermsVersionDto
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.LoanTermsVersionDto
+  nameWithType.vb: LoanTermsVersionDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.LoanTermsVersionDto.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.DirectLending.DirectLendingTermsDto
+  commentId: T:Meridian.Contracts.DirectLending.DirectLendingTermsDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.DirectLendingTermsDto.html
+  name: DirectLendingTermsDto
+  nameWithType: DirectLendingTermsDto
+  fullName: Meridian.Contracts.DirectLending.DirectLendingTermsDto
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber
+  href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html#Meridian_Contracts_DirectLending_LoanTermsVersionDto_VersionNumber
+  name: VersionNumber
+  nameWithType: LoanTermsVersionDto.VersionNumber
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.VersionNumber
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash
+  href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html#Meridian_Contracts_DirectLending_LoanTermsVersionDto_TermsHash
+  name: TermsHash
+  nameWithType: LoanTermsVersionDto.TermsHash
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.TermsHash
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms
+  href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html#Meridian_Contracts_DirectLending_LoanTermsVersionDto_Terms
+  name: Terms
+  nameWithType: LoanTermsVersionDto.Terms
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.Terms
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction
+  href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html#Meridian_Contracts_DirectLending_LoanTermsVersionDto_SourceAction
+  name: SourceAction
+  nameWithType: LoanTermsVersionDto.SourceAction
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.SourceAction
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason
+  href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html#Meridian_Contracts_DirectLending_LoanTermsVersionDto_AmendmentReason
+  name: AmendmentReason
+  nameWithType: LoanTermsVersionDto.AmendmentReason
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.AmendmentReason
+- uid: Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt*
+  commentId: Overload:Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt
+  href: Meridian.Contracts.DirectLending.LoanTermsVersionDto.html#Meridian_Contracts_DirectLending_LoanTermsVersionDto_RecordedAt
+  name: RecordedAt
+  nameWithType: LoanTermsVersionDto.RecordedAt
+  fullName: Meridian.Contracts.DirectLending.LoanTermsVersionDto.RecordedAt

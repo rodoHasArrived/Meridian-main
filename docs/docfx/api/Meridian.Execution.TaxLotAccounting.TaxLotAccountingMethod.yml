@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  id: TaxLotAccountingMethod
+  parent: Meridian.Execution.TaxLotAccounting
+  children:
+  - Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Fifo
+  - Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Hifo
+  - Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Lifo
+  - Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.SpecificId
+  langs:
+  - csharp
+  - vb
+  name: TaxLotAccountingMethod
+  nameWithType: TaxLotAccountingMethod
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaxLotAccountingMethod
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    The cost-basis identification method used when relieving (closing) tax lots.
+
+    The chosen method affects the timing and magnitude of realized gains or losses,
+
+    which has material tax implications.
+  example: []
+  syntax:
+    content: public enum TaxLotAccountingMethod
+    content.vb: Public Enum TaxLotAccountingMethod
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Fifo
+  commentId: F:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Fifo
+  id: Fifo
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  langs:
+  - csharp
+  - vb
+  name: Fifo
+  nameWithType: TaxLotAccountingMethod.Fifo
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Fifo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fifo
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    First In, First Out — the oldest lots are relieved first.
+
+    Most common default for equity positions.
+  example: []
+  syntax:
+    content: Fifo = 0
+    return:
+      type: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Lifo
+  commentId: F:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Lifo
+  id: Lifo
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  langs:
+  - csharp
+  - vb
+  name: Lifo
+  nameWithType: TaxLotAccountingMethod.Lifo
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Lifo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lifo
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    Last In, First Out — the most recently opened lots are relieved first.
+
+    May produce lower short-term gains in a rising market.
+  example: []
+  syntax:
+    content: Lifo = 1
+    return:
+      type: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Hifo
+  commentId: F:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Hifo
+  id: Hifo
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  langs:
+  - csharp
+  - vb
+  name: Hifo
+  nameWithType: TaxLotAccountingMethod.Hifo
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.Hifo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hifo
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    Highest In, First Out — lots with the highest cost basis are relieved first.
+
+    Minimizes current-period realized gains (maximizes tax deferral in rising markets).
+  example: []
+  syntax:
+    content: Hifo = 2
+    return:
+      type: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.SpecificId
+  commentId: F:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.SpecificId
+  id: SpecificId
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  langs:
+  - csharp
+  - vb
+  name: SpecificId
+  nameWithType: TaxLotAccountingMethod.SpecificId
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.SpecificId
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpecificId
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    Specific lot identification — the caller designates exact lot IDs to relieve.
+
+    Offers the most control but requires explicit lot selection at trade time.
+  example: []
+  syntax:
+    content: SpecificId = 3
+    return:
+      type: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+references:
+- uid: Meridian.Execution.TaxLotAccounting
+  commentId: N:Meridian.Execution.TaxLotAccounting
+  href: Meridian.html
+  name: Meridian.Execution.TaxLotAccounting
+  nameWithType: Meridian.Execution.TaxLotAccounting
+  fullName: Meridian.Execution.TaxLotAccounting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  parent: Meridian.Execution.TaxLotAccounting
+  href: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.html
+  name: TaxLotAccountingMethod
+  nameWithType: TaxLotAccountingMethod
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod

@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.LifecycleActionType
+  commentId: T:Meridian.Storage.Services.LifecycleActionType
+  id: LifecycleActionType
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.LifecycleActionType.Archive
+  - Meridian.Storage.Services.LifecycleActionType.CompressionUpgrade
+  - Meridian.Storage.Services.LifecycleActionType.Delete
+  - Meridian.Storage.Services.LifecycleActionType.FormatConversion
+  - Meridian.Storage.Services.LifecycleActionType.TierMigration
+  langs:
+  - csharp
+  - vb
+  name: LifecycleActionType
+  nameWithType: LifecycleActionType
+  fullName: Meridian.Storage.Services.LifecycleActionType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LifecycleActionType
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum LifecycleActionType : byte'
+    content.vb: Public Enum LifecycleActionType As Byte
+- uid: Meridian.Storage.Services.LifecycleActionType.TierMigration
+  commentId: F:Meridian.Storage.Services.LifecycleActionType.TierMigration
+  id: TierMigration
+  parent: Meridian.Storage.Services.LifecycleActionType
+  langs:
+  - csharp
+  - vb
+  name: TierMigration
+  nameWithType: LifecycleActionType.TierMigration
+  fullName: Meridian.Storage.Services.LifecycleActionType.TierMigration
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TierMigration
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: TierMigration = 0
+    return:
+      type: Meridian.Storage.Services.LifecycleActionType
+- uid: Meridian.Storage.Services.LifecycleActionType.CompressionUpgrade
+  commentId: F:Meridian.Storage.Services.LifecycleActionType.CompressionUpgrade
+  id: CompressionUpgrade
+  parent: Meridian.Storage.Services.LifecycleActionType
+  langs:
+  - csharp
+  - vb
+  name: CompressionUpgrade
+  nameWithType: LifecycleActionType.CompressionUpgrade
+  fullName: Meridian.Storage.Services.LifecycleActionType.CompressionUpgrade
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionUpgrade
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: CompressionUpgrade = 1
+    return:
+      type: Meridian.Storage.Services.LifecycleActionType
+- uid: Meridian.Storage.Services.LifecycleActionType.Delete
+  commentId: F:Meridian.Storage.Services.LifecycleActionType.Delete
+  id: Delete
+  parent: Meridian.Storage.Services.LifecycleActionType
+  langs:
+  - csharp
+  - vb
+  name: Delete
+  nameWithType: LifecycleActionType.Delete
+  fullName: Meridian.Storage.Services.LifecycleActionType.Delete
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Delete
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 384
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Delete = 2
+    return:
+      type: Meridian.Storage.Services.LifecycleActionType
+- uid: Meridian.Storage.Services.LifecycleActionType.Archive
+  commentId: F:Meridian.Storage.Services.LifecycleActionType.Archive
+  id: Archive
+  parent: Meridian.Storage.Services.LifecycleActionType
+  langs:
+  - csharp
+  - vb
+  name: Archive
+  nameWithType: LifecycleActionType.Archive
+  fullName: Meridian.Storage.Services.LifecycleActionType.Archive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Archive
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 385
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Archive = 3
+    return:
+      type: Meridian.Storage.Services.LifecycleActionType
+- uid: Meridian.Storage.Services.LifecycleActionType.FormatConversion
+  commentId: F:Meridian.Storage.Services.LifecycleActionType.FormatConversion
+  id: FormatConversion
+  parent: Meridian.Storage.Services.LifecycleActionType
+  langs:
+  - csharp
+  - vb
+  name: FormatConversion
+  nameWithType: LifecycleActionType.FormatConversion
+  fullName: Meridian.Storage.Services.LifecycleActionType.FormatConversion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FormatConversion
+    path: ../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: FormatConversion = 4
+    return:
+      type: Meridian.Storage.Services.LifecycleActionType
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.LifecycleActionType
+  commentId: T:Meridian.Storage.Services.LifecycleActionType
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.LifecycleActionType.html
+  name: LifecycleActionType
+  nameWithType: LifecycleActionType
+  fullName: Meridian.Storage.Services.LifecycleActionType

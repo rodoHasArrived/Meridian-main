@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Execution.Interfaces;
+using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -32,6 +33,7 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(ExecutionPosition))]
 [JsonSerializable(typeof(List<ExecutionPosition>))]
 [JsonSerializable(typeof(AccountKind))]
+[JsonSerializable(typeof(MarginAccountType))]
 [JsonSerializable(typeof(ExecutionAuditEntry))]
 [JsonSerializable(typeof(List<ExecutionAuditEntry>))]
 [JsonSerializable(typeof(Dictionary<string, string>))]

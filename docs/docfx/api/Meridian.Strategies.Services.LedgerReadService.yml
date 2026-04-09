@@ -1,0 +1,645 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.LedgerReadService
+  commentId: T:Meridian.Strategies.Services.LedgerReadService
+  id: LedgerReadService
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.LedgerReadService.#ctor
+  - Meridian.Strategies.Services.LedgerReadService.#ctor(Meridian.Strategies.Services.ISecurityReferenceLookup)
+  - Meridian.Strategies.Services.LedgerReadService.BuildSummary(Meridian.Strategies.Models.StrategyRunEntry)
+  - Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: LedgerReadService
+  nameWithType: LedgerReadService
+  fullName: Meridian.Strategies.Services.LedgerReadService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/LedgerReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerReadService
+    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Builds workstation-facing ledger read models from recorded run results.
+  example: []
+  syntax:
+    content: public sealed class LedgerReadService
+    content.vb: Public NotInheritable Class LedgerReadService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.LedgerReadService.#ctor
+  commentId: M:Meridian.Strategies.Services.LedgerReadService.#ctor
+  id: '#ctor'
+  parent: Meridian.Strategies.Services.LedgerReadService
+  langs:
+  - csharp
+  - vb
+  name: LedgerReadService()
+  nameWithType: LedgerReadService.LedgerReadService()
+  fullName: Meridian.Strategies.Services.LedgerReadService.LedgerReadService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/LedgerReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public LedgerReadService()
+    content.vb: Public Sub New()
+  overload: Meridian.Strategies.Services.LedgerReadService.#ctor*
+  nameWithType.vb: LedgerReadService.New()
+  fullName.vb: Meridian.Strategies.Services.LedgerReadService.New()
+  name.vb: New()
+- uid: Meridian.Strategies.Services.LedgerReadService.#ctor(Meridian.Strategies.Services.ISecurityReferenceLookup)
+  commentId: M:Meridian.Strategies.Services.LedgerReadService.#ctor(Meridian.Strategies.Services.ISecurityReferenceLookup)
+  id: '#ctor(Meridian.Strategies.Services.ISecurityReferenceLookup)'
+  parent: Meridian.Strategies.Services.LedgerReadService
+  langs:
+  - csharp
+  - vb
+  name: LedgerReadService(ISecurityReferenceLookup)
+  nameWithType: LedgerReadService.LedgerReadService(ISecurityReferenceLookup)
+  fullName: Meridian.Strategies.Services.LedgerReadService.LedgerReadService(Meridian.Strategies.Services.ISecurityReferenceLookup)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/LedgerReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public LedgerReadService(ISecurityReferenceLookup securityReferenceLookup)
+    parameters:
+    - id: securityReferenceLookup
+      type: Meridian.Strategies.Services.ISecurityReferenceLookup
+    content.vb: Public Sub New(securityReferenceLookup As ISecurityReferenceLookup)
+  overload: Meridian.Strategies.Services.LedgerReadService.#ctor*
+  nameWithType.vb: LedgerReadService.New(ISecurityReferenceLookup)
+  fullName.vb: Meridian.Strategies.Services.LedgerReadService.New(Meridian.Strategies.Services.ISecurityReferenceLookup)
+  name.vb: New(ISecurityReferenceLookup)
+- uid: Meridian.Strategies.Services.LedgerReadService.BuildSummary(Meridian.Strategies.Models.StrategyRunEntry)
+  commentId: M:Meridian.Strategies.Services.LedgerReadService.BuildSummary(Meridian.Strategies.Models.StrategyRunEntry)
+  id: BuildSummary(Meridian.Strategies.Models.StrategyRunEntry)
+  parent: Meridian.Strategies.Services.LedgerReadService
+  langs:
+  - csharp
+  - vb
+  name: BuildSummary(StrategyRunEntry)
+  nameWithType: LedgerReadService.BuildSummary(StrategyRunEntry)
+  fullName: Meridian.Strategies.Services.LedgerReadService.BuildSummary(Meridian.Strategies.Models.StrategyRunEntry)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/LedgerReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildSummary
+    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public LedgerSummary? BuildSummary(StrategyRunEntry entry)
+    parameters:
+    - id: entry
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    return:
+      type: Meridian.Contracts.Workstation.LedgerSummary
+    content.vb: Public Function BuildSummary(entry As StrategyRunEntry) As LedgerSummary
+  overload: Meridian.Strategies.Services.LedgerReadService.BuildSummary*
+- uid: Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  id: BuildSummaryAsync(Meridian.Strategies.Models.StrategyRunEntry,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.LedgerReadService
+  langs:
+  - csharp
+  - vb
+  name: BuildSummaryAsync(StrategyRunEntry, CancellationToken)
+  nameWithType: LedgerReadService.BuildSummaryAsync(StrategyRunEntry, CancellationToken)
+  fullName: Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync(Meridian.Strategies.Models.StrategyRunEntry, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/LedgerReadService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildSummaryAsync
+    path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+    parameters:
+    - id: entry
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.LedgerSummary}
+    content.vb: Public Function BuildSummaryAsync(entry As StrategyRunEntry, ct As CancellationToken = Nothing) As Task(Of LedgerSummary)
+  overload: Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync*
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Services.LedgerReadService.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.LedgerReadService.#ctor
+  href: Meridian.Strategies.Services.LedgerReadService.html#Meridian_Strategies_Services_LedgerReadService__ctor
+  name: LedgerReadService
+  nameWithType: LedgerReadService.LedgerReadService
+  fullName: Meridian.Strategies.Services.LedgerReadService.LedgerReadService
+  nameWithType.vb: LedgerReadService.New
+  fullName.vb: Meridian.Strategies.Services.LedgerReadService.New
+  name.vb: New
+- uid: Meridian.Strategies.Services.ISecurityReferenceLookup
+  commentId: T:Meridian.Strategies.Services.ISecurityReferenceLookup
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.ISecurityReferenceLookup.html
+  name: ISecurityReferenceLookup
+  nameWithType: ISecurityReferenceLookup
+  fullName: Meridian.Strategies.Services.ISecurityReferenceLookup
+- uid: Meridian.Strategies.Services.LedgerReadService.BuildSummary*
+  commentId: Overload:Meridian.Strategies.Services.LedgerReadService.BuildSummary
+  href: Meridian.Strategies.Services.LedgerReadService.html#Meridian_Strategies_Services_LedgerReadService_BuildSummary_Meridian_Strategies_Models_StrategyRunEntry_
+  name: BuildSummary
+  nameWithType: LedgerReadService.BuildSummary
+  fullName: Meridian.Strategies.Services.LedgerReadService.BuildSummary
+- uid: Meridian.Strategies.Models.StrategyRunEntry
+  commentId: T:Meridian.Strategies.Models.StrategyRunEntry
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.StrategyRunEntry.html
+  name: StrategyRunEntry
+  nameWithType: StrategyRunEntry
+  fullName: Meridian.Strategies.Models.StrategyRunEntry
+- uid: Meridian.Contracts.Workstation.LedgerSummary
+  commentId: T:Meridian.Contracts.Workstation.LedgerSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.LedgerSummary.html
+  name: LedgerSummary
+  nameWithType: LedgerSummary
+  fullName: Meridian.Contracts.Workstation.LedgerSummary
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync*
+  commentId: Overload:Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync
+  href: Meridian.Strategies.Services.LedgerReadService.html#Meridian_Strategies_Services_LedgerReadService_BuildSummaryAsync_Meridian_Strategies_Models_StrategyRunEntry_System_Threading_CancellationToken_
+  name: BuildSummaryAsync
+  nameWithType: LedgerReadService.BuildSummaryAsync
+  fullName: Meridian.Strategies.Services.LedgerReadService.BuildSummaryAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.LedgerSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.LedgerSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LedgerSummary>
+  nameWithType: Task<LedgerSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.LedgerSummary>
+  nameWithType.vb: Task(Of LedgerSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.LedgerSummary)
+  name.vb: Task(Of LedgerSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.LedgerSummary
+    name: LedgerSummary
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.LedgerSummary
+    name: LedgerSummary
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

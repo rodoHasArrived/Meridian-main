@@ -1,0 +1,332 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.FileNamingConvention
+  commentId: T:Meridian.Storage.FileNamingConvention
+  id: FileNamingConvention
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.FileNamingConvention.ByAssetClass
+  - Meridian.Storage.FileNamingConvention.ByDate
+  - Meridian.Storage.FileNamingConvention.BySource
+  - Meridian.Storage.FileNamingConvention.BySymbol
+  - Meridian.Storage.FileNamingConvention.ByType
+  - Meridian.Storage.FileNamingConvention.Canonical
+  - Meridian.Storage.FileNamingConvention.Flat
+  - Meridian.Storage.FileNamingConvention.Hierarchical
+  langs:
+  - csharp
+  - vb
+  name: FileNamingConvention
+  nameWithType: FileNamingConvention
+  fullName: Meridian.Storage.FileNamingConvention
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileNamingConvention
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: File naming and directory structure conventions.
+  example: []
+  syntax:
+    content: 'public enum FileNamingConvention : byte'
+    content.vb: Public Enum FileNamingConvention As Byte
+- uid: Meridian.Storage.FileNamingConvention.Flat
+  commentId: F:Meridian.Storage.FileNamingConvention.Flat
+  id: Flat
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: Flat
+  nameWithType: FileNamingConvention.Flat
+  fullName: Meridian.Storage.FileNamingConvention.Flat
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Flat
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Flat structure: {root}/{symbol}_{type}_{date}.jsonl
+
+    All files in root directory, good for small datasets.
+
+    Example: data/AAPL_Trade_2024-01-15.jsonl
+  example: []
+  syntax:
+    content: Flat = 0
+    return:
+      type: Meridian.Storage.FileNamingConvention
+- uid: Meridian.Storage.FileNamingConvention.BySymbol
+  commentId: F:Meridian.Storage.FileNamingConvention.BySymbol
+  id: BySymbol
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: BySymbol
+  nameWithType: FileNamingConvention.BySymbol
+  fullName: Meridian.Storage.FileNamingConvention.BySymbol
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BySymbol
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Organize by symbol first: {root}/{symbol}/{type}/{date}.jsonl
+
+    Best when analyzing individual symbols over time.
+
+    Example: data/AAPL/Trade/2024-01-15.jsonl
+  example: []
+  syntax:
+    content: BySymbol = 1
+    return:
+      type: Meridian.Storage.FileNamingConvention
+- uid: Meridian.Storage.FileNamingConvention.ByDate
+  commentId: F:Meridian.Storage.FileNamingConvention.ByDate
+  id: ByDate
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: ByDate
+  nameWithType: FileNamingConvention.ByDate
+  fullName: Meridian.Storage.FileNamingConvention.ByDate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByDate
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Organize by date first: {root}/{date}/{symbol}/{type}.jsonl
+
+    Best for daily batch processing and archival.
+
+    Example: data/2024-01-15/AAPL/Trade.jsonl
+  example: []
+  syntax:
+    content: ByDate = 2
+    return:
+      type: Meridian.Storage.FileNamingConvention
+- uid: Meridian.Storage.FileNamingConvention.ByType
+  commentId: F:Meridian.Storage.FileNamingConvention.ByType
+  id: ByType
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: ByType
+  nameWithType: FileNamingConvention.ByType
+  fullName: Meridian.Storage.FileNamingConvention.ByType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByType
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Organize by event type first: {root}/{type}/{symbol}/{date}.jsonl
+
+    Best when analyzing specific event types across symbols.
+
+    Example: data/Trade/AAPL/2024-01-15.jsonl
+  example: []
+  syntax:
+    content: ByType = 3
+    return:
+      type: Meridian.Storage.FileNamingConvention
+- uid: Meridian.Storage.FileNamingConvention.BySource
+  commentId: F:Meridian.Storage.FileNamingConvention.BySource
+  id: BySource
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: BySource
+  nameWithType: FileNamingConvention.BySource
+  fullName: Meridian.Storage.FileNamingConvention.BySource
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BySource
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Organize by data source: {root}/{source}/{symbol}/{type}/{date}.jsonl
+
+    Best when comparing data across multiple providers.
+
+    Example: data/alpaca/AAPL/Trade/2024-01-15.jsonl
+  example: []
+  syntax:
+    content: BySource = 4
+    return:
+      type: Meridian.Storage.FileNamingConvention
+- uid: Meridian.Storage.FileNamingConvention.ByAssetClass
+  commentId: F:Meridian.Storage.FileNamingConvention.ByAssetClass
+  id: ByAssetClass
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: ByAssetClass
+  nameWithType: FileNamingConvention.ByAssetClass
+  fullName: Meridian.Storage.FileNamingConvention.ByAssetClass
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ByAssetClass
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Organize by asset class: {root}/{asset_class}/{symbol}/{type}/{date}.jsonl
+
+    Best when managing multiple asset classes.
+
+    Example: data/equity/AAPL/Trade/2024-01-15.jsonl
+  example: []
+  syntax:
+    content: ByAssetClass = 5
+    return:
+      type: Meridian.Storage.FileNamingConvention
+- uid: Meridian.Storage.FileNamingConvention.Hierarchical
+  commentId: F:Meridian.Storage.FileNamingConvention.Hierarchical
+  id: Hierarchical
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: Hierarchical
+  nameWithType: FileNamingConvention.Hierarchical
+  fullName: Meridian.Storage.FileNamingConvention.Hierarchical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hierarchical
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Full hierarchical taxonomy: {root}/{source}/{asset_class}/{symbol}/{type}/{date}.jsonl
+
+    Best for enterprise multi-source, multi-asset deployments.
+
+    Example: data/alpaca/equity/AAPL/Trade/2024-01-15.jsonl
+  example: []
+  syntax:
+    content: Hierarchical = 6
+    return:
+      type: Meridian.Storage.FileNamingConvention
+- uid: Meridian.Storage.FileNamingConvention.Canonical
+  commentId: F:Meridian.Storage.FileNamingConvention.Canonical
+  id: Canonical
+  parent: Meridian.Storage.FileNamingConvention
+  langs:
+  - csharp
+  - vb
+  name: Canonical
+  nameWithType: FileNamingConvention.Canonical
+  fullName: Meridian.Storage.FileNamingConvention.Canonical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Canonical
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Canonical time-based: {root}/{year}/{month}/{day}/{source}/{symbol}/{type}.jsonl
+
+    Best for time-series analysis and archival.
+
+    Example: data/2024/01/15/alpaca/AAPL/Trade.jsonl
+  example: []
+  syntax:
+    content: Canonical = 7
+    return:
+      type: Meridian.Storage.FileNamingConvention
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.FileNamingConvention
+  commentId: T:Meridian.Storage.FileNamingConvention
+  parent: Meridian.Storage
+  href: Meridian.Storage.FileNamingConvention.html
+  name: FileNamingConvention
+  nameWithType: FileNamingConvention
+  fullName: Meridian.Storage.FileNamingConvention

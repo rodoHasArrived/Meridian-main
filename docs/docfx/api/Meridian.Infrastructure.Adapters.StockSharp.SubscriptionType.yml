@@ -1,0 +1,221 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  id: SubscriptionType
+  parent: Meridian.Infrastructure.Adapters.StockSharp
+  children:
+  - Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Candles
+  - Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Depth
+  - Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.OrderLog
+  - Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Quotes
+  - Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Trades
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionType
+  nameWithType: SubscriptionType
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionType
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1322
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Type of subscription for recovery purposes.
+  example: []
+  syntax:
+    content: 'public enum SubscriptionType : byte'
+    content.vb: Public Enum SubscriptionType As Byte
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Trades
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Trades
+  id: Trades
+  parent: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  langs:
+  - csharp
+  - vb
+  name: Trades
+  nameWithType: SubscriptionType.Trades
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Trades
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trades
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1325
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Trade tick subscription.
+  example: []
+  syntax:
+    content: Trades = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Depth
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Depth
+  id: Depth
+  parent: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  langs:
+  - csharp
+  - vb
+  name: Depth
+  nameWithType: SubscriptionType.Depth
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Depth
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Depth
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1328
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Market depth (Level 2) subscription.
+  example: []
+  syntax:
+    content: Depth = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Quotes
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Quotes
+  id: Quotes
+  parent: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  langs:
+  - csharp
+  - vb
+  name: Quotes
+  nameWithType: SubscriptionType.Quotes
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Quotes
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quotes
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1331
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: BBO/Level 1 quote subscription.
+  example: []
+  syntax:
+    content: Quotes = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Candles
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Candles
+  id: Candles
+  parent: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  langs:
+  - csharp
+  - vb
+  name: Candles
+  nameWithType: SubscriptionType.Candles
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.Candles
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Candles
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1334
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: OHLC candle subscription.
+  example: []
+  syntax:
+    content: Candles = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.OrderLog
+  commentId: F:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.OrderLog
+  id: OrderLog
+  parent: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  langs:
+  - csharp
+  - vb
+  name: OrderLog
+  nameWithType: SubscriptionType.OrderLog
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.OrderLog
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderLog
+    path: ../../src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs
+    startLine: 1337
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.StockSharp
+  summary: Order log (tape) subscription.
+  example: []
+  syntax:
+    content: OrderLog = 4
+    return:
+      type: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+references:
+- uid: Meridian.Infrastructure.Adapters.StockSharp
+  commentId: N:Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.StockSharp
+  nameWithType: Meridian.Infrastructure.Adapters.StockSharp
+  fullName: Meridian.Infrastructure.Adapters.StockSharp
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.StockSharp
+    name: StockSharp
+    href: Meridian.Infrastructure.Adapters.StockSharp.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.StockSharp
+    name: StockSharp
+    href: Meridian.Infrastructure.Adapters.StockSharp.html
+- uid: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  commentId: T:Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType
+  parent: Meridian.Infrastructure.Adapters.StockSharp
+  href: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.html
+  name: SubscriptionType
+  nameWithType: SubscriptionType
+  fullName: Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType

@@ -1,0 +1,662 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.HttpClientNames
+  commentId: T:Meridian.Ui.Services.HttpClientNames
+  id: HttpClientNames
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.HttpClientNames.Alpaca
+  - Meridian.Ui.Services.HttpClientNames.AlphaVantage
+  - Meridian.Ui.Services.HttpClientNames.ApiClient
+  - Meridian.Ui.Services.HttpClientNames.BackfillClient
+  - Meridian.Ui.Services.HttpClientNames.CredentialTest
+  - Meridian.Ui.Services.HttpClientNames.Default
+  - Meridian.Ui.Services.HttpClientNames.Finnhub
+  - Meridian.Ui.Services.HttpClientNames.NasdaqDataLink
+  - Meridian.Ui.Services.HttpClientNames.OpenFigi
+  - Meridian.Ui.Services.HttpClientNames.Polygon
+  - Meridian.Ui.Services.HttpClientNames.SetupWizard
+  - Meridian.Ui.Services.HttpClientNames.Tiingo
+  langs:
+  - csharp
+  - vb
+  name: HttpClientNames
+  nameWithType: HttpClientNames
+  fullName: Meridian.Ui.Services.HttpClientNames
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpClientNames
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Named HttpClient identifiers for IHttpClientFactory in desktop apps.
+
+    Using constants ensures consistency across the codebase.
+  remarks: >-
+    Implements TD-10: Replace instance HttpClient with IHttpClientFactory.
+
+    This is a standalone implementation for desktop apps since they cannot reference the main project.
+  example: []
+  syntax:
+    content: public static class HttpClientNames
+    content.vb: Public Module HttpClientNames
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.HttpClientNames.ApiClient
+  commentId: F:Meridian.Ui.Services.HttpClientNames.ApiClient
+  id: ApiClient
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: ApiClient
+  nameWithType: HttpClientNames.ApiClient
+  fullName: Meridian.Ui.Services.HttpClientNames.ApiClient
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApiClient
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string ApiClient = "api-client"
+    return:
+      type: System.String
+    content.vb: Public Const ApiClient As String = "api-client"
+- uid: Meridian.Ui.Services.HttpClientNames.BackfillClient
+  commentId: F:Meridian.Ui.Services.HttpClientNames.BackfillClient
+  id: BackfillClient
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: BackfillClient
+  nameWithType: HttpClientNames.BackfillClient
+  fullName: Meridian.Ui.Services.HttpClientNames.BackfillClient
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillClient
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string BackfillClient = "backfill-client"
+    return:
+      type: System.String
+    content.vb: Public Const BackfillClient As String = "backfill-client"
+- uid: Meridian.Ui.Services.HttpClientNames.CredentialTest
+  commentId: F:Meridian.Ui.Services.HttpClientNames.CredentialTest
+  id: CredentialTest
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: CredentialTest
+  nameWithType: HttpClientNames.CredentialTest
+  fullName: Meridian.Ui.Services.HttpClientNames.CredentialTest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialTest
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string CredentialTest = "credential-test"
+    return:
+      type: System.String
+    content.vb: Public Const CredentialTest As String = "credential-test"
+- uid: Meridian.Ui.Services.HttpClientNames.SetupWizard
+  commentId: F:Meridian.Ui.Services.HttpClientNames.SetupWizard
+  id: SetupWizard
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: SetupWizard
+  nameWithType: HttpClientNames.SetupWizard
+  fullName: Meridian.Ui.Services.HttpClientNames.SetupWizard
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetupWizard
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string SetupWizard = "setup-wizard"
+    return:
+      type: System.String
+    content.vb: Public Const SetupWizard As String = "setup-wizard"
+- uid: Meridian.Ui.Services.HttpClientNames.Alpaca
+  commentId: F:Meridian.Ui.Services.HttpClientNames.Alpaca
+  id: Alpaca
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: HttpClientNames.Alpaca
+  fullName: Meridian.Ui.Services.HttpClientNames.Alpaca
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string Alpaca = "alpaca"
+    return:
+      type: System.String
+    content.vb: Public Const Alpaca As String = "alpaca"
+- uid: Meridian.Ui.Services.HttpClientNames.Polygon
+  commentId: F:Meridian.Ui.Services.HttpClientNames.Polygon
+  id: Polygon
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: HttpClientNames.Polygon
+  fullName: Meridian.Ui.Services.HttpClientNames.Polygon
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string Polygon = "polygon"
+    return:
+      type: System.String
+    content.vb: Public Const Polygon As String = "polygon"
+- uid: Meridian.Ui.Services.HttpClientNames.Tiingo
+  commentId: F:Meridian.Ui.Services.HttpClientNames.Tiingo
+  id: Tiingo
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Tiingo
+  nameWithType: HttpClientNames.Tiingo
+  fullName: Meridian.Ui.Services.HttpClientNames.Tiingo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tiingo
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string Tiingo = "tiingo"
+    return:
+      type: System.String
+    content.vb: Public Const Tiingo As String = "tiingo"
+- uid: Meridian.Ui.Services.HttpClientNames.Finnhub
+  commentId: F:Meridian.Ui.Services.HttpClientNames.Finnhub
+  id: Finnhub
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Finnhub
+  nameWithType: HttpClientNames.Finnhub
+  fullName: Meridian.Ui.Services.HttpClientNames.Finnhub
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Finnhub
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string Finnhub = "finnhub"
+    return:
+      type: System.String
+    content.vb: Public Const Finnhub As String = "finnhub"
+- uid: Meridian.Ui.Services.HttpClientNames.AlphaVantage
+  commentId: F:Meridian.Ui.Services.HttpClientNames.AlphaVantage
+  id: AlphaVantage
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: AlphaVantage
+  nameWithType: HttpClientNames.AlphaVantage
+  fullName: Meridian.Ui.Services.HttpClientNames.AlphaVantage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlphaVantage
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string AlphaVantage = "alpha-vantage"
+    return:
+      type: System.String
+    content.vb: Public Const AlphaVantage As String = "alpha-vantage"
+- uid: Meridian.Ui.Services.HttpClientNames.OpenFigi
+  commentId: F:Meridian.Ui.Services.HttpClientNames.OpenFigi
+  id: OpenFigi
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: OpenFigi
+  nameWithType: HttpClientNames.OpenFigi
+  fullName: Meridian.Ui.Services.HttpClientNames.OpenFigi
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenFigi
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string OpenFigi = "openfigi"
+    return:
+      type: System.String
+    content.vb: Public Const OpenFigi As String = "openfigi"
+- uid: Meridian.Ui.Services.HttpClientNames.NasdaqDataLink
+  commentId: F:Meridian.Ui.Services.HttpClientNames.NasdaqDataLink
+  id: NasdaqDataLink
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: NasdaqDataLink
+  nameWithType: HttpClientNames.NasdaqDataLink
+  fullName: Meridian.Ui.Services.HttpClientNames.NasdaqDataLink
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NasdaqDataLink
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string NasdaqDataLink = "nasdaq-data-link"
+    return:
+      type: System.String
+    content.vb: Public Const NasdaqDataLink As String = "nasdaq-data-link"
+- uid: Meridian.Ui.Services.HttpClientNames.Default
+  commentId: F:Meridian.Ui.Services.HttpClientNames.Default
+  id: Default
+  parent: Meridian.Ui.Services.HttpClientNames
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: HttpClientNames.Default
+  fullName: Meridian.Ui.Services.HttpClientNames.Default
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public const string Default = "default"
+    return:
+      type: System.String
+    content.vb: Public Const Default As String = "default"
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

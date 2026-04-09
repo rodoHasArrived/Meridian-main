@@ -1,0 +1,689 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolStatistics
+  commentId: T:Meridian.Ui.Services.SymbolStatistics
+  id: SymbolStatistics
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol
+  - Meridian.Ui.Services.SymbolStatistics.DepthEnabled
+  - Meridian.Ui.Services.SymbolStatistics.LastUpdateTime
+  - Meridian.Ui.Services.SymbolStatistics.TotalConfigured
+  - Meridian.Ui.Services.SymbolStatistics.TotalMonitored
+  - Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected
+  - Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected
+  - Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData
+  - Meridian.Ui.Services.SymbolStatistics.TradesEnabled
+  langs:
+  - csharp
+  - vb
+  name: SymbolStatistics
+  nameWithType: SymbolStatistics
+  fullName: Meridian.Ui.Services.SymbolStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolStatistics
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 569
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class SymbolStatistics
+    content.vb: Public NotInheritable Class SymbolStatistics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalConfigured
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.TotalConfigured
+  id: TotalConfigured
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalConfigured
+  nameWithType: SymbolStatistics.TotalConfigured
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalConfigured
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalConfigured
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 571
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalConfigured { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalConfigured As Integer
+  overload: Meridian.Ui.Services.SymbolStatistics.TotalConfigured*
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalMonitored
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.TotalMonitored
+  id: TotalMonitored
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalMonitored
+  nameWithType: SymbolStatistics.TotalMonitored
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalMonitored
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalMonitored
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 572
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalMonitored { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalMonitored As Integer
+  overload: Meridian.Ui.Services.SymbolStatistics.TotalMonitored*
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData
+  id: TotalWithArchivedData
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalWithArchivedData
+  nameWithType: SymbolStatistics.TotalWithArchivedData
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalWithArchivedData
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 573
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalWithArchivedData { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalWithArchivedData As Integer
+  overload: Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData*
+- uid: Meridian.Ui.Services.SymbolStatistics.TradesEnabled
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.TradesEnabled
+  id: TradesEnabled
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: TradesEnabled
+  nameWithType: SymbolStatistics.TradesEnabled
+  fullName: Meridian.Ui.Services.SymbolStatistics.TradesEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradesEnabled
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 574
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TradesEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TradesEnabled As Integer
+  overload: Meridian.Ui.Services.SymbolStatistics.TradesEnabled*
+- uid: Meridian.Ui.Services.SymbolStatistics.DepthEnabled
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.DepthEnabled
+  id: DepthEnabled
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: DepthEnabled
+  nameWithType: SymbolStatistics.DepthEnabled
+  fullName: Meridian.Ui.Services.SymbolStatistics.DepthEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthEnabled
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 575
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int DepthEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DepthEnabled As Integer
+  overload: Meridian.Ui.Services.SymbolStatistics.DepthEnabled*
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected
+  id: TotalTradesCollected
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalTradesCollected
+  nameWithType: SymbolStatistics.TotalTradesCollected
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalTradesCollected
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 576
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalTradesCollected { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalTradesCollected As Long
+  overload: Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected*
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected
+  id: TotalQuotesCollected
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalQuotesCollected
+  nameWithType: SymbolStatistics.TotalQuotesCollected
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalQuotesCollected
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 577
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalQuotesCollected { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalQuotesCollected As Long
+  overload: Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected*
+- uid: Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol
+  id: AverageTradesPerSymbol
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageTradesPerSymbol
+  nameWithType: SymbolStatistics.AverageTradesPerSymbol
+  fullName: Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageTradesPerSymbol
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 578
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double AverageTradesPerSymbol { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageTradesPerSymbol As Double
+  overload: Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol*
+- uid: Meridian.Ui.Services.SymbolStatistics.LastUpdateTime
+  commentId: P:Meridian.Ui.Services.SymbolStatistics.LastUpdateTime
+  id: LastUpdateTime
+  parent: Meridian.Ui.Services.SymbolStatistics
+  langs:
+  - csharp
+  - vb
+  name: LastUpdateTime
+  nameWithType: SymbolStatistics.LastUpdateTime
+  fullName: Meridian.Ui.Services.SymbolStatistics.LastUpdateTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdateTime
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 579
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? LastUpdateTime { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property LastUpdateTime As Date?
+  overload: Meridian.Ui.Services.SymbolStatistics.LastUpdateTime*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalConfigured*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.TotalConfigured
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_TotalConfigured
+  name: TotalConfigured
+  nameWithType: SymbolStatistics.TotalConfigured
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalConfigured
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalMonitored*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.TotalMonitored
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_TotalMonitored
+  name: TotalMonitored
+  nameWithType: SymbolStatistics.TotalMonitored
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalMonitored
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_TotalWithArchivedData
+  name: TotalWithArchivedData
+  nameWithType: SymbolStatistics.TotalWithArchivedData
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalWithArchivedData
+- uid: Meridian.Ui.Services.SymbolStatistics.TradesEnabled*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.TradesEnabled
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_TradesEnabled
+  name: TradesEnabled
+  nameWithType: SymbolStatistics.TradesEnabled
+  fullName: Meridian.Ui.Services.SymbolStatistics.TradesEnabled
+- uid: Meridian.Ui.Services.SymbolStatistics.DepthEnabled*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.DepthEnabled
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_DepthEnabled
+  name: DepthEnabled
+  nameWithType: SymbolStatistics.DepthEnabled
+  fullName: Meridian.Ui.Services.SymbolStatistics.DepthEnabled
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_TotalTradesCollected
+  name: TotalTradesCollected
+  nameWithType: SymbolStatistics.TotalTradesCollected
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalTradesCollected
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_TotalQuotesCollected
+  name: TotalQuotesCollected
+  nameWithType: SymbolStatistics.TotalQuotesCollected
+  fullName: Meridian.Ui.Services.SymbolStatistics.TotalQuotesCollected
+- uid: Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_AverageTradesPerSymbol
+  name: AverageTradesPerSymbol
+  nameWithType: SymbolStatistics.AverageTradesPerSymbol
+  fullName: Meridian.Ui.Services.SymbolStatistics.AverageTradesPerSymbol
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.SymbolStatistics.LastUpdateTime*
+  commentId: Overload:Meridian.Ui.Services.SymbolStatistics.LastUpdateTime
+  href: Meridian.Ui.Services.SymbolStatistics.html#Meridian_Ui_Services_SymbolStatistics_LastUpdateTime
+  name: LastUpdateTime
+  nameWithType: SymbolStatistics.LastUpdateTime
+  fullName: Meridian.Ui.Services.SymbolStatistics.LastUpdateTime
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

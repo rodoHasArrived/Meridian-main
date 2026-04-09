@@ -1,0 +1,760 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Tools.RepoNavigationTools
+  commentId: T:Meridian.McpServer.Tools.RepoNavigationTools
+  id: RepoNavigationTools
+  parent: Meridian.McpServer.Tools
+  children:
+  - Meridian.McpServer.Tools.RepoNavigationTools.#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.RepoNavigationTools})
+  - Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs(System.String)
+  - Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints(System.String)
+  - Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects(System.String)
+  - Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem(System.String)
+  - Meridian.McpServer.Tools.RepoNavigationTools.RouteTask(System.String)
+  langs:
+  - csharp
+  - vb
+  name: RepoNavigationTools
+  nameWithType: RepoNavigationTools
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepoNavigationTools
+    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    startLine: 9
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: MCP tools for routing work through the generated repository navigation dataset.
+  example: []
+  syntax:
+    content: >-
+      [McpServerToolType]
+
+      [ImplementsAdr("ADR-004", "All async MCP-compatible tool surfaces remain cancellation-friendly even when synchronous")]
+
+      [ImplementsAdr("ADR-005", "Attribute-based MCP tool discovery")]
+
+      public sealed class RepoNavigationTools
+    content.vb: >-
+      <McpServerToolType>
+
+      <ImplementsAdr("ADR-004", "All async MCP-compatible tool surfaces remain cancellation-friendly even when synchronous")>
+
+      <ImplementsAdr("ADR-005", "Attribute-based MCP tool discovery")>
+
+      Public NotInheritable Class RepoNavigationTools
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolTypeAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolTypeAttribute.#ctor
+    arguments: []
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async MCP-compatible tool surfaces remain cancellation-friendly even when synchronous
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based MCP tool discovery
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.RepoNavigationTools})
+  commentId: M:Meridian.McpServer.Tools.RepoNavigationTools.#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.RepoNavigationTools})
+  id: '#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.RepoNavigationTools})'
+  parent: Meridian.McpServer.Tools.RepoNavigationTools
+  langs:
+  - csharp
+  - vb
+  name: RepoNavigationTools(RepoNavigationCatalog, ILogger<RepoNavigationTools>)
+  nameWithType: RepoNavigationTools.RepoNavigationTools(RepoNavigationCatalog, ILogger<RepoNavigationTools>)
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.RepoNavigationTools(Meridian.McpServer.Navigation.RepoNavigationCatalog, Microsoft.Extensions.Logging.ILogger<Meridian.McpServer.Tools.RepoNavigationTools>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    startLine: 24
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  syntax:
+    content: public RepoNavigationTools(RepoNavigationCatalog catalog, ILogger<RepoNavigationTools> log)
+    parameters:
+    - id: catalog
+      type: Meridian.McpServer.Navigation.RepoNavigationCatalog
+    - id: log
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.RepoNavigationTools}
+    content.vb: Public Sub New(catalog As RepoNavigationCatalog, log As ILogger(Of RepoNavigationTools))
+  overload: Meridian.McpServer.Tools.RepoNavigationTools.#ctor*
+  nameWithType.vb: RepoNavigationTools.New(RepoNavigationCatalog, ILogger(Of RepoNavigationTools))
+  fullName.vb: Meridian.McpServer.Tools.RepoNavigationTools.New(Meridian.McpServer.Navigation.RepoNavigationCatalog, Microsoft.Extensions.Logging.ILogger(Of Meridian.McpServer.Tools.RepoNavigationTools))
+  name.vb: New(RepoNavigationCatalog, ILogger(Of RepoNavigationTools))
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem(System.String)
+  commentId: M:Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem(System.String)
+  id: FindSubsystem(System.String)
+  parent: Meridian.McpServer.Tools.RepoNavigationTools
+  langs:
+  - csharp
+  - vb
+  name: FindSubsystem(string)
+  nameWithType: RepoNavigationTools.FindSubsystem(string)
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FindSubsystem
+    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    startLine: 30
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public string FindSubsystem(string query)
+    parameters:
+    - id: query
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function FindSubsystem(query As String) As String
+  overload: Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+  nameWithType.vb: RepoNavigationTools.FindSubsystem(String)
+  fullName.vb: Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem(String)
+  name.vb: FindSubsystem(String)
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.RouteTask(System.String)
+  commentId: M:Meridian.McpServer.Tools.RepoNavigationTools.RouteTask(System.String)
+  id: RouteTask(System.String)
+  parent: Meridian.McpServer.Tools.RepoNavigationTools
+  langs:
+  - csharp
+  - vb
+  name: RouteTask(string)
+  nameWithType: RepoNavigationTools.RouteTask(string)
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.RouteTask(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RouteTask
+    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    startLine: 45
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public string RouteTask(string task)
+    parameters:
+    - id: task
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function RouteTask(task As String) As String
+  overload: Meridian.McpServer.Tools.RepoNavigationTools.RouteTask*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+  nameWithType.vb: RepoNavigationTools.RouteTask(String)
+  fullName.vb: Meridian.McpServer.Tools.RepoNavigationTools.RouteTask(String)
+  name.vb: RouteTask(String)
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints(System.String)
+  commentId: M:Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints(System.String)
+  id: FindEntrypoints(System.String)
+  parent: Meridian.McpServer.Tools.RepoNavigationTools
+  langs:
+  - csharp
+  - vb
+  name: FindEntrypoints(string)
+  nameWithType: RepoNavigationTools.FindEntrypoints(string)
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FindEntrypoints
+    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    startLine: 60
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public string FindEntrypoints(string query)
+    parameters:
+    - id: query
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function FindEntrypoints(query As String) As String
+  overload: Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+  nameWithType.vb: RepoNavigationTools.FindEntrypoints(String)
+  fullName.vb: Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints(String)
+  name.vb: FindEntrypoints(String)
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects(System.String)
+  commentId: M:Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects(System.String)
+  id: FindRelatedProjects(System.String)
+  parent: Meridian.McpServer.Tools.RepoNavigationTools
+  langs:
+  - csharp
+  - vb
+  name: FindRelatedProjects(string)
+  nameWithType: RepoNavigationTools.FindRelatedProjects(string)
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FindRelatedProjects
+    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    startLine: 92
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public string FindRelatedProjects(string query)
+    parameters:
+    - id: query
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function FindRelatedProjects(query As String) As String
+  overload: Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+  nameWithType.vb: RepoNavigationTools.FindRelatedProjects(String)
+  fullName.vb: Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects(String)
+  name.vb: FindRelatedProjects(String)
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs(System.String)
+  commentId: M:Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs(System.String)
+  id: FindAuthoritativeDocs(System.String)
+  parent: Meridian.McpServer.Tools.RepoNavigationTools
+  langs:
+  - csharp
+  - vb
+  name: FindAuthoritativeDocs(string)
+  nameWithType: RepoNavigationTools.FindAuthoritativeDocs(string)
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FindAuthoritativeDocs
+    path: ../../src/Meridian.McpServer/Tools/RepoNavigationTools.cs
+    startLine: 102
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public string FindAuthoritativeDocs(string topic)
+    parameters:
+    - id: topic
+      type: System.String
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function FindAuthoritativeDocs(topic As String) As String
+  overload: Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+  nameWithType.vb: RepoNavigationTools.FindAuthoritativeDocs(String)
+  fullName.vb: Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs(String)
+  name.vb: FindAuthoritativeDocs(String)
+references:
+- uid: Meridian.McpServer.Tools
+  commentId: N:Meridian.McpServer.Tools
+  href: Meridian.html
+  name: Meridian.McpServer.Tools
+  nameWithType: Meridian.McpServer.Tools
+  fullName: Meridian.McpServer.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Tools
+    name: Tools
+    href: Meridian.McpServer.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Tools
+    name: Tools
+    href: Meridian.McpServer.Tools.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.#ctor*
+  commentId: Overload:Meridian.McpServer.Tools.RepoNavigationTools.#ctor
+  href: Meridian.McpServer.Tools.RepoNavigationTools.html#Meridian_McpServer_Tools_RepoNavigationTools__ctor_Meridian_McpServer_Navigation_RepoNavigationCatalog_Microsoft_Extensions_Logging_ILogger_Meridian_McpServer_Tools_RepoNavigationTools__
+  name: RepoNavigationTools
+  nameWithType: RepoNavigationTools.RepoNavigationTools
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.RepoNavigationTools
+  nameWithType.vb: RepoNavigationTools.New
+  fullName.vb: Meridian.McpServer.Tools.RepoNavigationTools.New
+  name.vb: New
+- uid: Meridian.McpServer.Navigation.RepoNavigationCatalog
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationCatalog
+  parent: Meridian.McpServer.Navigation
+  href: Meridian.McpServer.Navigation.RepoNavigationCatalog.html
+  name: RepoNavigationCatalog
+  nameWithType: RepoNavigationCatalog
+  fullName: Meridian.McpServer.Navigation.RepoNavigationCatalog
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.RepoNavigationTools}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.RepoNavigationTools}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<RepoNavigationTools>
+  nameWithType: ILogger<RepoNavigationTools>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.McpServer.Tools.RepoNavigationTools>
+  nameWithType.vb: ILogger(Of RepoNavigationTools)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.McpServer.Tools.RepoNavigationTools)
+  name.vb: ILogger(Of RepoNavigationTools)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.McpServer.Tools.RepoNavigationTools
+    name: RepoNavigationTools
+    href: Meridian.McpServer.Tools.RepoNavigationTools.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.McpServer.Tools.RepoNavigationTools
+    name: RepoNavigationTools
+    href: Meridian.McpServer.Tools.RepoNavigationTools.html
+  - name: )
+- uid: Meridian.McpServer.Navigation
+  commentId: N:Meridian.McpServer.Navigation
+  href: Meridian.html
+  name: Meridian.McpServer.Navigation
+  nameWithType: Meridian.McpServer.Navigation
+  fullName: Meridian.McpServer.Navigation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem*
+  commentId: Overload:Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem
+  href: Meridian.McpServer.Tools.RepoNavigationTools.html#Meridian_McpServer_Tools_RepoNavigationTools_FindSubsystem_System_String_
+  name: FindSubsystem
+  nameWithType: RepoNavigationTools.FindSubsystem
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindSubsystem
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.RouteTask*
+  commentId: Overload:Meridian.McpServer.Tools.RepoNavigationTools.RouteTask
+  href: Meridian.McpServer.Tools.RepoNavigationTools.html#Meridian_McpServer_Tools_RepoNavigationTools_RouteTask_System_String_
+  name: RouteTask
+  nameWithType: RepoNavigationTools.RouteTask
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.RouteTask
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints*
+  commentId: Overload:Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints
+  href: Meridian.McpServer.Tools.RepoNavigationTools.html#Meridian_McpServer_Tools_RepoNavigationTools_FindEntrypoints_System_String_
+  name: FindEntrypoints
+  nameWithType: RepoNavigationTools.FindEntrypoints
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindEntrypoints
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects*
+  commentId: Overload:Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects
+  href: Meridian.McpServer.Tools.RepoNavigationTools.html#Meridian_McpServer_Tools_RepoNavigationTools_FindRelatedProjects_System_String_
+  name: FindRelatedProjects
+  nameWithType: RepoNavigationTools.FindRelatedProjects
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindRelatedProjects
+- uid: Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs*
+  commentId: Overload:Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs
+  href: Meridian.McpServer.Tools.RepoNavigationTools.html#Meridian_McpServer_Tools_RepoNavigationTools_FindAuthoritativeDocs_System_String_
+  name: FindAuthoritativeDocs
+  nameWithType: RepoNavigationTools.FindAuthoritativeDocs
+  fullName: Meridian.McpServer.Tools.RepoNavigationTools.FindAuthoritativeDocs

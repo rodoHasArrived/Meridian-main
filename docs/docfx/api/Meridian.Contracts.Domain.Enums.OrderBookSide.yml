@@ -1,0 +1,134 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.OrderBookSide
+  commentId: T:Meridian.Contracts.Domain.Enums.OrderBookSide
+  id: OrderBookSide
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.OrderBookSide.Ask
+  - Meridian.Contracts.Domain.Enums.OrderBookSide.Bid
+  langs:
+  - csharp
+  - vb
+  name: OrderBookSide
+  nameWithType: OrderBookSide
+  fullName: Meridian.Contracts.Domain.Enums.OrderBookSide
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderBookSide
+    path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Represents which side of the order book a level belongs to.
+  example: []
+  syntax:
+    content: 'public enum OrderBookSide : byte'
+    content.vb: Public Enum OrderBookSide As Byte
+- uid: Meridian.Contracts.Domain.Enums.OrderBookSide.Bid
+  commentId: F:Meridian.Contracts.Domain.Enums.OrderBookSide.Bid
+  id: Bid
+  parent: Meridian.Contracts.Domain.Enums.OrderBookSide
+  langs:
+  - csharp
+  - vb
+  name: Bid
+  nameWithType: OrderBookSide.Bid
+  fullName: Meridian.Contracts.Domain.Enums.OrderBookSide.Bid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bid
+    path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Bid side (buy orders).
+  example: []
+  syntax:
+    content: Bid = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.OrderBookSide
+- uid: Meridian.Contracts.Domain.Enums.OrderBookSide.Ask
+  commentId: F:Meridian.Contracts.Domain.Enums.OrderBookSide.Ask
+  id: Ask
+  parent: Meridian.Contracts.Domain.Enums.OrderBookSide
+  langs:
+  - csharp
+  - vb
+  name: Ask
+  nameWithType: OrderBookSide.Ask
+  fullName: Meridian.Contracts.Domain.Enums.OrderBookSide.Ask
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ask
+    path: ../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Ask side (sell orders).
+  example: []
+  syntax:
+    content: Ask = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.OrderBookSide
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.OrderBookSide
+  commentId: T:Meridian.Contracts.Domain.Enums.OrderBookSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OrderBookSide.html
+  name: OrderBookSide
+  nameWithType: OrderBookSide
+  fullName: Meridian.Contracts.Domain.Enums.OrderBookSide

@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Session
+  commentId: N:Meridian.Contracts.Session
+  id: Meridian.Contracts.Session
+  children:
+  - Meridian.Contracts.Session.CollectionSession
+  - Meridian.Contracts.Session.CollectionSessionStatistics
+  - Meridian.Contracts.Session.CollectionSessionsConfig
+  - Meridian.Contracts.Session.SessionStatus
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Session
+  nameWithType: Meridian.Contracts.Session
+  fullName: Meridian.Contracts.Session
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Session.CollectionSession
+  commentId: T:Meridian.Contracts.Session.CollectionSession
+  parent: Meridian.Contracts.Session
+  href: Meridian.Contracts.Session.CollectionSession.html
+  name: CollectionSession
+  nameWithType: CollectionSession
+  fullName: Meridian.Contracts.Session.CollectionSession
+- uid: Meridian.Contracts.Session.SessionStatus
+  commentId: T:Meridian.Contracts.Session.SessionStatus
+  href: Meridian.Contracts.Session.SessionStatus.html
+  name: SessionStatus
+  nameWithType: SessionStatus
+  fullName: Meridian.Contracts.Session.SessionStatus
+- uid: Meridian.Contracts.Session.CollectionSessionStatistics
+  commentId: T:Meridian.Contracts.Session.CollectionSessionStatistics
+  parent: Meridian.Contracts.Session
+  href: Meridian.Contracts.Session.CollectionSessionStatistics.html
+  name: CollectionSessionStatistics
+  nameWithType: CollectionSessionStatistics
+  fullName: Meridian.Contracts.Session.CollectionSessionStatistics
+- uid: Meridian.Contracts.Session.CollectionSessionsConfig
+  commentId: T:Meridian.Contracts.Session.CollectionSessionsConfig
+  href: Meridian.Contracts.Session.CollectionSessionsConfig.html
+  name: CollectionSessionsConfig
+  nameWithType: CollectionSessionsConfig
+  fullName: Meridian.Contracts.Session.CollectionSessionsConfig
+- uid: Meridian.Contracts.Session
+  commentId: N:Meridian.Contracts.Session
+  href: Meridian.html
+  name: Meridian.Contracts.Session
+  nameWithType: Meridian.Contracts.Session
+  fullName: Meridian.Contracts.Session
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
