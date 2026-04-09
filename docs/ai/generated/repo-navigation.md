@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-04-08T03:35:15Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-04-09T07:29:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -9,7 +9,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 | Task shape | Start here | Authoritative docs |
 |---|---|---|
 | Provider implementation and provider bugs | `Meridian.ProviderSdk`, `Meridian.Infrastructure`, `Meridian.Storage` | `docs/ai/claude/CLAUDE.providers.md`, `docs/development/provider-implementation.md`, `docs/ai/ai-known-errors.md` |
-| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared` | `docs/plans/trading-workstation-migration-blueprint.md`, `docs/ai/ai-known-errors.md` |
+| WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/plans/trading-workstation-migration-blueprint.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
 | MCP tools, prompts, and resources | `Meridian.McpServer`, `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
 
@@ -39,9 +39,9 @@ Provider contracts, adapter implementations, storage catalog, WAL, and archival 
 
 WPF desktop shell, shared UI services, and browser-facing UI surfaces.
 
-- Projects: `Meridian.Ui`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`
-- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Ui/Program.cs`, `src/Meridian.Wpf/App.xaml.cs`
-- Key contracts: `src/Meridian.Ui`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Wpf/App.xaml.cs`
+- Projects: `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian.Wpf`
+- Entrypoints: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Wpf/App.xaml.cs`, `src/Meridian.Wpf/MainWindow.xaml`
+- Key contracts: `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, `src/Meridian.Wpf/App.xaml.cs`, `src/Meridian.Wpf/MainWindow.xaml`
 - Common tasks: wpf issue, viewmodel routing, workspace flow, ui polish
 - Related docs: `docs/ai/README.md`, `docs/ai/ai-known-errors.md`, `docs/ai/navigation/README.md`, `docs/plans/trading-workstation-migration-blueprint.md`
 
@@ -105,4 +105,24 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 
 | From | To | Why it matters |
 |---|---|---|
+| `Meridian` | `Meridian.Application` | Meridian references Meridian.Application directly via project reference. |
+| `Meridian` | `Meridian.Backtesting` | Meridian references Meridian.Backtesting directly via project reference. |
+| `Meridian` | `Meridian.Contracts` | Meridian references Meridian.Contracts directly via project reference. |
+| `Meridian` | `Meridian.Core` | Meridian references Meridian.Core directly via project reference. |
+| `Meridian` | `Meridian.Domain` | Meridian references Meridian.Domain directly via project reference. |
+| `Meridian` | `Meridian.Infrastructure` | Meridian references Meridian.Infrastructure directly via project reference. |
+| `Meridian` | `Meridian.ProviderSdk` | Meridian references Meridian.ProviderSdk directly via project reference. |
+| `Meridian` | `Meridian.Storage` | Meridian references Meridian.Storage directly via project reference. |
+| `Meridian` | `Meridian.Ui.Shared` | Meridian references Meridian.Ui.Shared directly via project reference. |
+| `Meridian.Application` | `Meridian.Contracts` | Meridian.Application references Meridian.Contracts directly via project reference. |
+| `Meridian.Application` | `Meridian.Core` | Meridian.Application references Meridian.Core directly via project reference. |
+| `Meridian.Application` | `Meridian.Domain` | Meridian.Application references Meridian.Domain directly via project reference. |
+| `Meridian.Application` | `Meridian.FSharp` | Meridian.Application references Meridian.FSharp directly via project reference. |
+| `Meridian.Application` | `Meridian.FSharp.DirectLending.Aggregates` | Meridian.Application references Meridian.FSharp.DirectLending.Aggregates directly via project reference. |
+| `Meridian.Application` | `Meridian.FSharp.Ledger` | Meridian.Application references Meridian.FSharp.Ledger directly via project reference. |
+| `Meridian.Application` | `Meridian.Infrastructure` | Meridian.Application references Meridian.Infrastructure directly via project reference. |
+| `Meridian.Application` | `Meridian.Ledger` | Meridian.Application references Meridian.Ledger directly via project reference. |
+| `Meridian.Application` | `Meridian.ProviderSdk` | Meridian.Application references Meridian.ProviderSdk directly via project reference. |
+| `Meridian.Application` | `Meridian.Storage` | Meridian.Application references Meridian.Storage directly via project reference. |
+| `Meridian.Backtesting` | `Meridian.Application` | Meridian.Backtesting references Meridian.Application directly via project reference. |
 

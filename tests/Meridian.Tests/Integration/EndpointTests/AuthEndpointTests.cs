@@ -210,10 +210,10 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     }
 
     [Fact]
-    public async Task Dashboard_WhenNoCredentialsConfigured_PassesThrough()
+    public async Task Root_WhenNoCredentialsConfigured_ReturnsNotFound()
     {
         var response = await GetAsync("/");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]

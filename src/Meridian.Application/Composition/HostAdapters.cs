@@ -1,6 +1,4 @@
-using System.Text.Json;
 using Meridian.Application.UI;
-using Meridian.Infrastructure.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -28,80 +26,6 @@ public interface IHostAdapter
     /// Configures the application (routes, middleware, etc.) after build.
     /// </summary>
     void ConfigureApplication(WebApplication app);
-}
-
-/// <summary>
-/// Host adapter for web dashboard mode.
-/// Exposes full HTTP API endpoints for configuration, backfill, status, etc.
-/// </summary>
-public sealed class WebHostAdapter : IHostAdapter
-{
-    private static readonly JsonSerializerOptions s_jsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
-    };
-
-    private readonly DateTimeOffset _startTime = DateTimeOffset.UtcNow;
-    private readonly int _port;
-    private readonly StatusEndpointHandlers? _statusHandlers;
-
-    public WebHostAdapter(int port = 8080, StatusEndpointHandlers? statusHandlers = null)
-    {
-        _port = port;
-        _statusHandlers = statusHandlers;
-    }
-
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // Register status handlers if provided
-        if (_statusHandlers != null)
-        {
-            services.AddSingleton(_statusHandlers);
-        }
-    }
-
-    public void ConfigureApplication(WebApplication app)
-    {
-        // Health check endpoints for container orchestration
-        MapHealthEndpoints(app);
-
-        // Dashboard and API endpoints
-        MapDashboardEndpoints(app);
-    }
-
-    private void MapHealthEndpoints(WebApplication app)
-    {
-        app.MapGet("/health", () =>
-        {
-            var uptime = DateTimeOffset.UtcNow - _startTime;
-            return Results.Json(new
-            {
-                status = "healthy",
-                timestamp = DateTimeOffset.UtcNow,
-                uptime = uptime.ToString(),
-                version = "1.6.1"
-            });
-        });
-
-        app.MapGet("/healthz", () => Results.Ok("healthy"));
-        app.MapGet("/ready", () => Results.Ok("ready"));
-        app.MapGet("/readyz", () => Results.Ok("ready"));
-        app.MapGet("/live", () => Results.Ok("alive"));
-        app.MapGet("/livez", () => Results.Ok("alive"));
-    }
-
-    private void MapDashboardEndpoints(WebApplication app)
-    {
-        app.MapGet("/", (ConfigStore store) =>
-        {
-            var html = HtmlTemplateManager.Index(
-                store.ConfigPath,
-                store.GetStatusPath(),
-                store.GetBackfillStatusPath());
-            return Results.Content(html, "text/html");
-        });
-    }
 }
 
 /// <summary>
@@ -305,19 +229,6 @@ public sealed class HostBuilder
     }
 
     /// <summary>
-    /// Creates a new host builder for web dashboard mode.
-    /// </summary>
-    public static HostBuilder CreateForWeb(string configPath, int port = 8080)
-    {
-        var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseUrls($"http://localhost:{port}");
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
-
-        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
-        return new HostBuilder(builder, options);
-    }
-
-    /// <summary>
     /// Creates a new host builder for streaming/data collection mode.
     /// </summary>
     public static HostBuilder CreateForStreaming(string configPath, int? httpPort = null)
@@ -351,15 +262,6 @@ public sealed class HostBuilder
     public HostBuilder WithAdapter(IHostAdapter adapter)
     {
         _adapter = adapter;
-        return this;
-    }
-
-    /// <summary>
-    /// Configures the host for web dashboard mode.
-    /// </summary>
-    public HostBuilder AsWebDashboard(int port = 8080, StatusEndpointHandlers? statusHandlers = null)
-    {
-        _adapter = new WebHostAdapter(port, statusHandlers);
         return this;
     }
 

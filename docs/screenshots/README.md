@@ -1,16 +1,6 @@
 # Meridian UI Screenshots
 
-Screenshots of the Meridian Terminal web dashboard and WPF desktop application.
-Web screenshots run on `ubuntu-latest`; desktop screenshots run on `windows-latest` in fixture mode.
-
-## How to run (web dashboard)
-
-```bash
-dotnet build src/Meridian/Meridian.csproj -c Release /p:EnableWindowsTargeting=true
-cd src/Meridian/bin/Release/net9.0
-MDC_AUTH_MODE=optional ./Meridian --ui --http-port 8200
-# open http://localhost:8200
-```
+Screenshots of the Meridian WPF desktop application. Desktop screenshots run on `windows-latest` in fixture mode.
 
 ## How to run (WPF desktop)
 
@@ -20,9 +10,7 @@ $env:MDC_FIXTURE_MODE = '1'
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
 ```
 
-Desktop screenshots are stored under [`desktop/`](desktop/) and are automatically
-refreshed by the `Refresh UI Screenshots` workflow on the same schedule as the web
-screenshots. They are captured using Windows UI Automation and the built-in Command
+Desktop screenshots are stored under [`desktop/`](desktop/) and are captured using Windows UI Automation and the built-in Command
 Palette to navigate between pages.
 
 ### Local automation script (Windows)

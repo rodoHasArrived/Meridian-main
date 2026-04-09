@@ -1,118 +1,119 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-07
-**Status:** Combined stakeholder-facing roadmap refresh
+**Last Updated:** 2026-04-08
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical April 8 roadmap
 
-This document is the shortest complete entry point into Meridian's current roadmap. It combines the active roadmap refresh, the highest-value opportunities, and the target end-state product story into one repo-grounded snapshot. [`ROADMAP.md`](ROADMAP.md) remains the authoritative wave-structured roadmap.
+This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
 Use this with:
 
-- [`ROADMAP.md`](ROADMAP.md) for the full wave-structured roadmap
-- [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) for the time-boxed plan
-- [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) for the prioritized opportunity list
-- [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) for the concise product narrative
+- [`ROADMAP.md`](ROADMAP.md) for the canonical roadmap
+- [`../plans/meridian-6-week-roadmap.md`](../plans/meridian-6-week-roadmap.md) for the short-horizon execution slice
+- [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) for the prioritized opportunity framing
+- [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) for the compact product narrative
+- [`production-status.md`](production-status.md) for current readiness posture
 
 ---
 
 ## Summary
 
-Meridian is no longer mainly blocked on missing platform foundations. The repo already has a strong ingestion, storage, replay, backtesting, execution, and workstation baseline, plus visible governance seams. The April 7 roadmap refresh reconciles the active planning set around the same delivery order: close trust gaps, finish workflow continuity, and turn the product surfaces already in code into a genuinely operator-ready trading workstation and fund-operations platform.
+Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, and a delivered Security Master baseline. The remaining order is now simple and consistent across the planning set:
+
+1. **Wave 1:** provider confidence and checkpoint evidence
+2. **Wave 2:** paper-trading cockpit hardening
+3. **Wave 3:** shared run / portfolio / ledger continuity
+4. **Wave 4:** governance and fund-operations productization on top of the delivered Security Master baseline
+5. **Wave 5:** Backtest Studio unification
+6. **Wave 6:** live integration readiness
+7. **Optional advanced research / scale tracks**
+
+Waves 1-4 define the core operator-readiness path. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside that core path.
 
 ---
 
 ## Current State
 
-### What Is Complete
+### Complete
 
-- Core ingestion, storage, replay, export, and data-quality foundations are materially strong.
-- Shared workstation endpoints and a React workstation shell now cover Research, Trading, Data Operations, and Governance.
-- Research, Trading, Data Operations, and Governance each have real workflows in code, not only route placeholders.
-- Shared run, portfolio, and ledger read services exist and already feed workstation surfaces.
-- WPF shell modernization is complete and run-centered workstation pages are active in the desktop app.
-- Security Master now acts as the authoritative instrument-definition seam across WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance surfaces.
-- Security Master, reconciliation, direct lending, and governance-facing endpoints are already present in the repo.
+- core ingestion, storage, replay, export, and data-quality foundations are materially strong
+- the web and WPF workstation baselines already organize around `Research`, `Trading`, `Data Operations`, and `Governance`
+- shared `StrategyRun`, portfolio, and ledger read services already feed workstation surfaces
+- promotion endpoints and dashboard promotion surfaces are already in code
+- Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
+- governance-facing reconciliation, direct-lending, and export/report-adjacent seams are already present in the repo
 
-### What Is Partial
+### Partial
 
-- Provider trust is still uneven across key providers even after stronger test evidence landed in the active validation set.
-- Backfill reliability needs stronger evidence across representative windows.
-- The web cockpit is real, but not yet fully hardened as a daily operator surface.
-- Shared run continuity is present, but not yet equally deep across every workspace and mode.
-- Governance workflows now build on a delivered Security Master seam, but multi-ledger, cash-flow, reconciliation, and reporting are not yet fully productized.
-- WPF still needs deeper workflow-first page work and MVVM extraction on high-traffic surfaces.
+- provider trust is still uneven across key providers and checkpoint scenarios
+- the paper-trading cockpit is real, but not yet hardened as a dependable daily-use lane
+- shared run continuity is present, but not yet equally deep across every workspace and mode
+- governance workflows now build on a delivered Security Master baseline, but multi-ledger, cash-flow, reconciliation, and reporting still need deeper productization
+- WPF workflow-first consolidation and MVVM extraction remain active in high-traffic areas
 
 ---
 
 ## Opportunities
 
-### 1. Close trust gaps first
+### 1. Wave 1: Close provider-confidence and checkpoint-evidence gaps first
 
 Provider evidence and backfill checkpoint confidence still gate every downstream readiness claim.
 
-### 2. Harden the cockpit already in code
+### 2. Wave 2: Harden the paper-trading cockpit already in code
 
-The paper-trading cockpit should now move from "implemented" to "dependable."
+The paper-trading cockpit should move from "implemented" to "dependable."
 
-### 3. Make the shared run model the center of gravity
+### 3. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
 
-Research, trading, portfolio, ledger, and governance should all keep converging on the same run-centered seam.
+Research, Trading, and Governance should keep converging on the same run-centered seam.
 
-### 4. Productize governance on top of Security Master
+### 4. Wave 4: Productize governance and fund-operations on top of the delivered Security Master baseline
 
-Security Master is already the authoritative seam; the next opportunity is turning that seam into deeper account/entity, multi-ledger, cash-flow, reconciliation, and reporting workflows.
+Security Master is already the delivered baseline; the opportunity is turning that baseline into deeper account/entity, multi-ledger, cash-flow, reconciliation, and reporting workflows.
 
-### 5. Keep architecture simple while the UX expands
+### 5. Wave 5: Unify Backtest Studio after the core operator-readiness path is stable
 
-Shared DTOs, read models, orchestration services, and export seams should stay the default integration boundary.
+Native and Lean backtesting should become one operator-facing workflow once the shared model is stable enough to support it cleanly.
+
+### 6. Wave 6: Expand into controlled live integration readiness only after trust and paper-workflow gates are real
+
+Live-readiness should follow proven provider evidence and a dependable paper workflow, not outrun them.
+
+### 7. Optional advanced research / scale tracks
+
+QuantScript expansion, queue-aware simulation, multi-instance coordination, and Phase 16 performance work deepen Meridian's ceiling after the core workstation product is already trustworthy and coherent.
+
+Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities.
 
 ---
 
 ## Target End Product
 
-The finished Meridian product is a self-hosted trading workstation and fund-operations platform with four connected workspaces:
+Meridian's target end state is a self-hosted trading workstation and fund-operations platform with four connected workspaces: `Research`, `Trading`, `Data Operations`, and `Governance`.
 
-- **Research** for experiments, comparisons, and promotion review
-- **Trading** for positions, orders, fills, replay, and risk-managed paper workflows
-- **Data Operations** for provider trust, backfills, quality, storage, and exports
-- **Governance** for Security Master, portfolio, ledger, reconciliation, cash-flow, and reporting
+Data Operations establishes evidence-backed provider trust, Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
 
-The key product promise is continuity: trusted data feeds research, research promotes into trading, trading produces portfolio and ledger state, and governance operates on those same artifacts without leaving the platform.
+The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
 
 ---
 
-## Recommended Next Waves
+## Core Operator-Readiness
 
-### Wave 1
+Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
 
-Provider trust and backfill evidence closure.
+1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, and backfill checkpoints plus gap handling are validated across representative providers and date ranges.
+2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
+3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
+4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
 
-### Wave 2
-
-Paper-trading cockpit hardening and operator acceptance criteria.
-
-### Wave 3
-
-Shared run, portfolio, ledger, and reconciliation continuity across workspaces.
-
-### Wave 4
-
-Governance productization on top of the delivered Security Master seam.
-
-### Wave 5
-
-Backtest Studio unification across native and Lean.
-
-### Wave 6
-
-Controlled live integration readiness after paper and trust gates are genuinely closed.
+Waves 5 and 6 deepen the product and widen later claims, but they are not prerequisites for core operator-readiness.
 
 ---
 
 ## Risks and Dependencies
 
-- Provider trust remains the first dependency.
-- Stronger replay, contract, and pipeline tests should raise confidence without being described as full live-runtime closure.
-- Cockpit hardening should happen before live-readiness claims.
-- Shared run and Security Master seams must remain central as the product grows.
-- Governance should extend shared contracts instead of creating a parallel subsystem.
-- Documentation must stay synchronized as roadmap, workstation, and governance work continue to evolve.
+- provider confidence remains the first dependency
+- stronger replay, contract, and pipeline tests should raise confidence without being described as broad live-runtime closure
+- cockpit hardening should happen before live-readiness claims
+- the shared run model and delivered Security Master baseline must remain central as the product grows
+- governance should extend shared contracts instead of creating a parallel subsystem
+- documentation must stay synchronized as roadmap, workstation, and governance work continue to evolve

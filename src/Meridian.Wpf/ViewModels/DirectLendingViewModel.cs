@@ -201,11 +201,11 @@ public sealed class DirectLendingViewModel : BindableBase
             await Task.WhenAll(contractTask, servicingTask, accrualsTask, cashTask)
                 .ConfigureAwait(false);
 
-            SelectedContract = contractTask.Result;
-            SelectedServicing = servicingTask.Result;
+            SelectedContract = await contractTask;
+            SelectedServicing = await servicingTask;
 
             Accruals.Clear();
-            if (accrualsTask.Result is { } accruals)
+            if (await accrualsTask is { } accruals)
             {
                 foreach (var a in accruals.OrderByDescending(a => a.AccrualDate))
                 {
@@ -214,7 +214,7 @@ public sealed class DirectLendingViewModel : BindableBase
             }
 
             CashTransactions.Clear();
-            if (cashTask.Result is { } cash)
+            if (await cashTask is { } cash)
             {
                 foreach (var tx in cash.OrderByDescending(t => t.EffectiveDate))
                 {

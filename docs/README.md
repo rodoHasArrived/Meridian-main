@@ -3,7 +3,7 @@
 **Last Reviewed:** 2026-04-05
 **Scope:** Active hand-authored documentation plus generated status and reference entry points
 
-This index is the main entry point for the active `docs/` tree. It is organized around the current Meridian product shape: a shared platform that now spans research, trading, data operations, governance, provider readiness, and both web and WPF workstation surfaces.
+This index is the main entry point for the active `docs/` tree. It is organized around the current Meridian product shape: a shared platform that now spans research, trading, data operations, governance, provider readiness, and a Windows WPF workstation backed by desktop-local APIs.
 
 ## Platform At A Glance
 
@@ -13,7 +13,7 @@ Meridian's current solution includes:
 - application, contracts, core, domain, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Contracts/`, `src/Meridian.Core/`, `src/Meridian.Domain/`, `src/Meridian.Infrastructure/`, `src/Meridian.Infrastructure.CppTrader/`, and `src/Meridian.Storage/`
 - execution, provider, risk, strategy, and backtesting seams in `src/Meridian.Execution*/`, `src/Meridian.ProviderSdk/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, and `src/Meridian.Backtesting*/`
 - ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`, and `src/Meridian.IbApi.SmokeStub/`
-- web and desktop UI surfaces in `src/Meridian.Ui/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Wpf/`
+- desktop UI surfaces in `src/Meridian.Ui.Shared/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Wpf/`
 - scripting and MCP surfaces in `src/Meridian.QuantScript/`, `src/Meridian.Mcp/`, and `src/Meridian.McpServer/`
 
 ## Start Here
@@ -41,7 +41,6 @@ Meridian's current solution includes:
 ### Users and operators
 
 - [Getting Started](getting-started/README.md)
-- [Workflow Guide](WORKFLOW_GUIDE.md)
 - [Help and FAQ](HELP.md)
 - [Provider Setup Guides](providers/README.md)
 - [Operator Runbook](operations/operator-runbook.md)
@@ -105,14 +104,12 @@ These commands are currently reflected in the repo's code and build scripts:
 - `make help`
 - `make setup-dev`
 - `make run`
-- `make run-ui`
 - `make run-backfill`
 - `make run-selftest`
 - `dotnet run --project src/Meridian/Meridian.csproj -- --quickstart`
-- `dotnet run --project src/Meridian/Meridian.csproj -- --mode web --http-port 8080`
+- `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080`
 - `dotnet run --project src/Meridian/Meridian.csproj -- --validate-config`
 - `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true`
-- `npm --prefix src/Meridian.Ui/dashboard run build`
 
 ## Reference
 

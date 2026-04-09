@@ -22,7 +22,7 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
-    public void Register_AddsRobinhoodOptionsProvider_WhenEnabledAndTokenPresent()
+    public async Task Register_AddsRobinhoodOptionsProvider_WhenEnabledAndTokenPresent()
     {
         Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", "test-token");
 
@@ -31,15 +31,9 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
                 Providers: new BackfillProvidersConfig(
                     Robinhood: new RobinhoodConfig(Enabled: true)))));
 
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddHttpClient();
+        var services = CreateServices(configPath);
 
-        new ProviderFeatureRegistration().Register(
-            services,
-            CompositionOptions.WebDashboard with { ConfigPath = configPath });
-
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
         var optionsProviders = provider.GetServices<IOptionsChainProvider>();
         var resolvedProvider = provider.GetRequiredService<IOptionsChainProvider>();
 
@@ -48,7 +42,7 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
     }
 
     [Fact]
-    public void Register_SkipsRobinhoodOptionsProvider_WhenTokenMissing()
+    public async Task Register_SkipsRobinhoodOptionsProvider_WhenTokenMissing()
     {
         Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", null);
 
@@ -57,21 +51,15 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
                 Providers: new BackfillProvidersConfig(
                     Robinhood: new RobinhoodConfig(Enabled: true)))));
 
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddHttpClient();
+        var services = CreateServices(configPath);
 
-        new ProviderFeatureRegistration().Register(
-            services,
-            CompositionOptions.WebDashboard with { ConfigPath = configPath });
-
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
         provider.GetServices<IOptionsChainProvider>().Should().NotContain(x => x is RobinhoodOptionsChainProvider);
         provider.GetRequiredService<IOptionsChainProvider>().Should().NotBeOfType<RobinhoodOptionsChainProvider>();
     }
 
     [Fact]
-    public void Register_MergesRobinhoodIntoRuntimeProviderCatalog_WhenEnabledAndTokenPresent()
+    public async Task Register_MergesRobinhoodIntoRuntimeProviderCatalog_WhenEnabledAndTokenPresent()
     {
         Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", "test-token");
 
@@ -80,15 +68,9 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
                 Providers: new BackfillProvidersConfig(
                     Robinhood: new RobinhoodConfig(Enabled: true)))));
 
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddHttpClient();
+        var services = CreateServices(configPath);
 
-        new ProviderFeatureRegistration().Register(
-            services,
-            CompositionOptions.WebDashboard with { ConfigPath = configPath });
-
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
         _ = provider.GetRequiredService<ProviderRegistry>();
 
         var robinhood = ProviderCatalog.Get("robinhood");
@@ -100,6 +82,19 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
             string.Equals(field.EnvironmentVariable, "ROBINHOOD_ACCESS_TOKEN", StringComparison.OrdinalIgnoreCase));
         robinhood.DataTypes.Should().Contain("OptionsChain");
         robinhood.DataTypes.Should().Contain("Brokerage");
+    }
+
+    private static ServiceCollection CreateServices(string configPath)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddHttpClient();
+
+        var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
+        new ConfigurationFeatureRegistration().Register(services, options);
+        new ProviderFeatureRegistration().Register(services, options);
+
+        return services;
     }
 
     private string WriteConfig(AppConfig config)

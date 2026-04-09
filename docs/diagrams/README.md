@@ -182,7 +182,7 @@ Comprehensive reference for all 24+ CLI flags:
 
 - **Setup Commands**: --wizard, --auto-config, --generate-config, --detect-providers
 - **Diagnostic Commands**: --validate-credentials, --test-connectivity, --quick-check, --validate-config, --dry-run, --selftest
-- **Operation Commands**: --ui, --http-port, --watch-config, --backfill, --backfill-provider, --backfill-symbols, --backfill-from, --backfill-to
+- **Operation Commands**: --mode, --http-port, --watch-config, --backfill, --backfill-provider, --backfill-symbols, --backfill-from, --backfill-to
 - **Symbol Commands**: --symbols, --symbols-monitored, --symbols-archived, --symbols-add, --symbols-remove, --symbol-status
 - **Package Commands**: --package, --import-package, --list-package, --validate-package
 - **Documentation Commands**: --show-config, --error-codes, --help, --version
@@ -199,7 +199,7 @@ Shows all 28 source projects as a layered dependency graph, derived directly fro
 - **Layer 3 (Infrastructure & Storage)**: Infrastructure · Storage · Infrastructure.CppTrader
 - **Layer 4 (Application & Backtesting SDK)**: Application · Backtesting.Sdk
 - **Layer 5 (Execution, Backtesting, Risk, Strategies)**: Execution · Backtesting · Risk · Strategies · QuantScript
-- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Ui (web) · Wpf (desktop) · McpServer · Mcp
+- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Wpf (desktop) · McpServer · Mcp
 - **Layer 7 (Entry Point)**: Meridian main app
 - **Tests (8 projects · 371 test files)**: Tests (251) · FSharp.Tests (10) · Backtesting.Tests (13) · DirectLending.Tests (5) · McpServer.Tests (2) · QuantScript.Tests (6) · Wpf.Tests (30) · Ui.Tests (54)
 - **Benchmarks**: BenchmarkDotNet — pipeline, storage, and serialization hot paths
@@ -208,17 +208,17 @@ Shows all 28 source projects as a layered dependency graph, derived directly fro
 
 Shows the currently runnable Meridian hosts and the shared startup path behind `src/Meridian`:
 
-- **Runnable projects**: `src/Meridian`, `src/Meridian.Ui`, `src/Meridian.Wpf`, `src/Meridian.Mcp`, `src/Meridian.McpServer`
-- **Startup orchestration**: `SharedStartupBootstrapper` → `StartupOrchestrator` → `CommandModeRunner`, `WebModeRunner`, `DesktopModeRunner`, `CollectorModeRunner`, `BackfillModeRunner`
+- **Runnable projects**: `src/Meridian`, `src/Meridian.Wpf`, `src/Meridian.Mcp`, `src/Meridian.McpServer`
+- **Startup orchestration**: `SharedStartupBootstrapper` → `StartupOrchestrator` → `CommandModeRunner`, `DesktopModeRunner`, `CollectorModeRunner`, `BackfillModeRunner`
 - **Shared runtime**: `DashboardServerBridge`, `Meridian.Ui.Shared`, `HostStartupFactory`, `EventPipeline`, `StatusWriter`
-- **Purpose**: clarifies which entry point owns which experience and where `--mode web`, `--mode desktop`, headless streaming, and backfill actually branch
+- **Purpose**: clarifies which entry point owns which experience and where `--mode desktop`, headless streaming, and backfill actually branch
 
 ### Workstation Delivery
 
-Shows how Meridian now delivers workstation features across both WPF and web surfaces:
+Shows how Meridian now delivers workstation features across the desktop shell and retained local API seams:
 
 - **Desktop surface**: `ResearchWorkspaceShellPage`, `TradingWorkspaceShellPage`, `GovernanceWorkspaceShellPage`
-- **Web surface**: `/workstation` and `/api/workstation/*` plus adjacent `/api/portfolio/*` and `/api/strategies/*` routes
+- **API surface**: retained `/api/workstation/*` plus adjacent `/api/portfolio/*` and `/api/strategies/*` routes
 - **Shared read models**: `StrategyRunWorkspaceService`, `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, `CashFlowProjectionService`
 - **Security enrichment**: `SecurityMasterSecurityReferenceLookup` → `ISecurityMasterQueryService`
 - **Purpose**: makes the current workstation convergence visible without having to infer it from separate WPF, API, and strategy-service folders

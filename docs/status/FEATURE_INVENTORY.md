@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.2
-**Date:** 2026-04-07
+**Date:** 2026-04-08
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -460,9 +460,10 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 | `Meridian.Wpf.Tests` | 35 | ~391 | WPF desktop services (navigation, config, status, connection, ViewModels) |
 | `Meridian.Backtesting.Tests` | 14 | ~146 | Backtest engine, fill models, portfolio simulation, XIRR |
 | `Meridian.DirectLending.Tests` | 7 | ~29 | Direct lending services, workflows, PostgreSQL integration |
+| `Meridian.FundStructure.Tests` | 2 | ~19 | Governance shared-data access and in-memory fund-structure services |
 | `Meridian.McpServer.Tests` | 3 | ~11 | MCP server tools (backfill, storage) |
 | `Meridian.QuantScript.Tests` | 10 | ~76 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
-| **Total** | **400** | **~5,370** | |
+| **Total** | **402** | **~5,389** | |
 
 ### Key test infrastructure
 
@@ -620,7 +621,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-04-07*
+*Last Updated: 2026-04-08*
 
 
 

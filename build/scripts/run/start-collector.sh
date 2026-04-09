@@ -5,7 +5,7 @@
 #
 # Features:
 #   - Builds (optional) with or without IBAPI
-#   - Starts Collector + UI
+#   - Starts Collector
 #   - Writes PID files into ./run/
 #   - Handles Ctrl+C / SIGTERM gracefully (stops child processes)
 #
@@ -14,7 +14,6 @@
 #
 # Flags (env vars):
 #   USE_IBAPI=true|false
-#   START_UI=true|false
 #   BUILD=true|false
 #   DOTNET_CONFIGURATION=Release|Debug
 #   IB_HOST, IB_PORT, IB_CLIENT_ID
@@ -23,7 +22,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC_DIR="$ROOT_DIR/src/Meridian"
-UI_DIR="$ROOT_DIR/src/Meridian.Ui"
 DATA_DIR="$ROOT_DIR/data"
 LOG_DIR="$ROOT_DIR/logs"
 RUN_DIR="$ROOT_DIR/run"
@@ -32,7 +30,6 @@ DOTNET_CONFIGURATION="${DOTNET_CONFIGURATION:-Release}"
 DOTNET_ENVIRONMENT="${DOTNET_ENVIRONMENT:-Production}"
 
 USE_IBAPI="${USE_IBAPI:-false}"
-START_UI="${START_UI:-true}"
 BUILD="${BUILD:-true}"
 
 IB_HOST="${IB_HOST:-127.0.0.1}"
@@ -154,7 +151,6 @@ PY
 
 
 COLLECTOR_PID_FILE="$RUN_DIR/collector.pid"
-UI_PID_FILE="$RUN_DIR/ui.pid"
 
 echo "==============================================="
 echo " MERIDIAN – STARTUP"
@@ -164,21 +160,11 @@ echo "[INFO] Data: $DATA_DIR"
 echo "[INFO] Logs: $LOG_DIR"
 echo "[INFO] Run : $RUN_DIR"
 echo "[INFO] IBAPI: $USE_IBAPI"
-echo "[INFO] UI   : $START_UI"
 echo "-----------------------------------------------"
 
 cleanup() {
   echo ""
   echo "[INFO] Shutdown requested. Stopping processes..."
-
-  # Stop UI first
-  if [[ -f "$UI_PID_FILE" ]]; then
-    UI_PID="$(cat "$UI_PID_FILE" || true)"
-    if [[ -n "${UI_PID:-}" ]] && kill -0 "$UI_PID" 2>/dev/null; then
-      echo "[INFO] Sending SIGTERM to UI ($UI_PID)"
-      kill -TERM "$UI_PID" 2>/dev/null || true
-    fi
-  fi
 
   # Stop Collector
   if [[ -f "$COLLECTOR_PID_FILE" ]]; then
@@ -196,10 +182,6 @@ cleanup() {
       COL_PID="$(cat "$COLLECTOR_PID_FILE" || true)"
       if [[ -n "${COL_PID:-}" ]] && kill -0 "$COL_PID" 2>/dev/null; then alive=true; fi
     fi
-    if [[ -f "$UI_PID_FILE" ]]; then
-      UI_PID="$(cat "$UI_PID_FILE" || true)"
-      if [[ -n "${UI_PID:-}" ]] && kill -0 "$UI_PID" 2>/dev/null; then alive=true; fi
-    fi
     if [[ "$alive" = false ]]; then
       break
     fi
@@ -207,13 +189,6 @@ cleanup() {
   done
 
   # Hard kill remaining
-  if [[ -f "$UI_PID_FILE" ]]; then
-    UI_PID="$(cat "$UI_PID_FILE" || true)"
-    if [[ -n "${UI_PID:-}" ]] && kill -0 "$UI_PID" 2>/dev/null; then
-      echo "[WARN] UI still running; sending SIGKILL ($UI_PID)"
-      kill -KILL "$UI_PID" 2>/dev/null || true
-    fi
-  fi
   if [[ -f "$COLLECTOR_PID_FILE" ]]; then
     COL_PID="$(cat "$COLLECTOR_PID_FILE" || true)"
     if [[ -n "${COL_PID:-}" ]] && kill -0 "$COL_PID" 2>/dev/null; then
@@ -222,7 +197,7 @@ cleanup() {
     fi
   fi
 
-  rm -f "$COLLECTOR_PID_FILE" "$UI_PID_FILE" 2>/dev/null || true
+  rm -f "$COLLECTOR_PID_FILE" 2>/dev/null || true
   echo "[INFO] Shutdown complete."
 }
 
@@ -253,14 +228,6 @@ dotnet run --project "$SRC_DIR/Meridian.csproj" --configuration "$DOTNET_CONFIGU
 COLLECTOR_PID=$!
 echo "$COLLECTOR_PID" > "$COLLECTOR_PID_FILE"
 echo "[INFO] Collector PID: $COLLECTOR_PID"
-
-if [[ "$START_UI" = true ]]; then
-  echo "[INFO] Starting UI..."
-  dotnet run --project "$UI_DIR/Meridian.Ui.csproj" --configuration "$DOTNET_CONFIGURATION"     > "$LOG_DIR/ui.log" 2>&1 &
-  UI_PID=$!
-  echo "$UI_PID" > "$UI_PID_FILE"
-  echo "[INFO] UI PID: $UI_PID"
-fi
 
 echo "-----------------------------------------------"
 echo "[INFO] Running."

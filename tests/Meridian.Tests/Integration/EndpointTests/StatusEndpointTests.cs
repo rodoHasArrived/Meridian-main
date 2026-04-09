@@ -203,15 +203,14 @@ public sealed class StatusEndpointTests
 
     #endregion
 
-    #region Dashboard Endpoint
+    #region Root Endpoint
 
     [Fact]
-    public async Task Dashboard_ReturnsHtml()
+    public async Task Root_ReturnsNotFound()
     {
         var response = await _client.GetAsync("/");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType!.MediaType.Should().Be("text/html");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     #endregion

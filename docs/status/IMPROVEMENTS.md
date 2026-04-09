@@ -1,9 +1,11 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-08
 **Status:** Active tracking document
 
-This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into a single source of truth for tracking. For phased execution timeline, see [`ROADMAP.md`](ROADMAP.md).
+This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
+
+Legacy `ROADMAP:` labels below retain their original milestone wording for traceability. Use the canonical roadmap and normalized TODO for current Wave 1-6 sequencing.
 
 ---
 
@@ -1345,7 +1347,7 @@ Improvements Tracker Update
 
 ## Reference Documents
 
-- **[ROADMAP.md](ROADMAP.md)** — Phased execution timeline (Phases 0-10)
+- **[ROADMAP.md](ROADMAP.md)** — Wave-structured delivery roadmap and release gates
 - **[EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md)** — Consolidated architecture evaluations, code audits, and assessments
 - **[CHANGELOG.md](CHANGELOG.md)** — Historical changes and version history
 - **[TODO.md](TODO.md)** — Auto-generated task marker tracking from code comments

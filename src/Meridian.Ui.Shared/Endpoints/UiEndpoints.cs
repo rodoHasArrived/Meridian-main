@@ -17,90 +17,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
-/// Master extension methods for registering all UI API endpoints.
-/// Provides a single entry point for mapping all shared endpoints.
+/// Master extension methods for registering shared desktop/local API endpoints.
 /// Uses ServiceCompositionRoot for centralized service registration.
 /// </summary>
 public static class UiEndpoints
 {
-
     /// <summary>
-    /// Configures the application with all UI services and endpoints.
-    /// This is the single entry point for setting up the UI host and should be used
-    /// instead of calling AddUiSharedServices and MapAllUiEndpoints separately.
-    /// </summary>
-    /// <param name="builder">The web application builder.</param>
-    /// <param name="configPath">Optional path to configuration file.</param>
-    /// <returns>A configured WebApplication ready to run.</returns>
-    public static WebApplication BuildUiHost(this WebApplicationBuilder builder, string? configPath = null)
-    {
-        builder.Services.AddUiSharedServices(configPath);
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(c =>
-        {
-            c.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
-            {
-                Title = "Meridian API",
-                Version = "v1",
-                Description = "REST API for the Meridian system"
-            });
-        });
-
-        var app = builder.Build();
-
-        // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
-        ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(app.Services);
-
-        app.UseStaticFiles();
-        app.UseApiKeyAuthentication();
-        app.UseLoginSessionAuthentication();
-        app.UseRateLimiter();
-
-        // Enable Swagger UI in development mode
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Meridian API v1"));
-        }
-
-        app.MapAllUiEndpoints();
-        return app;
-    }
-
-    /// <summary>
-    /// Configures the application with UI services, endpoints, and shared status handlers.
-    /// This overload allows sharing StatusEndpointHandlers with StatusHttpServer.
-    /// </summary>
-    /// <param name="builder">The web application builder.</param>
-    /// <param name="statusHandlers">Pre-configured status endpoint handlers to share.</param>
-    /// <param name="configPath">Optional path to configuration file.</param>
-    /// <returns>A configured WebApplication ready to run.</returns>
-    public static WebApplication BuildUiHost(this WebApplicationBuilder builder, StatusEndpointHandlers statusHandlers, string? configPath = null)
-    {
-        builder.Services.AddUiSharedServices(statusHandlers, configPath);
-        var app = builder.Build();
-
-        // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
-        ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(app.Services);
-
-        app.UseStaticFiles();
-        app.UseApiKeyAuthentication();
-        app.UseLoginSessionAuthentication();
-        app.UseRateLimiter();
-        app.MapUiEndpointsWithStatus(statusHandlers);
-        return app;
-    }
-
-
-
-    /// <summary>
-    /// Registers all shared services required by UI endpoints using the centralized composition root.
-    /// Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality.
+     /// Registers all shared services required by UI endpoints using the centralized composition root.
+     /// Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configPath">Optional path to configuration file.</param>
@@ -436,37 +364,9 @@ public static class UiEndpoints
                 new DefaultJsonTypeInfoResolver())
         };
     }
-
     /// <summary>
-    /// Maps the dashboard HTML endpoint at the root path.
-    /// </summary>
-    public static WebApplication MapDashboard(this WebApplication app)
-    {
-        app.MapGet("/", (Meridian.Ui.Shared.Services.ConfigStore store) =>
-        {
-            var html = HtmlTemplateGenerator.Index(store.ConfigPath, store.GetStatusPath(), store.GetBackfillStatusPath());
-            return Results.Content(html, "text/html");
-        });
-
-        return app;
-    }
-
-    /// <summary>
-    /// Maps all UI endpoints including the dashboard.
-    /// Convenience method that combines MapUiEndpoints and MapDashboard.
-    /// </summary>
-    public static WebApplication MapAllUiEndpoints(this WebApplication app)
-    {
-        app.MapDashboard();
-        app.MapUiEndpoints();
-        return app;
-    }
-
-
-
-    /// <summary>
-    /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
-    /// </summary>
+     /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
+     /// </summary>
     public const string MutationRateLimitPolicy = "mutation";
 
     /// <summary>

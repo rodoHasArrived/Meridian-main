@@ -66,16 +66,10 @@ Both surfaces share contracts and application logic through shared libraries, wi
 - Navigation and shared operator behavior continue to flow through `Meridian.Wpf.Services` and `Meridian.Ui.Services`; code-behind should not become the source of truth for shell state.
 - Detailed shell notes: see [WPF Shell MVVM](wpf-shell-mvvm.md).
 
-### `src/Meridian.Ui/` (Web host)
+### `src/Meridian.Ui.Shared/` (Desktop-local API shared module)
 
-- Intentionally thin host (`Program.cs`) that delegates setup to shared endpoint composition.
-- Serves browser dashboard and static assets.
-- References `Meridian.Ui.Shared`.
-
-### `src/Meridian.Ui.Shared/` (Web shared module)
-
-- Contains endpoint mapping and reusable web-host/service glue.
-- Bridges the web host to application/contract layers without duplicating wiring in each host.
+- Contains endpoint mapping and reusable local-host/service glue.
+- Bridges the desktop-local API host to application/contract layers without duplicating wiring in each host.
 - References `Meridian.Application` and `Meridian.Contracts`.
 
 ### `src/Meridian.Ui.Services/` (Cross-feature shared UI services)
@@ -94,7 +88,7 @@ Both surfaces share contracts and application logic through shared libraries, wi
 ### ✅ Allowed
 
 1. **WPF host → Ui.Services**
-2. **Web host (`Ui`) → Ui.Shared**
+2. **Desktop-local API host (`src/Meridian`) → Ui.Shared**
 3. **Ui.Shared → Application + Contracts**
 4. **Ui.Services → Contracts models (linked/shared consumption pattern)**
 5. **All UI-facing layers → Contracts**

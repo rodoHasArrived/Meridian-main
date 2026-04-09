@@ -2,14 +2,14 @@
 
 **Owner:** Core Team
 **Audience:** Product, Research, Architecture, Backtesting, API, Web, and WPF contributors
-**Last Updated:** 2026-04-01
-**Status:** Active blueprint
+**Last Updated:** 2026-04-08
+**Status:** Active blueprint aligned to Wave 5
 
 ---
 
 ## Summary
 
-This blueprint turns Wave 4 from a roadmap theme into a concrete implementation plan for making Meridian backtesting feel like one product regardless of engine.
+This blueprint turns Wave 5 from a roadmap theme into a concrete implementation plan for making Meridian backtesting feel like one product regardless of engine.
 
 The central design decision is:
 
@@ -24,7 +24,7 @@ That direction fits the repository's current shape:
 - workstation comparison and diff already flow through [`StrategyRunReadService`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Strategies/Services/StrategyRunReadService.cs) and [`WorkstationEndpoints.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs)
 - Lean integration currently exposes a separate UI-facing result type in [`LeanIntegrationService.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Services/Services/LeanIntegrationService.cs) and lightweight launcher-style endpoints in [`LeanEndpoints.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs)
 
-Wave 4 should therefore finish the unification by making engine choice an execution detail inside one Backtest Studio workflow.
+Wave 5 should therefore finish the unification by making engine choice an execution detail inside one Backtest Studio workflow.
 
 ---
 
@@ -98,7 +98,7 @@ The native implementation can wrap the current `Meridian.Backtesting` path direc
 
 ### 3. Result normalization and completeness metadata
 
-Wave 4 needs additive metadata on top of `BacktestResult` so comparison tooling can distinguish:
+Wave 5 needs additive metadata on top of `BacktestResult` so comparison tooling can distinguish:
 
 - fully comparable metrics
 - partially comparable metrics
@@ -176,7 +176,7 @@ Use `StrategyRunDetail` as the umbrella object and make research drill-ins fetch
 
 [`WorkstationEndpoints.cs`](https://github.com/rodoHasArrived/Meridian/blob/main/src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs) already exposes `/runs/compare` and `/runs/diff`, but the current diff is intentionally shallow.
 
-Wave 4 should extend the current `StrategyRunReadService` path rather than invent a second comparison system.
+Wave 5 should extend the current `StrategyRunReadService` path rather than invent a second comparison system.
 
 Recommended service split:
 
@@ -205,7 +205,7 @@ The native engine already has:
 
 in [`src/Meridian.Backtesting/FillModels/`](https://github.com/rodoHasArrived/Meridian/tree/main/src/Meridian.Backtesting/FillModels).
 
-Wave 4 should not add more booleans to `BacktestRequest`. Instead, introduce named fill profiles:
+Wave 5 should not add more booleans to `BacktestRequest`. Instead, introduce named fill profiles:
 
 ```csharp
 public enum BacktestFillProfile : byte
@@ -239,7 +239,7 @@ This is a cleaner migration path than letting per-order flags become the user-fa
 
 Operator-facing performance improvements belong where the UI or run queue visibly suffers, not as a general rewrite.
 
-Wave 4 performance focus:
+Wave 5 performance focus:
 
 - reduce repeated materialization of large snapshot and fill collections during comparison and diff
 - add summary-side caching for expensive derived metrics in `StrategyRunReadService` or the new comparison service
@@ -495,7 +495,7 @@ Use targeted benchmarks only where the result changes operator wait time or UI r
 
 ## Open Questions
 
-- Which Lean export artifact set should be treated as the minimum supported import contract for Wave 4: summary plus equity only, or summary plus equity plus trade log?
+- Which Lean export artifact set should be treated as the minimum supported import contract for Wave 5: summary plus equity only, or summary plus equity plus trade log?
 - Should benchmark comparison be stored in `BacktestResult` directly, or derived lazily from snapshots and dataset reference?
 - Do we want `StrategyRunReadService` to expose research drill-ins directly, or should all heavier compare and diff logic move to a dedicated comparison service immediately?
 - Is the first Backtest Studio shell expected in WPF first, web first, or both in parallel once the canonical run path is ready?

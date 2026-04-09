@@ -1,8 +1,8 @@
 # Meridian
 
-Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a web UI, and a Windows WPF workstation shell. The current delivery focus is turning that breadth into a more cohesive operator product across research, trading, data operations, governance, and fund-operations workflows.
+Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. The current solution spans market-data ingestion and backfill, tiered storage, backtesting, execution and risk seams, portfolio and ledger workflows, QuantScript tooling, MCP surfaces, a desktop-local API host, and a Windows WPF workstation shell. The current delivery focus is turning that breadth into a more cohesive operator product across research, trading, data operations, governance, and fund-operations workflows.
 
-> **Desktop + web surfaces:** `src/Meridian.Wpf/` is the Windows desktop shell. `src/Meridian.Ui/` is the web/API surface, and `src/Meridian.Ui/dashboard/` contains the dashboard frontend toolchain. On non-Windows platforms the WPF project remains in the solution as a CI-friendly stub build, while the web dashboard stays the primary cross-platform UI path.
+> **Desktop-only UI direction:** `src/Meridian.Wpf/` is the Windows desktop shell. `src/Meridian.Ui.Shared/` and `src/Meridian.Ui.Services/` contain the shared desktop-facing API and service layers that support the local workstation experience.
 
 ## Start Here
 
@@ -37,19 +37,18 @@ The solution currently includes these major areas:
 - `src/Meridian.Ledger`, `src/Meridian.FSharp.Ledger`, and `src/Meridian.FSharp.DirectLending.Aggregates` for accounting and direct-lending/domain-specialized work
 - `src/Meridian.QuantScript` for scripting and charting-oriented tooling
 - `src/Meridian.Mcp` and `src/Meridian.McpServer` for Model Context Protocol integration surfaces
-- `src/Meridian.Ui`, `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, and `src/Meridian.Wpf` for web and desktop UI layers
+- `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared`, and `src/Meridian.Wpf` for desktop-facing UI and local API layers
 - `tests/` and `benchmarks/` for automated validation and performance work
 
 ## Verified Entry Points
 
 ### Main CLI host — `src/Meridian`
 
-The primary runnable project. Supports multiple modes via `--mode <mode>` or legacy flags:
+The primary runnable project. Supports multiple modes via `--mode <mode>`:
 
 | Mode / flag | What runs |
 |---|---|
-| `--mode web` or `--ui` | ASP.NET web dashboard + REST API on `http://localhost:8080` |
-| `--mode desktop` | Collector + embedded web server with config hot-reload |
+| `--mode desktop` | Collector + desktop-local API host on `http://localhost:8080` |
 | `--mode headless` | Collector only, no HTTP server |
 | `--backfill` | Historical data backfill (combine with `--backfill-provider`, `--backfill-symbols`, `--backfill-from`, `--backfill-to`) |
 | `--selftest` | Wiring self-test; exits with pass/fail |
@@ -62,21 +61,13 @@ The primary runnable project. Supports multiple modes via `--mode <mode>` or leg
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --help
-dotnet run --project src/Meridian/Meridian.csproj -- --mode web --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 dotnet run --project src/Meridian/Meridian.csproj -- --backfill --backfill-symbols AAPL,MSFT --backfill-from 2024-01-01 --backfill-to 2024-12-31
 ```
 
-When you launch the web host from the repository root, Meridian resolves bundled `wwwroot` and `/workstation` assets automatically from the compiled host output, so you do not need to `cd` into `src/Meridian` first.
+When you launch the desktop-local API host from the repository root, Meridian binds to `http://localhost:8080` by default, so you do not need to `cd` into `src/Meridian` first.
 
 Config path resolution: `--config <path>` → `MDC_CONFIG_PATH` env var → `config/appsettings.json`.
-
-### Standalone web dashboard — `src/Meridian.Ui`
-
-A thin ASP.NET Core host that serves only the web dashboard and REST API. All endpoint logic and services come from `Meridian.Ui.Shared`. Use this instead of the main CLI host when you want a minimal web-only process.
-
-```bash
-dotnet run --project src/Meridian.Ui/Meridian.Ui.csproj
-```
 
 ### MCP server (minimal) — `src/Meridian.Mcp`
 
@@ -118,7 +109,6 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=
 make help           # List all task targets
 make desktop-run    # WPF desktop + local host (Windows)
 make run            # Collector with config hot-reload (--mode desktop)
-make run-ui         # Web dashboard (--mode web, port 8080)
 make run-backfill   # Historical backfill
 make run-selftest   # Wiring self-test
 make benchmark      # Full BenchmarkDotNet suite
@@ -5827,17 +5817,18 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrategyRunReadService.cs
 │   │   └── Storage
 │   │       └── StrategyRunStore.cs
-│   ├── Meridian.Ui
-│   │   ├── Meridian.Ui.csproj
-│   │   ├── Program.cs
-│   │   ├── app.manifest
-│   │   ├── dashboard
-│   │   │   ├── index.html
-│   │   │   ├── package-lock.json
-│   │   │   ├── package.json
-│   │   │   ├── postcss.config.cjs
-│   │   │   ├── src
-│   │   │   │   ├── app.tsx
+│   ├── Meridian.Ui.Services
+│   │   ├── Collections
+│   │   │   ├── BoundedObservableCollection.cs
+│   │   │   └── CircularBuffer.cs
+│   │   ├── Contracts
+│   │   │   ├── ConnectionTypes.cs
+│   │   │   ├── IAdminMaintenanceService.cs
+│   │   │   ├── IArchiveHealthService.cs
+│   │   │   ├── IBackgroundTaskSchedulerService.cs
+│   │   │   ├── IConfigService.cs
+│   │   │   ├── ICredentialService.cs
+│   │   │   ├── ILoggingService.cs
 │   │   │   │   ├── components
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── command-palette.test.tsx
@@ -6385,8 +6376,6 @@ Use these documents together when planning or implementing new work:
 │           ├── CredentialManagementPage.xaml.cs
 │           ├── DashboardPage.xaml
 │           ├── DashboardPage.xaml.cs
-│           ├── DashboardWebPage.xaml
-│           ├── DashboardWebPage.xaml.cs
 │           ├── DataBrowserPage.xaml
 │           ├── DataBrowserPage.xaml.cs
 │           ├── DataCalendarPage.xaml

@@ -1,7 +1,7 @@
 # QuantScript, L3 Inference & Multi-Instance: Round 2 Feature Roadmap (Ideas #19–#30)
 
 **Version:** 1.0
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-08
 **Audience:** Quantitative researchers, core contributors, platform engineers, institutional operators
 **Related Plans:**
 - QuantScript v1 blueprint: [`docs/plans/quant-script-environment-blueprint.md`](quant-script-environment-blueprint.md)
@@ -14,6 +14,8 @@ This document translates twelve Round 2 feature proposals — spanning QuantScri
 L3 inference enrichment (Track H), and multi-instance cluster management (Track I) — into a
 viability-assessed, dependency-ordered implementation roadmap. Each feature is evaluated against
 Meridian's existing code, and all source file references are pinned to production paths.
+
+These tracks now sit in the optional or post-core part of the canonical roadmap. They should not outrank the Wave 1-6 path to core operator-readiness unless a specific pilot or research program explicitly pulls them forward.
 
 **Effort key:** S = days | M = 1–2 weeks | L = 1+ month
 
@@ -2187,7 +2189,7 @@ independently of Track H and Track I once the QuantScript v1 foundation is in pl
 - **L3 inference implementation plan:** [`docs/plans/l3-inference-implementation-plan.md`](l3-inference-implementation-plan.md)
 - **Previous brainstorm (ideas #1–#18):** [`docs/evaluations/quant-script-blueprint-brainstorm.md`](../evaluations/quant-script-blueprint-brainstorm.md)
 - **Feature inventory:** [`docs/status/FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md)
-- **Main roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md)
+- **Main roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — optional-track placement after the core operator-readiness path
 
 ### Key Source Files Referenced
 
@@ -2236,4 +2238,4 @@ paths that will be created when implementing the corresponding feature.
 
 ---
 
-_Last Updated: 2026-04-07_
+_Last Updated: 2026-04-08_

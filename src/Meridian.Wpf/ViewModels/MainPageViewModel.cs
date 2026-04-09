@@ -802,7 +802,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private static bool ShouldHideFromDefaultPalette(string pageTag, string query)
         => string.IsNullOrWhiteSpace(query)
-           && pageTag is "Dashboard" or "DashboardWeb" or "Workspaces" or "Welcome";
+           && pageTag is "Dashboard" or "Workspaces" or "Welcome";
 
     private static string GetWorkspaceHomePageTag(string workspace)
         => WorkspaceHomePageTags.TryGetValue(workspace, out var pageTag)

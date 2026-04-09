@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-03-22
-**Status:** Active execution roadmap
+**Last Updated:** 2026-04-08
+**Status:** Active execution roadmap aligned to Wave 4 governance and fund-operations productization
 
 ## Purpose
 
@@ -14,7 +14,7 @@ This document translates the fund-management module backlog into PR-sized execut
 - suggested ownership boundaries
 - low-conflict file/module groupings
 
-The goal is to let multiple contributors work concurrently without repeatedly colliding in the same projects and files.
+The goal is to let multiple contributors work concurrently without repeatedly colliding in the same projects and files. This roadmap now assumes the delivered Security Master baseline, the existing shared run/read-model seams, and the current web cockpit foundation are already in place; the slices below should extend those baselines rather than recreate them.
 
 ## How to Use This Document
 
@@ -38,6 +38,7 @@ The goal is to let multiple contributors work concurrently without repeatedly co
 - F# kernel changes should stabilize before broad orchestration and WPF visualization layers are built on top.
 - Reporting should build on top of reconciliation, evidence, and quality primitives instead of duplicating them.
 - WPF shell/layout slices can run early in parallel with backend contracts as long as they avoid hard-coding temporary models.
+- Security Master is already a delivered platform seam; PR-06 and PR-08 are follow-on governance integration slices, not first-time productization work.
 
 ## PR Roadmap
 
@@ -48,12 +49,12 @@ The goal is to let multiple contributors work concurrently without repeatedly co
 | PR-03 | Workstation bootstrap payload alignment | Lane B | None | PR-01, PR-02 | `Meridian.Ui.Shared`, `Meridian.Strategies`, `Meridian.Contracts` |
 | PR-04 | Research workflow unification | Lane A | PR-01, PR-02 | PR-05, PR-06 | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Backtesting` |
 | PR-05 | Trade-management contract baseline | Lane B | PR-02 | PR-04, PR-06 | `Meridian.Contracts`, `Meridian.Execution`, `Meridian.Execution.Sdk` |
-| PR-06 | Security Master productization baseline | Lane B | PR-02 | PR-04, PR-05, PR-07 | `Meridian.Contracts`, `Meridian.Application`, `Meridian.FSharp` |
+| PR-06 | Security Master governance integration baseline | Lane B | PR-02 | PR-04, PR-05, PR-07 | `Meridian.Contracts`, `Meridian.Application`, `Meridian.FSharp` |
 | PR-07 | Account/entity/fund-structure contracts | Lane B | PR-02 | PR-06, PR-08 | `Meridian.Contracts`, `Meridian.FSharp`, `Meridian.Application` |
-| PR-08 | Security Master projection enrichment | Lane C | PR-06, PR-07 | PR-09 | `Meridian.Storage`, `Meridian.Application` |
+| PR-08 | Security Master governance projection enrichment | Lane C | PR-06, PR-07 | PR-09 | `Meridian.Storage`, `Meridian.Application` |
 | PR-09 | Multi-ledger kernel baseline | Lane C | PR-07 | PR-08, PR-10 | `Meridian.Ledger`, `Meridian.FSharp.Ledger` |
 | PR-10 | Governance DTOs and read-model expansion | Lane B | PR-07, PR-09 | PR-11, PR-12 | `Meridian.Contracts`, `Meridian.Strategies`, `Meridian.Application` |
-| PR-11 | Trading cockpit baseline | Lane A | PR-05 | PR-10, PR-12 | `Meridian.Wpf`, `Meridian.Execution` |
+| PR-11 | Trading cockpit governance integration | Lane A | PR-05 | PR-10, PR-12 | `Meridian.Wpf`, `Meridian.Execution` |
 | PR-12 | Trial balance and cash-flow surfaces | Lane A | PR-09, PR-10 | PR-11, PR-13 | `Meridian.Wpf`, `Meridian.Strategies` |
 | PR-13 | Reconciliation kernel expansion | Lane C | PR-09, PR-10 | PR-12, PR-14 | `Meridian.FSharp.Ledger`, `Meridian.Ledger` |
 | PR-14 | Reconciliation orchestration and queues | Lane B | PR-13 | PR-15 | `Meridian.Application`, `Meridian.Contracts`, `Meridian.Strategies` |
@@ -149,11 +150,11 @@ Introduce explicit trade-management contracts between execution and UI layers.
 - `src/Meridian.Execution/PaperTradingGateway.cs`
 - `src/Meridian.Execution/Models/OrderStatusUpdate.cs`
 
-### PR-06: Security Master Productization Baseline
+### PR-06: Security Master Governance Integration Baseline
 
 **Goal**
 
-Make Security Master a first-class product capability.
+Extend the delivered Security Master seam into the governance and fund-operations module as a first-class shared dependency.
 
 **Primary anchors**
 
@@ -175,11 +176,11 @@ Introduce first-class account, entity, fund, sleeve, and vehicle structures.
   - `src/Meridian.FSharp/Domain/`
   - `src/Meridian.Application/Services/`
 
-### PR-08: Security Master Projection Enrichment
+### PR-08: Security Master Governance Projection Enrichment
 
 **Goal**
 
-Extend stored Security Master projections for governance and reporting use.
+Extend stored Security Master projections and enrichment paths for governance and reporting follow-on workflows.
 
 **Primary anchors**
 
@@ -214,11 +215,11 @@ Create governance-facing DTOs and shared read models for multi-ledger, reconcili
 - `src/Meridian.Strategies/Services/PortfolioReadService.cs`
 - `src/Meridian.Strategies/Services/LedgerReadService.cs`
 
-### PR-11: Trading Cockpit Baseline
+### PR-11: Trading Cockpit Governance Integration
 
 **Goal**
 
-Expose real order, fill, position, and execution-state workflows.
+Expose the existing cockpit's order, fill, position, and execution-state workflows to the fund-management and governance path without inventing a parallel trading surface.
 
 **Primary anchors**
 
@@ -460,7 +461,7 @@ Run in parallel after Stage 1:
 
 Why:
 
-- research UX, trade-management contracts, Security Master productization, and account/entity foundations can advance at the same time with only light contract coordination
+- research UX, trade-management contracts, Security Master governance integration, and account/entity foundations can advance at the same time with only light contract coordination
 
 ### Stage 3
 
@@ -473,7 +474,7 @@ Run in parallel after Stage 2:
 
 Why:
 
-- Security Master storage enrichment, ledger kernel work, governance DTOs, and trading cockpit UX are mostly disjoint when ownership is kept clear
+- Security Master governance enrichment, ledger kernel work, governance DTOs, and trading cockpit integration are mostly disjoint when ownership is kept clear
 
 ### Stage 4
 

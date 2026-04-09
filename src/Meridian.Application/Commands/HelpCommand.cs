@@ -371,8 +371,7 @@ HELP TOPICS:
     --help providers      Data provider information
 
 MODES:
-    --mode <web|desktop|headless> Unified deployment mode selector
-    --ui                    Start web dashboard (http://localhost:8080) [legacy]
+    --mode <desktop|headless> Unified deployment mode selector
     --backfill              Run historical data backfill
     --replay <path>         Replay events from JSONL file
     --package               Create a portable data package
@@ -474,13 +473,13 @@ AUTO-CONFIGURATION OPTIONS:
                             (config/appsettings.generated.json or config/appsettings.schema.json)
 
 EXAMPLES:
-    # Start web dashboard on default port
-    Meridian --mode web
+    # Start the desktop-local API host on the default port
+    Meridian --mode desktop
 
-    # Start web dashboard on custom port
-    Meridian --mode web --http-port 9000
+    # Start the desktop-local API host on a custom port
+    Meridian --mode desktop --http-port 9000
 
-    # Desktop mode (collector + UI server) with hot-reload
+    # Desktop mode (collector + local API host) with hot-reload
     Meridian --mode desktop --watch-config
 
     # Run historical backfill
@@ -605,8 +604,8 @@ SUPPORT:
 ║  QUICKSTART:   Run: ./Meridian --quickstart                ║
 ║  NEW USER?     Run: ./Meridian --wizard                   ║
 ║  QUICK CHECK:  Run: ./Meridian --quick-check              ║
-║  START UI:     Run: ./Meridian --mode web                 ║
-║  Then open http://localhost:8080 in your browser                     ║
+║  START API:    Run: ./Meridian --mode desktop             ║
+║  Local API:    http://localhost:8080                                 ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ");
     }
@@ -638,7 +637,7 @@ BULK INGEST:
       Skipped   : duplicate records that already exist
       Failed    : records that could not be imported (errors listed below)
 
-HTTP API ENDPOINTS (when running --mode web):
+HTTP API ENDPOINTS (when running --mode desktop):
     GET  /api/security-master/conflicts
          Returns all open golden record conflicts detected between providers.
 

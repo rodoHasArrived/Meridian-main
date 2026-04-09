@@ -1,10 +1,11 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-08
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
 This document is the normalized execution backlog for the repository's remaining product and structural work outside Phase 16 assembly/SIMD optimization.
+It is subordinate to [`ROADMAP.md`](ROADMAP.md): the tracks below are execution buckets that map to the canonical Wave 1-6 order and optional tracks, not an independent strategy.
 
 Use it with:
 
@@ -54,7 +55,7 @@ The remaining backlog is therefore about turning those foundations and delivered
 
 ## Backlog Tracks
 
-### Track A: Provider confidence and current-functionality hardening
+### Track A / Wave 1: Provider confidence and current-functionality hardening
 
 Goal: make the currently shipped platform easier to trust and easier to operate.
 
@@ -72,7 +73,7 @@ Exit signal:
 
 Every major provider has documented replay/runtime evidence and passes its validation suite. Backfill checkpoints and gap detection are validated across providers and date ranges.
 
-### Track B: Paper trading cockpit web UI
+### Track B / Wave 2: Paper-trading cockpit hardening
 
 Goal: harden the existing execution primitives, brokerage adapters, and wired REST/dashboard flows into a dependable operator cockpit in the web dashboard.
 
@@ -94,16 +95,16 @@ Exit signal:
 
 A strategy researched in backtest can be promoted to paper trading through one connected workflow in the web dashboard, with live positions and fills visible.
 
-### Track C: Portfolio and strategy tracking depth
+### Track C / Wave 3: Shared run / portfolio / ledger continuity
 
-Goal: strengthen portfolio read models and multi-run comparison so strategy research produces durable, comparable results.
+Goal: strengthen the shared run, portfolio, ledger, cash-flow, and reconciliation model so strategy workflows feel durable and continuous across workspaces.
 
 Open work:
 
 - extend run history beyond backtest-first into paper and live-adjacent results
-- deepen portfolio drill-ins: attribution, drawdown breakdown, trade-level analysis
+- deepen portfolio drill-ins: attribution, drawdown breakdown, cash-flow, and trade-level analysis
 - build portfolio comparison across multiple strategy runs
-- surface ledger reconciliation in the web dashboard
+- surface ledger and reconciliation continuity in the web dashboard
 - strengthen strategy lifecycle test coverage
 
 Primary anchors:
@@ -114,9 +115,9 @@ Primary anchors:
 
 Exit signal:
 
-Portfolio and strategy tracking are useful for iterative strategy development across backtest, paper, and live-adjacent runs through one consistent model.
+Research, trading, and governance rely on one consistent shared run, portfolio, ledger, cash-flow, and reconciliation model across backtest, paper, and live-adjacent runs.
 
-### Track D: Backtest Studio unification
+### Track D / Wave 5: Backtest Studio unification
 
 Goal: consolidate the native and QuantConnect Lean backtest experiences into one coherent workflow.
 
@@ -137,7 +138,7 @@ Exit signal:
 
 Backtesting feels like one product regardless of whether the native engine or Lean is used, with consistent result models.
 
-### Track E: Live integration readiness
+### Track E / Wave 6: Live integration readiness
 
 Goal: validate the brokerage gateway framework against real vendor surfaces and keep the live-operation governance path complete and operable.
 
@@ -159,7 +160,7 @@ Exit signal:
 At least one brokerage adapter is validated against a live vendor surface with audit trail.
 Current status: Alpaca execution path is now validated through the stable REST seam with audit and control coverage; additional broker/runtime proof remains open.
 
-### Track F: Governance and fund-operations productization
+### Track F / Wave 4: Governance and fund-operations productization
 
 Goal: productize governance and fund-operations workflows on top of the delivered Security Master seam and direct-lending foundations.
 
@@ -319,12 +320,11 @@ References:
 
 The repository can reasonably claim core operator-readiness when all of the following are true:
 
-1. Every major provider has documented replay/runtime validation evidence
-2. Paper trading is exposed as a full cockpit in the web dashboard (wired to the existing `/api/execution/*` and `/api/promotion/*` endpoints)
-3. The `Backtest → Paper` promotion workflow is explicit and auditable through the dashboard
-4. Portfolio and run history cover backtest, paper, and live-adjacent results through one consistent model
-5. Backfill checkpoint reliability is validated across providers and date ranges
-6. Security Master remains operator-accessible and materially integrated into governance workflows
-7. Governance has concrete account/entity, multi-ledger, reconciliation, cash-flow, and reporting seams built on shared contracts
+1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, and backfill checkpoints plus gap handling are validated across representative providers and date ranges.
+2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest → Paper` is explicit and auditable.
+3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
+4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
+
+Waves 5 and 6 deepen the product and widen readiness claims, but they are not prerequisites for the core operator-ready baseline above.
 
 Until then, Meridian is best described as feature-rich and structurally strong, but still in active productization rather than fully complete.

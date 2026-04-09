@@ -1,26 +1,26 @@
 # Meridian Help
 
-Meridian is a multi-surface platform: the main CLI/host lives in `src/Meridian/`, the web/API surface lives in `src/Meridian.Ui/`, the dashboard frontend lives in `src/Meridian.Ui/dashboard/`, and the Windows desktop shell lives in `src/Meridian.Wpf/`.
+Meridian is a desktop-first platform: the main CLI/host lives in `src/Meridian/`, shared workstation services and local API endpoints live in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`, and the Windows desktop shell lives in `src/Meridian.Wpf/`.
 
 This guide focuses on the repo entry points and CLI flows that are currently verified in code.
 
 ## Quick Start
 
-### Web dashboard
+### Desktop-local API host
 
-Use the web surface for the primary cross-platform experience:
+Use the desktop-local API host for backend services and local workstation APIs:
 
 ```bash
-make run-ui
+make run
 ```
 
 Or run the host directly:
 
 ```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 ```
 
-Open `http://localhost:8080`.
+Local API endpoint: `http://localhost:8080`.
 
 ### Windows WPF desktop
 
@@ -164,20 +164,12 @@ dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj
 dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj
 ```
 
-### Frontend bundle
-
-```bash
-npm --prefix src/Meridian.Ui/dashboard install
-npm --prefix src/Meridian.Ui/dashboard run build
-npm --prefix src/Meridian.Ui/dashboard run test
-```
-
 ## Key Paths
 
 - `src/Meridian/` - main host executable
 - `src/Meridian.Application/` - startup orchestration, commands, and application services
-- `src/Meridian.Ui/` - web/API project
-- `src/Meridian.Ui/dashboard/` - dashboard frontend assets
+- `src/Meridian.Ui.Shared/` - shared workstation endpoints and local API composition
+- `src/Meridian.Ui.Services/` - shared desktop-facing services
 - `src/Meridian.Wpf/` - Windows WPF workstation shell
 - `src/Meridian.Mcp/` and `src/Meridian.McpServer/` - MCP integrations
 - `src/Meridian.QuantScript/` - QuantScript project

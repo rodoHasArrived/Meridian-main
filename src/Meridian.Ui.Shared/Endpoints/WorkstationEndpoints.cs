@@ -9,14 +9,13 @@ using Meridian.Storage.Export;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
-/// Endpoints for the React workstation shell and its bootstrap placeholder data.
+/// Endpoints for the desktop workstation API surface.
 /// </summary>
 public static class WorkstationEndpoints
 {
@@ -27,46 +26,6 @@ public static class WorkstationEndpoints
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/workstation").WithTags("Workstation");
-
-        group.MapGet("/session", async (HttpContext context) =>
-        {
-            var payload = await BuildSessionPayloadAsync(context).ConfigureAwait(false);
-            return Results.Json(payload, jsonOptions);
-        })
-        .WithName("GetWorkstationSession")
-        .Produces(200);
-
-        group.MapGet("/research", async (HttpContext context) =>
-        {
-            var payload = await BuildResearchPayloadAsync(context).ConfigureAwait(false);
-            return Results.Json(payload, jsonOptions);
-        })
-        .WithName("GetResearchWorkspace")
-        .Produces(200);
-
-        group.MapGet("/trading", async (HttpContext context) =>
-        {
-            var payload = await BuildTradingPayloadAsync(context).ConfigureAwait(false);
-            return Results.Json(payload, jsonOptions);
-        })
-        .WithName("GetTradingWorkspace")
-        .Produces(200);
-
-        group.MapGet("/data-operations", async (HttpContext context) =>
-        {
-            var payload = await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
-            return Results.Json(payload, jsonOptions);
-        })
-        .WithName("GetDataOperationsWorkspace")
-        .Produces(200);
-
-        group.MapGet("/governance", async (HttpContext context) =>
-        {
-            var payload = await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
-            return Results.Json(payload, jsonOptions);
-        })
-        .WithName("GetGovernanceWorkspace")
-        .Produces(200);
 
         group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
         {
@@ -717,40 +676,6 @@ public static class WorkstationEndpoints
         .WithName("GetPortfolioSymbolExposure")
         .Produces<NetSymbolPosition>(200)
         .Produces(503);
-
-        app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
-            .ExcludeFromDescription();
-
-        app.MapGet("/workstation/{*path}", (string? path, IWebHostEnvironment environment) =>
-        {
-            if (string.IsNullOrWhiteSpace(path) || !Path.HasExtension(path))
-                return ServeWorkstationIndex(environment);
-
-            // Serve static assets (JS, CSS, etc.) directly from wwwroot/workstation/.
-            // UseStaticFiles() middleware runs after routing in WebApplication, so the
-            // catch-all route must serve these files explicitly.
-            var root = StaticAssetPathResolver.ResolveWebRootPath(
-                environment.WebRootPath,
-                environment.ContentRootPath,
-                AppContext.BaseDirectory);
-            var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
-            if (!File.Exists(filePath))
-                return Results.NotFound();
-
-            var ext = Path.GetExtension(filePath).ToLowerInvariant();
-            var contentType = ext switch
-            {
-                ".js"   => "application/javascript",
-                ".css"  => "text/css",
-                ".png"  => "image/png",
-                ".svg"  => "image/svg+xml",
-                ".ico"  => "image/x-icon",
-                ".woff" => "font/woff",
-                ".woff2" => "font/woff2",
-                _       => "application/octet-stream"
-            };
-            return Results.File(filePath, contentType);
-        }).ExcludeFromDescription();
     }
 
     private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
@@ -1502,8 +1427,7 @@ public static class WorkstationEndpoints
                                 CoverageReason: null,
                                 MatchedIdentifierKind: "Ticker",
                                 MatchedIdentifierValue: "AAPL",
-                                MatchedProvider: null,
-                                SecurityDetailUrl: "/workstation/governance/security-master?securityId=security-aapl")
+                                MatchedProvider: null)
                         },
                         reviewReferences = new[]
                         {
@@ -1522,8 +1446,7 @@ public static class WorkstationEndpoints
                                 CoverageReason: "Portfolio position is missing a Security Master match.",
                                 MatchedIdentifierKind: null,
                                 MatchedIdentifierValue: null,
-                                MatchedProvider: null,
-                                SecurityDetailUrl: null),
+                                MatchedProvider: null),
                             new SecurityCoverageReferencePayload(
                                 Source: "ledger",
                                 Symbol: "XYZ",
@@ -1539,8 +1462,7 @@ public static class WorkstationEndpoints
                                 CoverageReason: "Ledger coverage is missing a Security Master match.",
                                 MatchedIdentifierKind: null,
                                 MatchedIdentifierValue: null,
-                                MatchedProvider: null,
-                                SecurityDetailUrl: null)
+                                MatchedProvider: null)
                         },
                         missingReferences = new[]
                         {
@@ -1559,8 +1481,7 @@ public static class WorkstationEndpoints
                                 CoverageReason: "Portfolio position is missing a Security Master match.",
                                 MatchedIdentifierKind: null,
                                 MatchedIdentifierValue: null,
-                                MatchedProvider: null,
-                                SecurityDetailUrl: null),
+                                MatchedProvider: null),
                             new SecurityCoverageReferencePayload(
                                 Source: "ledger",
                                 Symbol: "XYZ",
@@ -1576,8 +1497,7 @@ public static class WorkstationEndpoints
                                 CoverageReason: "Ledger coverage is missing a Security Master match.",
                                 MatchedIdentifierKind: null,
                                 MatchedIdentifierValue: null,
-                                MatchedProvider: null,
-                                SecurityDetailUrl: null)
+                                MatchedProvider: null)
                         }
                     },
                     cashFlow = new
@@ -1989,8 +1909,7 @@ public static class WorkstationEndpoints
             dayPnl,
             unrealizedPnl,
             exposure,
-            security = BuildInlineSecurityReference(symbol, security),
-            securityDetailUrl = BuildSecurityDetailUrl(security)
+            security = BuildInlineSecurityReference(symbol, security)
         };
 
     private static object? BuildInlineSecurityReference(string symbol, WorkstationSecurityReference? security)
@@ -2037,8 +1956,7 @@ public static class WorkstationEndpoints
             CoverageReason: BuildSecurityCoverageReason(Source, AccountName, Security),
             MatchedIdentifierKind: Security?.MatchedIdentifierKind,
             MatchedIdentifierValue: Security?.MatchedIdentifierValue,
-            MatchedProvider: Security?.MatchedProvider,
-            SecurityDetailUrl: BuildSecurityDetailUrl(Security));
+            MatchedProvider: Security?.MatchedProvider);
 
     private static string? BuildSecurityCoverageReason(
         string source,
@@ -2074,11 +1992,6 @@ public static class WorkstationEndpoints
            security.CoverageStatus is WorkstationSecurityCoverageStatus.Partial
                or WorkstationSecurityCoverageStatus.Missing
                or WorkstationSecurityCoverageStatus.Unavailable;
-
-    private static string? BuildSecurityDetailUrl(WorkstationSecurityReference? security)
-        => security is null || security.SecurityId == Guid.Empty
-            ? null
-            : $"/workstation/governance/security-master?securityId={security.SecurityId:N}";
 
     private static object BuildGovernanceWorkspaceCashFlowSummary(IReadOnlyList<StrategyRunDetail?> details)
     {
@@ -2529,23 +2442,6 @@ public static class WorkstationEndpoints
         }
     }
 
-    private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
-    {
-        var root = StaticAssetPathResolver.ResolveWebRootPath(
-            environment.WebRootPath,
-            environment.ContentRootPath,
-            AppContext.BaseDirectory);
-        var indexPath = Path.Combine(root, "workstation", "index.html");
-
-        return File.Exists(indexPath)
-            ? Results.File(indexPath, "text/html")
-            : Results.NotFound(new
-            {
-                error = "Workstation bundle not found.",
-                message = "Build src/Meridian.Ui/dashboard before opening /workstation."
-            });
-    }
-
     private sealed record SecurityCoverageReferencePayload(
         string Source,
         string Symbol,
@@ -2561,8 +2457,7 @@ public static class WorkstationEndpoints
         string? CoverageReason,
         string? MatchedIdentifierKind,
         string? MatchedIdentifierValue,
-        string? MatchedProvider,
-        string? SecurityDetailUrl);
+        string? MatchedProvider);
 
     private sealed record GovernanceReportingProfilePayload(
         string Id,

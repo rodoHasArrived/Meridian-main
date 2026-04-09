@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -224,4 +222,3 @@ public partial class DataQualityPage : Page
         MessageBox.Show(string.Join(Environment.NewLine, lines), $"Provider Comparison - {symbol}", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 }
->>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3

@@ -1,5 +1,8 @@
 # TODO / FIXME / HACK / NOTE Scan
 
+**Last Reviewed:** 2026-04-08
+**Purpose:** Informational code-comment scan only. For the curated execution backlog and delivery sequencing, use [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) and [`ROADMAP.md`](ROADMAP.md).
+
 Total items: **44**
 
 | File | Line | Tag | Linked Issue | Text |

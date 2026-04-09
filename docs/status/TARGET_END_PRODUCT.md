@@ -1,22 +1,26 @@
 # Meridian - Target End Product
 
-**Last Updated:** 2026-04-07
-**Status:** Current end-state product summary aligned to the April 7 roadmap refresh
+**Last Updated:** 2026-04-08
+**Status:** Current end-state product summary aligned to the canonical April 8 roadmap refresh
 
 ---
 
 ## Snapshot
 
-Meridian's target end state is a workflow-centric, self-hosted trading workstation and fund-operations platform. It is not just a collector, not just a backtester, and not just a governance add-on. It is one connected product where evidence-backed data trust, research, paper trading, portfolio visibility, ledger auditability, Security Master, reconciliation, and governed reporting all live inside the same operator workflow. In current roadmap terms, the authoritative Security Master seam is already in place; the remaining gap is turning that seam and the existing workstation flows into deeper governance and operator-ready workflows.
+Meridian's target end state is a self-hosted trading workstation and fund-operations platform with four connected workspaces: `Research`, `Trading`, `Data Operations`, and `Governance`.
+
+Data Operations establishes evidence-backed provider trust, Research turns that data into reviewed runs, Trading promotes approved runs into paper workflows, and Governance operates on the same instruments and records through the delivered Security Master baseline, portfolio, ledger, reconciliation, cash-flow, and reporting workflows.
+
+The product promise is continuity: one operator can move from data trust to research, paper trading, portfolio and ledger review, and governance workflows without leaving Meridian or losing audit context.
 
 ---
 
 ## Operator Workflow
 
-1. **Data Operations** establishes trusted provider coverage, backfill health, symbol readiness, and export confidence.
+1. **Data Operations** establishes trusted provider coverage, backfill health, symbol readiness, checkpoint confidence, and export confidence.
 2. **Research** uses that trusted data to run, compare, and review strategy runs across engines and modes.
 3. **Trading** promotes approved runs into paper operation, manages orders and positions, and keeps replay, risk, and session history visible.
-4. **Governance** turns the same runs and positions into portfolio, ledger, Security Master, reconciliation, cash-flow, and reporting workflows.
+4. **Governance** turns the same runs and positions into Security Master, portfolio, ledger, reconciliation, cash-flow, and governed reporting workflows.
 
 The finished product should feel like one lifecycle, not four isolated tools.
 
@@ -44,24 +48,59 @@ Governance is where operators review Security Master coverage, portfolio and led
 
 ## First-Class Capabilities
 
-- Evidence-backed provider trust and data quality
-- Shared run history across backtest, paper, and live-aware modes
-- Explicit `Backtest -> Paper -> Live` promotion workflow with auditability
-- Portfolio, fills, attribution, and ledger visibility from the same run-centered model
-- Security Master as the authoritative instrument-definition layer
-- Reconciliation, cash-flow, and reporting workflows built on shared contracts
-- Governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
-- Web and WPF surfaces that reinforce the same operator model instead of diverging from it
+- evidence-backed provider trust and checkpoint confidence
+- shared run history across backtest, paper, and live-aware modes
+- explicit `Backtest -> Paper -> Live` promotion workflow with auditability
+- portfolio, fills, attribution, ledger, cash-flow, and reconciliation visibility from the same run-centered model
+- the delivered Security Master baseline as the authoritative instrument-definition layer
+- governance and fund-operations workflows treated as core product surfaces rather than optional add-ons
+- web and WPF surfaces that reinforce the same operator model instead of diverging from it
 
 ---
 
-## What Remains Optional
+## Path To Core Operator-Readiness
 
+### Wave 1: Provider confidence and checkpoint evidence
+
+Prove provider trust and checkpoint reliability with replay, runtime, auth, and validation evidence.
+
+### Wave 2: Paper-trading cockpit hardening
+
+Harden the paper-trading cockpit already in code into a dependable operator workflow.
+
+### Wave 3: Shared run / portfolio / ledger continuity
+
+Make shared run, portfolio, ledger, cash-flow, and reconciliation continuity the backbone of the product across workspaces.
+
+### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
+
+Deepen governance and fund-operations workflows on top of the delivered Security Master baseline using shared contracts, read models, and export seams.
+
+Waves 1-4 define **core operator-readiness**.
+
+---
+
+## After Core Operator-Readiness
+
+### Wave 5: Backtest Studio unification
+
+Unify native and Lean backtesting into one Backtest Studio experience.
+
+### Wave 6: Live integration readiness
+
+Validate controlled live integration readiness without overstating broad live-trading completion.
+
+Waves 5-6 deepen the product and widen later claims, but they are not prerequisites for core operator-readiness.
+
+---
+
+## Optional Advanced Research / Scale Tracks
+
+- deeper QuantScript libraries and workflow integration
 - L3 inference and queue-aware simulation
-- multi-instance scale-out
-- deeper QuantScript libraries and advanced research tooling
-- Phase 1.5 preferred and convertible equity domain extension
-- assembly-level optimization beyond the core product need
+- multi-instance coordination
+- Phase 16 performance work
+- broader advanced research tooling after the core workstation product is trustworthy and coherent
 
 These improve Meridian's ceiling, but they are not required for the core end-state product to feel complete.
 
@@ -69,4 +108,4 @@ These improve Meridian's ceiling, but they are not required for the core end-sta
 
 ## One-Paragraph Narrative
 
-When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect portfolio and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. Research, trading, data operations, and governance are separate workspaces, but they share one model of runs, instruments, portfolio state, and audit evidence.
+When Meridian is finished, an operator can trust their data, run research, promote strategies into paper trading, manage orders and positions, inspect portfolio and ledger outcomes, resolve Security Master and reconciliation issues, and generate governed outputs from one self-hosted workstation product. `Research`, `Trading`, `Data Operations`, and `Governance` are separate workspaces, but they share one model of runs, instruments, portfolio state, and audit evidence.

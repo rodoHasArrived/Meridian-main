@@ -60,11 +60,11 @@ public sealed class SharedStartupBootstrapperTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_WebModeCancellation_StopsDashboardServerGracefully()
+    public async Task RunAsync_DesktopModeCancellation_StopsDashboardServerGracefully()
     {
         var cfg = new AppConfig { DataRoot = CreateTempDirectory() };
         var cliArgs = CliArguments.Parse([]);
-        var deployment = DeploymentContext.ForWeb("test.json", port: 4321);
+        var deployment = DeploymentContext.ForDesktop("test.json", port: 4321);
         using var cts = new CancellationTokenSource();
         await using var configService = new ConfigurationService(_log);
 

@@ -392,7 +392,7 @@ public abstract class ConnectionServiceBase : IDisposable
                 "Connection refused — backend service is not running",
                 ConnectionErrorCategory.ServiceNotRunning,
                 "The backend service is not running or not listening on the configured port. "
-                    + "Start the collector with: dotnet run --project src/Meridian -- --ui --http-port 8080. "
+                    + "Start the collector with: dotnet run --project src/Meridian -- --mode desktop --http-port 8080. "
                     + "Verify the Service URL in Settings matches the backend address."
             ),
             System.Net.Http.HttpRequestException httpEx when httpEx.Message.Contains("not found", StringComparison.OrdinalIgnoreCase) => (

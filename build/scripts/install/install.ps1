@@ -654,7 +654,7 @@ function Install-Docker {
             Write-Host "======================================================================" -ForegroundColor Green
             Write-Host "                    Installation Complete!                            " -ForegroundColor Green
             Write-Host "======================================================================" -ForegroundColor Green
-            Write-Host "  Dashboard:   http://localhost:8080" -ForegroundColor White
+            Write-Host "  API:         http://localhost:8080" -ForegroundColor White
             Write-Host "  Metrics:     http://localhost:8080/metrics" -ForegroundColor White
             Write-Host "  Status:      http://localhost:8080/status" -ForegroundColor White
             Write-Host "  Health:      http://localhost:8080/health" -ForegroundColor White
@@ -712,12 +712,12 @@ function Install-Native {
         Write-Host "======================================================================" -ForegroundColor Green
         Write-Host "                    Installation Complete!                            " -ForegroundColor Green
         Write-Host "======================================================================" -ForegroundColor Green
-        Write-Host "  Start dashboard:" -ForegroundColor White
-        Write-Host "    dotnet run --project src\Meridian\Meridian.csproj -- --ui" -ForegroundColor Gray
+        Write-Host "  Start desktop-local backend:" -ForegroundColor White
+        Write-Host "    dotnet run --project src\Meridian\Meridian.csproj -- --mode desktop" -ForegroundColor Gray
         Write-Host "" -ForegroundColor White
         Write-Host "  Or use the publish script for a standalone executable:" -ForegroundColor White
         Write-Host "    .\publish.ps1 win-x64" -ForegroundColor Gray
-        Write-Host "    .\publish\win-x64\Meridian.exe --ui" -ForegroundColor Gray
+        Write-Host "    .\publish\win-x64\Meridian.exe --mode desktop" -ForegroundColor Gray
         Write-Host "======================================================================" -ForegroundColor Green
     }
     finally {

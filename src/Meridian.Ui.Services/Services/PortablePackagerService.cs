@@ -212,7 +212,10 @@ public sealed class PortablePackagerService
         {
             try
             { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); }
-            catch (IOException) { }
+            catch (IOException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PortablePackagerService] Could not clean up temp directory: {ex.Message}");
+            }
         }
     }
 
@@ -325,7 +328,10 @@ public sealed class PortablePackagerService
             // Cleanup temp directory
             try
             { Directory.Delete(tempDir, true); }
-            catch (IOException) { }
+            catch (IOException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PortablePackagerService] Could not clean up temp directory: {ex.Message}");
+            }
         }
     }
 
@@ -378,7 +384,10 @@ public sealed class PortablePackagerService
         {
             try
             { Directory.Delete(tempDir, true); }
-            catch (IOException) { }
+            catch (IOException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PortablePackagerService] Could not clean up temp directory: {ex.Message}");
+            }
         }
     }
 

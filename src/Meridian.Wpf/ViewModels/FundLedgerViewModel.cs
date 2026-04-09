@@ -388,12 +388,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
         await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask);
 
-        var ledger = ledgerTask.Result;
-        var accounts = accountsTask.Result;
-        var bankSnapshots = bankSnapshotsTask.Result;
-        var cashSummary = cashTask.Result;
-        var reconciliationSnapshot = reconciliationTask.Result;
-        var portfolioPositions = portfolioTask.Result;
+        var ledger = await ledgerTask;
+        var accounts = await accountsTask;
+        var bankSnapshots = await bankSnapshotsTask;
+        var cashSummary = await cashTask;
+        var reconciliationSnapshot = await reconciliationTask;
+        var portfolioPositions = await portfolioTask;
 
         Title = $"Fund Operations · {activeFund.DisplayName}";
         StatusText = accounts.Count == 0 && ledger?.JournalEntryCount is not > 0

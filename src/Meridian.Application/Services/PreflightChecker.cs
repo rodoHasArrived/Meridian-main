@@ -278,7 +278,10 @@ public sealed class PreflightChecker
                 {
                     try
                     { File.Delete(testFile); }
-                    catch (IOException) { }
+                    catch (IOException ex)
+                    {
+                        _log.Debug(ex, "Could not delete preflight test file");
+                    }
                 }
             }
 

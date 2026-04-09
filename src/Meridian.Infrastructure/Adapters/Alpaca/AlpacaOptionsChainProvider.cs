@@ -73,27 +73,27 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
     /// <summary>
     /// Creates a new Alpaca options chain provider.
     /// </summary>
-    /// <param name="keyId">Alpaca API key ID (falls back to ALPACA_KEY_ID env var).</param>
-    /// <param name="secretKey">Alpaca API secret key (falls back to ALPACA_SECRET_KEY env var).</param>
     /// <param name="httpClientFactory">
-    /// Optional <see cref="IHttpClientFactory"/> to create the underlying HTTP client (ADR-010).
-    /// When provided, a named client "<c>alpaca-options</c>" is created so shared resilience
+    /// Required <see cref="IHttpClientFactory"/> to create the underlying HTTP client (ADR-010).
+    /// A named client "<c>alpaca-options</c>" is created so shared resilience
     /// policies and handler lifetimes are centrally managed.
     /// </param>
+    /// <param name="keyId">Alpaca API key ID (falls back to ALPACA_KEY_ID env var).</param>
+    /// <param name="secretKey">Alpaca API secret key (falls back to ALPACA_SECRET_KEY env var).</param>
     /// <param name="httpClient">Optional pre-built HTTP client (test-only override).</param>
     /// <param name="log">Optional logger.</param>
     public AlpacaOptionsChainProvider(
+        IHttpClientFactory httpClientFactory,
         string? keyId = null,
         string? secretKey = null,
-        IHttpClientFactory? httpClientFactory = null,
         HttpClient? httpClient = null,
         ILogger? log = null)
     {
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
         _keyId = keyId ?? Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
         _secretKey = secretKey ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
         _http = httpClient
-            ?? httpClientFactory?.CreateClient(HttpClientNames.AlpacaOptions)
-            ?? new HttpClient();
+            ?? httpClientFactory.CreateClient(HttpClientNames.AlpacaOptions);
         _log = log ?? Log.ForContext<AlpacaOptionsChainProvider>();
 
         if (IsConfigured)

@@ -2,8 +2,8 @@
 
 **Owner:** Core Team
 **Audience:** Engineering leads, implementers, and reviewers
-**Last Updated:** 2026-04-01
-**Status:** Active execution roadmap
+**Last Updated:** 2026-04-08
+**Status:** Active execution roadmap aligned to Wave 5 Backtest Studio unification
 
 ## Purpose
 
@@ -14,7 +14,7 @@ This document translates the Backtest Studio unification blueprint into PR-sized
 - suggested ownership boundaries
 - low-conflict file and module groupings
 
-The goal is to finish Wave 4 in a way that preserves Meridian's existing shared run model, avoids a parallel Lean result stack, and gives multiple contributors a safe way to work concurrently.
+The goal is to finish Wave 5 in a way that preserves Meridian's existing shared run model, avoids a parallel Lean result stack, and gives multiple contributors a safe way to work concurrently. This roadmap assumes the Wave 1-4 trust, cockpit, shared-model, and governance path remains the active priority unless a narrower Backtest Studio slice is explicitly pulled forward.
 
 Use this with:
 
@@ -329,7 +329,7 @@ Improve the experience for larger historical windows only where comparison and r
 
 **Goal**
 
-Close Wave 4 with the evidence needed to say Backtest Studio is one coherent workflow, not just a merged UI.
+Close Wave 5 with the evidence needed to say Backtest Studio is one coherent workflow, not just a merged UI.
 
 **Primary anchors**
 
@@ -343,7 +343,7 @@ Close Wave 4 with the evidence needed to say Backtest Studio is one coherent wor
 - mixed-engine regression coverage
 - fill-profile regression coverage
 - run compare and diff coverage for artifact gaps
-- documentation or status updates capturing Wave 4 completion evidence
+- documentation or status updates capturing Wave 5 completion evidence
 
 ## Suggested Merge Groups
 
@@ -370,7 +370,7 @@ If the goal is to start implementation immediately with the least rework risk:
 
 ## Exit Check
 
-Wave 4 is functionally complete when all of the following are true:
+Wave 5 is functionally complete when all of the following are true:
 
 - native and Lean completed backtests are both persisted as shared strategy runs
 - compare and diff workflows use canonical run storage instead of engine-specific result DTOs

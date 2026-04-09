@@ -1,6 +1,0 @@
-launched_pid=24416
-exists_after_launch=True
-window_count_after_launch=1
-clicked_enter_fund=true
-exists_after_click=True
-window_count_after_click=1

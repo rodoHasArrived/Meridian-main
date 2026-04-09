@@ -119,8 +119,8 @@ public sealed class ConfigurationWizard
 
         PrintLine("\nNext steps:");
         PrintLine("  1. Validate:  dotnet run -- --dry-run");
-        PrintLine("  2. Start:     dotnet run -- --mode web");
-        PrintLine("  3. Dashboard: http://localhost:8080");
+        PrintLine("  2. Start:     dotnet run -- --mode desktop");
+        PrintLine("  3. API:       http://localhost:8080");
         PrintLine();
 
         return new WizardResult(Success: true, Config: result.Config, ConfigPath: configPath);
@@ -209,8 +209,8 @@ public sealed class ConfigurationWizard
         PrintSuccess($"  Configuration saved to: {configPath}");
 
         PrintLine();
-        PrintSuccess("  Quickstart complete! Starting with --mode web will launch the dashboard.");
-        PrintLine("  Open http://localhost:8080 in your browser after starting.");
+        PrintSuccess("  Quickstart complete! Starting with --mode desktop will launch the desktop-local API host.");
+        PrintLine("  Local API endpoint: http://localhost:8080");
         PrintLine();
 
         return new WizardResult(Success: true, Config: config, ConfigPath: configPath);
@@ -241,9 +241,9 @@ public sealed class ConfigurationWizard
         PrintLine("  1. Validate your setup (recommended):");
         PrintLine("     dotnet run --project src/Meridian -- --dry-run");
         PrintLine();
-        PrintLine("  2. Start collecting data with the web dashboard:");
-        PrintLine("     dotnet run --project src/Meridian -- --mode web");
-        PrintLine("     Then open http://localhost:8080 in your browser");
+        PrintLine("  2. Start the desktop-local backend:");
+        PrintLine("     dotnet run --project src/Meridian -- --mode desktop");
+        PrintLine("     Local API endpoint: http://localhost:8080");
         PrintLine();
         PrintLine("  3. Or use quickstart (auto-validates and starts):");
         PrintLine("     dotnet run --project src/Meridian -- --quickstart");

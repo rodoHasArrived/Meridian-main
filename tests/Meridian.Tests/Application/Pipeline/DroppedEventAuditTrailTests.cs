@@ -126,7 +126,7 @@ public sealed class DroppedEventAuditTrailTests : IAsyncLifetime
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: symbol,
             Type: MarketEventType.Trade,
-            Payload: new Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload(),
+            Payload: new Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload(),
             Sequence: 1,
             Source: "TEST");
     }

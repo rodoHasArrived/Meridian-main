@@ -2,7 +2,7 @@
 # Build, Run, Format, Watch & Publish
 # =============================================================================
 
-.PHONY: build build-quick run run-ui run-backfill run-selftest \
+.PHONY: build build-quick run run-backfill run-selftest \
         lint format format-check \
         watch watch-build \
         install-hooks setup-dev \
@@ -21,10 +21,6 @@ build-quick: ## Fast incremental build (Debug, no analyzers)
 run: setup-config ## Run the collector
 	@echo "$(BLUE)Running collector...$(NC)"
 	dotnet run --project $(PROJECT) -- --http-port $(HTTP_PORT) --watch-config
-
-run-ui: setup-config ## Run with web dashboard
-	@echo "$(BLUE)Starting web dashboard on port $(HTTP_PORT)...$(NC)"
-	dotnet run --project $(PROJECT) -- --ui --http-port $(HTTP_PORT)
 
 run-backfill: setup-config ## Run historical backfill
 	@echo "$(BLUE)Running backfill...$(NC)"
@@ -81,7 +77,7 @@ setup-dev: install-hooks setup-config ## Full local dev setup (hooks, config, re
 	@echo ""
 	@echo "$(GREEN)Development environment ready!$(NC)"
 	@echo "  Run 'make watch' to start test-on-save mode"
-	@echo "  Run 'make run-ui' to start the web dashboard"
+	@echo "  Run 'make run' to start the desktop-local backend"
 
 clean: ## Clean build artifacts
 	@echo "$(BLUE)Cleaning...$(NC)"

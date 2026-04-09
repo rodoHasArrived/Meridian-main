@@ -1,15 +1,18 @@
 # Meridian - Consolidated Evaluations & Audits
 
-**Version:** 1.7.0
-**Last Updated:** 2026-03-21
-**Status:** Consolidated reference document (aligned with current roadmap/status docs)
+**Version:** 1.7.1
+**Last Updated:** 2026-04-08
+**Status:** Consolidated reference document (supporting reference, not the live execution backlog)
 
 This document consolidates all architecture evaluations, code audits, desktop assessments, improvement brainstorms, and architecture proposals into a single navigable reference. It replaces the need to read 20+ individual files across `docs/evaluations/`, `docs/audits/`, and `docs/development/` for a complete project health picture.
 
 **Canonical tracking documents (not merged here):**
-- [`ROADMAP.md`](ROADMAP.md) — phased execution timeline (Phases 0-10)
-- [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking (35 items, 7 themes)
-- [`production-status.md`](production-status.md) — provider readiness and production checklist
+- [`ROADMAP.md`](ROADMAP.md) — wave-structured delivery roadmap and core operator-readiness gates
+- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — normalized active implementation backlog aligned to the roadmap
+- [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking with legacy milestone tags retained for traceability
+- [`production-status.md`](production-status.md) — current development / pilot-ready posture and readiness caveats
+
+Use this document as supporting context. For active prioritization, default to the roadmap and normalized TODO rather than the historical evaluation set.
 
 ---
 
@@ -71,7 +74,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ## Refresh Highlights
 
-**This 2026-03-21 refresh aligns the consolidated document with the current planning set:**
+**This 2026-04-08 refresh keeps the consolidated document aligned with the current planning set:**
 
 - C1/C2 provider registration and DI composition are now reflected as **completed**, matching `IMPROVEMENTS.md` and `ROADMAP.md`.
 - Operational readiness now reflects the shipped SLO registry, alert-to-runbook linkage, and current remaining work (release gates, rollback drills).
@@ -813,4 +816,4 @@ All source documents that feed into this consolidation:
 
 ---
 
-*Last Updated: 2026-03-21*
+*Last Updated: 2026-04-08*

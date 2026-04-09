@@ -1,9 +1,9 @@
 # Provider Validation Matrix (Alpaca, Polygon, Robinhood, IB, StockSharp, NYSE)
 
-**Last Updated:** 2026-04-07  
-**Scope:** Replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, rate-limit handling, and stable-seam execution validation for execution- and streaming-oriented provider readiness.
+**Last Updated:** 2026-04-08  
+**Scope:** Wave 1 provider-confidence gate across replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, rate-limit handling, and stable-seam execution validation for execution- and streaming-oriented provider readiness.
 
-This matrix is the execution checklist referenced by `production-status.md` and `FEATURE_INVENTORY.md` for provider readiness gating.
+This matrix is the primary Wave 1 evidence checklist referenced by `production-status.md`, `ROADMAP.md`, and `FEATURE_INVENTORY.md` for provider-readiness gating.
 Historical-only and Security Master support providers such as FRED and EDGAR are tracked in `FEATURE_INVENTORY.md` rather than this execution-oriented matrix.
 
 ## Legend

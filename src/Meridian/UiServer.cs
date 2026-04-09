@@ -22,7 +22,6 @@ using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -35,7 +34,7 @@ using BacktestingRuntime = global::Meridian.Backtesting;
 namespace Meridian;
 
 /// <summary>
-/// Embedded HTTP server for the web dashboard UI.
+/// Embedded HTTP server for the desktop-local API surface.
 /// Uses ServiceCompositionRoot for centralized service registration.
 /// All endpoints are organized in dedicated endpoint classes in Meridian.Ui.Shared/Endpoints/.
 /// </summary>
@@ -66,14 +65,9 @@ public sealed class UiServer : IAsyncDisposable
     public UiServer(string configPath, int port = 8080)
     {
         var contentRootPath = Directory.GetCurrentDirectory();
-        var webRootPath = StaticAssetPathResolver.ResolveWebRootPath(
-            existingWebRootPath: null,
-            contentRootPath,
-            AppContext.BaseDirectory);
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
-            ContentRootPath = contentRootPath,
-            WebRootPath = webRootPath
+            ContentRootPath = contentRootPath
         });
 
         // Minimize logging from ASP.NET Core
@@ -244,7 +238,6 @@ public sealed class UiServer : IAsyncDisposable
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
 
         // Enable session-based authentication middleware (optional in Development/Test, required elsewhere by default)
-        _app.UseStaticFiles();
         _app.UseLoginSessionAuthentication();
 
         // Enable Swagger middleware
@@ -267,9 +260,6 @@ public sealed class UiServer : IAsyncDisposable
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
         _app.MapPackagingEndpoints(config.DataRoot);
         _app.MapArchiveMaintenanceEndpoints();
-
-        // Dashboard root page is host-specific and not included in MapUiEndpointsWithStatus.
-        _app.MapDashboard();
 
         _app.MapUiEndpointsWithStatus(statusHandlers);
     }

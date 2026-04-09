@@ -241,7 +241,10 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
                     return;
                 }
             }
-            catch { }
+            catch (JsonException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SecurityMasterEditViewModel] Failed to parse validation errors: {ex.Message}");
+            }
         }
 
         if (!string.IsNullOrEmpty(response.ErrorMessage))

@@ -1,7 +1,7 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-05
-**Current Delivery Theme:** Converging research, trading, data-operations, and governance workflows into one operator-ready platform
+**Last Reviewed:** 2026-04-08
+**Current Delivery Theme:** Advancing the Wave 1-4 path to core operator-readiness across provider trust, cockpit hardening, shared-model continuity, and governance productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
 
@@ -34,7 +34,7 @@ If a file says it is auto-generated, regenerate it instead of editing it manuall
 | Document | Description |
 |----------|-------------|
 | [CHANGELOG.md](CHANGELOG.md) | Generated repository/doc snapshot summary |
-| [TODO.md](TODO.md) | TODO/FIXME aggregation from source comments |
+| [TODO.md](TODO.md) | Informational TODO/FIXME aggregation from source comments |
 | [health-dashboard.md](health-dashboard.md) | Documentation health report |
 | [coverage-report.md](coverage-report.md) | Documentation coverage summary |
 | [metrics-dashboard.md](metrics-dashboard.md) | Documentation metrics dashboard |
@@ -60,21 +60,22 @@ These dated snapshots remain useful for history, but they no longer act as activ
 
 1. [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md)
 2. [ROADMAP.md](ROADMAP.md)
-3. [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md)
-4. [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md)
-5. [../plans/README.md](../plans/README.md)
-6. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
-7. [provider-validation-matrix.md](provider-validation-matrix.md)
-8. [production-status.md](production-status.md)
+3. [production-status.md](production-status.md)
+4. [OPPORTUNITY_SCAN.md](OPPORTUNITY_SCAN.md)
+5. [TARGET_END_PRODUCT.md](TARGET_END_PRODUCT.md)
+6. [../plans/README.md](../plans/README.md)
+7. [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
+8. [provider-validation-matrix.md](provider-validation-matrix.md)
 9. [IMPROVEMENTS.md](IMPROVEMENTS.md)
 
 ## Current Status Summary
 
 - **Platform state:** Development / pilot-ready baseline with strong ingestion, storage, replay, and export foundations
-- **Workstation state:** Web and WPF both expose meaningful workspace flows, but workflow hardening and parity work remain
-- **Governance state:** Security Master, ledger, reconciliation, and reporting seams exist and are moving from visibility to productization
-- **Provider state:** Breadth is strong, but readiness still depends on concrete validation evidence across key providers
-- **Documentation state:** Status and plan navigation now centers the current roadmap, opportunity scan, and target-state narrative
+- **Core delivery path:** Waves 1-4 define the core operator-ready baseline; Waves 5-6 deepen the product afterward
+- **Workstation state:** Web and WPF both expose meaningful workspace flows, but cockpit hardening and shared-model continuity still remain
+- **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
+- **Provider state:** Breadth is strong, but readiness still depends on concrete Wave 1 validation evidence across key providers
+- **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans
 
 ## Related Documentation
 

@@ -258,8 +258,20 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         ProviderRegistry registry,
         IEnumerable<IOptionsChainProvider> optionProviders)
     {
-        var merged = registry.GetProviderCatalog()
+        var merged = Meridian.Contracts.Api.ProviderCatalog.GetStaticEntries()
             .ToDictionary(entry => entry.ProviderId, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var entry in registry.GetProviderCatalog())
+        {
+            if (merged.TryGetValue(entry.ProviderId, out var existing))
+            {
+                merged[entry.ProviderId] = MergeCatalogEntries(existing, entry);
+            }
+            else
+            {
+                merged[entry.ProviderId] = entry;
+            }
+        }
 
         foreach (var provider in optionProviders)
         {

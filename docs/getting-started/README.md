@@ -9,7 +9,6 @@ This guide covers the fastest verified ways to get Meridian running locally. For
 - .NET 9 SDK
 - Git
 - One configured data provider if you want live or credentialed historical data
-- Node.js and npm only if you plan to build the dashboard frontend bundle directly
 
 ## Fastest Local Setup
 
@@ -32,7 +31,7 @@ dotnet build Meridian.sln
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 ```
 
-`--quickstart` is the fastest verified first-run path. It delegates to the configuration pipeline and prepares the app for a `--mode web` launch.
+`--quickstart` is the fastest verified first-run path. It delegates to the configuration pipeline and prepares the app for a `--mode desktop` launch.
 
 ## Other Setup Paths
 
@@ -45,18 +44,18 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 | Connectivity test | `dotnet run --project src/Meridian/Meridian.csproj -- --test-connectivity` | Verifies configured provider connections |
 | Full dry run | `dotnet run --project src/Meridian/Meridian.csproj -- --dry-run` | Validation without starting collection |
 
-## Choose A Launch Surface
+## Choose A Launch Mode
 
-### Web dashboard
+### Desktop-local API host
 
 ```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --mode web --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 ```
 
 You can also use:
 
 ```bash
-make run-ui
+make run
 ```
 
 ### Headless collector
@@ -79,7 +78,7 @@ Manual fallback:
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true
 ```
 
-The WPF shell is the Windows-only desktop workstation path. The web dashboard remains the cross-platform UI surface.
+The WPF shell is the Windows-only desktop workstation path and the primary interactive operator surface.
 
 ## Provider Setup
 

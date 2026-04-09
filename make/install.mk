@@ -44,7 +44,7 @@ quickstart: ## Zero-to-running setup for new contributors
 	@echo "  2. Run the interactive setup wizard:"
 	@echo "     dotnet run --project $(PROJECT) -- --wizard"
 	@echo "  3. Or start collecting immediately:"
-	@echo "     make run-ui"
+	@echo "     make run"
 	@echo ""
 
 install: ## Interactive installation (Docker or Native)
@@ -80,7 +80,7 @@ docker-up: setup-config ## Start Docker container
 	@echo "$(BLUE)Starting Docker container...$(NC)"
 	docker compose -f deploy/docker/docker-compose.yml up -d
 	@echo "$(GREEN)Container started!$(NC)"
-	@echo "  Dashboard: http://localhost:$(HTTP_PORT)"
+	@echo "  API:       http://localhost:$(HTTP_PORT)"
 	@echo "  Health:    http://localhost:$(HTTP_PORT)/health"
 	@echo "  Metrics:   http://localhost:$(HTTP_PORT)/metrics"
 

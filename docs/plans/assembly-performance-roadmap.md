@@ -1,7 +1,7 @@
 # Assembly-Level Performance Roadmap
 
 **Version:** 1.0
-**Last Updated:** 2026-03-17
+**Last Updated:** 2026-04-08
 **Audience:** Core contributors, performance engineers
 **Source Evaluation:** [`docs/evaluations/assembly-performance-opportunities.md`](../evaluations/assembly-performance-opportunities.md)
 
@@ -11,6 +11,8 @@ This document translates the seven improvement candidates identified in the asse
 evaluation into a **viability-assessed, phase-ordered implementation roadmap**. Each candidate is
 scored against the Meridian codebase's actual risk profile, and all code locations are pinned to the
 production files they touch.
+
+This roadmap corresponds to Meridian's optional advanced-performance track. It should normally follow the core operator-readiness path unless profiling shows a concrete performance blocker affecting an active Wave 1-6 deliverable.
 
 ---
 
@@ -345,7 +347,7 @@ Before merging any optimized path:
 ## Related Documents
 
 - **Source evaluation:** [`docs/evaluations/assembly-performance-opportunities.md`](../evaluations/assembly-performance-opportunities.md)
-- **Main roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Phase 16 entry
+- **Main roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — optional advanced-performance track
 - **Benchmark project:** [`benchmarks/Meridian.Benchmarks/`](https://github.com/rodoHasArrived/Meridian/blob/main/benchmarks/Meridian.Benchmarks)
 - **`SymbolTable`:** `src/Meridian.Core/Performance/SymbolTable.cs`
 - **`MemoryMappedJsonlReader`:** `src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs`
@@ -356,4 +358,4 @@ Before merging any optimized path:
 
 ---
 
-_Last Updated: 2026-03-17_
+_Last Updated: 2026-04-08_

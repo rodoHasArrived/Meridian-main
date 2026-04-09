@@ -74,22 +74,22 @@ public sealed class PolygonOptionsChainProvider : IOptionsChainProvider
     /// </summary>
     /// <param name="apiKey">Polygon API key (falls back to POLYGON_API_KEY env var).</param>
     /// <param name="httpClientFactory">
-    /// Optional <see cref="IHttpClientFactory"/> to create the underlying HTTP client (ADR-010).
-    /// When provided, a named client "<c>polygon-options</c>" is created so shared resilience
+    /// Required <see cref="IHttpClientFactory"/> to create the underlying HTTP client (ADR-010).
+    /// A named client "<c>polygon-options</c>" is created so shared resilience
     /// policies and handler lifetimes are centrally managed.
     /// </param>
     /// <param name="httpClient">Optional pre-built HTTP client (test-only override).</param>
     /// <param name="log">Optional logger.</param>
     public PolygonOptionsChainProvider(
+        IHttpClientFactory httpClientFactory,
         string? apiKey = null,
-        IHttpClientFactory? httpClientFactory = null,
         HttpClient? httpClient = null,
         ILogger? log = null)
     {
+        ArgumentNullException.ThrowIfNull(httpClientFactory);
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("POLYGON_API_KEY");
         _http = httpClient
-            ?? httpClientFactory?.CreateClient(HttpClientNames.PolygonOptions)
-            ?? new HttpClient();
+            ?? httpClientFactory.CreateClient(HttpClientNames.PolygonOptions);
         _log = log ?? Log.ForContext<PolygonOptionsChainProvider>();
 
         _http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

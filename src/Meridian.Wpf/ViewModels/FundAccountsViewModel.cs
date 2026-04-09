@@ -282,11 +282,15 @@ public sealed partial class FundAccountsViewModel : BindableBase
 
             await Task.WhenAll(connectionsTask, bindingsTask, trustTask).ConfigureAwait(false);
 
-            if (!connectionsTask.Result.Success || !bindingsTask.Result.Success || !trustTask.Result.Success)
+            var connectionsResult = await connectionsTask;
+            var bindingsResult = await bindingsTask;
+            var trustResult = await trustTask;
+
+            if (!connectionsResult.Success || !bindingsResult.Success || !trustResult.Success)
             {
-                ProviderRoutingStatus = connectionsTask.Result.Error
-                    ?? bindingsTask.Result.Error
-                    ?? trustTask.Result.Error
+                ProviderRoutingStatus = connectionsResult.Error
+                    ?? bindingsResult.Error
+                    ?? trustResult.Error
                     ?? "Provider routing data is unavailable.";
                 return;
             }
@@ -303,18 +307,18 @@ public sealed partial class FundAccountsViewModel : BindableBase
                     RequireProductionReady: capability == ProviderCapabilityKind.OrderExecution.ToString())))
                 .ToArray();
 
-            await Task.WhenAll(previewTasks).ConfigureAwait(false);
+            var previewResults = await Task.WhenAll(previewTasks).ConfigureAwait(false);
 
             ApplyProviderInsights(
                 SelectedAccount,
-                connectionsTask.Result.Connections,
-                bindingsTask.Result.Bindings,
-                trustTask.Result.Snapshots,
+                connectionsResult.Connections,
+                bindingsResult.Bindings,
+                trustResult.Snapshots,
                 _fundProfileCatalog.CurrentFundProfile?.DefaultWorkspaceId,
                 SelectedFundProfileId,
-                previewTasks
-                    .Where(task => task.Result.Success && task.Result.Preview is not null)
-                    .Select(task => task.Result.Preview!)
+                previewResults
+                    .Where(result => result.Success && result.Preview is not null)
+                    .Select(result => result.Preview!)
                     .ToArray());
         }
         catch (Exception ex)

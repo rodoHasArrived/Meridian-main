@@ -23,6 +23,8 @@ public sealed class FixtureMarketDataClient : IMarketDataClient
 {
     private readonly ConcurrentDictionary<int, (SymbolConfig Config, CancellationTokenSource Cts)> _depthSubs = new();
     private readonly ConcurrentDictionary<int, (SymbolConfig Config, CancellationTokenSource Cts)> _tradeSubs = new();
+    private readonly ConcurrentDictionary<int, Task> _depthTasks = new();
+    private readonly ConcurrentDictionary<int, Task> _tradeTasks = new();
     private readonly IMarketEventPublisher _publisher;
     private int _nextSubId;
     private volatile bool _connected;
@@ -54,16 +56,22 @@ public sealed class FixtureMarketDataClient : IMarketDataClient
         return Task.CompletedTask;
     }
 
-    public Task DisconnectAsync(CancellationToken ct = default)
+    public async Task DisconnectAsync(CancellationToken ct = default)
     {
         _connected = false;
         foreach (var sub in _tradeSubs.Values)
             sub.Cts.Cancel();
         foreach (var sub in _depthSubs.Values)
             sub.Cts.Cancel();
+
+        var runningTasks = _tradeTasks.Values.Concat(_depthTasks.Values).ToArray();
+        if (runningTasks.Length > 0)
+            await Task.WhenAll(runningTasks).ConfigureAwait(false);
+
         _tradeSubs.Clear();
         _depthSubs.Clear();
-        return Task.CompletedTask;
+        _tradeTasks.Clear();
+        _depthTasks.Clear();
     }
 
     public int SubscribeTrades(SymbolConfig cfg)
@@ -71,7 +79,7 @@ public sealed class FixtureMarketDataClient : IMarketDataClient
         var id = Interlocked.Increment(ref _nextSubId);
         var cts = new CancellationTokenSource();
         _tradeSubs[id] = (cfg, cts);
-        _ = GenerateTradeEventsAsync(cfg, cts.Token);
+        _tradeTasks[id] = GenerateTradeEventsAsync(cfg, cts.Token);
         return id;
     }
 
@@ -79,6 +87,7 @@ public sealed class FixtureMarketDataClient : IMarketDataClient
     {
         if (_tradeSubs.TryRemove(subscriptionId, out var sub))
             sub.Cts.Cancel();
+        _tradeTasks.TryRemove(subscriptionId, out _);
     }
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
@@ -86,7 +95,7 @@ public sealed class FixtureMarketDataClient : IMarketDataClient
         var id = Interlocked.Increment(ref _nextSubId);
         var cts = new CancellationTokenSource();
         _depthSubs[id] = (cfg, cts);
-        _ = GenerateDepthEventsAsync(cfg, cts.Token);
+        _depthTasks[id] = GenerateDepthEventsAsync(cfg, cts.Token);
         return id;
     }
 
@@ -94,12 +103,12 @@ public sealed class FixtureMarketDataClient : IMarketDataClient
     {
         if (_depthSubs.TryRemove(subscriptionId, out var sub))
             sub.Cts.Cancel();
+        _depthTasks.TryRemove(subscriptionId, out _);
     }
 
     public ValueTask DisposeAsync()
     {
-        _ = DisconnectAsync();
-        return ValueTask.CompletedTask;
+        return new ValueTask(DisconnectAsync());
     }
 
     private async Task GenerateTradeEventsAsync(SymbolConfig cfg, CancellationToken ct)

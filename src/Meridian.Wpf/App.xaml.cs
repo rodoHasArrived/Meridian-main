@@ -26,7 +26,6 @@ using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -376,7 +375,6 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
-        services.AddTransient<DashboardWebPage>();
         services.AddTransient<CredentialManagementPage>();
         services.AddTransient<QuantScriptPage>();
         services.AddTransient<AccountPortfolioPage>();
@@ -578,9 +576,6 @@ public partial class App : System.Windows.Application
     {
         try
         {
-            // Probe WebView2 Evergreen runtime availability (non-blocking, logs warning if absent).
-            CheckWebView2Runtime();
-
             // Run first-time setup before showing window
             await InitializeFirstRunAsync();
 
@@ -1030,26 +1025,4 @@ public partial class App : System.Windows.Application
         systemTrayService.UpdateHealthStatus(initialStatus);
     }
 
-    // ── WebView2 runtime availability check ───────────────────────────────
-
-    /// <summary>
-    /// Probes whether the WebView2 Evergreen Runtime is installed on this machine
-    /// without requiring a WebView2 control to be instantiated.
-    /// Logs a warning if the runtime is absent (the embedded dashboard degrades gracefully).
-    /// </summary>
-    private static void CheckWebView2Runtime()
-    {
-        try
-        {
-            var version = Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString();
-            WpfServices.LoggingService.Instance.LogInfo(
-                "[WebView2] Runtime available", ("version", version));
-        }
-        catch
-        {
-            WpfServices.LoggingService.Instance.LogWarning(
-                "[WebView2] Runtime not installed. The 'Web Dashboard' page will show an installation prompt. " +
-                "Download from https://developer.microsoft.com/en-us/microsoft-edge/webview2/");
-        }
-    }
 }

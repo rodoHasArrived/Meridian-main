@@ -25,7 +25,6 @@ COPY src/Meridian.Domain/Meridian.Domain.csproj src/Meridian.Domain/
 COPY src/Meridian.Infrastructure/Meridian.Infrastructure.csproj src/Meridian.Infrastructure/
 COPY src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj src/Meridian.ProviderSdk/
 COPY src/Meridian.Storage/Meridian.Storage.csproj src/Meridian.Storage/
-COPY src/Meridian.Ui/Meridian.Ui.csproj src/Meridian.Ui/
 COPY src/Meridian.Ui.Services/Meridian.Ui.Services.csproj src/Meridian.Ui.Services/
 COPY src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj src/Meridian.Ui.Shared/
 COPY src/Meridian.FSharp/Meridian.FSharp.fsproj src/Meridian.FSharp/
@@ -94,9 +93,9 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-# Default entrypoint - web dashboard mode
+# Default entrypoint - desktop-local API host
 ENTRYPOINT ["dotnet", "Meridian.dll"]
-CMD ["--ui", "--http-port", "8080", "--watch-config"]
+CMD ["--mode", "desktop", "--http-port", "8080", "--watch-config"]
 
 # =============================================================================
 # Usage Examples:
@@ -105,7 +104,7 @@ CMD ["--ui", "--http-port", "8080", "--watch-config"]
 # Build the image:
 #   docker build -t meridian:latest .
 #
-# Run web dashboard:
+# Run desktop-local API host:
 #   docker run -d -p 8080:8080 \
 #     -v $(pwd)/data:/app/data \
 #     -v $(pwd)/appsettings.json:/app/appsettings.json:ro \

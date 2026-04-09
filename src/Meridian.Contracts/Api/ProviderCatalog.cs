@@ -519,6 +519,11 @@ public static class ProviderCatalog
     }
 
     /// <summary>
+    /// Gets the built-in static catalog entries without consulting runtime providers.
+    /// </summary>
+    public static IReadOnlyList<ProviderCatalogEntry> GetStaticEntries() => _entries.Values.ToList();
+
+    /// <summary>
     /// Gets providers of a specific type.
     /// </summary>
     public static IReadOnlyList<ProviderCatalogEntry> GetByType(ProviderTypeKind type)
@@ -573,6 +578,12 @@ public static class ProviderCatalog
         }
         return _entries.TryGetValue(providerId, out var entry) ? entry : null;
     }
+
+    /// <summary>
+    /// Gets a built-in static catalog entry by ID without consulting runtime providers.
+    /// </summary>
+    public static ProviderCatalogEntry? GetStaticEntry(string providerId)
+        => _entries.TryGetValue(providerId, out var entry) ? entry : null;
 
     /// <summary>
     /// Gets provider notes for UI display.

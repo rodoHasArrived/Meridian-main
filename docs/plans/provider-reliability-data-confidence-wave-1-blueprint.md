@@ -2,8 +2,8 @@
 
 **Owner:** Core Team  
 **Audience:** Infrastructure, storage, provider, QA, and operations contributors  
-**Last Updated:** 2026-04-07  
-**Status:** Active blueprint
+**Last Updated:** 2026-04-08  
+**Status:** Active blueprint for the Wave 1 core operator-readiness gate
 
 ---
 
@@ -11,7 +11,7 @@
 
 Wave 1 closes the trust gate that blocks every downstream readiness claim in Meridian. The goal is not more provider surface area. The goal is evidence-backed confidence that the providers, replay paths, checkpointing, and persistence seams already present in the repo behave predictably enough to support backtesting, paper-trading, and later execution work without overstating what has been validated.
 
-This blueprint turns the active Wave 1 scope into a concrete delivery plan grounded in the current provider contracts, replay suites, backfill services, and Parquet sink implementation already in the repository.
+This blueprint turns the active Wave 1 scope into a concrete delivery plan grounded in the current provider contracts, replay suites, backfill services, and Parquet sink implementation already in the repository. It is the main plan artifact behind the provider-confidence gate in the canonical roadmap.
 
 ---
 

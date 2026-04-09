@@ -192,9 +192,6 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         RegisterPage("SetupWizard", typeof(SetupWizardPage));
         RegisterPage("AddProviderWizard", typeof(AddProviderWizardPage));
 
-        // Embedded React dashboard (requires WebView2 Evergreen Runtime)
-        RegisterPage("DashboardWeb", typeof(DashboardWebPage));
-
         // Activity Log (1 page)
         RegisterPage("ActivityLog", typeof(ActivityLogPage));
 

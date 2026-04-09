@@ -62,7 +62,7 @@
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.Extensions.Logging" />
 
-    <!-- ASP.NET Core - Web Dashboard Support -->
+    <!-- ASP.NET Core - desktop-local API host -->
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
@@ -88,19 +88,9 @@
     <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />
   </ItemGroup>
 
-  <!-- Web Dashboard Templates -->
+  <!-- Host static assets -->
   <ItemGroup>
     <Content Include="wwwroot\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <!-- Workstation UI bundle (Vite output from src/Meridian.Ui/dashboard).
-       Linked here so UiServer.ServeWorkstationIndex can find wwwroot/workstation/index.html
-       when the main Meridian executable hosts the web dashboard. -->
-  <ItemGroup>
-    <Content Include="..\Meridian.Ui\wwwroot\workstation\**\*"
-             Link="wwwroot\workstation\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

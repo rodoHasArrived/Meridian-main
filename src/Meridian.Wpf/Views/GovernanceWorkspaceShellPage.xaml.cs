@@ -116,9 +116,9 @@ public partial class GovernanceWorkspaceShellPage : Page
             var cashTask = _cashFinancingReadService.GetAsync(profile.FundProfileId, profile.BaseCurrency);
             await Task.WhenAll(ledgerTask, reconTask, cashTask);
 
-            var ledger = ledgerTask.Result;
-            var reconciliation = reconTask.Result;
-            var cash = cashTask.Result;
+            var ledger = await ledgerTask;
+            var reconciliation = await reconTask;
+            var cash = await cashTask;
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {

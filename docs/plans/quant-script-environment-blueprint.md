@@ -1,60 +1,66 @@
-<<<<<<< HEAD
-=======
-# Executive Summary
+# QuantScript Environment Blueprint
 
-This document outlines the environment blueprint for the quant script used in our project. It provides essential design decisions, technical architecture, and the scope of the project.
+**Owner:** Desktop / Research Engineering
+**Audience:** Research, desktop, and backtesting contributors
+**Last Updated:** 2026-04-08
+**Status:** Delivered baseline with optional post-core follow-ons
 
-# Scope
+---
 
-## In-Scope
-- Development of the quant script environment using specific technologies.
-- Integration with the existing deployment pipeline.
+## Summary
 
-## Out-of-Scope
-- Features that are not related to the quant script functionalities.
-- Any external systems not mentioned in the integration plan.
+QuantScript is Meridian's interactive C# research scripting environment inside the desktop workstation. The core page, compiler/runner path, tests, and sample-script baseline are already implemented; this document now serves as the high-level product-placement and architecture-intent reference, while [`quant-script-page-implementation-guide.md`](quant-script-page-implementation-guide.md) carries the detailed screen, service, and implementation guidance.
 
-# Design Decisions
+QuantScript is not part of the default Wave 1-6 core operator-readiness path. Treat it as an optional research-product track unless a specific roadmap decision pulls it forward.
 
-## Decision 1: Choice of Programming Language  
-**Problem**: What programming language should be used for the quant script? 
-  
-**Alternatives Considered**: Python, R, Java  
+---
 
-**Rationale**: Python was chosen for its rich ecosystem in data analysis.
+## Product Role
 
-**Consequences**: The team needs familiarity with Python to build and maintain the script.
+- give researchers a fast local scripting surface over Meridian-collected data
+- connect scripting, charting, metrics, diagnostics, and backtest-adjacent analysis inside one desktop workflow
+- reuse Meridian services and data contracts instead of creating a separate research stack
+- complement the Research workspace rather than replace the shared run, promotion, or governance workflows
 
-**Notes/Known Risks**: Availability of competent Python developers may be a risk.
+---
 
-## Decision 2: Data Storage Solution  
-**Problem**: How will the data be stored?  
+## Scope
 
-**Alternatives Considered**: SQL Database, NoSQL Database  
+### In scope
 
-**Rationale**: A SQL Database was selected for structured data storage.
+- interactive C# scripting in the WPF workstation
+- script browser, parameter inputs, console output, charts, metrics, and diagnostics
+- access to existing Meridian data, analytics, and backtesting services through explicit runner abstractions
+- persisted local scripts and repeatable research workflows
 
-**Consequences**: Operations related to data migration may be required.
+### Out of scope
 
-**Notes/Known Risks**: Potential performance issues with large volumes of data.
+- treating Python or R notebooks as a required Meridian platform dependency
+- replacing workstation research, promotion, or governance flows with a standalone scripting product
+- elevating QuantScript ahead of the Wave 1-6 operator-readiness path by default
 
-# Architecture / Context
+---
 
-The architecture below outlines the components of the system and provides context for how they interact. 
+## Architecture Direction
 
-![Architecture Diagram](link-to-diagram)
+- keep QuantScript as a workstation-integrated research tool, not a second application stack
+- keep execution isolated behind compiler/runner services and explicit capability injection
+- keep outputs aligned with shared backtest and run contracts where that materially helps workflow continuity
+- route detailed UI, ViewModel, and interaction design to the page implementation guide instead of duplicating it here
 
-This diagram illustrates the main components of the quant script environment. Each component's interaction is crucial for ensuring optimal performance and reliability.
+---
 
-# Component Responsibilities
+## Dependencies And Placement
 
-1. **Data Ingestion**: Responsible for pulling data from various sources.
-2. **Data Processing**: Manages data transformation and analysis.
-3. **Output Generation**: Produces the final output for the quant model.
+- QuantScript depends on the platform foundations Meridian already has in data collection, charting, diagnostics, and backtesting
+- further QuantScript expansion should normally follow Waves 1-4 and sit alongside other optional research and scale tracks
+- if future work deepens this surface, prefer integration with shared run, export, and observability seams over bespoke storage or orchestration paths
 
-Further details on each component can be found in the subsequent sections.
+---
 
-# Conclusion
+## Related Documents
 
-This updated document reflects improvements for clarity and structure while maintaining rigorous technical content. The environment blueprint is critical for guiding the development of the quant script.
->>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3
+- [QuantScript Page Implementation Guide](quant-script-page-implementation-guide.md)
+- [L3 Inference Implementation Plan](l3-inference-implementation-plan.md)
+- [QuantScript L3 Multi-instance Round 2 Roadmap](quantscript-l3-multiinstance-round2-roadmap.md)
+- [ROADMAP.md](../status/ROADMAP.md)

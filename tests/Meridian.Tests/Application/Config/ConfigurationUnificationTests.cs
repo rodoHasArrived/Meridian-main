@@ -88,27 +88,28 @@ public sealed class ConfigurationUnificationTests
     }
 
     [Fact]
-    public void DeploymentContext_FromArgs_ResolvesWebMode()
+    public void DeploymentContext_FromArgs_RejectsRemovedWebMode()
     {
         var args = new[] { "--mode", "web", "--http-port", "9000" };
 
         var context = DeploymentContext.FromArgs(args, "test.json");
 
-        context.Mode.Should().Be(DeploymentMode.Web);
+        context.Mode.Should().Be(DeploymentMode.Headless);
         context.HttpPort.Should().Be(9000);
-        context.RequiresHttpServer.Should().BeTrue();
-        context.ModeDescription.Should().Contain("9000");
+        context.RequiresHttpServer.Should().BeFalse();
+        context.ModeResolutionError.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--mode web'.");
     }
 
     [Fact]
-    public void DeploymentContext_FromArgs_ResolvesLegacyUiFlag()
+    public void DeploymentContext_FromArgs_RejectsLegacyUiFlag()
     {
         var args = new[] { "--ui" };
 
         var context = DeploymentContext.FromArgs(args, "test.json");
 
-        context.Mode.Should().Be(DeploymentMode.Web);
+        context.Mode.Should().Be(DeploymentMode.Headless);
         context.HttpPort.Should().Be(8080); // Default port
+        context.ModeResolutionError.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--ui'.");
     }
 
     [Fact]
@@ -169,17 +170,6 @@ public sealed class ConfigurationUnificationTests
     }
 
     [Fact]
-    public void DeploymentContext_ForWeb_CreatesWebContext()
-    {
-        var context = DeploymentContext.ForWeb("/config.json", port: 3000);
-
-        context.Mode.Should().Be(DeploymentMode.Web);
-        context.HttpPort.Should().Be(3000);
-        context.IsOneShotCommand.Should().BeFalse();
-        context.RequiresHttpServer.Should().BeTrue();
-    }
-
-    [Fact]
     public void DeploymentContext_ForDesktop_CreatesDesktopContext()
     {
         var context = DeploymentContext.ForDesktop("/config.json", port: 5000, hotReload: true);
@@ -193,12 +183,6 @@ public sealed class ConfigurationUnificationTests
     [Fact]
     public void DeploymentContext_ComputedProperties_AreConsistent()
     {
-        // Web mode
-        var webContext = DeploymentContext.ForWeb("test.json");
-        webContext.RequiresHttpServer.Should().BeTrue();
-        webContext.RunsCollector.Should().BeFalse(); // Web mode only runs UI server
-        webContext.RequiresGracefulShutdown.Should().BeTrue();
-
         // Desktop mode
         var desktopContext = DeploymentContext.ForDesktop("test.json");
         desktopContext.RequiresHttpServer.Should().BeTrue();

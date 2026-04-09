@@ -1,7 +1,7 @@
 # Security Master Productization Roadmap
 
-**Last Updated:** 2026-04-07
-**Status:** Delivered — Wave 6 mechanics plus workstation/read-model productization
+**Last Updated:** 2026-04-08
+**Status:** Delivered baseline with active Wave 4 governance and fund-operations follow-ons
 **Owner:** Platform team
 **Audience:** Architecture, API, UI, and data contributors
 
@@ -30,9 +30,11 @@ All new F# types and C# DTOs introduced by this roadmap must follow the
 
 ## Summary
 
-Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap captured the six Wave 6 mechanics required to establish Security Master as a platform layer, and now records the follow-on workstation/read-model productization that makes those mechanics operator-usable.
+Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap captured the mechanics that established Security Master as a platform layer, and now records the delivered workstation/read-model productization plus the remaining Wave 4 governance and fund-operations follow-on work that builds on that shipped baseline.
 
-**Wave 6 delivery state (as of 2026-03-26):**
+Security Master is no longer a future roadmap wave. In the canonical roadmap it is a delivered baseline feeding the active governance productization path.
+
+**Delivered mechanics snapshot (as of 2026-03-26):**
 
 | # | Idea | Status |
 |---|------|--------|
@@ -278,5 +280,5 @@ The corporate action timeline and trading parameters detail panel are fully back
 - `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs`
 - `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs`
 - `tests/Meridian.Tests/SecurityMaster/`
-- [`ROADMAP.md`](../status/ROADMAP.md) — Wave 6
+- [`ROADMAP.md`](../status/ROADMAP.md) — delivered Security Master baseline plus Wave 4 governance follow-ons
 - [`FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md) — Security Master section

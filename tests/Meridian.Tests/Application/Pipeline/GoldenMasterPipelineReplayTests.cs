@@ -121,7 +121,7 @@ public sealed class GoldenMasterPipelineReplayTests : IAsyncLifetime
         var captured = _sink.Events[0];
         captured.Type.Should().Be(MarketEventType.Heartbeat);
         captured.Symbol.Should().Be("SYSTEM");
-        captured.Payload.Should().BeOfType<Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload>(
+        captured.Payload.Should().BeOfType<Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload>(
             "heartbeat events carry a HeartbeatPayload, not null");
     }
 

@@ -10,7 +10,7 @@ param(
     [ValidateSet("all", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")]
     [string]$Platform = "all",
 
-    [ValidateSet("all", "collector", "ui", "desktop")]
+    [ValidateSet("all", "collector", "desktop")]
     [string]$Project = "all",
 
     [string]$Version = "1.0.0",
@@ -35,7 +35,6 @@ Set-Location $RepoRoot
 $AllPlatforms = @("win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")
 $WindowsPlatforms = @("win-x64", "win-arm64")
 $CollectorProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
-$UiProject = Join-Path $RepoRoot "src/Meridian.Ui/Meridian.Ui.csproj"
 $DesktopProject = Join-Path $RepoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj"
 
 function Write-Info {
@@ -81,7 +80,6 @@ Parameters:
   -Project      Target project (default: all)
                   all        Build all projects
                   collector  Build only Meridian (CLI)
-                  ui         Build only Meridian.Ui (Web Dashboard)
                   desktop    Build only Meridian.Wpf / Meridian.Desktop (Windows Desktop App)
 
   -Version      Version number (default: 1.0.0)
@@ -223,10 +221,6 @@ foreach ($rid in $TargetPlatforms) {
 
     if ($Project -eq "all" -or $Project -eq "collector") {
         Publish-Project -ProjectPath $CollectorProject -RuntimeId $rid -ProjectName "Meridian" -OutputSubDir "collector"
-    }
-
-    if ($Project -eq "all" -or $Project -eq "ui") {
-        Publish-Project -ProjectPath $UiProject -RuntimeId $rid -ProjectName "Meridian.Ui" -OutputSubDir "ui"
     }
 
     # Build the WPF desktop app only for Windows platforms
