@@ -260,6 +260,20 @@
                                FontSize="13"
                                Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                Text="Risk preview becomes available after a completed run is selected." />
+                    <WrapPanel Margin="0,14,0,0">
+                        <Button Content="Accounting Impact"
+                                Click="OpenAccountingImpact_Click"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,10,8" />
+                        <Button Content="Reconciliation"
+                                Click="OpenReconciliationPreview_Click"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,10,8" />
+                        <Button Content="Audit Trail"
+                                Click="OpenAuditTrail_Click"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,10,8" />
+                    </WrapPanel>
                 </StackPanel>
             </Border>
         </Grid>

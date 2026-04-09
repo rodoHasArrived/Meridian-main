@@ -73,6 +73,14 @@ When testing upgrades or publish/install flows, verify that:
 4. Existing configs that only contain `Storage.BaseDirectory` still load into the same effective data directory
 5. Legacy app-folder session, activity-log, symbol-mapping, and schema files are copied forward into the external desktop locations on first upgraded launch
 
+### Launch/session restore seeding
+
+Desktop launch restore now accepts both legacy raw fund profile keys such as `alpha-credit` and operating-context keys such as `Fund:alpha-credit` when reading `workspace-data.json`.
+
+- New workstation session seeds should prefer the operating-context key shape in `lastSelectedFundProfileId` and `sessionsByFundProfileId`
+- For backward compatibility, smoke helpers may still write the raw fund profile alias during transition periods
+- If you are targeting a fund-scoped workstation page like `Options` or `AddProviderWizard`, make sure the seeded session points at the `data-operations` workspace so launch restore does not legitimately fall back to the fund profile's default governance route
+
 ## Test Projects
 
 ### Meridian.Tests (cross-platform backend + host topology)

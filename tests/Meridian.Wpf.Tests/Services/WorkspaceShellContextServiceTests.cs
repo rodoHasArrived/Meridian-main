@@ -89,6 +89,44 @@ public sealed class WorkspaceShellContextServiceTests
         detector.SetFixtureMode(false);
     }
 
+    [Fact]
+    public async Task CreateAsync_WhenOperatingContextSelected_AddsScopeAndCurrencyBadges()
+    {
+        var detector = FixtureModeDetector.Instance;
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        NotificationService.Instance.ClearHistory();
+
+        var statusService = Substitute.For<IStatusService>();
+        statusService.GetStatusAsync(Arg.Any<CancellationToken>())
+            .Returns(new StatusResponse { IsConnected = true });
+
+        var fundContext = await CreateFundContextAsync();
+        var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
+        var service = new WorkspaceShellContextService(
+            fundContext,
+            detector,
+            NotificationService.Instance,
+            statusService,
+            operatingContextService);
+
+        var context = await service.CreateAsync(new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = "Research",
+            WorkspaceSubtitle = "Shell",
+            PrimaryScopeLabel = "Scope",
+            PrimaryScopeValue = string.Empty,
+            AsOfValue = "Apr 08 2026 09:30",
+            FreshnessValue = "Backend connected",
+            ReviewStateValue = "Ready",
+            ReviewStateTone = WorkspaceTone.Success
+        });
+
+        context.Badges.Should().ContainSingle(b => b.Label == "Scope" && b.Value.Contains("Alpha Credit"));
+        context.Badges.Should().ContainSingle(b => b.Label == "Scope" && b.Value == "Fund");
+        context.Badges.Should().ContainSingle(b => b.Label == "Currency" && b.Value == "USD");
+    }
+
     private static async Task<FundContextService> CreateFundContextAsync()
     {
         var storagePath = Path.Combine(
@@ -107,6 +145,19 @@ public sealed class WorkspaceShellContextServiceTests
             DefaultLedgerScope: FundLedgerScope.Consolidated,
             IsDefault: true));
         await service.SelectFundProfileAsync("alpha-credit");
+        return service;
+    }
+
+    private static async Task<WorkstationOperatingContextService> CreateOperatingContextServiceAsync(FundContextService fundContext)
+    {
+        var storagePath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-shell-context-tests",
+            $"{Guid.NewGuid():N}.operating-context.json");
+
+        var service = new WorkstationOperatingContextService(fundContext, storagePath: storagePath);
+        await service.LoadAsync();
+        await service.SelectContextAsync(service.Contexts[0].ContextKey);
         return service;
     }
 }

@@ -122,6 +122,47 @@ public sealed record WorkstationOperatingContext
 
     public static string CreateContextKey(OperatingContextScopeKind scopeKind, string scopeId)
         => $"{scopeKind}:{scopeId}";
+
+    public static bool TryParseContextKey(
+        string? contextKey,
+        out OperatingContextScopeKind scopeKind,
+        out string scopeId)
+    {
+        scopeKind = default;
+        scopeId = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(contextKey))
+        {
+            return false;
+        }
+
+        var separatorIndex = contextKey.IndexOf(':');
+        if (separatorIndex <= 0 || separatorIndex >= contextKey.Length - 1)
+        {
+            return false;
+        }
+
+        if (!Enum.TryParse(contextKey[..separatorIndex], ignoreCase: true, out scopeKind))
+        {
+            return false;
+        }
+
+        scopeId = contextKey[(separatorIndex + 1)..].Trim();
+        return !string.IsNullOrWhiteSpace(scopeId);
+    }
+
+    public static bool TryGetFundScopeId(string? contextKey, out string fundScopeId)
+    {
+        fundScopeId = string.Empty;
+        if (!TryParseContextKey(contextKey, out var scopeKind, out var scopeId) ||
+            scopeKind != OperatingContextScopeKind.Fund)
+        {
+            return false;
+        }
+
+        fundScopeId = scopeId;
+        return true;
+    }
 }
 
 public sealed class WorkstationOperatingContextChangingEventArgs : EventArgs

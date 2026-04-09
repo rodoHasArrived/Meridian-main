@@ -130,6 +130,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -140,7 +141,42 @@
                                           Grid.Row="1"
                                           CommandInvoked="OnCommandBarCommandInvoked" />
 
-        <Grid Grid.Row="2">
+        <Border Grid.Row="2"
+                Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Padding="14"
+                Margin="0,0,0,16">
+            <WrapPanel>
+                <Button x:Name="OperationsLaneButton"
+                        Content="Operations"
+                        Click="OpenOperationsLane_Click"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,0,8,0" />
+                <Button x:Name="AccountingLaneButton"
+                        Content="Accounting"
+                        Click="OpenAccountingLane_Click"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Margin="0,0,8,0" />
+                <Button x:Name="ReconciliationLaneButton"
+                        Content="Reconciliation"
+                        Click="OpenReconciliationLane_Click"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Margin="0,0,8,0" />
+                <Button x:Name="ReportingLaneButton"
+                        Content="Reporting"
+                        Click="OpenReportingLane_Click"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Margin="0,0,8,0" />
+                <Button x:Name="AuditLaneButton"
+                        Content="Audit"
+                        Click="OpenAuditLane_Click"
+                        Style="{StaticResource GhostButtonStyle}" />
+            </WrapPanel>
+        </Border>
+
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.15*" />
                 <ColumnDefinition Width="16" />
@@ -167,7 +203,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Fund-first governance work queues for operations, reconciliation, diagnostics, and alerts." />
+                                       Text="Governance work queues for operations, accounting, reconciliation, reporting, and audit review." />
                         </StackPanel>
 
                         <Border Grid.Column="1"
@@ -202,22 +238,22 @@
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Governance is locked until a fund is selected."
+                            <TextBlock Text="Governance is locked until a fund-linked context is selected."
                                        Margin="0,18,0,0"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                        FontSize="22"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                        TextAlignment="Center" />
-                            <TextBlock Text="Switch fund to unlock fund operations, reconciliation review, trial balance drill-ins, and audit-first governance queues."
+                            <TextBlock Text="Switch context to unlock operations, accounting, reconciliation, reporting, and audit-first governance queues."
                                        Margin="0,12,0,0"
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        TextWrapping="Wrap"
                                        TextAlignment="Center" />
                             <WrapPanel HorizontalAlignment="Center" Margin="0,20,0,0">
-                                <Button Content="Switch Fund"
-                                        Click="SwitchFund_Click"
+                                <Button Content="Switch Context"
+                                        Click="SwitchContext_Click"
                                         Style="{StaticResource PrimaryButtonStyle}"
                                         Margin="0,0,10,0" />
                                 <Button Content="Open Diagnostics"
@@ -232,10 +268,16 @@
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
                         <StackPanel>
-                            <TextBlock Text="Fund Ops"
+                            <TextBlock Text="Operations"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,0,0,8" />
-                            <ItemsControl x:Name="FundOpsQueueList"
+                            <ItemsControl x:Name="OperationsQueueList"
+                                          ItemTemplate="{StaticResource QueueItemTemplate}" />
+
+                            <TextBlock Text="Accounting"
+                                       Style="{StaticResource ShellSectionLabelStyle}"
+                                       Margin="0,12,0,8" />
+                            <ItemsControl x:Name="AccountingQueueList"
                                           ItemTemplate="{StaticResource QueueItemTemplate}" />
 
                             <TextBlock Text="Reconciliation"
@@ -244,16 +286,16 @@
                             <ItemsControl x:Name="ReconciliationQueueList"
                                           ItemTemplate="{StaticResource QueueItemTemplate}" />
 
-                            <TextBlock Text="Diagnostics"
+                            <TextBlock Text="Reporting"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="DiagnosticsQueueList"
+                            <ItemsControl x:Name="ReportingQueueList"
                                           ItemTemplate="{StaticResource QueueItemTemplate}" />
 
-                            <TextBlock Text="Alerts"
+                            <TextBlock Text="Audit"
                                        Style="{StaticResource ShellSectionLabelStyle}"
                                        Margin="0,12,0,8" />
-                            <ItemsControl x:Name="AlertsQueueList"
+                            <ItemsControl x:Name="AuditQueueList"
                                           ItemTemplate="{StaticResource QueueItemTemplate}" />
                         </StackPanel>
                     </ScrollViewer>
@@ -266,7 +308,7 @@
                 <StackPanel>
                     <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                         <StackPanel>
-                            <TextBlock Text="Active Fund Summary"
+                            <TextBlock Text="Active Governance Context"
                                        Style="{StaticResource CardHeaderStyle}" />
                             <TextBlock x:Name="FundSummaryTitleText"
                                        Margin="0,10,0,0"
@@ -278,7 +320,7 @@
                                        Margin="0,6,0,0"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       Text="Switch fund to unlock governance review." />
+                                       Text="Switch to a fund-linked context to unlock governance review." />
                             <TextBlock x:Name="FundSummaryMetaText"
                                        Margin="0,6,0,0"
                                        FontSize="11"
@@ -379,7 +421,7 @@
             </ScrollViewer>
         </Grid>
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Margin="0,12,0,0"
                 Style="{StaticResource WorkspaceDockHostStyle}">
             <StackPanel>

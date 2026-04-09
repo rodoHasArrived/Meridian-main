@@ -130,6 +130,12 @@ public partial class MainWindow : Window
         await _operatingContextService.LoadAsync();
         await SynchronizeLastSelectedFundAsync();
 
+        if (_operatingContextService.CurrentContext is not null)
+        {
+            await EnterOperatingContextAsync(_operatingContextService.CurrentContext);
+            return;
+        }
+
         RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
 
         // A few services can raise transient state changes during startup.
@@ -513,15 +519,45 @@ public partial class MainWindow : Window
 
     private async Task SynchronizeLastSelectedFundAsync(CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId) &&
-            !string.IsNullOrWhiteSpace(_workspaceService.LastSelectedOperatingContextKey))
+        var workspaceContextKey = _workspaceService.LastSelectedOperatingContextKey;
+        var compatibilityFundProfileId = _operatingContextService.CurrentContext?.CompatibilityFundProfileId;
+        if (string.IsNullOrWhiteSpace(compatibilityFundProfileId) &&
+            _operatingContextService.CurrentContext?.ScopeKind == OperatingContextScopeKind.Fund)
         {
-            await _fundContextService.SetLastSelectedFundProfileIdAsync(_workspaceService.LastSelectedOperatingContextKey, ct);
+            compatibilityFundProfileId = _operatingContextService.CurrentContext.ScopeId;
         }
-        else if (string.IsNullOrWhiteSpace(_workspaceService.LastSelectedOperatingContextKey) &&
-                 !string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId))
+
+        if (string.IsNullOrWhiteSpace(compatibilityFundProfileId) &&
+            WorkstationOperatingContext.TryGetFundScopeId(workspaceContextKey, out var workspaceFundScopeId))
         {
-            await _workspaceService.SetLastSelectedOperatingContextKeyAsync(_fundContextService.LastSelectedFundProfileId, ct);
+            compatibilityFundProfileId = workspaceFundScopeId;
+        }
+
+        if (string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId) &&
+            !string.IsNullOrWhiteSpace(compatibilityFundProfileId))
+        {
+            await _fundContextService.SetLastSelectedFundProfileIdAsync(compatibilityFundProfileId, ct);
+        }
+
+        var targetContextKey = _operatingContextService.CurrentContext?.ContextKey;
+        if (string.IsNullOrWhiteSpace(targetContextKey))
+        {
+            if (WorkstationOperatingContext.TryParseContextKey(workspaceContextKey, out _, out _))
+            {
+                targetContextKey = workspaceContextKey;
+            }
+            else if (!string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId))
+            {
+                targetContextKey = WorkstationOperatingContext.CreateContextKey(
+                    OperatingContextScopeKind.Fund,
+                    _fundContextService.LastSelectedFundProfileId!);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(targetContextKey) &&
+            !string.Equals(_workspaceService.LastSelectedOperatingContextKey, targetContextKey, StringComparison.OrdinalIgnoreCase))
+        {
+            await _workspaceService.SetLastSelectedOperatingContextKeyAsync(targetContextKey, ct);
         }
     }
 

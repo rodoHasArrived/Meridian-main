@@ -8,7 +8,7 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
-public sealed class WorkstationOperatingContextService
+public sealed partial class WorkstationOperatingContextService
 {
     private readonly FundContextService _fundContextService;
     private readonly IFundStructureService? _fundStructureService;
@@ -74,7 +74,7 @@ public sealed class WorkstationOperatingContextService
 
         if (!string.IsNullOrWhiteSpace(targetKey))
         {
-            await SelectContextAsync(targetKey, raiseChanging: false, ct: ct).ConfigureAwait(false);
+            await SelectContextAsync(targetKey, raiseChanging: false, raiseChanged: false, ct: ct).ConfigureAwait(false);
         }
     }
 
@@ -124,6 +124,7 @@ public sealed class WorkstationOperatingContextService
     public async Task<WorkstationOperatingContext?> SelectContextAsync(
         string contextKey,
         bool raiseChanging = true,
+        bool raiseChanged = true,
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(contextKey);
@@ -151,9 +152,13 @@ public sealed class WorkstationOperatingContextService
 
         CurrentContext = nextContext with { LastOpenedAt = DateTimeOffset.UtcNow };
         LastSelectedOperatingContextKey = CurrentContext.ContextKey;
-        CurrentLayoutPresetId ??= CurrentContext.DefaultWindowPresetId;
+        CurrentLayoutPresetId = CurrentContext.DefaultWindowPresetId;
         await SaveSettingsAsync(ct).ConfigureAwait(false);
-        ActiveContextChanged?.Invoke(this, new WorkstationOperatingContextChangedEventArgs(CurrentContext));
+        if (raiseChanged)
+        {
+            ActiveContextChanged?.Invoke(this, new WorkstationOperatingContextChangedEventArgs(CurrentContext));
+        }
+
         return CurrentContext;
     }
 

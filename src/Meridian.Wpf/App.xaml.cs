@@ -265,7 +265,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
         services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
             sp.GetRequiredService<IFundAccountService>(),
-            Path.Combine(
+            sharedDataAccessService: null,
+            securityMasterQueryService: sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+            persistencePath: Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Meridian",
                 "fund-structure.json")));

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Meridian.Wpf.Models;
 using UiServices = Meridian.Ui.Services;
 using WorkspaceTemplate = Meridian.Ui.Services.WorkspaceTemplate;
 using SessionState = Meridian.Ui.Services.SessionState;
@@ -90,6 +91,11 @@ public sealed class WorkspaceService
             return null;
         }
 
+        if (string.Equals(pageTag.Trim(), "EventReplay", StringComparison.OrdinalIgnoreCase))
+        {
+            return "research";
+        }
+
         return UniquePageWorkspaceOwnership.Value.TryGetValue(pageTag.Trim(), out var workspaceId)
             ? workspaceId
             : null;
@@ -120,7 +126,7 @@ public sealed class WorkspaceService
             if (File.Exists(filePath))
             {
                 var json = await File.ReadAllTextAsync(filePath);
-                var data = JsonSerializer.Deserialize<WorkspaceData>(json);
+                var data = JsonSerializer.Deserialize<WorkspaceData>(json, UiServices.DesktopJsonOptions.Compact);
 
                 if (data != null)
                 {
@@ -149,7 +155,10 @@ public sealed class WorkspaceService
                         _lastSession is not null &&
                         !string.IsNullOrWhiteSpace(LastSelectedFundProfileId))
                     {
-                        _sessionsByFundProfileId[LastSelectedFundProfileId] = _lastSession;
+                        foreach (var sessionScopeKey in GetEquivalentSessionScopeKeys(LastSelectedFundProfileId))
+                        {
+                            _sessionsByFundProfileId[sessionScopeKey] = _lastSession;
+                        }
                     }
 
                     _dockLayouts.Clear();
@@ -278,10 +287,12 @@ public sealed class WorkspaceService
         var workspace = _workspaces.FirstOrDefault(w => w.Id == workspaceId);
         if (workspace != null)
         {
+            var pendingSession = _lastSession is null ? null : CloneSessionState(_lastSession);
             PersistActiveWorkspaceSnapshot();
             _activeWorkspace = workspace;
             workspace.LastActivatedAt = DateTime.UtcNow;
-            _lastSession = RestoreSessionForWorkspace(workspace, _lastSession);
+            _lastSession = TryRestorePendingSessionForWorkspace(workspace, pendingSession)
+                ?? RestoreSessionForWorkspace(workspace, pendingSession);
             await SaveWorkspacesAsync();
 
             WorkspaceActivated?.Invoke(this, new WorkspaceEventArgs { Workspace = workspace });
@@ -346,7 +357,10 @@ public sealed class WorkspaceService
             if (!string.IsNullOrWhiteSpace(normalizedFundProfileId))
             {
                 LastSelectedFundProfileId = normalizedFundProfileId;
-                _sessionsByFundProfileId[normalizedFundProfileId] = state;
+                foreach (var sessionScopeKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
+                {
+                    _sessionsByFundProfileId[sessionScopeKey] = state;
+                }
             }
 
             PersistActiveWorkspaceSnapshot();
@@ -375,12 +389,21 @@ public sealed class WorkspaceService
             return _lastSession;
         }
 
-        if (_sessionsByFundProfileId.TryGetValue(normalizedFundProfileId, out var session))
+        foreach (var sessionScopeKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
         {
-            NormalizeSessionState(session, session.ActiveWorkspaceId ?? _activeWorkspace?.Id);
-            _lastSession = session;
-            LastSelectedFundProfileId = normalizedFundProfileId;
-            return session;
+            if (_sessionsByFundProfileId.TryGetValue(sessionScopeKey, out var session))
+            {
+                NormalizeSessionState(session, session.ActiveWorkspaceId ?? _activeWorkspace?.Id);
+                _lastSession = session;
+                LastSelectedFundProfileId = normalizedFundProfileId;
+
+                foreach (var equivalentKey in GetEquivalentSessionScopeKeys(normalizedFundProfileId))
+                {
+                    _sessionsByFundProfileId[equivalentKey] = session;
+                }
+
+                return session;
+            }
         }
 
         _lastSession = new SessionState();
@@ -680,6 +703,33 @@ public sealed class WorkspaceService
     private static string? NormalizeFundProfileId(string? fundProfileId)
         => string.IsNullOrWhiteSpace(fundProfileId) ? null : fundProfileId.Trim();
 
+    private static IReadOnlyList<string> GetEquivalentSessionScopeKeys(string? scopeKey)
+    {
+        var normalizedScopeKey = NormalizeFundProfileId(scopeKey);
+        if (string.IsNullOrWhiteSpace(normalizedScopeKey))
+        {
+            return Array.Empty<string>();
+        }
+
+        var keys = new List<string> { normalizedScopeKey };
+        if (WorkstationOperatingContext.TryGetFundScopeId(normalizedScopeKey, out var fundScopeId))
+        {
+            if (!string.Equals(fundScopeId, normalizedScopeKey, StringComparison.OrdinalIgnoreCase))
+            {
+                keys.Add(fundScopeId);
+            }
+
+            return keys;
+        }
+
+        if (!normalizedScopeKey.Contains(':', StringComparison.Ordinal))
+        {
+            keys.Add(WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, normalizedScopeKey));
+        }
+
+        return keys;
+    }
+
     private bool MigrateLegacyWorkspaceState()
     {
         var changed = false;
@@ -916,6 +966,22 @@ public sealed class WorkspaceService
         }
 
         return snapshot;
+    }
+
+    private SessionState? TryRestorePendingSessionForWorkspace(WorkspaceTemplate workspace, SessionState? pendingSession)
+    {
+        if (pendingSession is null)
+        {
+            return null;
+        }
+
+        var resolvedWorkspace = ResolveWorkspaceForSession(pendingSession, pendingSession.ActiveWorkspaceId);
+        if (!string.Equals(resolvedWorkspace?.Id, workspace.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return NormalizeSessionState(pendingSession, workspace.Id);
     }
 
     private static string ResolvePreferredPageTag(WorkspaceTemplate workspace)

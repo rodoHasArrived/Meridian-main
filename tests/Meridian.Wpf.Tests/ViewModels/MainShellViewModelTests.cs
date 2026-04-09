@@ -13,7 +13,9 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class MainShellViewModelTests
 {
-    private static MainPageViewModel CreateMainPageViewModel(FundContextService? fundContextService = null)
+    private static MainPageViewModel CreateMainPageViewModel(
+        FundContextService? fundContextService = null,
+        WorkstationOperatingContextService? operatingContextService = null)
     {
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
@@ -23,7 +25,7 @@ public sealed class MainShellViewModelTests
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
-        return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService);
+        return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService, operatingContextService);
     }
 
     private static MainWindowViewModel CreateMainWindowViewModel()
@@ -230,6 +232,42 @@ public sealed class MainShellViewModelTests
         });
     }
 
+    [Fact]
+    public void ActiveFundDisplay_WhenOperatingContextSelected_ShowsContextMetadataAndWindowMode()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
+            await operatingContextService.SetWindowModeAsync(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset, "accounting-review");
+
+            using var vm = CreateMainPageViewModel(fundContext, operatingContextService);
+
+            vm.ActiveFundVisibility.Should().Be(Visibility.Visible);
+            vm.ActiveFundName.Should().Be("Alpha Credit");
+            vm.ActiveFundSubtitle.Should().Contain("Fund");
+            vm.SelectedOperatingContext.Should().NotBeNull();
+            vm.CurrentModeName.Should().Contain("Accounting Review");
+        });
+    }
+
+    [Fact]
+    public void SwitchFundCommand_WhenOperatingContextServicePresent_RaisesContextSwitchRequest()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var fundContext = await CreateFundContextAsync();
+            var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
+            using var vm = CreateMainPageViewModel(fundContext, operatingContextService);
+            var raised = false;
+            operatingContextService.ContextSwitchRequested += (_, _) => raised = true;
+
+            vm.SwitchFundCommand.Execute(null);
+
+            raised.Should().BeTrue();
+        });
+    }
+
     private static async Task<FundContextService> CreateFundContextAsync()
     {
         var storagePath = Path.Combine(
@@ -248,6 +286,19 @@ public sealed class MainShellViewModelTests
             DefaultLedgerScope: FundLedgerScope.Consolidated,
             IsDefault: true));
         await service.SelectFundProfileAsync("alpha-credit");
+        return service;
+    }
+
+    private static async Task<WorkstationOperatingContextService> CreateOperatingContextServiceAsync(FundContextService fundContextService)
+    {
+        var storagePath = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-main-shell-tests",
+            $"{Guid.NewGuid():N}.operating-context.json");
+
+        var service = new WorkstationOperatingContextService(fundContextService, storagePath: storagePath);
+        await service.LoadAsync();
+        await service.SelectContextAsync(service.Contexts[0].ContextKey);
         return service;
     }
 }

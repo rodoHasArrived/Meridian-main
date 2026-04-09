@@ -1,0 +1,915 @@
+﻿{
+    "lastSession":  {
+                        "savedAt":  "2026-04-08T08:11:35.0825542Z",
+                        "activePageTag":  "AddProviderWizard",
+                        "recentPages":  [
+                                            "AddProviderWizard"
+                                        ],
+                        "widgetLayout":  {
+
+                                         },
+                        "activeFilters":  {
+
+                                          },
+                        "openPages":  [
+                                          {
+                                              "pageState":  {
+
+                                                            },
+                                              "title":  "Add Provider Wizard",
+                                              "isDefault":  true,
+                                              "scrollPosition":  0,
+                                              "pageTag":  "AddProviderWizard"
+                                          }
+                                      ],
+                        "savedLayoutPresets":  [
+
+                                               ],
+                        "workspaceContext":  {
+
+                                             },
+                        "activeWorkspaceId":  "data-operations"
+                    },
+    "lastSelectedFundProfileId":  "Fund:alpha-credit",
+    "dockLayouts":  {
+                        "research::Fund:alpha-credit":  "\u003c?xml version=\"1.0\" encoding=\"utf-16\"?\u003e\r\n\u003cLayoutRoot\u003e\r\n  \u003cRootPanel Orientation=\"Vertical\"\u003e\r\n    \u003cLayoutPanel Orientation=\"Horizontal\"\u003e\r\n      \u003cLayoutAnchorablePaneGroup Orientation=\"Horizontal\" DockWidth=\"300\"\u003e\r\n        \u003cLayoutAnchorablePane /\u003e\r\n      \u003c/LayoutAnchorablePaneGroup\u003e\r\n      \u003cLayoutDocumentPaneGroup Orientation=\"Horizontal\"\u003e\r\n        \u003cLayoutDocumentPane /\u003e\r\n      \u003c/LayoutDocumentPaneGroup\u003e\r\n      \u003cLayoutAnchorablePaneGroup Orientation=\"Horizontal\" DockWidth=\"340\"\u003e\r\n        \u003cLayoutAnchorablePane /\u003e\r\n      \u003c/LayoutAnchorablePaneGroup\u003e\r\n    \u003c/LayoutPanel\u003e\r\n    \u003cLayoutAnchorablePaneGroup Orientation=\"Horizontal\" DockHeight=\"240\"\u003e\r\n      \u003cLayoutAnchorablePane DockHeight=\"240\" /\u003e\r\n    \u003c/LayoutAnchorablePaneGroup\u003e\r\n  \u003c/RootPanel\u003e\r\n  \u003cTopSide /\u003e\r\n  \u003cRightSide /\u003e\r\n  \u003cLeftSide /\u003e\r\n  \u003cBottomSide /\u003e\r\n  \u003cFloatingWindows /\u003e\r\n  \u003cHidden /\u003e\r\n\u003c/LayoutRoot\u003e"
+                    },
+    "activeWorkspaceId":  "data-operations",
+    "workspaceLayouts":  {
+                             "research::Fund:alpha-credit":  {
+                                                                 "activePaneId":  "document",
+                                                                 "savedAt":  "2026-04-08T07:49:09.5789025Z",
+                                                                 "layoutId":  "research-backtest-studio",
+                                                                 "dockLayoutXml":  "\u003c?xml version=\"1.0\" encoding=\"utf-16\"?\u003e\r\n\u003cLayoutRoot\u003e\r\n  \u003cRootPanel Orientation=\"Vertical\"\u003e\r\n    \u003cLayoutPanel Orientation=\"Horizontal\"\u003e\r\n      \u003cLayoutAnchorablePaneGroup Orientation=\"Horizontal\" DockWidth=\"300\"\u003e\r\n        \u003cLayoutAnchorablePane /\u003e\r\n      \u003c/LayoutAnchorablePaneGroup\u003e\r\n      \u003cLayoutDocumentPaneGroup Orientation=\"Horizontal\"\u003e\r\n        \u003cLayoutDocumentPane /\u003e\r\n      \u003c/LayoutDocumentPaneGroup\u003e\r\n      \u003cLayoutAnchorablePaneGroup Orientation=\"Horizontal\" DockWidth=\"340\"\u003e\r\n        \u003cLayoutAnchorablePane /\u003e\r\n      \u003c/LayoutAnchorablePaneGroup\u003e\r\n    \u003c/LayoutPanel\u003e\r\n    \u003cLayoutAnchorablePaneGroup Orientation=\"Horizontal\" DockHeight=\"240\"\u003e\r\n      \u003cLayoutAnchorablePane DockHeight=\"240\" /\u003e\r\n    \u003c/LayoutAnchorablePaneGroup\u003e\r\n  \u003c/RootPanel\u003e\r\n  \u003cTopSide /\u003e\r\n  \u003cRightSide /\u003e\r\n  \u003cLeftSide /\u003e\r\n  \u003cBottomSide /\u003e\r\n  \u003cFloatingWindows /\u003e\r\n  \u003cHidden /\u003e\r\n\u003c/LayoutRoot\u003e",
+                                                                 "layoutPresetId":  "accounting-review",
+                                                                 "windowMode":  1,
+                                                                 "layoutContext":  {
+
+                                                                                   },
+                                                                 "panes":  null,
+                                                                 "floatingWindows":  null,
+                                                                 "operatingContextKey":  "Fund:alpha-credit",
+                                                                 "displayName":  "Backtest Studio"
+                                                             }
+                         },
+    "workspaces":  [
+                       {
+                           "description":  "Backtests, experiments, charts, strategy runs, and result analysis.",
+                           "widgetLayout":  {
+
+                                            },
+                           "createdAt":  "2026-04-08T07:49:06.8358516Z",
+                           "name":  "Research",
+                           "preferredPageTag":  "ResearchShell",
+                           "savedLayouts":  null,
+                           "isBuiltIn":  true,
+                           "sessionSnapshot":  {
+                                                   "savedAt":  "0001-01-01T00:00:00",
+                                                   "activePageTag":  "Dashboard",
+                                                   "recentPages":  "Dashboard",
+                                                   "widgetLayout":  {
+
+                                                                    },
+                                                   "activeFilters":  {
+
+                                                                     },
+                                                   "openPages":  null,
+                                                   "savedLayoutPresets":  null,
+                                                   "workspaceContext":  {
+
+                                                                        },
+                                                   "activeWorkspaceId":  "research"
+                                               },
+                           "context":  {
+
+                                       },
+                           "lastActivatedAt":  "2026-04-08T07:49:09.1120277Z",
+                           "filters":  {
+
+                                       },
+                           "category":  0,
+                           "updatedAt":  "2026-04-08T07:49:06.8358697Z",
+                           "id":  "research",
+                           "lastActivePageTag":  "Dashboard",
+                           "recentPageTags":  "Dashboard",
+                           "pages":  [
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Research Shell",
+                                             "isDefault":  true,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "ResearchShell"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Dashboard",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Dashboard"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Backtest",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Backtest"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Batch Backtest",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "BatchBacktest"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "QuantScript",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "QuantScript"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Strategy Runs",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "StrategyRuns"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Run Detail",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunDetail"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Run Portfolio",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunPortfolio"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Run Cash Flow",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunCashFlow"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Lean Integration",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "LeanIntegration"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Charts",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Charts"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Advanced Analytics",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "AdvancedAnalytics"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "RunMat Lab",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunMat"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Order Book",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "OrderBook"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Watchlist",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Watchlist"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Position Blotter",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "PositionBlotter"
+                                         }
+                                     ]
+                       },
+                       {
+                           "description":  "Live monitoring, order flow, and trading controls.",
+                           "widgetLayout":  {
+
+                                            },
+                           "createdAt":  "2026-04-08T07:49:06.8360259Z",
+                           "name":  "Trading",
+                           "preferredPageTag":  "TradingShell",
+                           "savedLayouts":  null,
+                           "isBuiltIn":  true,
+                           "context":  {
+
+                                       },
+                           "filters":  {
+
+                                       },
+                           "category":  1,
+                           "updatedAt":  "2026-04-08T07:49:06.8360259Z",
+                           "id":  "trading",
+                           "recentPageTags":  null,
+                           "pages":  [
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Trading Shell",
+                                             "isDefault":  true,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "TradingShell"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Live Data",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "LiveData"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Strategy Runs",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "StrategyRuns"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Run Portfolio",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunPortfolio"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Run Ledger",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunLedger"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Position Blotter",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "PositionBlotter"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Order Book",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "OrderBook"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Run Risk",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunRisk"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Watchlist",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Watchlist"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Trading Hours",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "TradingHours"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Alerts",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "NotificationCenter"
+                                         }
+                                     ]
+                       },
+                       {
+                           "description":  "Providers, symbols, backfills, storage, schedules, and exports.",
+                           "widgetLayout":  {
+
+                                            },
+                           "createdAt":  "2026-04-08T07:49:06.8360278Z",
+                           "name":  "Data Operations",
+                           "preferredPageTag":  "Provider",
+                           "savedLayouts":  null,
+                           "isBuiltIn":  true,
+                           "sessionSnapshot":  {
+                                                   "savedAt":  "2026-04-08T08:11:35.0825542Z",
+                                                   "activePageTag":  "AddProviderWizard",
+                                                   "recentPages":  [
+                                                                       "AddProviderWizard"
+                                                                   ],
+                                                   "widgetLayout":  {
+
+                                                                    },
+                                                   "activeFilters":  {
+
+                                                                     },
+                                                   "openPages":  [
+                                                                     {
+                                                                         "pageState":  {
+
+                                                                                       },
+                                                                         "title":  "Add Provider Wizard",
+                                                                         "isDefault":  true,
+                                                                         "scrollPosition":  0,
+                                                                         "pageTag":  "AddProviderWizard"
+                                                                     }
+                                                                 ],
+                                                   "savedLayoutPresets":  [
+
+                                                                          ],
+                                                   "workspaceContext":  {
+
+                                                                        },
+                                                   "activeWorkspaceId":  "data-operations"
+                                               },
+                           "context":  {
+
+                                       },
+                           "filters":  {
+
+                                       },
+                           "category":  2,
+                           "updatedAt":  "2026-04-08T07:49:06.8360278Z",
+                           "id":  "data-operations",
+                           "lastActivePageTag":  "AddProviderWizard",
+                           "recentPageTags":  [
+                                                  "AddProviderWizard"
+                                              ],
+                           "pages":  [
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Provider",
+                                             "isDefault":  true,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Provider"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Data Sources",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "DataSources"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Symbols",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Symbols"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Symbol Mapping",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "SymbolMapping"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Symbol Storage",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "SymbolStorage"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Backfill",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Backfill"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Schedules",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Schedules"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Index Subscription",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "IndexSubscription"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Storage",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Storage"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Packages",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "PackageManager"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Data Export",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "DataExport"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Export Presets",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "ExportPresets"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Analysis Export",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "AnalysisExport"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Analysis Export Wizard",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "AnalysisExportWizard"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Data Browser",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "DataBrowser"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Data Calendar",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "DataCalendar"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Data Sampling",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "DataSampling"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Time Series Alignment",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "TimeSeriesAlignment"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Event Replay",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "EventReplay"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Options / Derivatives",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Options"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Portfolio Import",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "PortfolioImport"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Add Provider Wizard",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "AddProviderWizard"
+                                         }
+                                     ]
+                       },
+                       {
+                           "description":  "Quality, audit, health, diagnostics, retention, security, and settings.",
+                           "widgetLayout":  {
+
+                                            },
+                           "createdAt":  "2026-04-08T07:49:06.8360472Z",
+                           "name":  "Governance",
+                           "preferredPageTag":  "DataQuality",
+                           "savedLayouts":  null,
+                           "isBuiltIn":  true,
+                           "sessionSnapshot":  {
+                                                   "savedAt":  "2026-04-08T07:49:17.0489355Z",
+                                                   "activePageTag":  "GovernanceShell",
+                                                   "recentPages":  "GovernanceShell",
+                                                   "widgetLayout":  {
+
+                                                                    },
+                                                   "activeFilters":  {
+
+                                                                     },
+                                                   "openPages":  null,
+                                                   "savedLayoutPresets":  null,
+                                                   "workspaceContext":  {
+
+                                                                        },
+                                                   "activeWorkspaceId":  "governance"
+                                               },
+                           "context":  {
+
+                                       },
+                           "lastActivatedAt":  "2026-04-08T07:49:17.0489464Z",
+                           "filters":  {
+
+                                       },
+                           "category":  3,
+                           "updatedAt":  "2026-04-08T07:49:06.8360473Z",
+                           "id":  "governance",
+                           "lastActivePageTag":  "GovernanceShell",
+                           "recentPageTags":  "GovernanceShell",
+                           "pages":  [
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Data Quality",
+                                             "isDefault":  true,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "DataQuality"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Fund Ledger",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "FundLedger"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Run Ledger",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RunLedger"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Provider Health",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "ProviderHealth"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "System Health",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "SystemHealth"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Diagnostics",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Diagnostics"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Archive Health",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "ArchiveHealth"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Service Manager",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "ServiceManager"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Collection Sessions",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "CollectionSessions"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Storage Optimization",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "StorageOptimization"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Retention Assurance",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "RetentionAssurance"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Admin Maintenance",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "AdminMaintenance"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Activity Log",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "ActivityLog"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Messaging Hub",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "MessagingHub"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Notification Center",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "NotificationCenter"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Security Master",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "SecurityMaster"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Direct Lending",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "DirectLending"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Credential Management",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "CredentialManagement"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Setup Wizard",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "SetupWizard"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Keyboard Shortcuts",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "KeyboardShortcuts"
+                                         },
+                                         {
+                                             "pageState":  {
+
+                                                           },
+                                             "title":  "Settings",
+                                             "isDefault":  false,
+                                             "scrollPosition":  0,
+                                             "pageTag":  "Settings"
+                                         }
+                                     ]
+                       }
+                   ],
+    "sessionsByFundProfileId":  {
+                                    "Fund:alpha-credit":  {
+                                                              "savedAt":  "2026-04-08T08:11:35.0825542Z",
+                                                              "activePageTag":  "AddProviderWizard",
+                                                              "recentPages":  [
+                                                                                  "AddProviderWizard"
+                                                                              ],
+                                                              "widgetLayout":  {
+
+                                                                               },
+                                                              "activeFilters":  {
+
+                                                                                },
+                                                              "openPages":  [
+                                                                                {
+                                                                                    "pageState":  {
+
+                                                                                                  },
+                                                                                    "title":  "Add Provider Wizard",
+                                                                                    "isDefault":  true,
+                                                                                    "scrollPosition":  0,
+                                                                                    "pageTag":  "AddProviderWizard"
+                                                                                }
+                                                                            ],
+                                                              "savedLayoutPresets":  [
+
+                                                                                     ],
+                                                              "workspaceContext":  {
+
+                                                                                   },
+                                                              "activeWorkspaceId":  "data-operations"
+                                                          },
+                                    "alpha-credit":  {
+                                                         "savedAt":  "2026-04-08T08:11:35.0825542Z",
+                                                         "activePageTag":  "AddProviderWizard",
+                                                         "recentPages":  [
+                                                                             "AddProviderWizard"
+                                                                         ],
+                                                         "widgetLayout":  {
+
+                                                                          },
+                                                         "activeFilters":  {
+
+                                                                           },
+                                                         "openPages":  [
+                                                                           {
+                                                                               "pageState":  {
+
+                                                                                             },
+                                                                               "title":  "Add Provider Wizard",
+                                                                               "isDefault":  true,
+                                                                               "scrollPosition":  0,
+                                                                               "pageTag":  "AddProviderWizard"
+                                                                           }
+                                                                       ],
+                                                         "savedLayoutPresets":  [
+
+                                                                                ],
+                                                         "workspaceContext":  {
+
+                                                                              },
+                                                         "activeWorkspaceId":  "data-operations"
+                                                     }
+                                }
+}

@@ -1,6 +1,6 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-08
 
 ## Summary
 
@@ -37,8 +37,14 @@ The current repository now includes the first organization-rooted governance str
 - `CreateAccountRequest` now accepts `PortfolioId`, `LedgerReference`, `StrategyId`, and `RunId` so accounts can participate in the new structure graph without breaking the existing fund-account API.
 - Fund-account and fund-structure services now persist local-first JSON snapshots under the configured storage root so organizations, businesses, clients, portfolios, links, assignments, and account state survive restarts without introducing a second governance storage architecture.
 - Governance structure, advisory, fund, and accounting views now expose a shared data-access summary for `Security Master`, `historical price data`, and `backfill state`, so those operator-facing capabilities are available across all governance projections without deriving them from position holdings.
+- Governance cash-flow views now support `Organization`, `Business`, `Client`, `Fund`, `Sleeve`, `Vehicle`, `InvestmentPortfolio`, `Account`, and `LedgerGroup` scopes with:
+  - trailing realized cash ladders sourced from bank statements or balance-snapshot deltas
+  - forward projected ladders sourced from future bank statements, pending settlement/accrued interest snapshots, or balance-trend fallback
+  - Security Master-driven instrument rule projections for structure-assigned instruments, including coupon/dividend/maturity events sourced from economic definitions and corporate actions without querying position holdings
+  - realized-vs-projected variance summaries and per-account contribution breakdowns
+  - a shared `/api/fund-structure/cash-flow-view` query path that reuses the F# cash ladder kernel without relying on position holdings
 
-This is intentionally still an early governance slice. Durable local-first persistence and shared Security Master/price/backfill accessibility summaries are now in place, but Postgres-backed governance persistence, deeper instrument-aware drill-ins, governance cash-flow, generalized reconciliation, report packs, and publication/readiness controls still remain future implementation waves.
+This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, and governance cash-flow projection/variance views are now in place, but Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation, report packs, and publication/readiness controls still remain future implementation waves.
 
 ## Scope
 
@@ -231,18 +237,34 @@ Suggested paths:
 
 ### Cash-flow modeling
 
-Add:
+Landed foundation:
 
-- `CashFlowProjectionRequest`
-- `CashFlowProjectionDto`
-- `CashFlowBucketDto`
-- `ProjectedCashEventDto`
-- `CashFlowVarianceDto`
+- `GovernanceCashFlowQuery`
+- `GovernanceCashFlowScopeKindDto`
+- `GovernanceCashFlowScopeDto`
+- `GovernanceCashFlowAccountViewDto`
+- `GovernanceCashFlowEntryDto`
+- `GovernanceCashFlowBucketDto`
+- `GovernanceCashFlowLadderDto`
+- `GovernanceCashFlowVarianceSummaryDto`
+- `GovernanceCashFlowViewDto`
 
-Suggested paths:
+Current anchors:
 
-- `src/Meridian.Contracts/Workstation/CashFlowDtos.cs`
+- `src/Meridian.Contracts/FundStructure/FundStructureQueries.cs`
+- `src/Meridian.Contracts/FundStructure/FundStructureDtos.cs`
+- `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs`
+- `src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs`
 - `src/Meridian.FSharp/Domain/CashFlowProjection.fs`
+
+Current behavior:
+
+- realized windows are built from bank-statement cash lines when present and fall back to balance-snapshot deltas when no realized lines exist
+- projected windows use future-dated bank-statement lines first, then synthetic pending-settlement/accrued-interest entries, then a recent balance-trend fallback when no forward events are available
+- governance nodes can attach `SecurityMasterInstrument` assignments that project coupon/dividend/maturity cash events from Security Master economic definitions and corporate actions
+- projected cash entries now carry optional `SecurityId`, `SecurityDisplayName`, and `SecurityTypeName` so rule-driven flows remain traceable into later reconciliation/reporting work
+- variance compares the next projected window to the trailing realized window on the same scope and currency basis
+- the current slice is governance/account/ledger scoped and deliberately does not require position holdings to render cash ladders; explicit structure assignments provide the non-position basis when instrument-aware projections are needed
 
 ### Reconciliation engine
 
@@ -289,15 +311,14 @@ Suggested paths:
 
 ### 2. Cash-flow projection flow
 
-1. User selects a fund, sleeve, strategy run, or ledger group.
+1. User selects an organization, business, client, fund, sleeve, vehicle, investment portfolio, account, or ledger group.
 2. Governance application service loads:
-   - positions and exposures
-   - current ledger balances
-   - journal history
-   - Security Master economic definitions
-3. F# projection kernel computes projected cash events and buckets.
-4. C# service maps the projection into workstation DTOs.
-5. WPF and export flows render the same projection from one query path.
+   - current and recent balance snapshots
+   - bank statement history and future-dated statement lines
+   - linked account and ledger-group context
+3. F# cash-flow ladder kernel buckets realized and projected entries into a common ladder shape.
+4. C# governance service maps the result into scope, per-account, ladder, and variance DTOs.
+5. HTTP and future workstation/reporting surfaces render the same projection from one query path.
 
 ### 3. Reconciliation engine flow
 
@@ -450,12 +471,12 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 
 ### Phase F3: Cash-Flow Modeling and Projection
 
-- [ ] Define cash-flow DTOs and projection request model.
-- [ ] Implement F# cash-flow projection kernel.
-- [ ] Add Security Master-backed instrument cash rules.
-- [ ] Add realized-vs-projected variance views.
-- [ ] Add governance cash ladder and liquidity views.
-- [ ] Add tests for coupons, distributions, financing, fees, and projected-vs-realized reconciliation.
+- [x] Define governance cash-flow DTOs and scope/query model.
+- [x] Reuse the existing F# cash ladder kernel for governance cash ladders.
+- [x] Add Security Master-backed instrument cash rules for assigned governance instruments.
+- [x] Add realized-vs-projected variance views.
+- [x] Add governance cash ladder read path and HTTP endpoint.
+- [x] Add tests for bank-statement, balance-snapshot, trend-fallback, and Security Master rule-driven cash-flow cases.
 
 ### Phase F4: Fund Operations Workstation
 

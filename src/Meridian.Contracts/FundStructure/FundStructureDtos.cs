@@ -456,6 +456,8 @@ public sealed record GovernanceCashFlowAccountViewDto(
     int ProjectedEntryCount,
     DateOnly? LatestSnapshotDate,
     bool UsedTrendFallback,
+    int SecurityProjectedEntryCount = 0,
+    bool UsedSecurityMasterRules = false,
     FundStructureSharedDataAccessDto? SharedDataAccess = null);
 
 public sealed record GovernanceCashFlowEntryDto(
@@ -468,7 +470,10 @@ public sealed record GovernanceCashFlowEntryDto(
     string AccountDisplayName,
     string? LedgerReference,
     string? Description,
-    bool IsProjected);
+    bool IsProjected,
+    Guid? SecurityId = null,
+    string? SecurityDisplayName = null,
+    string? SecurityTypeName = null);
 
 public sealed record GovernanceCashFlowBucketDto(
     int BucketIndex,
@@ -536,4 +541,5 @@ public sealed record GovernanceCashFlowViewDto(
     GovernanceCashFlowLadderDto ProjectedLadder,
     GovernanceCashFlowVarianceSummaryDto VarianceSummary,
     IReadOnlyList<GovernanceCashFlowVarianceBucketDto> VarianceBuckets,
-    FundStructureSharedDataAccessDto? SharedDataAccess = null);
+    FundStructureSharedDataAccessDto? SharedDataAccess = null,
+    int SecurityProjectedEntryCount = 0);

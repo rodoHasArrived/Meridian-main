@@ -155,18 +155,19 @@ def build_checks(repo_root: Path, target_roots: list[Path]) -> list[CheckResult]
             "WorkspaceShellContextStripControl",
             "WorkspaceCommandBarControl",
             'Text="Needs Attention"',
-            'Text="Fund Ops"',
+            'Content="Operations"',
+            'Content="Accounting"',
             'Text="Reconciliation"',
-            'Text="Diagnostics"',
-            'Text="Alerts"',
-            'Content="Switch Fund"',
+            'Text="Reporting"',
+            'Text="Audit"',
+            'Content="Switch Context"',
         ],
     )
     results.append(
         CheckResult(
             name="Governance pilot exposes queue and empty-state UX",
             passed=not governance_missing,
-            detail="Governance shell includes shared chrome, grouped queues, and the Switch Fund empty-state action."
+            detail="Governance shell includes shared chrome, explicit governance lanes, grouped queues, and the Switch Context empty-state action."
             if not governance_missing
             else f"Missing governance UX tokens: {', '.join(governance_missing)}",
         )

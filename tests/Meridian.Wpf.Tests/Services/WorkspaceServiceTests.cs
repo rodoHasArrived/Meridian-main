@@ -1,4 +1,5 @@
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Models;
 using Meridian.Ui.Services;
 using System.IO;
 
@@ -16,11 +17,12 @@ public sealed class WorkspaceServiceTests
         "workspace-service-tests",
         "workspace-data.json");
 
-    private static WorkspaceService CreateService()
+    private static WorkspaceService CreateService(bool resetPersistedState = true)
     {
         var service = WorkspaceService.Instance;
         WorkspaceService.SetSettingsFilePathOverrideForTests(TestSettingsFilePath);
-        if (File.Exists(TestSettingsFilePath))
+        Directory.CreateDirectory(Path.GetDirectoryName(TestSettingsFilePath)!);
+        if (resetPersistedState && File.Exists(TestSettingsFilePath))
         {
             File.Delete(TestSettingsFilePath);
         }
@@ -367,6 +369,97 @@ public sealed class WorkspaceServiceTests
     }
 
     [Fact]
+    public async Task GetLastSessionStateForContext_ShouldRestoreLegacyFundScopedSession()
+    {
+        var svc = CreateService();
+
+        await svc.SaveSessionStateAsync(new SessionState
+        {
+            ActiveWorkspaceId = "data-operations",
+            ActivePageTag = "AddProviderWizard",
+            RecentPages = new List<string> { "AddProviderWizard" }
+        }, "alpha-credit");
+
+        var restored = svc.GetLastSessionStateForContext(
+            WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
+
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored.ActivePageTag.Should().Be("AddProviderWizard");
+        svc.LastSelectedOperatingContextKey.Should().Be("Fund:alpha-credit");
+    }
+
+    [Fact]
+    public async Task SaveSessionStateAsync_WithFundOperatingContextKey_ShouldBeReachableByFundProfileId()
+    {
+        var svc = CreateService();
+
+        await svc.SaveSessionStateAsync(new SessionState
+        {
+            ActiveWorkspaceId = "data-operations",
+            ActivePageTag = "Options",
+            RecentPages = new List<string> { "Options" }
+        }, WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
+
+        var restored = svc.GetLastSessionState("alpha-credit");
+
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored.ActivePageTag.Should().Be("Options");
+    }
+
+    [Fact]
+    public async Task LoadWorkspacesAsync_ShouldRoundTripCamelCasedScopedSessionFromDisk()
+    {
+        var svc = CreateService();
+
+        await svc.SaveSessionStateAsync(new SessionState
+        {
+            ActiveWorkspaceId = "data-operations",
+            ActivePageTag = "AddProviderWizard",
+            OpenPages = new List<WorkspacePage>
+            {
+                new() { PageTag = "AddProviderWizard", Title = "Add Provider Wizard", IsDefault = true }
+            },
+            RecentPages = new List<string> { "AddProviderWizard" }
+        }, WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
+
+        svc = CreateService(resetPersistedState: false);
+
+        var restored = svc.GetLastSessionStateForContext(
+            WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
+
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored.ActivePageTag.Should().Be("AddProviderWizard");
+        restored.OpenPages.Should().ContainSingle(page => page.PageTag == "AddProviderWizard");
+    }
+
+    [Fact]
+    public async Task ActivateWorkspaceAsync_ShouldPreservePendingScopedSessionForSameWorkspace()
+    {
+        var svc = CreateService();
+
+        await svc.SaveSessionStateAsync(new SessionState
+        {
+            ActiveWorkspaceId = "data-operations",
+            ActivePageTag = "AddProviderWizard",
+            OpenPages = new List<WorkspacePage>
+            {
+                new() { PageTag = "AddProviderWizard", Title = "Add Provider Wizard", IsDefault = true }
+            },
+            RecentPages = new List<string> { "AddProviderWizard" }
+        }, WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
+
+        await svc.ActivateWorkspaceAsync("data-operations");
+
+        var restored = svc.GetLastSessionState();
+        restored.Should().NotBeNull();
+        restored!.ActiveWorkspaceId.Should().Be("data-operations");
+        restored.ActivePageTag.Should().Be("AddProviderWizard");
+    }
+
+    [Fact]
     public async Task ActivateWorkspaceAsync_ShouldIgnoreSnapshotFromDifferentWorkspace()
     {
         var svc = CreateService();
@@ -565,6 +658,50 @@ public sealed class WorkspaceServiceTests
 
         var otherFund = await svc.GetWorkspaceLayoutStateAsync("research", "beta-macro");
         otherFund.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SaveWorkspaceLayoutStateForContextAsync_ShouldPersistOperatingContextWindowModeAndPreset()
+    {
+        var svc = CreateService();
+        var layout = new WorkstationLayoutState
+        {
+            LayoutId = "governance-accounting-review",
+            DisplayName = "Accounting Review",
+            OperatingContextKey = "Fund:alpha-credit",
+            WindowMode = BoundedWindowMode.WorkbenchPreset,
+            LayoutPresetId = "accounting-review",
+            DockLayoutXml = "<layout />",
+            Panes =
+            [
+                new WorkstationPaneState
+                {
+                    PaneId = "ledger",
+                    PageTag = "FundLedger",
+                    Title = "Operations",
+                    DockZone = "document",
+                    Order = 0
+                },
+                new WorkstationPaneState
+                {
+                    PaneId = "trial-balance",
+                    PageTag = "FundTrialBalance",
+                    Title = "Accounting",
+                    DockZone = "right",
+                    Order = 1
+                }
+            ]
+        };
+
+        await svc.SaveWorkspaceLayoutStateForContextAsync("governance", layout, "Fund:alpha-credit");
+
+        var restored = await svc.GetWorkspaceLayoutStateForContextAsync("governance", "Fund:alpha-credit");
+
+        restored.Should().NotBeNull();
+        restored!.OperatingContextKey.Should().Be("Fund:alpha-credit");
+        restored.WindowMode.Should().Be(BoundedWindowMode.WorkbenchPreset);
+        restored.LayoutPresetId.Should().Be("accounting-review");
+        restored.Panes.Should().ContainSingle(pane => pane.PageTag == "FundTrialBalance" && pane.DockZone == "right");
     }
 
     // ── Export/Import ────────────────────────────────────────────────

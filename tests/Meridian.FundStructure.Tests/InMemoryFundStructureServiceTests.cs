@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.SecurityMaster;
 using Xunit;
 
 namespace Meridian.FundStructure.Tests;
@@ -314,6 +316,194 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task GetCashFlowViewAsync_Account_ProjectsSecurityMasterInstrumentRulesWithoutPositionData()
+    {
+        var bondSecurityId = Guid.NewGuid();
+        var preferredSecurityId = Guid.NewGuid();
+        var securityMasterQueryService = new FakeSecurityMasterQueryService(
+            economicDefinitions:
+            [
+                CreateEconomicDefinition(
+                    bondSecurityId,
+                    displayName: "Meridian Bond 2026",
+                    assetClass: "FixedIncome",
+                    typeName: "CorporateBond",
+                    currency: "USD",
+                    economicTerms: new
+                    {
+                        maturity = new
+                        {
+                            effectiveDate = new DateOnly(2026, 01, 01),
+                            issueDate = new DateOnly(2026, 01, 01),
+                            maturityDate = new DateOnly(2026, 04, 18)
+                        },
+                        coupon = new
+                        {
+                            couponType = "Fixed",
+                            couponRate = 0.06m,
+                            paymentFrequency = "Monthly"
+                        },
+                        payment = new
+                        {
+                            paymentFrequency = "Monthly",
+                            paymentCurrency = "USD"
+                        }
+                    }),
+                CreateEconomicDefinition(
+                    preferredSecurityId,
+                    displayName: "Meridian Preferred",
+                    assetClass: "Equity",
+                    typeName: "PreferredEquity",
+                    currency: "USD",
+                    economicTerms: new
+                    {
+                        equityBehavior = new
+                        {
+                            distributionType = "CashDividend"
+                        }
+                    })
+            ],
+            corporateActionsBySecurity:
+            new Dictionary<Guid, IReadOnlyList<CorporateActionDto>>
+            {
+                [preferredSecurityId] =
+                [
+                    new CorporateActionDto(
+                        Guid.NewGuid(),
+                        preferredSecurityId,
+                        "Dividend",
+                        new DateOnly(2026, 04, 14),
+                        new DateOnly(2026, 04, 15),
+                        1.25m,
+                        "USD",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null)
+                ]
+            });
+        var fixture = await CreateHybridFixtureAsync(securityMasterQueryService: securityMasterQueryService);
+        var asOf = new DateTimeOffset(2026, 04, 07, 12, 0, 0, TimeSpan.Zero);
+        var effectiveFrom = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+
+        await fixture.AccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            fixture.SleeveAccountId,
+            new DateOnly(2026, 04, 07),
+            "USD",
+            56_000m,
+            "custody",
+            "test"));
+
+        await fixture.StructureService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(),
+            fixture.SleeveAccountId,
+            "SecurityMasterInstrument",
+            JsonSerializer.Serialize(new
+            {
+                securityId = bondSecurityId,
+                incomeAmount = 750m,
+                principalAmount = 15_000m,
+                firstProjectedDate = new DateOnly(2026, 04, 12)
+            }),
+            effectiveFrom,
+            "test",
+            IsPrimary: true));
+        await fixture.StructureService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(),
+            fixture.SleevePortfolioId,
+            "SecurityMasterInstrument",
+            JsonSerializer.Serialize(new
+            {
+                securityId = preferredSecurityId,
+                units = 200m
+            }),
+            effectiveFrom,
+            "test"));
+
+        var view = await fixture.StructureService.GetCashFlowViewAsync(new GovernanceCashFlowQuery(
+            GovernanceCashFlowScopeKindDto.Account,
+            AccountId: fixture.SleeveAccountId,
+            AsOf: asOf,
+            HistoricalDays: 7,
+            ForecastDays: 14,
+            BucketDays: 7));
+
+        Assert.NotNull(view);
+        Assert.False(view!.Accounts[0].UsedTrendFallback);
+        Assert.True(view.Accounts[0].UsedSecurityMasterRules);
+        Assert.Equal(3, view.Accounts[0].SecurityProjectedEntryCount);
+        Assert.Equal(3, view.SecurityProjectedEntryCount);
+        Assert.Contains(view.ProjectedEntries, entry =>
+            entry.SourceKind == "SecurityMasterRule"
+            && entry.EventKind == "Coupon"
+            && entry.SecurityId == bondSecurityId
+            && entry.Amount == 750m
+            && entry.EventDate == new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero));
+        Assert.Contains(view.ProjectedEntries, entry =>
+            entry.SourceKind == "SecurityMasterRule"
+            && entry.EventKind == "PrincipalMaturity"
+            && entry.SecurityId == bondSecurityId
+            && entry.Amount == 15_000m
+            && entry.EventDate == new DateTimeOffset(2026, 04, 18, 0, 0, 0, TimeSpan.Zero));
+        Assert.Contains(view.ProjectedEntries, entry =>
+            entry.SourceKind == "SecurityMasterCorporateAction"
+            && entry.EventKind == "Dividend"
+            && entry.SecurityId == preferredSecurityId
+            && entry.Amount == 250m
+            && entry.EventDate == new DateTimeOffset(2026, 04, 15, 0, 0, 0, TimeSpan.Zero));
+        Assert.DoesNotContain(view.ProjectedEntries, entry => entry.SourceKind == "BalanceTrend");
+    }
+
+    [Fact]
+    public async Task GetCashFlowViewAsync_Account_FallsBackWhenSecurityMasterInstrumentDefinitionIsMissing()
+    {
+        var fixture = await CreateHybridFixtureAsync(securityMasterQueryService: new FakeSecurityMasterQueryService());
+        var asOf = new DateTimeOffset(2026, 04, 07, 12, 0, 0, TimeSpan.Zero);
+        var effectiveFrom = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+
+        await fixture.AccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            fixture.SleeveAccountId,
+            new DateOnly(2026, 04, 07),
+            "USD",
+            56_000m,
+            "custody",
+            "test",
+            AccruedInterest: 500m));
+        await fixture.StructureService.AssignNodeAsync(new AssignFundStructureNodeRequest(
+            Guid.NewGuid(),
+            fixture.SleeveAccountId,
+            "SecurityMasterInstrument",
+            JsonSerializer.Serialize(new
+            {
+                securityId = Guid.NewGuid(),
+                incomeAmount = 500m,
+                firstProjectedDate = new DateOnly(2026, 04, 12)
+            }),
+            effectiveFrom,
+            "test"));
+
+        var view = await fixture.StructureService.GetCashFlowViewAsync(new GovernanceCashFlowQuery(
+            GovernanceCashFlowScopeKindDto.Account,
+            AccountId: fixture.SleeveAccountId,
+            AsOf: asOf,
+            HistoricalDays: 7,
+            ForecastDays: 7,
+            BucketDays: 7));
+
+        Assert.NotNull(view);
+        Assert.False(view!.Accounts[0].UsedSecurityMasterRules);
+        Assert.Equal(0, view.SecurityProjectedEntryCount);
+        Assert.DoesNotContain(view.ProjectedEntries, entry => entry.SourceKind == "SecurityMasterRule");
+        Assert.Contains(view.ProjectedEntries, entry =>
+            entry.SourceKind == "BalanceSnapshot"
+            && entry.EventKind == "Coupon"
+            && entry.Amount == 500m);
+    }
+
+    [Fact]
     public async Task GovernanceViews_ExposeSharedDataAccessAcrossStructureAccountAndLedgerViews()
     {
         var sharedDataAccess = CreateSharedDataAccess(isSecurityMasterAvailable: true, hasHistoricalPrices: true);
@@ -462,17 +652,19 @@ public sealed class InMemoryFundStructureServiceTests
     private static InMemoryFundStructureService CreateStructureService(
         InMemoryFundAccountService? accountService = null,
         string? persistencePath = null,
-        IGovernanceSharedDataAccessService? sharedDataAccessService = null) =>
-        new(accountService ?? new InMemoryFundAccountService(), sharedDataAccessService, persistencePath);
+        IGovernanceSharedDataAccessService? sharedDataAccessService = null,
+        ISecurityMasterQueryService? securityMasterQueryService = null) =>
+        new(accountService ?? new InMemoryFundAccountService(), sharedDataAccessService, securityMasterQueryService, persistencePath);
 
     private static async Task<HybridFixture> CreateHybridFixtureAsync(
         string? accountPersistencePath = null,
         string? structurePersistencePath = null,
-        IGovernanceSharedDataAccessService? sharedDataAccessService = null)
+        IGovernanceSharedDataAccessService? sharedDataAccessService = null,
+        ISecurityMasterQueryService? securityMasterQueryService = null)
     {
         var accountService = new InMemoryFundAccountService(accountPersistencePath);
-        var structureService = CreateStructureService(accountService, structurePersistencePath, sharedDataAccessService);
-        var now = DateTimeOffset.UtcNow;
+        var structureService = CreateStructureService(accountService, structurePersistencePath, sharedDataAccessService, securityMasterQueryService);
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
 
         var organizationId = Guid.NewGuid();
         var advisoryBusinessId = Guid.NewGuid();
@@ -756,6 +948,50 @@ public sealed class InMemoryFundStructureServiceTests
                 SymbolBarCountCount: hasHistoricalPrices ? 2 : 0,
                 AvailabilityDescription: "Backfill services are available with 2 configured provider(s)."));
 
+    private static SecurityEconomicDefinitionRecord CreateEconomicDefinition(
+        Guid securityId,
+        string displayName,
+        string assetClass,
+        string typeName,
+        string currency,
+        object economicTerms)
+        => new(
+            securityId,
+            assetClass,
+            AssetFamily: null,
+            SubType: typeName,
+            TypeName: typeName,
+            IssuerType: null,
+            RiskCountry: "US",
+            Status: SecurityStatusDto.Active,
+            DisplayName: displayName,
+            Currency: currency,
+            Classification: JsonSerializer.SerializeToElement(new
+            {
+                assetClass,
+                typeName
+            }),
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName,
+                currency
+            }),
+            EconomicTerms: JsonSerializer.SerializeToElement(economicTerms),
+            Provenance: JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "test",
+                asOf = new DateTimeOffset(2026, 04, 07, 0, 0, 0, TimeSpan.Zero)
+            }),
+            Version: 1,
+            EffectiveFrom: new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, displayName, true, new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero), null, null)
+            ],
+            LegacyAssetClass: assetClass,
+            LegacyAssetSpecificTerms: null);
+
     private sealed class FakeGovernanceSharedDataAccessService : IGovernanceSharedDataAccessService
     {
         private readonly FundStructureSharedDataAccessDto _sharedDataAccess;
@@ -770,5 +1006,47 @@ public sealed class InMemoryFundStructureServiceTests
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(_sharedDataAccess);
         }
+    }
+
+    private sealed class FakeSecurityMasterQueryService : ISecurityMasterQueryService
+    {
+        private readonly IReadOnlyDictionary<Guid, SecurityEconomicDefinitionRecord> _economicDefinitions;
+        private readonly IReadOnlyDictionary<Guid, IReadOnlyList<CorporateActionDto>> _corporateActionsBySecurity;
+
+        public FakeSecurityMasterQueryService(
+            IReadOnlyList<SecurityEconomicDefinitionRecord>? economicDefinitions = null,
+            IReadOnlyDictionary<Guid, IReadOnlyList<CorporateActionDto>>? corporateActionsBySecurity = null)
+        {
+            _economicDefinitions = (economicDefinitions ?? [])
+                .ToDictionary(static definition => definition.SecurityId);
+            _corporateActionsBySecurity = corporateActionsBySecurity ?? new Dictionary<Guid, IReadOnlyList<CorporateActionDto>>();
+        }
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+            => Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(_economicDefinitions.TryGetValue(securityId, out var definition) ? definition : null);
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
+            => Task.FromResult<TradingParametersDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(_corporateActionsBySecurity.TryGetValue(securityId, out var actions) ? actions : []);
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 }

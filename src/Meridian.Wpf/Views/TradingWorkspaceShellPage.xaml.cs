@@ -2,8 +2,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
 
@@ -18,6 +20,7 @@ public partial class TradingWorkspaceShellPage : Page
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
+    private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly CashFinancingReadService _cashFinancingReadService;
     private readonly WorkspaceShellContextService _shellContextService;
 
@@ -25,6 +28,7 @@ public partial class TradingWorkspaceShellPage : Page
         NavigationService navigationService,
         StrategyRunWorkspaceService runService,
         FundContextService fundContextService,
+        WorkstationOperatingContextService? operatingContextService,
         CashFinancingReadService cashFinancingReadService,
         WorkspaceShellContextService shellContextService)
     {
@@ -32,6 +36,7 @@ public partial class TradingWorkspaceShellPage : Page
         _navigationService = navigationService;
         _runService = runService;
         _fundContextService = fundContextService;
+        _operatingContextService = operatingContextService;
         _cashFinancingReadService = cashFinancingReadService;
         _shellContextService = shellContextService;
     }
@@ -41,6 +46,11 @@ public partial class TradingWorkspaceShellPage : Page
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged += OnActiveRunContextChanged;
         _shellContextService.SignalsChanged += OnSignalsChanged;
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
+            _operatingContextService.WindowModeChanged += OnSignalsChanged;
+        }
 
         UpdateActiveFundText();
         await RefreshAsync();
@@ -52,6 +62,11 @@ public partial class TradingWorkspaceShellPage : Page
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged -= OnActiveRunContextChanged;
         _shellContextService.SignalsChanged -= OnSignalsChanged;
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
+            _operatingContextService.WindowModeChanged -= OnSignalsChanged;
+        }
         _ = SaveDockLayoutAsync();
     }
 
@@ -98,7 +113,9 @@ public partial class TradingWorkspaceShellPage : Page
                 CapitalGrossExposureText.Text = "—";
                 CapitalNetExposureText.Text = "—";
                 CapitalFinancingText.Text = "—";
-                CapitalControlsDetailText.Text = "Select a fund to unlock capital, financing, and reconciliation posture.";
+                CapitalControlsDetailText.Text = _operatingContextService?.CurrentContext is { } operatingContext
+                    ? $"Switch to a fund-linked accounting view to unlock capital and reconciliation posture for {operatingContext.DisplayName}."
+                    : "Select an operating context to unlock capital, financing, and reconciliation posture.";
             }
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
@@ -131,7 +148,7 @@ public partial class TradingWorkspaceShellPage : Page
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[TradingWorkspaceShell] Refresh failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Refresh failed: {ex.Message}");
         }
     }
 
@@ -142,33 +159,37 @@ public partial class TradingWorkspaceShellPage : Page
             TradingActiveRunText.Text = "No active trading run";
             TradingActiveRunMetaText.Text = "Use Research to promote a run, or open a live/paper panel below.";
             WatchlistStatusText.Text = "Watchlists and active strategies populate once paper or live runs are started.";
-            MarketCoreText.Text = "Live data, order book, and portfolio inspectors are ready to dock below.";
-            RiskRailText.Text = "Risk rail becomes specific once an active run is selected.";
+            MarketCoreText.Text = "Live data, order book, portfolio, and accounting consequences are ready to dock below.";
+            RiskRailText.Text = "Risk, reconciliation, and audit surfaces become specific once an active run is selected.";
             return;
         }
 
         TradingActiveRunText.Text = activeRun.StrategyName;
         TradingActiveRunMetaText.Text = $"{activeRun.ModeLabel} · {activeRun.StatusLabel} · {activeRun.FundScopeLabel}";
         WatchlistStatusText.Text = activeRun.PortfolioPreview;
-        MarketCoreText.Text = activeRun.LedgerPreview;
-        RiskRailText.Text = activeRun.RiskSummary;
+        MarketCoreText.Text = $"{activeRun.LedgerPreview} Accounting consequences stay available from the same cockpit.";
+        RiskRailText.Text = $"{activeRun.RiskSummary} Audit references and reconciliation review remain one action away.";
     }
 
     private async Task RestoreDockLayoutAsync()
     {
         try
         {
-            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
-            var layoutState = await WorkspaceService.Instance.GetWorkspaceLayoutStateAsync(WorkspaceId, fundProfileId);
+            var operatingContextKey = GetLayoutScopeKey();
+            var layoutState = await WorkspaceService.Instance.GetWorkspaceLayoutStateForContextAsync(WorkspaceId, operatingContextKey);
 
             if (layoutState?.Panes.Count > 0)
             {
                 foreach (var pane in layoutState.Panes.OrderBy(static pane => pane.Order))
                 {
-                    OpenWorkspacePage(pane.PageTag, MapDockAction(pane.DockZone));
+                    OpenWorkspacePage(pane.PageTag, NormalizeDockAction(MapDockAction(pane.DockZone)));
                 }
 
-                TradingDockManager.LoadLayout(layoutState.DockLayoutXml);
+                if (ShouldRestoreSerializedLayout(layoutState))
+                {
+                    TradingDockManager.LoadLayout(layoutState.DockLayoutXml);
+                }
+
                 return;
             }
 
@@ -176,7 +197,7 @@ public partial class TradingWorkspaceShellPage : Page
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to restore dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to restore dock layout: {ex.Message}");
             await LoadDefaultDockingAsync();
         }
     }
@@ -185,13 +206,15 @@ public partial class TradingWorkspaceShellPage : Page
     {
         try
         {
-            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
             var layout = TradingDockManager.CaptureLayoutState("trading-cockpit", "Trading Cockpit");
-            await WorkspaceService.Instance.SaveWorkspaceLayoutStateAsync(WorkspaceId, layout, fundProfileId);
+            layout.OperatingContextKey = GetLayoutScopeKey();
+            layout.WindowMode = GetWindowMode();
+            layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
+            await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to save dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to save dock layout: {ex.Message}");
         }
     }
 
@@ -203,9 +226,10 @@ public partial class TradingWorkspaceShellPage : Page
         OpenWorkspacePage("RunRisk", PaneDropAction.SplitBelow);
 
         var activeRun = await _runService.GetActiveRunContextAsync();
-        if (activeRun is not null)
+        if (activeRun is not null || GetWindowMode() == BoundedWindowMode.WorkbenchPreset)
         {
-            OpenWorkspacePage("RunLedger", PaneDropAction.OpenTab, activeRun.RunId);
+            OpenWorkspacePage("RunLedger", PaneDropAction.OpenTab, activeRun?.RunId);
+            OpenWorkspacePage("FundTrialBalance", PaneDropAction.OpenTab);
         }
         else
         {
@@ -221,11 +245,11 @@ public partial class TradingWorkspaceShellPage : Page
         try
         {
             var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
-            TradingDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, action);
+            TradingDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
             _navigationService.NavigateTo(pageTag, parameter);
         }
     }
@@ -266,6 +290,15 @@ public partial class TradingWorkspaceShellPage : Page
                 break;
             case "NotificationCenter":
                 OpenAlerts_Click(sender, new RoutedEventArgs());
+                break;
+            case "FundTrialBalance":
+                OpenAccountingConsequences_Click(sender, new RoutedEventArgs());
+                break;
+            case "FundReconciliation":
+                OpenReconciliationReview_Click(sender, new RoutedEventArgs());
+                break;
+            case "FundAuditTrail":
+                OpenAuditTrail_Click(sender, new RoutedEventArgs());
                 break;
             case "TradingHours":
                 _navigationService.NavigateTo("TradingHours");
@@ -321,6 +354,15 @@ public partial class TradingWorkspaceShellPage : Page
     private void OpenAlerts_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage("NotificationCenter", PaneDropAction.SplitBelow);
 
+    private void OpenAccountingConsequences_Click(object sender, RoutedEventArgs e)
+        => OpenWorkspacePage("FundTrialBalance", PaneDropAction.OpenTab);
+
+    private void OpenReconciliationReview_Click(object sender, RoutedEventArgs e)
+        => OpenWorkspacePage("FundReconciliation", PaneDropAction.SplitBelow);
+
+    private void OpenAuditTrail_Click(object sender, RoutedEventArgs e)
+        => OpenWorkspacePage("FundAuditTrail", PaneDropAction.OpenTab);
+
     private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
         if (!Dispatcher.CheckAccess())
@@ -355,19 +397,52 @@ public partial class TradingWorkspaceShellPage : Page
         _ = RefreshAsync();
     }
 
+    private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnOperatingContextChanged(sender, e));
+            return;
+        }
+
+        UpdateActiveFundText();
+        _ = RefreshAsync();
+    }
+
     private void UpdateActiveFundText()
     {
+        if (_operatingContextService?.CurrentContext is { } operatingContext)
+        {
+            ActiveFundText.Text = operatingContext.DisplayName;
+            ActiveFundDetailText.Text = operatingContext.Subtitle;
+            return;
+        }
+
         var profile = _fundContextService.CurrentFundProfile;
         if (profile is null)
         {
-            ActiveFundText.Text = "No fund selected";
-            ActiveFundDetailText.Text = "Runs and KPIs scope to the active fund profile.";
+            ActiveFundText.Text = "No operating context selected";
+            ActiveFundDetailText.Text = "Runs, allocations, and accounting posture scope to the active operating context.";
             return;
         }
 
         ActiveFundText.Text = profile.DisplayName;
         ActiveFundDetailText.Text = $"{profile.LegalEntityName} · {profile.BaseCurrency}";
     }
+
+    private string? GetLayoutScopeKey()
+        => _operatingContextService?.GetActiveScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
+
+    private BoundedWindowMode GetWindowMode()
+        => _operatingContextService?.CurrentWindowMode ?? BoundedWindowMode.DockFloat;
+
+    private static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layoutState)
+        => layoutState.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layoutState.DockLayoutXml);
+
+    private PaneDropAction NormalizeDockAction(PaneDropAction action)
+        => GetWindowMode() == BoundedWindowMode.Focused && action == PaneDropAction.FloatWindow
+            ? PaneDropAction.OpenTab
+            : action;
 
     private static WorkspaceCommandGroup BuildCommandGroup() =>
         new()
@@ -385,6 +460,9 @@ public partial class TradingWorkspaceShellPage : Page
                 new WorkspaceCommandItem { Id = "LiveData", Label = "Live Data", Description = "Open live data", Glyph = "\uE9D2" },
                 new WorkspaceCommandItem { Id = "PositionBlotter", Label = "Blotter", Description = "Open position blotter", Glyph = "\uE8A5" },
                 new WorkspaceCommandItem { Id = "RunRisk", Label = "Risk Rail", Description = "Open risk rail", Glyph = "\uE7BA" },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting consequences", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Alerts", Description = "Open alerts", Glyph = "\uE7F4" },
                 new WorkspaceCommandItem { Id = "TradingHours", Label = "Trading Hours", Description = "Open trading hours", Glyph = "\uE823" }
             ]
@@ -401,6 +479,9 @@ public partial class TradingWorkspaceShellPage : Page
         "OrderBook" => "Order Book",
         "RunRisk" => "Risk Rail",
         "RunLedger" => "Ledger Activity",
+        "FundTrialBalance" => "Accounting Consequences",
+        "FundReconciliation" => "Reconciliation",
+        "FundAuditTrail" => "Audit Trail",
         "NotificationCenter" => "Alerts",
         _ => pageTag
     };

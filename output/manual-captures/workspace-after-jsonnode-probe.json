@@ -249,6 +249,8 @@
       "isBuiltIn": true,
       "createdAt": "2026-04-08T07:49:06.8360278Z",
       "updatedAt": "2026-04-08T07:49:06.8360278Z",
+      "lastActivatedAt": "2026-04-08T08:15:21.2358334Z",
+      "lastActivePageTag": "AddProviderWizard",
       "pages": [
         {
           "pageTag": "Provider",
@@ -405,10 +407,33 @@
           "pageState": {}
         }
       ],
-      "recentPageTags": [],
+      "recentPageTags": [
+        "AddProviderWizard"
+      ],
       "widgetLayout": {},
       "filters": {},
       "context": {},
+      "sessionSnapshot": {
+        "activePageTag": "AddProviderWizard",
+        "openPages": [
+          {
+            "pageTag": "AddProviderWizard",
+            "title": "Add Provider Wizard",
+            "isDefault": true,
+            "scrollPosition": 0,
+            "pageState": {}
+          }
+        ],
+        "recentPages": [
+          "AddProviderWizard"
+        ],
+        "widgetLayout": {},
+        "activeFilters": {},
+        "workspaceContext": {},
+        "savedLayoutPresets": [],
+        "savedAt": "2026-04-08T08:15:00.7539512Z",
+        "activeWorkspaceId": "data-operations"
+      },
       "savedLayouts": []
     },
     {
@@ -593,61 +618,71 @@
       "savedLayouts": []
     }
   ],
-  "activeWorkspaceId": "governance",
+  "activeWorkspaceId": "data-operations",
   "lastSession": {
-    "activePageTag": "GovernanceShell",
-    "openPages": [],
+    "activePageTag": "AddProviderWizard",
+    "openPages": [
+      {
+        "pageTag": "AddProviderWizard",
+        "title": "Add Provider Wizard",
+        "isDefault": true,
+        "scrollPosition": 0,
+        "pageState": {}
+      }
+    ],
     "recentPages": [
-      "GovernanceShell"
+      "AddProviderWizard"
     ],
     "widgetLayout": {},
     "activeFilters": {},
     "workspaceContext": {},
     "savedLayoutPresets": [],
-    "savedAt": "2026-04-08T07:49:17.0489355Z",
-    "activeWorkspaceId": "governance"
+    "savedAt": "2026-04-08T08:15:00.7539512Z",
+    "activeWorkspaceId": "data-operations"
   },
   "lastSelectedFundProfileId": "Fund:alpha-credit",
   "sessionsByFundProfileId": {
     "Fund:alpha-credit": {
-      "activePageTag": "GovernanceShell",
-      "openPages": [],
+      "activePageTag": "AddProviderWizard",
+      "openPages": [
+        {
+          "pageTag": "AddProviderWizard",
+          "title": "Add Provider Wizard",
+          "isDefault": true,
+          "scrollPosition": 0,
+          "pageState": {}
+        }
+      ],
       "recentPages": [
-        "GovernanceShell"
+        "AddProviderWizard"
       ],
       "widgetLayout": {},
       "activeFilters": {},
       "workspaceContext": {},
-      "windowBounds": {
-        "x": 272,
-        "y": 5,
-        "width": 1400,
-        "height": 900,
-        "isMaximized": false
-      },
       "savedLayoutPresets": [],
-      "savedAt": "2026-04-08T07:49:16.9526047Z",
-      "activeWorkspaceId": "governance"
+      "savedAt": "2026-04-08T08:15:00.7539512Z",
+      "activeWorkspaceId": "data-operations"
     },
     "alpha-credit": {
-      "activePageTag": "GovernanceShell",
-      "openPages": [],
+      "activePageTag": "AddProviderWizard",
+      "openPages": [
+        {
+          "pageTag": "AddProviderWizard",
+          "title": "Add Provider Wizard",
+          "isDefault": true,
+          "scrollPosition": 0,
+          "pageState": {}
+        }
+      ],
       "recentPages": [
-        "GovernanceShell"
+        "AddProviderWizard"
       ],
       "widgetLayout": {},
       "activeFilters": {},
       "workspaceContext": {},
-      "windowBounds": {
-        "x": 272,
-        "y": 5,
-        "width": 1400,
-        "height": 900,
-        "isMaximized": false
-      },
       "savedLayoutPresets": [],
-      "savedAt": "2026-04-08T07:49:16.9526047Z",
-      "activeWorkspaceId": "governance"
+      "savedAt": "2026-04-08T08:15:00.7539512Z",
+      "activeWorkspaceId": "data-operations"
     }
   },
   "dockLayouts": {
@@ -665,17 +700,7 @@
       "panes": [],
       "floatingWindows": [],
       "layoutContext": {},
-      "savedAt": "2026-04-08T07:49:09.5789025Z"
+      "savedAt": "2026-04-08T08:15:21.2358006Z"
     }
   }
 }
-
-
-
-
-
-
-
-
-
-

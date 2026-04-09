@@ -162,8 +162,13 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var fundAccountService = sp.GetRequiredService<IFundAccountService>();
             var sharedDataAccessService = sp.GetService<IGovernanceSharedDataAccessService>();
+            var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
             var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
-            return new InMemoryFundStructureService(fundAccountService, sharedDataAccessService, persistencePath);
+            return new InMemoryFundStructureService(
+                fundAccountService,
+                sharedDataAccessService,
+                securityMasterQueryService,
+                persistencePath);
         });
 
         return services;

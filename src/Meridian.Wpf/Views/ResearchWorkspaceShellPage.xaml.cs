@@ -2,8 +2,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
 
@@ -18,6 +20,7 @@ public partial class ResearchWorkspaceShellPage : Page
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
+    private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService _shellContextService;
     private bool _canPromoteActiveRun;
     private bool _canOpenTradingCockpit;
@@ -26,12 +29,14 @@ public partial class ResearchWorkspaceShellPage : Page
         NavigationService navigationService,
         StrategyRunWorkspaceService runService,
         FundContextService fundContextService,
+        WorkstationOperatingContextService? operatingContextService,
         WorkspaceShellContextService shellContextService)
     {
         InitializeComponent();
         _navigationService = navigationService;
         _runService = runService;
         _fundContextService = fundContextService;
+        _operatingContextService = operatingContextService;
         _shellContextService = shellContextService;
     }
 
@@ -40,6 +45,11 @@ public partial class ResearchWorkspaceShellPage : Page
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged += OnActiveRunContextChanged;
         _shellContextService.SignalsChanged += OnSignalsChanged;
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.WindowModeChanged += OnSignalsChanged;
+            _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
+        }
 
         await RefreshAsync();
         await RestoreDockLayoutAsync();
@@ -50,6 +60,11 @@ public partial class ResearchWorkspaceShellPage : Page
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged -= OnActiveRunContextChanged;
         _shellContextService.SignalsChanged -= OnSignalsChanged;
+        if (_operatingContextService is not null)
+        {
+            _operatingContextService.WindowModeChanged -= OnSignalsChanged;
+            _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
+        }
         _ = SaveDockLayoutAsync();
     }
 
@@ -119,7 +134,7 @@ public partial class ResearchWorkspaceShellPage : Page
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Refresh failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Refresh failed: {ex.Message}");
         }
     }
 
@@ -135,8 +150,8 @@ public partial class ResearchWorkspaceShellPage : Page
             RunPerformanceText.Text = "Compare runs, equity, and fills from a selected strategy run.";
             RunCompareText.Text = "Use the bottom history rail to select a run and load detail panels.";
             PortfolioPreviewText.Text = "Portfolio inspector opens here once a run is selected.";
-            LedgerPreviewText.Text = "Ledger inspector opens here once a run is selected.";
-            RiskPreviewText.Text = "Risk preview becomes available after a completed run is selected.";
+            LedgerPreviewText.Text = "Accounting impact preview opens here once a run is selected.";
+            RiskPreviewText.Text = "Risk and audit preview becomes available after a completed run is selected.";
             _canPromoteActiveRun = false;
             _canOpenTradingCockpit = false;
             return;
@@ -150,8 +165,8 @@ public partial class ResearchWorkspaceShellPage : Page
         RunPerformanceText.Text = activeContext.PortfolioPreview;
         RunCompareText.Text = activeContext.RiskSummary;
         PortfolioPreviewText.Text = activeContext.PortfolioPreview;
-        LedgerPreviewText.Text = activeContext.LedgerPreview;
-        RiskPreviewText.Text = activeContext.RiskSummary;
+        LedgerPreviewText.Text = $"{activeContext.LedgerPreview} Open accounting impact to verify trial-balance continuity before promotion.";
+        RiskPreviewText.Text = $"{activeContext.RiskSummary} Audit and reconciliation drill-ins stay one action away from the same shell.";
         _canPromoteActiveRun = activeContext.CanPromoteToPaper;
         _canOpenTradingCockpit = true;
     }
@@ -160,17 +175,21 @@ public partial class ResearchWorkspaceShellPage : Page
     {
         try
         {
-            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
-            var layoutState = await WorkspaceService.Instance.GetWorkspaceLayoutStateAsync(WorkspaceId, fundProfileId);
+            var operatingContextKey = GetLayoutScopeKey();
+            var layoutState = await WorkspaceService.Instance.GetWorkspaceLayoutStateForContextAsync(WorkspaceId, operatingContextKey);
 
             if (layoutState?.Panes.Count > 0)
             {
                 foreach (var pane in layoutState.Panes.OrderBy(static pane => pane.Order))
                 {
-                    OpenWorkspacePage(pane.PageTag, MapDockAction(pane.DockZone));
+                    OpenWorkspacePage(pane.PageTag, NormalizeDockAction(MapDockAction(pane.DockZone)));
                 }
 
-                ResearchDockManager.LoadLayout(layoutState.DockLayoutXml);
+                if (ShouldRestoreSerializedLayout(layoutState))
+                {
+                    ResearchDockManager.LoadLayout(layoutState.DockLayoutXml);
+                }
+
                 return;
             }
 
@@ -178,7 +197,7 @@ public partial class ResearchWorkspaceShellPage : Page
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to restore dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to restore dock layout: {ex.Message}");
             await LoadDefaultDockingAsync();
         }
     }
@@ -187,18 +206,31 @@ public partial class ResearchWorkspaceShellPage : Page
     {
         try
         {
-            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
             var layout = ResearchDockManager.CaptureLayoutState("research-backtest-studio", "Backtest Studio");
-            await WorkspaceService.Instance.SaveWorkspaceLayoutStateAsync(WorkspaceId, layout, fundProfileId);
+            layout.OperatingContextKey = GetLayoutScopeKey();
+            layout.WindowMode = GetWindowMode();
+            layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
+            await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to save dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to save dock layout: {ex.Message}");
         }
     }
 
     private async Task LoadDefaultDockingAsync()
     {
+        if (GetWindowMode() == BoundedWindowMode.WorkbenchPreset &&
+            string.Equals(_operatingContextService?.CurrentLayoutPresetId, "research-compare", StringComparison.OrdinalIgnoreCase))
+        {
+            OpenWorkspacePage("Backtest", PaneDropAction.Replace);
+            OpenWorkspacePage("StrategyRuns", PaneDropAction.SplitLeft);
+            await OpenActiveRunPageAsync("RunDetail", PaneDropAction.SplitRight);
+            await OpenActiveRunPageAsync("RunPortfolio", PaneDropAction.SplitBelow);
+            await OpenActiveRunPageAsync("RunLedger", PaneDropAction.OpenTab);
+            return;
+        }
+
         OpenWorkspacePage("Backtest", PaneDropAction.Replace);
         OpenWorkspacePage("StrategyRuns", PaneDropAction.SplitLeft);
 
@@ -223,11 +255,11 @@ public partial class ResearchWorkspaceShellPage : Page
         try
         {
             var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
-            ResearchDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, action);
+            ResearchDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
             _navigationService.NavigateTo(pageTag, parameter);
         }
     }
@@ -269,6 +301,15 @@ public partial class ResearchWorkspaceShellPage : Page
             case "RunLedger":
                 OpenLedgerInspector_Click(sender, new RoutedEventArgs());
                 break;
+            case "FundTrialBalance":
+                OpenAccountingImpact_Click(sender, new RoutedEventArgs());
+                break;
+            case "FundReconciliation":
+                OpenReconciliationPreview_Click(sender, new RoutedEventArgs());
+                break;
+            case "FundAuditTrail":
+                OpenAuditTrail_Click(sender, new RoutedEventArgs());
+                break;
             case "LeanIntegration":
                 OpenLean_Click(sender, new RoutedEventArgs());
                 break;
@@ -289,6 +330,15 @@ public partial class ResearchWorkspaceShellPage : Page
 
     private void OpenLedgerInspector_Click(object sender, RoutedEventArgs e)
         => _ = OpenActiveRunPageAsync("RunLedger", PaneDropAction.SplitBelow);
+
+    private void OpenAccountingImpact_Click(object sender, RoutedEventArgs e)
+        => OpenWorkspacePage("FundTrialBalance", PaneDropAction.OpenTab);
+
+    private void OpenReconciliationPreview_Click(object sender, RoutedEventArgs e)
+        => OpenWorkspacePage("FundReconciliation", PaneDropAction.SplitBelow);
+
+    private void OpenAuditTrail_Click(object sender, RoutedEventArgs e)
+        => OpenWorkspacePage("FundAuditTrail", PaneDropAction.OpenTab);
 
     private void OpenLean_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage("LeanIntegration", PaneDropAction.OpenTab);
@@ -361,6 +411,31 @@ public partial class ResearchWorkspaceShellPage : Page
         _ = RefreshAsync();
     }
 
+    private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnOperatingContextChanged(sender, e));
+            return;
+        }
+
+        _ = RefreshAsync();
+    }
+
+    private string? GetLayoutScopeKey()
+        => _operatingContextService?.GetActiveScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
+
+    private BoundedWindowMode GetWindowMode()
+        => _operatingContextService?.CurrentWindowMode ?? BoundedWindowMode.DockFloat;
+
+    private static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layoutState)
+        => layoutState.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layoutState.DockLayoutXml);
+
+    private PaneDropAction NormalizeDockAction(PaneDropAction action)
+        => GetWindowMode() == BoundedWindowMode.Focused && action == PaneDropAction.FloatWindow
+            ? PaneDropAction.OpenTab
+            : action;
+
     private void OnActiveRunContextChanged(object? sender, ActiveRunContext? e)
     {
         if (!Dispatcher.CheckAccess())
@@ -414,6 +489,9 @@ public partial class ResearchWorkspaceShellPage : Page
                 new WorkspaceCommandItem { Id = "RunDetail", Label = "Run Detail", Description = "Open run detail", Glyph = "\uE7C3" },
                 new WorkspaceCommandItem { Id = "RunPortfolio", Label = "Portfolio Inspector", Description = "Open portfolio inspector", Glyph = "\uE8B5" },
                 new WorkspaceCommandItem { Id = "RunLedger", Label = "Ledger Inspector", Description = "Open ledger inspector", Glyph = "\uEE94" },
+                new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting Impact", Description = "Open trial-balance impact view", Glyph = "\uE9D9" },
+                new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
+                new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit Trail", Description = "Open governance audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "LeanIntegration", Label = "Lean Integration", Description = "Open Lean integration", Glyph = "\uE943" }
             ]
         };
@@ -425,6 +503,9 @@ public partial class ResearchWorkspaceShellPage : Page
         "RunDetail" => "Run Detail",
         "RunPortfolio" => "Portfolio Inspector",
         "RunLedger" => "Ledger Inspector",
+        "FundTrialBalance" => "Accounting Impact",
+        "FundReconciliation" => "Reconciliation",
+        "FundAuditTrail" => "Audit Trail",
         "Charts" => "Charts",
         "LeanIntegration" => "Lean Integration",
         _ => pageTag

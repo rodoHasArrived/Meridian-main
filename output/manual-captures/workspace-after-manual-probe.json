@@ -7,9 +7,9 @@
       "preferredPageTag": "ResearchShell",
       "category": 0,
       "isBuiltIn": true,
-      "createdAt": "2026-04-08T07:49:06.8358516Z",
-      "updatedAt": "2026-04-08T07:49:06.8358697Z",
-      "lastActivatedAt": "2026-04-08T07:49:09.1120277Z",
+      "createdAt": "2026-04-08T08:12:46.4134044Z",
+      "updatedAt": "2026-04-08T08:12:46.4134182Z",
+      "lastActivatedAt": "2026-04-08T08:12:47.1090707Z",
       "lastActivePageTag": "Dashboard",
       "pages": [
         {
@@ -153,8 +153,8 @@
       "preferredPageTag": "TradingShell",
       "category": 1,
       "isBuiltIn": true,
-      "createdAt": "2026-04-08T07:49:06.8360259Z",
-      "updatedAt": "2026-04-08T07:49:06.8360259Z",
+      "createdAt": "2026-04-08T08:12:46.4134699Z",
+      "updatedAt": "2026-04-08T08:12:46.41347Z",
       "pages": [
         {
           "pageTag": "TradingShell",
@@ -247,8 +247,8 @@
       "preferredPageTag": "Provider",
       "category": 2,
       "isBuiltIn": true,
-      "createdAt": "2026-04-08T07:49:06.8360278Z",
-      "updatedAt": "2026-04-08T07:49:06.8360278Z",
+      "createdAt": "2026-04-08T08:12:46.4134714Z",
+      "updatedAt": "2026-04-08T08:12:46.4134715Z",
       "pages": [
         {
           "pageTag": "Provider",
@@ -418,10 +418,10 @@
       "preferredPageTag": "DataQuality",
       "category": 3,
       "isBuiltIn": true,
-      "createdAt": "2026-04-08T07:49:06.8360472Z",
-      "updatedAt": "2026-04-08T07:49:06.8360473Z",
-      "lastActivatedAt": "2026-04-08T07:49:17.0489464Z",
-      "lastActivePageTag": "GovernanceShell",
+      "createdAt": "2026-04-08T08:12:46.4134787Z",
+      "updatedAt": "2026-04-08T08:12:46.4134787Z",
+      "lastActivatedAt": "2026-04-08T08:12:47.3572135Z",
+      "lastActivePageTag": "DataQuality",
       "pages": [
         {
           "pageTag": "DataQuality",
@@ -572,22 +572,30 @@
         }
       ],
       "recentPageTags": [
-        "GovernanceShell"
+        "DataQuality"
       ],
       "widgetLayout": {},
       "filters": {},
       "context": {},
       "sessionSnapshot": {
-        "activePageTag": "GovernanceShell",
-        "openPages": [],
+        "activePageTag": "DataQuality",
+        "openPages": [
+          {
+            "pageTag": "DataQuality",
+            "title": "Data Quality",
+            "isDefault": true,
+            "scrollPosition": 0,
+            "pageState": {}
+          }
+        ],
         "recentPages": [
-          "GovernanceShell"
+          "DataQuality"
         ],
         "widgetLayout": {},
         "activeFilters": {},
         "workspaceContext": {},
         "savedLayoutPresets": [],
-        "savedAt": "2026-04-08T07:49:17.0489355Z",
+        "savedAt": "2026-04-08T08:12:47.1106975Z",
         "activeWorkspaceId": "governance"
       },
       "savedLayouts": []
@@ -595,61 +603,28 @@
   ],
   "activeWorkspaceId": "governance",
   "lastSession": {
-    "activePageTag": "GovernanceShell",
-    "openPages": [],
+    "activePageTag": "DataQuality",
+    "openPages": [
+      {
+        "pageTag": "DataQuality",
+        "title": "Data Quality",
+        "isDefault": true,
+        "scrollPosition": 0,
+        "pageState": {}
+      }
+    ],
     "recentPages": [
-      "GovernanceShell"
+      "DataQuality"
     ],
     "widgetLayout": {},
     "activeFilters": {},
     "workspaceContext": {},
     "savedLayoutPresets": [],
-    "savedAt": "2026-04-08T07:49:17.0489355Z",
+    "savedAt": "2026-04-08T08:12:47.1106975Z",
     "activeWorkspaceId": "governance"
   },
   "lastSelectedFundProfileId": "Fund:alpha-credit",
-  "sessionsByFundProfileId": {
-    "Fund:alpha-credit": {
-      "activePageTag": "GovernanceShell",
-      "openPages": [],
-      "recentPages": [
-        "GovernanceShell"
-      ],
-      "widgetLayout": {},
-      "activeFilters": {},
-      "workspaceContext": {},
-      "windowBounds": {
-        "x": 272,
-        "y": 5,
-        "width": 1400,
-        "height": 900,
-        "isMaximized": false
-      },
-      "savedLayoutPresets": [],
-      "savedAt": "2026-04-08T07:49:16.9526047Z",
-      "activeWorkspaceId": "governance"
-    },
-    "alpha-credit": {
-      "activePageTag": "GovernanceShell",
-      "openPages": [],
-      "recentPages": [
-        "GovernanceShell"
-      ],
-      "widgetLayout": {},
-      "activeFilters": {},
-      "workspaceContext": {},
-      "windowBounds": {
-        "x": 272,
-        "y": 5,
-        "width": 1400,
-        "height": 900,
-        "isMaximized": false
-      },
-      "savedLayoutPresets": [],
-      "savedAt": "2026-04-08T07:49:16.9526047Z",
-      "activeWorkspaceId": "governance"
-    }
-  },
+  "sessionsByFundProfileId": {},
   "dockLayouts": {
     "research::Fund:alpha-credit": "\u003C?xml version=\u00221.0\u0022 encoding=\u0022utf-16\u0022?\u003E\r\n\u003CLayoutRoot\u003E\r\n  \u003CRootPanel Orientation=\u0022Vertical\u0022\u003E\r\n    \u003CLayoutPanel Orientation=\u0022Horizontal\u0022\u003E\r\n      \u003CLayoutAnchorablePaneGroup Orientation=\u0022Horizontal\u0022 DockWidth=\u0022300\u0022\u003E\r\n        \u003CLayoutAnchorablePane /\u003E\r\n      \u003C/LayoutAnchorablePaneGroup\u003E\r\n      \u003CLayoutDocumentPaneGroup Orientation=\u0022Horizontal\u0022\u003E\r\n        \u003CLayoutDocumentPane /\u003E\r\n      \u003C/LayoutDocumentPaneGroup\u003E\r\n      \u003CLayoutAnchorablePaneGroup Orientation=\u0022Horizontal\u0022 DockWidth=\u0022340\u0022\u003E\r\n        \u003CLayoutAnchorablePane /\u003E\r\n      \u003C/LayoutAnchorablePaneGroup\u003E\r\n    \u003C/LayoutPanel\u003E\r\n    \u003CLayoutAnchorablePaneGroup Orientation=\u0022Horizontal\u0022 DockHeight=\u0022240\u0022\u003E\r\n      \u003CLayoutAnchorablePane DockHeight=\u0022240\u0022 /\u003E\r\n    \u003C/LayoutAnchorablePaneGroup\u003E\r\n  \u003C/RootPanel\u003E\r\n  \u003CTopSide /\u003E\r\n  \u003CRightSide /\u003E\r\n  \u003CLeftSide /\u003E\r\n  \u003CBottomSide /\u003E\r\n  \u003CFloatingWindows /\u003E\r\n  \u003CHidden /\u003E\r\n\u003C/LayoutRoot\u003E"
   },
@@ -665,17 +640,7 @@
       "panes": [],
       "floatingWindows": [],
       "layoutContext": {},
-      "savedAt": "2026-04-08T07:49:09.5789025Z"
+      "savedAt": "2026-04-08T08:12:47.3571994Z"
     }
   }
 }
-
-
-
-
-
-
-
-
-
-

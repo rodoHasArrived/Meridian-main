@@ -2,9 +2,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
 
@@ -14,16 +16,19 @@ public partial class DataOperationsWorkspaceShellPage : Page
 
     private readonly NavigationService _navigationService;
     private readonly WorkspaceShellContextService _shellContextService;
-    private readonly NotificationService _notificationService;
+    private readonly Meridian.Wpf.Services.NotificationService _notificationService;
+    private readonly WorkstationOperatingContextService? _operatingContextService;
 
     public DataOperationsWorkspaceShellPage(
         NavigationService navigationService,
         WorkspaceShellContextService shellContextService,
-        NotificationService notificationService)
+        WorkstationOperatingContextService? operatingContextService,
+        Meridian.Wpf.Services.NotificationService notificationService)
     {
         InitializeComponent();
         _navigationService = navigationService;
         _shellContextService = shellContextService;
+        _operatingContextService = operatingContextService;
         _notificationService = notificationService;
     }
 
@@ -44,13 +49,20 @@ public partial class DataOperationsWorkspaceShellPage : Page
     {
         var unreadAlerts = _shellContextService.GetUnreadAlertCount();
         var notifications = _notificationService.GetHistory().Take(4).ToArray();
+        var operatingContext = _operatingContextService?.CurrentContext;
+        var scopeLabel = operatingContext is null
+            ? "Provider and storage posture"
+            : $"{operatingContext.ScopeKind.ToDisplayName()} · {operatingContext.DisplayName}";
+        var scopeSummary = operatingContext is null
+            ? "Provider posture, backfill priority, and storage follow-up stay in one fixed shell."
+            : $"Route providers, backfills, and storage work for {operatingContext.DisplayName} without leaving the shell.";
 
         ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
         {
             WorkspaceTitle = "Data Operations Workspace",
             WorkspaceSubtitle = "Provider freshness, backfill pressure, symbol coverage, and storage posture in one fixed operator shell.",
             PrimaryScopeLabel = "Queue",
-            PrimaryScopeValue = "Provider and storage posture",
+            PrimaryScopeValue = scopeLabel,
             AsOfValue = DateTimeOffset.Now.ToString("MMM dd yyyy HH:mm"),
             FreshnessValue = unreadAlerts > 0 ? "Recent alerts present" : "Ready for operator review",
             ReviewStateLabel = "Backfill",
@@ -79,13 +91,13 @@ public partial class DataOperationsWorkspaceShellPage : Page
             ]
         };
 
-        QueueScopeBadgeText.Text = unreadAlerts > 0 ? $"{unreadAlerts} alert-linked" : "Provider posture";
-        QueueSummaryText.Text = "Supervise providers, backfill coverage, and storage posture without leaving the shell.";
+        QueueScopeBadgeText.Text = unreadAlerts > 0 ? $"{scopeLabel} · {unreadAlerts} alert-linked" : scopeLabel;
+        QueueSummaryText.Text = scopeSummary;
 
         ProviderQueueList.ItemsSource = new[]
         {
-            new WorkspaceQueueItem { Title = "Provider posture", Detail = "Validate provider readiness, fallback ordering, and health before starting backfills or storage handoff.", StatusLabel = "Ready", CountLabel = "3 routes", Tone = WorkspaceTone.Info, PrimaryActionId = "Provider", PrimaryActionLabel = "Open Providers", SecondaryActionId = "PackageManager", SecondaryActionLabel = "Packages" },
-            new WorkspaceQueueItem { Title = "Symbol coverage and mapping", Detail = "Curate symbol lists and mapping quality before new historical coverage requests are staged.", StatusLabel = "Review", CountLabel = "Symbol ops", Tone = WorkspaceTone.Neutral, PrimaryActionId = "Symbols", PrimaryActionLabel = "Open Symbols", SecondaryActionId = "Provider", SecondaryActionLabel = "Providers" }
+            new WorkspaceQueueItem { Title = "Provider posture", Detail = $"Validate provider readiness, fallback ordering, and health before starting backfills or storage handoff for {scopeLabel}.", StatusLabel = "Ready", CountLabel = "3 routes", Tone = WorkspaceTone.Info, PrimaryActionId = "Provider", PrimaryActionLabel = "Open Providers", SecondaryActionId = "PackageManager", SecondaryActionLabel = "Packages" },
+            new WorkspaceQueueItem { Title = "Symbol coverage and mapping", Detail = $"Curate symbol lists and mapping quality before new historical coverage requests are staged for {scopeLabel}.", StatusLabel = "Review", CountLabel = "Symbol ops", Tone = WorkspaceTone.Neutral, PrimaryActionId = "Symbols", PrimaryActionLabel = "Open Symbols", SecondaryActionId = "Provider", SecondaryActionLabel = "Providers" }
         };
 
         BackfillQueueList.ItemsSource = new[]
@@ -100,8 +112,8 @@ public partial class DataOperationsWorkspaceShellPage : Page
 
         OperationsSummaryTitleText.Text = "Data Operations";
         OperationsSummaryDetailText.Text = notifications.FirstOrDefault() is { } latest
-            ? $"Latest operational signal: {latest.Title}. Keep providers, sessions, and storage review in one operator shell."
-            : "Provider readiness, historical coverage, and storage posture live in the same operator shell.";
+            ? $"Latest operational signal: {latest.Title}. Keep providers, sessions, and storage review aligned to {scopeLabel}."
+            : $"Provider readiness, historical coverage, and storage posture live in the same operator shell for {scopeLabel}.";
         SummaryProvidersText.Text = "3";
         SummaryBackfillText.Text = "Queue";
         SummaryStorageText.Text = unreadAlerts > 0 ? "Watch" : "Stable";
@@ -127,15 +139,15 @@ public partial class DataOperationsWorkspaceShellPage : Page
     {
         try
         {
-            var layout = await WorkspaceService.Instance.GetWorkspaceLayoutStateAsync(WorkspaceId);
+            var layout = await WorkspaceService.Instance.GetWorkspaceLayoutStateForContextAsync(WorkspaceId, GetLayoutScopeKey());
             if (layout?.Panes.Count > 0)
             {
                 foreach (var pane in layout.Panes.OrderBy(static pane => pane.Order))
                 {
-                    OpenWorkspacePage(pane.PageTag, MapDockAction(pane.DockZone));
+                    OpenWorkspacePage(pane.PageTag, NormalizeDockAction(MapDockAction(pane.DockZone)));
                 }
 
-                if (!string.IsNullOrWhiteSpace(layout.DockLayoutXml))
+                if (ShouldRestoreSerializedLayout(layout))
                 {
                     DataOperationsDockManager.LoadLayout(layout.DockLayoutXml);
                 }
@@ -145,7 +157,7 @@ public partial class DataOperationsWorkspaceShellPage : Page
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to restore dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to restore dock layout: {ex.Message}");
         }
 
         OpenWorkspacePage("Provider", PaneDropAction.Replace);
@@ -159,11 +171,14 @@ public partial class DataOperationsWorkspaceShellPage : Page
         try
         {
             var layout = DataOperationsDockManager.CaptureLayoutState("data-operations-workspace", "Data Operations Workspace");
-            await WorkspaceService.Instance.SaveWorkspaceLayoutStateAsync(WorkspaceId, layout);
+            layout.OperatingContextKey = GetLayoutScopeKey();
+            layout.WindowMode = GetWindowMode();
+            layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
+            await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to save dock layout: {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to save dock layout: {ex.Message}");
         }
     }
 
@@ -203,11 +218,11 @@ public partial class DataOperationsWorkspaceShellPage : Page
         try
         {
             var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
-            DataOperationsDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, action);
+            DataOperationsDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
         }
         catch (Exception ex)
         {
-            LoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
+            WpfLoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
             _navigationService.NavigateTo(pageTag, parameter);
         }
     }
@@ -229,6 +244,20 @@ public partial class DataOperationsWorkspaceShellPage : Page
     private void OpenStorage_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("Storage");
     private void OpenCollectionSessions_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("CollectionSessions");
     private void OpenPackageManager_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("PackageManager");
+
+    private string? GetLayoutScopeKey()
+        => _operatingContextService?.GetActiveScopeKey();
+
+    private BoundedWindowMode GetWindowMode()
+        => _operatingContextService?.CurrentWindowMode ?? BoundedWindowMode.DockFloat;
+
+    private static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layout)
+        => layout.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layout.DockLayoutXml);
+
+    private PaneDropAction NormalizeDockAction(PaneDropAction action)
+        => GetWindowMode() == BoundedWindowMode.Focused && action == PaneDropAction.FloatWindow
+            ? PaneDropAction.OpenTab
+            : action;
 
     private static string BuildPageKey(string pageTag, object? parameter) => parameter is null ? pageTag : $"{pageTag}:{parameter}";
     private static string GetPageTitle(string pageTag) => pageTag switch { "Provider" => "Providers", "Backfill" => "Backfill", "Storage" => "Storage", "CollectionSessions" => "Collection Sessions", "PackageManager" => "Package Manager", "DataExport" => "Data Export", _ => pageTag };
