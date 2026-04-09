@@ -5222,6 +5222,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── IOrderGateway.cs
 │   │   ├── Margin
 │   │   │   ├── IMarginModel.cs
+│   │   │   ├── MarginAccountType.cs
+│   │   │   ├── MarginCallStatus.cs
 │   │   │   ├── MarginRequirement.cs
 │   │   │   ├── PortfolioMarginModel.cs
 │   │   │   └── RegTMarginModel.cs
@@ -5842,6 +5844,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   │   ├── command-palette.tsx
 │   │   │   │   │   │   ├── entity-data-table.test.tsx
 │   │   │   │   │   │   ├── entity-data-table.tsx
+│   │   │   │   │   │   ├── equity-curve-chart.test.tsx
+│   │   │   │   │   │   ├── equity-curve-chart.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── run-status-badge.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
@@ -5893,8 +5897,8 @@ Use these documents together when planning or implementing new work:
 │   │       │   └── dashboard.css
 │   │       └── workstation
 │   │           ├── assets
-│   │           │   ├── index-DqrOY4_3.css
-│   │           │   └── index-RWNTLiOV.js
+│   │           │   ├── index-BUqJ19Wh.css
+│   │           │   └── index-VxIQhfQW.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -6781,6 +6785,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Http
 │   │   │   │   └── HttpClientConfigurationTests.cs
 │   │   │   ├── Providers
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
@@ -6792,8 +6797,10 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── InteractiveBrokers
 │   │   │   │   │   │   ├── ib_order_limit_buy_day.json
+│   │   │   │   │   │   ├── ib_order_limit_buy_govt_gtc.json
 │   │   │   │   │   │   ├── ib_order_limit_sell_fok.json
 │   │   │   │   │   │   ├── ib_order_loc_sell_day.json
+│   │   │   │   │   │   ├── ib_order_market_buy_bond_day.json
 │   │   │   │   │   │   ├── ib_order_market_sell_gtc.json
 │   │   │   │   │   │   ├── ib_order_moc_sell_day.json
 │   │   │   │   │   │   ├── ib_order_stop_buy_ioc.json
@@ -6810,6 +6817,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
 │   │   │   │   ├── IBOrderSampleTests.cs
@@ -7116,6 +7124,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-491 directories, 6486 files
+491 directories, 6494 files
 ```
 <!-- readme-tree end -->
