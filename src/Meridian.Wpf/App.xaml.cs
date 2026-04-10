@@ -424,6 +424,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
+        services.AddSingleton<Meridian.Wpf.Services.BacktestDataAvailabilityService>();
         services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
