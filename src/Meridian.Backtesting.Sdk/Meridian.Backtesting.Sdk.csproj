@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
-    <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Ledger\Meridian.Ledger.csproj" />
   </ItemGroup>
 

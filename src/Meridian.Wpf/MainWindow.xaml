@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Meridian.Wpf"
         xmlns:views="clr-namespace:Meridian.Wpf.Views"
-        xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Meridian"
@@ -18,18 +17,12 @@
         KeyDown="OnWindowKeyDown"
         AutomationProperties.Name="Meridian">
 
-    <Window.Resources>
-        <converters:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
-    </Window.Resources>
-
     <Window.InputBindings>
         <!-- Navigation shortcuts -->
         <KeyBinding Key="D" Modifiers="Control" Command="{Binding NavigateCommand}" CommandParameter="Dashboard" />
         <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding StartCollectorCommand}" />
         <KeyBinding Key="Q" Modifiers="Control+Shift" Command="{Binding StopCollectorCommand}" />
         <KeyBinding Key="F5" Command="{Binding RefreshCommand}" />
-        <!-- Fixture mode: cycle scenario (only active when fixture mode is on) -->
-        <KeyBinding Key="N" Modifiers="Control+Shift" Command="{Binding CycleFixtureScenarioCommand}" />
     </Window.InputBindings>
 
     <Grid>
@@ -51,8 +44,6 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0"
                            Text="&#xE7BA;"
@@ -68,34 +59,7 @@
                            FontWeight="SemiBold"
                            FontSize="12"
                            VerticalAlignment="Center" />
-                <!-- Scenario label: only visible in fixture mode (not offline-only mode) -->
-                <Border Grid.Column="2"
-                        Background="#33FFFFFF"
-                        CornerRadius="3"
-                        Padding="6,2"
-                        Margin="8,0,4,0"
-                        VerticalAlignment="Center"
-                        Visibility="{Binding FixtureScenarioLabel, Converter={StaticResource NullToCollapsedConverter}}">
-                    <TextBlock Text="{Binding FixtureScenarioLabel}"
-                               Foreground="White"
-                               FontSize="11"
-                               FontWeight="Medium" />
-                </Border>
-                <!-- Cycle scenario button: advances to next fixture scenario -->
-                <Button Grid.Column="3"
-                        Content="Next scenario  ·  Ctrl+⇧+N"
-                        Command="{Binding CycleFixtureScenarioCommand}"
-                        Padding="8,2"
-                        Margin="4,0,8,0"
-                        VerticalAlignment="Center"
-                        FontSize="11"
-                        Background="#44FFFFFF"
-                        Foreground="White"
-                        BorderBrush="#66FFFFFF"
-                        BorderThickness="1"
-                        Cursor="Hand"
-                        ToolTip="Cycle through fixture scenarios: Connected → Disconnected → Degraded → Error → Loading" />
-                <TextBlock Grid.Column="4"
+                <TextBlock Grid.Column="2"
                            Text="&#xE8BB;"
                            FontFamily="{StaticResource SymbolThemeFontFamily}"
                            FontSize="14"

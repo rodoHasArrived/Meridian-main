@@ -19,9 +19,4 @@ public sealed class PriceSeries
         Symbol = symbol;
         Bars = bars;
     }
-
-    public override string ToString()
-        => Count == 0
-            ? $"{Symbol}: 0 bars"
-            : $"{Symbol}: {Count:N0} bars ({From:yyyy-MM-dd} to {To:yyyy-MM-dd})";
 }

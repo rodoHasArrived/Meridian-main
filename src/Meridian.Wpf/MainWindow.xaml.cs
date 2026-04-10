@@ -13,7 +13,6 @@ using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Contracts;
-using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -38,7 +37,6 @@ public partial class MainWindow : Window
     private readonly OnboardingTourService _tourService;
     private readonly AlertService _alertService;
     private readonly WpfServices.WorkspaceService _workspaceService;
-    private readonly WpfServices.FundContextService _fundContextService;
 
     private static readonly string WindowStateFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -49,8 +47,7 @@ public partial class MainWindow : Window
         MainWindowViewModel viewModel,
         WpfServices.NavigationService navigationService,
         WpfServices.KeyboardShortcutService keyboardShortcutService,
-        WpfServices.NotificationService notificationService,
-        WpfServices.FundContextService fundContextService)
+        WpfServices.NotificationService notificationService)
     {
         InitializeComponent();
 
@@ -61,7 +58,6 @@ public partial class MainWindow : Window
         _tourService = OnboardingTourService.Instance;
         _alertService = AlertService.Instance;
         _workspaceService = WpfServices.WorkspaceService.Instance;
-        _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         DataContext = _viewModel;
 
         // Subscribe to keyboard shortcuts
@@ -76,8 +72,6 @@ public partial class MainWindow : Window
 
         // Subscribe to alert events for guided remediation
         _alertService.AlertRaised += OnAlertRaised;
-        _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
-        _fundContextService.FundSwitchRequested += OnFundSwitchRequested;
 
         // Subscribe to launch args forwarded from secondary instances (jump-list re-launches).
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived += OnLaunchArgsReceived;
@@ -93,7 +87,7 @@ public partial class MainWindow : Window
         RestoreWindowState();
     }
 
-    private async void OnWindowLoaded(object sender, RoutedEventArgs e)
+    private void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
         EnsureShellVisibleOnStartup();
 
@@ -120,11 +114,8 @@ public partial class MainWindow : Window
         GlobalHotkeyService.Instance.GlobalHotkeyFired += OnGlobalHotkeyFired;
         GlobalHotkeyService.Instance.Initialize(hwnd);
 
-        await _workspaceService.LoadWorkspacesAsync();
-        await _fundContextService.LoadAsync();
-        await SynchronizeLastSelectedFundAsync();
-
-        RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
+        // Load the shell first; it owns the inner content frame and restores page state there.
+        RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
 
         // A few services can raise transient state changes during startup.
         // Re-assert the shell as visible once the initial load work has been queued.
@@ -145,8 +136,6 @@ public partial class MainWindow : Window
         _tourService.StepChanged -= OnTourStepChanged;
         _tourService.TourCompleted -= OnTourCompleted;
         _alertService.AlertRaised -= OnAlertRaised;
-        _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
-        _fundContextService.FundSwitchRequested -= OnFundSwitchRequested;
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived -= OnLaunchArgsReceived;
 
         // Clipboard watcher cleanup
@@ -228,24 +217,19 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Opens the command palette (Ctrl+K).
-    /// Delegates to the inline overlay inside <see cref="MainPage"/> so that the
-    /// <c>CommandPaletteInput</c> UI-Automation element stays within the main-window
-    /// subtree and can be found by automation scripts.
-    /// Falls back to the standalone dialog when the frame does not yet hold a <see cref="MainPage"/>.
+    /// Opens the command palette dialog (Ctrl+K).
     /// </summary>
     private void ShowCommandPalette()
     {
-        if (RootFrame.Content is MainPage page)
-        {
-            page.ShowCommandPaletteOverlay();
-            return;
-        }
-
-        // Fallback: frame not yet loaded with MainPage — use the standalone dialog.
         var paletteService = CommandPaletteService.Instance;
-        var palette = new CommandPaletteWindow(paletteService) { Owner = this };
+        var palette = new CommandPaletteWindow(paletteService)
+        {
+            Owner = this
+        };
+
+        // Subscribe to command execution
         paletteService.CommandExecuted += OnPaletteCommandExecuted;
+
         try
         {
             palette.ShowDialog();
@@ -423,32 +407,31 @@ public partial class MainWindow : Window
     /// <summary>
      /// Restores the last workspace session state (active workspace, last page, etc.)
      /// </summary>
-    private async Task RestoreWorkspaceSessionForFundAsync(FundProfileDetail profile, CancellationToken ct = default)
+    private async Task RestoreWorkspaceSessionAsync(CancellationToken ct = default)
     {
         try
         {
             await _workspaceService.LoadWorkspacesAsync();
 
-            var session = _workspaceService.GetLastSessionState(profile.FundProfileId);
-            var targetWorkspaceId = !string.IsNullOrWhiteSpace(session?.ActiveWorkspaceId)
-                ? session!.ActiveWorkspaceId
-                : profile.DefaultWorkspaceId;
-
-            if (!string.IsNullOrWhiteSpace(targetWorkspaceId))
+            var session = _workspaceService.GetLastSessionState();
+            if (session != null)
             {
-                await _workspaceService.ActivateWorkspaceAsync(targetWorkspaceId);
+                // Restore active workspace
+                if (!string.IsNullOrEmpty(session.ActiveWorkspaceId))
+                {
+                    await _workspaceService.ActivateWorkspaceAsync(session.ActiveWorkspaceId);
+                }
+
+                // Restore last active page after MainPage loads
+                if (!string.IsNullOrEmpty(session.ActivePageTag) && session.ActivePageTag != "Dashboard")
+                {
+                    // Defer navigation until MainPage is fully loaded
+                    _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
+                    {
+                        _ = _navigationService.NavigateTo(session.ActivePageTag);
+                    });
+                }
             }
-
-            var targetPageTag = !string.IsNullOrWhiteSpace(session?.ActivePageTag)
-                ? session!.ActivePageTag
-                : profile.DefaultLandingPageTag;
-
-            if (string.IsNullOrWhiteSpace(targetPageTag))
-            {
-                targetPageTag = ResolveDefaultPageTag(targetWorkspaceId);
-            }
-
-            _navigationService.NavigateTo(targetPageTag);
         }
         catch (Exception)
         {
@@ -463,18 +446,12 @@ public partial class MainWindow : Window
     {
         try
         {
-            if (_fundContextService.CurrentFundProfile is null && RootFrame.Content is not MainPage)
-            {
-                return;
-            }
-
-            var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
             var currentPage = _navigationService.GetCurrentPageTag();
             var activeWorkspace = _workspaceService.ActiveWorkspace;
 
             // Preserve per-page filter state and open-pages list that were accumulated
             // during the session by the individual pages via UpdatePageFilterState().
-            var existing = _workspaceService.GetLastSessionState(fundProfileId);
+            var existing = _workspaceService.GetLastSessionState();
 
             var session = new Ui.Services.SessionState
             {
@@ -493,84 +470,12 @@ public partial class MainWindow : Window
             };
 
             // Fire-and-forget since we're closing
-            _ = _workspaceService.SaveSessionStateAsync(session, fundProfileId);
+            _ = _workspaceService.SaveSessionStateAsync(session);
         }
         catch (Exception)
         {
         }
     }
-
-    private async Task SynchronizeLastSelectedFundAsync(CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId) &&
-            !string.IsNullOrWhiteSpace(_workspaceService.LastSelectedFundProfileId))
-        {
-            await _fundContextService.SetLastSelectedFundProfileIdAsync(_workspaceService.LastSelectedFundProfileId, ct);
-        }
-        else if (string.IsNullOrWhiteSpace(_workspaceService.LastSelectedFundProfileId) &&
-                 !string.IsNullOrWhiteSpace(_fundContextService.LastSelectedFundProfileId))
-        {
-            await _workspaceService.SetLastSelectedFundProfileIdAsync(_fundContextService.LastSelectedFundProfileId, ct);
-        }
-    }
-
-    private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
-    {
-        if (!Dispatcher.CheckAccess())
-        {
-            _ = Dispatcher.InvokeAsync(() => OnActiveFundProfileChanged(sender, e));
-            return;
-        }
-
-        await EnterFundAsync(e.Profile);
-    }
-
-    private async void OnFundSwitchRequested(object? sender, EventArgs e)
-    {
-        if (!Dispatcher.CheckAccess())
-        {
-            _ = Dispatcher.InvokeAsync(() => OnFundSwitchRequested(sender, e));
-            return;
-        }
-
-        await ShowFundSelectionAsync(saveCurrentSession: true);
-    }
-
-    private async Task EnterFundAsync(FundProfileDetail profile, CancellationToken ct = default)
-    {
-        await _workspaceService.SetLastSelectedFundProfileIdAsync(profile.FundProfileId, ct);
-        RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
-        EnsureShellVisibleOnStartup();
-
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(async () =>
-        {
-            await RestoreWorkspaceSessionForFundAsync(profile, ct);
-        }));
-    }
-
-    private async Task ShowFundSelectionAsync(bool saveCurrentSession, CancellationToken ct = default)
-    {
-        if (saveCurrentSession)
-        {
-            SaveWorkspaceSession();
-        }
-
-        _fundContextService.ClearCurrentFund();
-        await _workspaceService.LoadWorkspacesAsync(ct);
-        RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
-        EnsureShellVisibleOnStartup();
-    }
-
-    private static string ResolveDefaultPageTag(string? workspaceId) => NormalizeWorkspaceId(workspaceId) switch
-    {
-        "trading" => "TradingShell",
-        "data-operations" => "DataOperationsShell",
-        "governance" => "GovernanceShell",
-        _ => "ResearchShell"
-    };
-
-    private static string NormalizeWorkspaceId(string? workspaceId)
-        => string.IsNullOrWhiteSpace(workspaceId) ? "research" : workspaceId.Trim();
 
 
 

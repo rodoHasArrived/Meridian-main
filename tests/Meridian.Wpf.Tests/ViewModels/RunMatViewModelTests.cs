@@ -71,10 +71,13 @@ public sealed class RunMatViewModelTests
         vm.NewScriptCommand.Execute(null);
         var first = vm.ScriptName;
 
+        // Small delay so timestamp changes
+        System.Threading.Thread.Sleep(1100);
+
         vm.NewScriptCommand.Execute(null);
         var second = vm.ScriptName;
 
-        second.Should().NotBe(first, "each new script gets a unique counter-based name");
+        second.Should().NotBe(first, "each new script gets a fresh timestamp");
     }
 
     // ── StopRun command tests ─────────────────────────────────────────────

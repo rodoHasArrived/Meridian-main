@@ -72,22 +72,22 @@ public enum InstrumentType : byte
     Warrant = 12,
 
     /// <summary>
-    /// Interest-rate, credit, or total-return swap.
+    /// Over-the-counter or listed interest rate / credit / equity swap.
     /// </summary>
     Swap = 13,
 
     /// <summary>
-    /// Directly originated private-credit loan.
+    /// Direct lending / private credit loan instrument.
     /// </summary>
     DirectLoan = 14,
 
     /// <summary>
-    /// Repurchase agreement (repo / reverse-repo).
+    /// Repo or reverse repo financing instrument.
     /// </summary>
     Repo = 15,
 
     /// <summary>
-    /// Bank deposit instrument (demand, time, or notice deposit).
+    /// Bank deposit, time deposit, or demand deposit.
     /// </summary>
     Deposit = 16
 }

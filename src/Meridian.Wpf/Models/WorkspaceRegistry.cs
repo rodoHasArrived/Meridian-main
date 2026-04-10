@@ -84,7 +84,6 @@ public static class WorkspaceRegistry
             Pages: new WorkspacePageEntry[]
             {
                 new("SecurityMaster",    "Security Master",    "\uE72E"), // Lock
-                new("FundLedger",        "Fund Ledger",        "\uEE94"), // Database
                 new("Settings",          "Settings",           "\uE713"), // Settings
                 new("Diagnostics",       "Diagnostics",        "\uE90F"), // Repair
                 new("ServiceManager",    "Service Manager",    "\uECE7"), // Plug

@@ -1,5 +1,6 @@
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Plotting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -12,7 +13,8 @@ public sealed class ScriptRunnerTests
 
     private static ScriptRunner BuildRunner(
         IQuantScriptCompiler? compiler = null,
-        IQuantDataContext? dataContext = null)
+        IQuantDataContext? dataContext = null,
+        PlotQueue? plotQueue = null)
     {
         compiler ??= new RoslynScriptCompiler(
             Options.Create(new QuantScriptOptions()),
@@ -24,6 +26,7 @@ public sealed class ScriptRunnerTests
         return new ScriptRunner(
             compiler,
             dataContext,
+            plotQueue ?? new PlotQueue(),
             null!,
             Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
             NullLogger<ScriptRunner>.Instance);
@@ -150,7 +153,7 @@ public sealed class ScriptRunnerTests
 
         try
         {
-            var result = await runner.RunAsync("Print(\"hi\");", NoParams, null, cts.Token);
+            var result = await runner.RunAsync("Print(\"hi\");", NoParams, cts.Token);
             result.Should().NotBeNull();
         }
         catch (OperationCanceledException)
@@ -169,7 +172,7 @@ public sealed class ScriptRunnerTests
         // A pre-cancelled token throws OperationCanceledException from CompileAsync
         try
         {
-            var result = await runner.RunAsync("// should be cancelled", NoParams, null, cts.Token);
+            var result = await runner.RunAsync("// should be cancelled", NoParams, cts.Token);
             result.Should().NotBeNull();
         }
         catch (OperationCanceledException)
@@ -192,6 +195,7 @@ public sealed class ScriptRunnerTests
         var runner = new ScriptRunner(
             compiler,
             dataContext,
+            new PlotQueue(),
             null!,
             Options.Create(shortTimeout),
             NullLogger<ScriptRunner>.Instance);
@@ -257,38 +261,5 @@ public sealed class ScriptRunnerTests
         var result = await runner.RunAsync("Print(\"ok\");", null!);
 
         result.Success.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task RunAsync_WithPreviousCheckpoint_CarriesVariablesForward()
-    {
-        var runner = BuildRunner();
-
-        var firstCell = await runner.RunAsync("var lookback = 42;", NoParams);
-        var secondCell = await runner.RunAsync(
-            "Print($\"Lookback={lookback}\");",
-            NoParams,
-            firstCell.Checkpoint);
-
-        firstCell.Success.Should().BeTrue();
-        firstCell.Checkpoint.Should().NotBeNull();
-        secondCell.Success.Should().BeTrue();
-        secondCell.ConsoleOutput.Should().Contain("Lookback=42");
-    }
-
-    [Fact]
-    public async Task RunAsync_WithPreviousCheckpoint_CompilationFailure_DoesNotAdvanceCheckpoint()
-    {
-        var runner = BuildRunner();
-
-        var firstCell = await runner.RunAsync("var symbol = \"SPY\";", NoParams);
-        var secondCell = await runner.RunAsync(
-            "Print(unknownVariable);",
-            NoParams,
-            firstCell.Checkpoint);
-
-        secondCell.Success.Should().BeFalse();
-        secondCell.CompilationErrors.Should().NotBeEmpty();
-        secondCell.Checkpoint.Should().BeNull();
     }
 }

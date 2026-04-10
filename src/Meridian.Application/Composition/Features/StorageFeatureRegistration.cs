@@ -1,6 +1,5 @@
 using Meridian.Application.Config;
 using Meridian.Application.DirectLending;
-using Meridian.Application.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.UI;
 using Meridian.Contracts.DirectLending;
@@ -32,7 +31,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
     {
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
-        FundAccountsStartup.EnsureEnvironmentDefaults();
 
         var securityMasterOptions = CreateSecurityMasterOptions();
         var directLendingOptions = CreateDirectLendingOptions();
@@ -141,10 +139,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddHostedService<DirectLendingOutboxDispatcher>();
             services.AddHostedService<DailyAccrualWorker>();
         }
-
-        // Fund accounts: always register in-memory fallback; Postgres path wired in Phase 4b
-        // when MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING is set.
-        services.TryAddSingleton<IFundAccountService, InMemoryFundAccountService>();
 
         return services;
     }

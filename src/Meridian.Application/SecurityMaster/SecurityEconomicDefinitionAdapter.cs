@@ -130,7 +130,15 @@ internal static class SecurityEconomicDefinitionAdapter
             {
                 isCallable = definition.Terms.Call.Value.IsCallable,
                 firstCallDate = definition.Terms.Call.Value.FirstCallDate,
-                callPrice = definition.Terms.Call.Value.CallPrice
+                callPrice = definition.Terms.Call.Value.CallPrice,
+                callSchedule = definition.Terms.Call.Value.CallSchedule
+                    .Select(e => new { callDt = e.CallDt, callPx = e.CallPx, isParCall = e.IsParCall, callType = e.CallType is null ? null : e.CallType.Value })
+                    .ToArray(),
+                makeWholeSpreadBps = definition.Terms.Call.Value.MakeWholeSpreadBps,
+                isPuttable = definition.Terms.Call.Value.IsPuttable,
+                putSchedule = definition.Terms.Call.Value.PutSchedule
+                    .Select(e => new { putDt = e.PutDt, putPx = e.PutPx })
+                    .ToArray()
             },
             auction = definition.Terms.Auction is null ? null : new
             {
@@ -156,7 +164,11 @@ internal static class SecurityEconomicDefinitionAdapter
             {
                 issuerName = definition.Terms.Issuer.Value.IssuerName is null ? null : definition.Terms.Issuer.Value.IssuerName.Value,
                 institutionName = definition.Terms.Issuer.Value.InstitutionName is null ? null : definition.Terms.Issuer.Value.InstitutionName.Value,
-                issuerProgram = definition.Terms.Issuer.Value.IssuerProgram is null ? null : definition.Terms.Issuer.Value.IssuerProgram.Value
+                issuerProgram = definition.Terms.Issuer.Value.IssuerProgram is null ? null : definition.Terms.Issuer.Value.IssuerProgram.Value,
+                leiCode = definition.Terms.Issuer.Value.LeiCode is null ? null : definition.Terms.Issuer.Value.LeiCode.Value,
+                ultimateParentName = definition.Terms.Issuer.Value.UltimateParentName is null ? null : definition.Terms.Issuer.Value.UltimateParentName.Value,
+                issuerSector = definition.Terms.Issuer.Value.IssuerSector is null ? null : definition.Terms.Issuer.Value.IssuerSector.Value,
+                issuerCountry = definition.Terms.Issuer.Value.IssuerCountry is null ? null : definition.Terms.Issuer.Value.IssuerCountry.Value
             },
             equityBehavior = definition.Terms.EquityBehavior is null ? null : new
             {
@@ -172,4 +184,18 @@ internal static class SecurityEconomicDefinitionAdapter
                 liquidityFeeEligible = definition.Terms.Fund.Value.LiquidityFeeEligible
             }
         });
+
+    /// Maps a <see cref="VotingRightsCat"/> DU to a stable wire token.
+    /// For <c>OtherVotingRights</c>, the payload string is used directly as the token.
+    private static string SerializeVotingRightsCat(VotingRightsCat cat)
+    {
+        if (cat.IsOtherVotingRights)
+            return ((VotingRightsCat.OtherVotingRights)cat).Item;
+        if (cat.IsFullVoting) return "FullVoting";
+        if (cat.IsLimitedVoting) return "LimitedVoting";
+        if (cat.IsNonVoting) return "NonVoting";
+        if (cat.IsDualClass) return "DualClass";
+        if (cat.IsSuperVoting) return "SuperVoting";
+        throw new InvalidOperationException($"Unsupported {nameof(VotingRightsCat)} case encountered during serialization.");
+    }
 }

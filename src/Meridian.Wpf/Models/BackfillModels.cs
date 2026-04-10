@@ -16,19 +16,8 @@ public sealed class SymbolProgressInfo
 /// <summary>Scheduled job information.</summary>
 public sealed class ScheduledJobInfo
 {
-    public string ScheduleId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string NextRun { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string CronExpression { get; set; } = string.Empty;
-    public bool Enabled { get; set; }
-    public string FrequencyTag { get; set; } = "Daily";
-    public string TimeText { get; set; } = "06:00";
-    public string BackfillType { get; set; } = "GapFill";
-    public int LookbackDays { get; set; } = 30;
-    public string Granularity { get; set; } = "Daily";
-    public string[] Symbols { get; set; } = [];
-    public string[] PreferredProviders { get; set; } = [];
 }
 
 /// <summary>Resumable job information for checkpoint-based resume.</summary>

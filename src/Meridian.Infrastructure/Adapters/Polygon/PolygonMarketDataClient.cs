@@ -217,7 +217,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         }
 
         // Step 2 – authenticate
-        var authMessage = BuildActionMessage("auth", _options.ApiKey ?? string.Empty);
+        var authMessage = JsonSerializer.Serialize(new { action = "auth", @params = _options.ApiKey });
         await SendAsync(authMessage, ct).ConfigureAwait(false);
         Log.Debug("Sent Polygon authentication message, waiting for response");
 
@@ -286,7 +286,8 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         if (tradeSyms.Length > 0)
         {
             var channels = string.Join(",", tradeSyms.Select(s => $"T.{s}"));
-            await SendAsync(BuildActionMessage("subscribe", channels), ct)
+            await SendAsync(
+                JsonSerializer.Serialize(new { action = "subscribe", @params = channels }), ct)
                 .ConfigureAwait(false);
             Log.Information("Re-subscribed to {Count} trade channels", tradeSyms.Length);
         }
@@ -294,7 +295,8 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         if (quoteSyms.Length > 0)
         {
             var channels = string.Join(",", quoteSyms.Select(s => $"Q.{s}"));
-            await SendAsync(BuildActionMessage("subscribe", channels), ct)
+            await SendAsync(
+                JsonSerializer.Serialize(new { action = "subscribe", @params = channels }), ct)
                 .ConfigureAwait(false);
             Log.Information("Re-subscribed to {Count} quote channels", quoteSyms.Length);
         }
@@ -303,7 +305,8 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         {
             var channels = string.Join(",",
                 aggregateSyms.SelectMany(s => new[] { $"A.{s}", $"AM.{s}" }));
-            await SendAsync(BuildActionMessage("subscribe", channels), ct)
+            await SendAsync(
+                JsonSerializer.Serialize(new { action = "subscribe", @params = channels }), ct)
                 .ConfigureAwait(false);
             Log.Information("Re-subscribed to {Count} aggregate channels", aggregateSyms.Length);
         }
@@ -538,13 +541,10 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     {
         try
         {
-            // Build the fixed-shape subscribe message without reflection-based serialization (ADR-014).
-            await SendAsync(BuildActionMessage("subscribe", channel), ct).ConfigureAwait(false);
+            await SendAsync(
+                JsonSerializer.Serialize(new { action = "subscribe", @params = channel }),
+                CancellationToken.None).ConfigureAwait(false);
             Log.Debug("Sent subscribe request for {Channel}", channel);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -556,13 +556,10 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     {
         try
         {
-            // Build the fixed-shape unsubscribe message without reflection-based serialization (ADR-014).
-            await SendAsync(BuildActionMessage("unsubscribe", channel), ct).ConfigureAwait(false);
+            await SendAsync(
+                JsonSerializer.Serialize(new { action = "unsubscribe", @params = channel }),
+                CancellationToken.None).ConfigureAwait(false);
             Log.Debug("Sent unsubscribe request for {Channel}", channel);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -682,7 +679,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
 
             _tradeCollector.OnTrade(trade);
         }
-        catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
+        catch (Exception ex)
         {
             Log.Warning(ex, "Failed to process Polygon trade message");
         }
@@ -740,7 +737,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
 
             _quoteCollector.OnQuote(quote);
         }
-        catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
+        catch (Exception ex)
         {
             Log.Warning(ex, "Failed to process Polygon quote message");
         }
@@ -814,7 +811,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 "Processed {Timeframe} aggregate for {Symbol}: O={Open} H={High} L={Low} C={Close} V={Volume}",
                 timeframe, symbol, open, high, low, close, volume);
         }
-        catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
+        catch (Exception ex)
         {
             Log.Warning(ex, "Failed to process Polygon aggregate message");
         }
@@ -891,37 +888,6 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     }
 
 
-
-    /// <summary>
-    /// Builds a fixed-shape Polygon WebSocket action message without reflection-based serialization.
-    /// Format: <c>{"action":"subscribe","params":"T.AAPL"}</c>
-    /// </summary>
-    private static string BuildActionMessage(string action, string @params)
-    {
-        // The payload shape is fixed; manual construction avoids the reflection-based overload (ADR-014).
-        // Use JavaScriptEncoder-safe escaping: escape \, ", and all JSON control characters.
-        static string EscapeJson(string value)
-        {
-            var sb = new System.Text.StringBuilder(value.Length + 8);
-            foreach (var ch in value)
-            {
-                sb.Append(ch switch
-                {
-                    '"'  => "\\\"",
-                    '\\' => "\\\\",
-                    '\n' => "\\n",
-                    '\r' => "\\r",
-                    '\t' => "\\t",
-                    '\b' => "\\b",
-                    '\f' => "\\f",
-                    _    => ch.ToString()
-                });
-            }
-            return sb.ToString();
-        }
-
-        return $"{{\"action\":\"{EscapeJson(action)}\",\"params\":\"{EscapeJson(@params)}\"}}";
-    }
 
     /// <summary>
     /// Injects a raw WebSocket message for unit testing without a live connection.

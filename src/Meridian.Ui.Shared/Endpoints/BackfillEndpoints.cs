@@ -82,7 +82,7 @@ public static class BackfillEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Run backfill
-        group.MapPost(UiApiRoutes.BackfillRun, async (BackfillCoordinator backfill, BackfillRequestDto req, CancellationToken ct) =>
+        group.MapPost(UiApiRoutes.BackfillRun, async (BackfillCoordinator backfill, BackfillRequestDto req) =>
         {
             var validation = ValidateBackfillRequest(req);
             if (validation is not null)
@@ -96,12 +96,8 @@ public static class BackfillEndpoints
                     req.From,
                     req.To);
 
-                var result = await backfill.RunAsync(request, ct);
+                var result = await backfill.RunAsync(request);
                 return Results.Json(result, jsonOptionsIndented);
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                return Results.StatusCode(499);
             }
             catch (InvalidOperationException ex)
             {

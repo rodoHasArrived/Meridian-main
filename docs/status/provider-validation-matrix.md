@@ -1,7 +1,7 @@
-# Provider Validation Matrix (Alpaca, Polygon, IB, StockSharp, NYSE)
+# Provider Validation Matrix (Polygon, IB, StockSharp, NYSE)
 
-**Last Updated:** 2026-04-05  
-**Scope:** Replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, rate-limit handling, and stable-seam execution validation where applicable.
+**Last Updated:** 2026-04-01  
+**Scope:** Replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, and rate-limit handling.
 
 This matrix is the execution checklist referenced by `production-status.md` and `FEATURE_INVENTORY.md` for provider readiness gating.
 
@@ -15,19 +15,12 @@ This matrix is the execution checklist referenced by `production-status.md` and 
 
 | Provider | Replay Scenarios | Reconnect Behavior | Cancellation | Auth Failure | Rate-Limit Handling | Evidence |
 |---|---|---|---|---|---|---|
-| Alpaca | ⚠️ | ✅ | ⚠️ | ✅ | ⚠️ | `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam`, `AlpacaCredentialAndReconnectTests` |
 | Polygon | ✅ | ⚠️ | ✅ | ✅ | ⚠️ | `PolygonRecordedSessionReplayTests`, `PolygonMarketDataClientTests`, fixtures under `Fixtures/Polygon` |
 | Interactive Brokers (IB) | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `IBRuntimeGuidanceTests`, `IBSimulationClientContractTests`, `build-ibapi-smoke.ps1` |
 | StockSharp | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
 | NYSE | ⚠️ | ✅ | ⚠️ | ⚠️ | ❌ | `NyseMarketDataClientTests`, `NYSEMessageParsingTests`, `NyseTaqCollectorIntegrationTests` |
 
 ## Scenario Notes
-
-### Alpaca
-
-- The stable `/api/execution/*` seam is now exercised end to end against the concrete Alpaca brokerage gateway using stubbed Trading API responses.
-- Current evidence proves live-gateway connect, order submit, health, and audit-trail wiring without claiming credentialed vendor-paper runtime proof in CI.
-- Cancellation and broader rate-limit behavior still need a dedicated Alpaca brokerage test matrix beyond the current submit-path validation.
 
 ### Polygon
 

@@ -1,0 +1,56 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../..",
+          "files": [
+            "src/Meridian/Meridian.csproj",
+            "src/Meridian.Application/Meridian.Application.csproj",
+            "src/Meridian.Contracts/Meridian.Contracts.csproj",
+            "src/Meridian.Core/Meridian.Core.csproj",
+            "src/Meridian.Domain/Meridian.Domain.csproj",
+            "src/Meridian.Storage/Meridian.Storage.csproj",
+            "src/Meridian.ProviderSdk/Meridian.ProviderSdk.csproj",
+            "src/Meridian.Ledger/Meridian.Ledger.csproj",
+            "src/Meridian.Execution/Meridian.Execution.csproj",
+            "src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj",
+            "src/Meridian.Strategies/Meridian.Strategies.csproj",
+            "src/Meridian.Risk/Meridian.Risk.csproj",
+            "src/Meridian.Backtesting/Meridian.Backtesting.csproj",
+            "src/Meridian.Backtesting.Sdk/Meridian.Backtesting.Sdk.csproj",
+            "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj",
+            "src/Meridian.Infrastructure.CppTrader/Meridian.Infrastructure.CppTrader.csproj",
+            "src/Meridian.Mcp/Meridian.Mcp.csproj",
+            "src/Meridian.McpServer/Meridian.McpServer.csproj",
+            "src/Meridian.Ui.Services/Meridian.Ui.Services.csproj",
+            "src/Meridian.Ui.Shared/Meridian.Ui.Shared.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "allowCompilationErrors": true,
+      "properties": {
+        "IsWindows": "true"
+      },
+      "filter": "filterConfig.yml"
+    }
+  ],
+  "build": {
+    "content": [
+      { "files": [ "docs/**/*.md", "docs/**/toc.yml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." },
+      { "files": [ "api/**.yml", "api/index.md" ] }
+    ],
+    "resource": [
+      { "files": [ "docs/**/*.png", "docs/**/*.svg", "docs/**/*.puml" ], "exclude": [ "docs/docfx/**" ], "src": "../.." }
+    ],
+    "output": "../_site",
+    "template": [ "default", "modern" ],
+    "globalMetadata": {
+      "_appTitle": "Meridian",
+      "_appFooter": "Meridian — High-Performance .NET Trading Platform",
+      "_enableSearch": true,
+      "_disableContribution": false
+    }
+  }
+}

@@ -29,7 +29,7 @@ public sealed record JournalEntryMetadata(
         IReadOnlyDictionary<string, string>? tags = null;
         if (Tags is not null && Tags.Count > 0)
         {
-            tags = ReadOnlyCollectionHelpers.FreezeDictionary(
+            tags = new Dictionary<string, string>(
                 Tags.ToDictionary(
                     pair => pair.Key.Trim(),
                     pair => pair.Value.Trim(),

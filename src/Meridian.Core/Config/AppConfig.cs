@@ -25,7 +25,6 @@ namespace Meridian.Application.Config;
 /// <param name="Backfill">Optional historical backfill defaults.</param>
 /// <param name="Sources">Source registry persistence path.</param>
 /// <param name="DataSources">Multiple data source configurations for real-time and historical data.</param>
-/// <param name="ProviderConnections">Relationship-aware provider connections, bindings, policies, presets, and certifications.</param>
 /// <param name="Derivatives">Derivatives (options) data collection configuration.</param>
 /// <param name="ProviderRegistry">Unified provider registry configuration controlling attribute-based discovery.</param>
 /// <param name="Coordination">Multi-instance coordination configuration.</param>
@@ -34,6 +33,7 @@ namespace Meridian.Application.Config;
 /// <param name="OfflineFirstMode">When true, enables air-gapped offline-first mode: backfill requests are queued and deferred until connectivity is restored. Default is false.</param>
 /// <param name="PluginsPath">Optional directory path for loading external data source plugins. When set, plugins are loaded and registered dynamically.</param>
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
+/// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,
@@ -48,7 +48,6 @@ public sealed record AppConfig(
     BackfillConfig? Backfill = null,
     SourceRegistryConfig? Sources = null,
     DataSourcesConfig? DataSources = null,
-    ProviderConnectionsConfig? ProviderConnections = null,
     DerivativesConfig? Derivatives = null,
     ProviderRegistryConfig? ProviderRegistry = null,
     CoordinationConfig? Coordination = null,
@@ -56,7 +55,8 @@ public sealed record AppConfig(
     ValidationPipelineConfig? Validation = null,
     bool OfflineFirstMode = false,
     string? PluginsPath = null,
-    bool CoLocationProfile = false
+    bool CoLocationProfile = false,
+    ProviderConnectionsConfig? ProviderConnections = null
 );
 
 /// <summary>

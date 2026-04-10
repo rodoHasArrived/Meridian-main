@@ -319,9 +319,18 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
     }
 
 
+
+    private static readonly string[] PlaceholderValues =
+        ["__SET_ME__", "your-key-here", "your-secret-here", "REPLACE_ME", "ENTER_YOUR", "INSERT_YOUR", "TODO", "xxx"];
+
     private static bool IsLikelyRealCredential(string? value)
     {
-        return CredentialPlaceholderDetector.LooksLikeRealCredential(value);
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        // Skip placeholder values
+        return !PlaceholderValues.Any(p =>
+            value.Contains(p, StringComparison.OrdinalIgnoreCase));
     }
 
     private void WarnIfCredentialsInConfigFile(AppConfig config, List<string> warnings)
@@ -660,23 +669,29 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         // ── Fix: Invalid storage naming convention (AutoFix — normalises format string) ──
         if (config.Storage != null)
         {
-            if (!StorageConfigRules.IsSupportedNamingConvention(config.Storage.NamingConvention))
+            var validConventions = new[]
+            {
+                "flat", "bysymbol", "bydate", "bytype",
+                "bysource", "byassetclass", "hierarchical", "canonical"
+            };
+            if (!validConventions.Contains(config.Storage.NamingConvention.ToLowerInvariant()))
             {
                 var oldValue = config.Storage.NamingConvention;
                 TryFix(
                     SelfHealingSeverity.AutoFix,
-                    $"Invalid naming convention '{oldValue}' changed to '{StorageConfigRules.DefaultNamingConvention}'",
-                    c => c with { Storage = c.Storage! with { NamingConvention = StorageConfigRules.DefaultNamingConvention } });
+                    $"Invalid naming convention '{oldValue}' changed to 'BySymbol'",
+                    c => c with { Storage = c.Storage! with { NamingConvention = "BySymbol" } });
             }
 
             // ── Fix: Invalid date partition (AutoFix — normalises format string) ──
-            if (!StorageConfigRules.IsSupportedDatePartition(config.Storage.DatePartition))
+            var validPartitions = new[] { "none", "daily", "hourly", "monthly" };
+            if (!validPartitions.Contains(config.Storage.DatePartition.ToLowerInvariant()))
             {
                 var oldValue = config.Storage.DatePartition;
                 TryFix(
                     SelfHealingSeverity.AutoFix,
-                    $"Invalid date partition '{oldValue}' changed to '{StorageConfigRules.DefaultDatePartition}'",
-                    c => c with { Storage = c.Storage! with { DatePartition = StorageConfigRules.DefaultDatePartition } });
+                    $"Invalid date partition '{oldValue}' changed to 'Daily'",
+                    c => c with { Storage = c.Storage! with { DatePartition = "Daily" } });
             }
         }
 

@@ -571,7 +571,7 @@ def _recommendations(report: CoverageReport) -> List[str]:  # noqa: C901
             if count > 50:
                 recs.append(
                     f"**{cat.category}**: {count} undocumented types. "
-                    "Consider generating API docs with DocFX (`docfx docfx.json`) "
+                    "Consider generating API docs with DocFX (`docfx docs/docfx/docfx.json`) "
                     "to cover the long tail of public types automatically."
                 )
             elif count > 0:

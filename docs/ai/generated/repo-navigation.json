@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-08T03:35:15Z",
+  "generatedAt": "2026-04-10T19:32:45Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "/home/runner/work/Meridian-main/Meridian-main",
   "subsystems": [
@@ -437,7 +437,6 @@
       ],
       "projectReferences": [
         "..\\Meridian.Application\\Meridian.Application",
-        "..\\Meridian.Backtesting\\Meridian.Backtesting",
         "..\\Meridian.Contracts\\Meridian.Contracts",
         "..\\Meridian.Core\\Meridian.Core",
         "..\\Meridian.Domain\\Meridian.Domain",
@@ -544,7 +543,6 @@
       ],
       "projectReferences": [
         "..\\Meridian.Contracts\\Meridian.Contracts",
-        "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
         "..\\Meridian.Ledger\\Meridian.Ledger"
       ],
       "relatedDocs": []
@@ -665,8 +663,7 @@
         "..\\Meridian.Contracts\\Meridian.Contracts",
         "..\\Meridian.Core\\Meridian.Core",
         "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
-        "..\\Meridian.Ledger\\Meridian.Ledger",
-        "..\\Meridian.Storage\\Meridian.Storage"
+        "..\\Meridian.Ledger\\Meridian.Ledger"
       ],
       "relatedDocs": []
     },

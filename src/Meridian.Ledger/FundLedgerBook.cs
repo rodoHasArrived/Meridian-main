@@ -28,15 +28,15 @@ public sealed class FundLedgerBook
 
     /// <summary>Gets (or lazily creates) the ledger for a named entity.</summary>
     public Ledger EntityLedger(string entityId) =>
-        _inner.GetOrCreate(new LedgerBookKey(FundId, $"Entity:{NormalizeDimensionId(entityId, nameof(entityId))}"));
+        _inner.GetOrCreate(new LedgerBookKey(FundId, $"Entity:{entityId}"));
 
     /// <summary>Gets (or lazily creates) the ledger for a named sleeve.</summary>
     public Ledger SleeveLedger(string sleeveId) =>
-        _inner.GetOrCreate(new LedgerBookKey(FundId, $"Sleeve:{NormalizeDimensionId(sleeveId, nameof(sleeveId))}"));
+        _inner.GetOrCreate(new LedgerBookKey(FundId, $"Sleeve:{sleeveId}"));
 
     /// <summary>Gets (or lazily creates) the ledger for a named vehicle.</summary>
     public Ledger VehicleLedger(string vehicleId) =>
-        _inner.GetOrCreate(new LedgerBookKey(FundId, $"Vehicle:{NormalizeDimensionId(vehicleId, nameof(vehicleId))}"));
+        _inner.GetOrCreate(new LedgerBookKey(FundId, $"Vehicle:{vehicleId}"));
 
     // ── Consolidated views ─────────────────────────────────────────────────────
 
@@ -74,16 +74,16 @@ public sealed class FundLedgerBook
     /// </summary>
     public FundLedgerSnapshot ReconciliationSnapshot(DateTimeOffset asOf) =>
         new FundLedgerSnapshot(
-            fundId: FundId,
-            asOf: asOf,
-            consolidated: ConsolidatedSnapshotAsOf(asOf),
-            entities: EntitySnapshotsAsOf(asOf),
-            sleeves: SleeveSnapshotsAsOf(asOf),
-            vehicles: VehicleSnapshotsAsOf(asOf));
+            FundId: FundId,
+            AsOf: asOf,
+            Consolidated: ConsolidatedSnapshotAsOf(asOf),
+            Entities: EntitySnapshotsAsOf(asOf),
+            Sleeves: SleeveSnapshotsAsOf(asOf),
+            Vehicles: VehicleSnapshotsAsOf(asOf));
 
     // ── Private helpers ────────────────────────────────────────────────────────
 
-    private IReadOnlyDictionary<string, LedgerSnapshot> SnapshotsByPrefix(string prefix, DateTimeOffset asOf)
+    private Dictionary<string, LedgerSnapshot> SnapshotsByPrefix(string prefix, DateTimeOffset asOf)
     {
         var result = new Dictionary<string, LedgerSnapshot>(StringComparer.OrdinalIgnoreCase);
         foreach (var (key, ledger) in _inner.FilteredSnapshot())
@@ -94,15 +94,7 @@ public sealed class FundLedgerBook
             var dimensionId = key.LedgerBook[prefix.Length..];
             result[dimensionId] = ledger.SnapshotAsOf(asOf);
         }
-        return ReadOnlyCollectionHelpers.FreezeDictionary(result, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private static string NormalizeDimensionId(string value, string parameterName)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Dimension identifier must not be blank.", parameterName);
-
-        return value.Trim();
+        return result;
     }
 }
 
@@ -110,39 +102,10 @@ public sealed class FundLedgerBook
 /// A point-in-time reconciliation snapshot for an entire fund structure,
 /// including consolidated and per-dimension breakdowns.
 /// </summary>
-public sealed record FundLedgerSnapshot
-{
-    public FundLedgerSnapshot(
-        string fundId,
-        DateTimeOffset asOf,
-        LedgerSnapshot consolidated,
-        IReadOnlyDictionary<string, LedgerSnapshot> entities,
-        IReadOnlyDictionary<string, LedgerSnapshot> sleeves,
-        IReadOnlyDictionary<string, LedgerSnapshot> vehicles)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(fundId);
-        ArgumentNullException.ThrowIfNull(consolidated);
-        ArgumentNullException.ThrowIfNull(entities);
-        ArgumentNullException.ThrowIfNull(sleeves);
-        ArgumentNullException.ThrowIfNull(vehicles);
-
-        FundId = fundId;
-        AsOf = asOf;
-        Consolidated = consolidated;
-        Entities = ReadOnlyCollectionHelpers.FreezeDictionary(entities, StringComparer.OrdinalIgnoreCase);
-        Sleeves = ReadOnlyCollectionHelpers.FreezeDictionary(sleeves, StringComparer.OrdinalIgnoreCase);
-        Vehicles = ReadOnlyCollectionHelpers.FreezeDictionary(vehicles, StringComparer.OrdinalIgnoreCase);
-    }
-
-    public string FundId { get; init; }
-
-    public DateTimeOffset AsOf { get; init; }
-
-    public LedgerSnapshot Consolidated { get; init; }
-
-    public IReadOnlyDictionary<string, LedgerSnapshot> Entities { get; init; }
-
-    public IReadOnlyDictionary<string, LedgerSnapshot> Sleeves { get; init; }
-
-    public IReadOnlyDictionary<string, LedgerSnapshot> Vehicles { get; init; }
-}
+public sealed record FundLedgerSnapshot(
+    string FundId,
+    DateTimeOffset AsOf,
+    LedgerSnapshot Consolidated,
+    IReadOnlyDictionary<string, LedgerSnapshot> Entities,
+    IReadOnlyDictionary<string, LedgerSnapshot> Sleeves,
+    IReadOnlyDictionary<string, LedgerSnapshot> Vehicles);

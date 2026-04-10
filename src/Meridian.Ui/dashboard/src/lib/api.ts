@@ -27,8 +27,6 @@ import type {
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
-  SecurityMasterHistoryEvent,
-  SecurityEconomicDefinitionSummary,
   SessionInfo,
   ReplayFileRecord,
   ReplayStatus,
@@ -264,18 +262,6 @@ export function getSecurityDetail(securityId: string) {
 
 export function getSecurityIdentity(securityId: string) {
   return getJson<SecurityIdentityDrillIn>(`/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/identity`);
-}
-
-export function getSecurityHistory(securityId: string, take = 50) {
-  return getJson<SecurityMasterHistoryEvent[]>(
-    `/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/history?take=${encodeURIComponent(String(take))}`
-  );
-}
-
-export function getSecurityEconomicDefinition(securityId: string) {
-  return getJson<SecurityEconomicDefinitionSummary>(
-    `/api/workstation/security-master/securities/${encodeURIComponent(securityId)}/economic-definition`
-  );
 }
 
 export function createSecurityMasterEntry(request: Record<string, unknown>) {

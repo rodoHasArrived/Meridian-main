@@ -1,11 +1,9 @@
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
-using System.Text.Json;
 
 namespace Meridian.Application.SecurityMaster;
 
 public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
-    , ISecurityMasterRuntimeStatus
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterStore _store;
@@ -20,10 +18,6 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         _store = store;
         _rebuilder = rebuilder ?? throw new ArgumentNullException(nameof(rebuilder));
     }
-
-    public bool IsAvailable => true;
-
-    public string AvailabilityDescription => "Security Master is available.";
 
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
         => _store.GetDetailAsync(securityId, ct);
@@ -75,122 +69,88 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
             AsOf: asOf);
     }
 
+    private static decimal? ReadDecimal(System.Text.Json.JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.Number
+            ? prop.GetDecimal() : null;
+
+    private static string? ReadString(System.Text.Json.JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.String
+            ? prop.GetString() : null;
+
+    private static bool? ReadBool(System.Text.Json.JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var prop) &&
+            (prop.ValueKind == System.Text.Json.JsonValueKind.True || prop.ValueKind == System.Text.Json.JsonValueKind.False)
+            ? prop.GetBoolean() : null;
+
+    private static DateOnly? ReadDateOnly(System.Text.Json.JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var prop) || prop.ValueKind != System.Text.Json.JsonValueKind.String)
+            return null;
+        return DateOnly.TryParseExact(prop.GetString(), "yyyy-MM-dd", out var date) ? date : null;
+    }
+
+    public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+        => _eventStore.LoadCorporateActionsAsync(securityId, ct);
+
     public async Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
     {
         var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (projection is null ||
-            !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
-        {
+        if (projection is null || !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
             return null;
-        }
 
-        var assetSpecific = projection.AssetSpecificTerms;
-        var classification = ReadString(assetSpecific, "classification");
-        if (classification is not ("Preferred" or "ConvertiblePreferred") ||
-            !assetSpecific.TryGetProperty("preferredTerms", out var preferredTerms) ||
-            preferredTerms.ValueKind != JsonValueKind.Object)
-        {
+        if (!projection.AssetSpecificTerms.TryGetProperty("preferredTerms", out var pt) ||
+            pt.ValueKind == System.Text.Json.JsonValueKind.Null ||
+            pt.ValueKind == System.Text.Json.JsonValueKind.Undefined)
             return null;
-        }
-
-        JsonElement? participationTerms =
-            preferredTerms.TryGetProperty("participationTerms", out var participation) &&
-            participation.ValueKind == JsonValueKind.Object
-                ? participation
-                : null;
-        var liquidationPreference = ReadRequiredObject(preferredTerms, "liquidationPreference");
-        var dividendType = ReadRequiredString(preferredTerms, "dividendType");
 
         return new PreferredEquityTermsDto(
             SecurityId: securityId,
-            Classification: classification,
-            DividendRate: ReadDecimal(preferredTerms, "dividendRate"),
-            DividendType: dividendType,
-            IsCumulative: string.Equals(dividendType, "Cumulative", StringComparison.OrdinalIgnoreCase),
-            RedemptionPrice: ReadDecimal(preferredTerms, "redemptionPrice"),
-            RedemptionDate: ReadDateOnly(preferredTerms, "redemptionDate"),
-            CallableDate: ReadDateOnly(preferredTerms, "callableDate"),
-            ParticipatesInCommonDividends: ReadBoolean(participationTerms, "participatesInCommonDividends") ?? false,
-            AdditionalDividendThreshold: ReadDecimal(participationTerms, "additionalDividendThreshold"),
-            LiquidationPreferenceKind: ReadRequiredString(liquidationPreference, "kind"),
-            LiquidationPreferenceMultiple: ReadDecimal(liquidationPreference, "multiple"),
+            Classification: ReadString(pt, "classification"),
+            DividendRate: ReadDecimal(pt, "dividendRate"),
+            DividendType: ReadString(pt, "dividendType"),
+            IsCumulative: ReadBool(pt, "isCumulative"),
+            RedemptionPrice: ReadDecimal(pt, "redemptionPrice"),
+            RedemptionDate: ReadDateOnly(pt, "redemptionDate"),
+            CallableDate: ReadDateOnly(pt, "callableDate"),
+            ParticipatesInCommonDividends: ReadBool(pt, "participatesInCommonDividends"),
+            AdditionalDividendThreshold: ReadDecimal(pt, "additionalDividendThreshold"),
+            LiquidationPreferenceKind: ReadString(pt, "liquidationPreferenceKind"),
+            LiquidationPreferenceMultiple: ReadDecimal(pt, "liquidationPreferenceMultiple"),
             Version: projection.Version);
     }
 
     public async Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
     {
         var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (projection is null ||
-            !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
-        {
+        if (projection is null || !string.Equals(projection.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
             return null;
+
+        if (!projection.AssetSpecificTerms.TryGetProperty("convertibleTerms", out var convertibleTermsEl) ||
+            convertibleTermsEl.ValueKind == System.Text.Json.JsonValueKind.Null ||
+            convertibleTermsEl.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+            return null;
+
+        Guid? underlyingId = null;
+        if (convertibleTermsEl.TryGetProperty("underlyingSecurityId", out var uidProp) &&
+            uidProp.ValueKind == System.Text.Json.JsonValueKind.String &&
+            Guid.TryParse(uidProp.GetString(), out var parsedGuid))
+        {
+            underlyingId = parsedGuid;
         }
 
         var assetSpecific = projection.AssetSpecificTerms;
-        var classification = ReadString(assetSpecific, "classification");
-        if (classification is not ("Convertible" or "ConvertiblePreferred") ||
-            !assetSpecific.TryGetProperty("convertibleTerms", out var convertibleTerms) ||
-            convertibleTerms.ValueKind != JsonValueKind.Object)
-        {
-            return null;
-        }
+        string? classification = null;
+        if (assetSpecific.TryGetProperty("preferredTerms", out var ptForClass))
+            classification = ReadString(ptForClass, "classification");
 
         return new ConvertibleEquityTermsDto(
             SecurityId: securityId,
             Classification: classification,
-            UnderlyingSecurityId: ReadRequiredGuid(convertibleTerms, "underlyingSecurityId"),
-            ConversionRatio: ReadRequiredDecimal(convertibleTerms, "conversionRatio"),
-            ConversionPrice: ReadDecimal(convertibleTerms, "conversionPrice"),
-            ConversionStartDate: ReadDateOnly(convertibleTerms, "conversionStartDate"),
-            ConversionEndDate: ReadDateOnly(convertibleTerms, "conversionEndDate"),
+            UnderlyingSecurityId: underlyingId,
+            ConversionRatio: ReadDecimal(convertibleTermsEl, "conversionRatio"),
+            ConversionPrice: ReadDecimal(convertibleTermsEl, "conversionPrice"),
+            ConversionStartDate: ReadDateOnly(convertibleTermsEl, "conversionStartDate"),
+            ConversionEndDate: ReadDateOnly(convertibleTermsEl, "conversionEndDate"),
             Version: projection.Version);
     }
-
-    private static decimal? ReadDecimal(System.Text.Json.JsonElement element, string propertyName)
-        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.Number
-            ? prop.GetDecimal() : null;
-
-    private static decimal? ReadDecimal(JsonElement? element, string propertyName)
-        => element.HasValue ? ReadDecimal(element.Value, propertyName) : null;
-
-    private static string? ReadString(System.Text.Json.JsonElement element, string propertyName)
-        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.String
-            ? prop.GetString() : null;
-
-    private static string ReadRequiredString(JsonElement element, string propertyName)
-        => ReadString(element, propertyName)
-            ?? throw new InvalidOperationException($"Missing required string '{propertyName}' in Security Master terms payload.");
-
-    private static decimal ReadRequiredDecimal(JsonElement element, string propertyName)
-        => ReadDecimal(element, propertyName)
-            ?? throw new InvalidOperationException($"Missing required decimal '{propertyName}' in Security Master terms payload.");
-
-    private static Guid ReadRequiredGuid(JsonElement element, string propertyName)
-        => element.TryGetProperty(propertyName, out var prop) &&
-           prop.ValueKind == JsonValueKind.String &&
-           Guid.TryParse(prop.GetString(), out var guid)
-            ? guid
-            : throw new InvalidOperationException($"Missing required guid '{propertyName}' in Security Master terms payload.");
-
-    private static DateOnly? ReadDateOnly(JsonElement element, string propertyName)
-        => element.TryGetProperty(propertyName, out var prop) &&
-           prop.ValueKind == JsonValueKind.String &&
-           DateOnly.TryParse(prop.GetString(), out var date)
-            ? date
-            : null;
-
-    private static bool? ReadBoolean(JsonElement? element, string propertyName)
-        => element.HasValue &&
-           element.Value.TryGetProperty(propertyName, out var prop) &&
-           prop.ValueKind is JsonValueKind.True or JsonValueKind.False
-            ? prop.GetBoolean()
-            : null;
-
-    private static JsonElement ReadRequiredObject(JsonElement element, string propertyName)
-        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.Object
-            ? prop
-            : throw new InvalidOperationException($"Missing required object '{propertyName}' in Security Master terms payload.");
-
-    public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
-        => _eventStore.LoadCorporateActionsAsync(securityId, ct);
 }

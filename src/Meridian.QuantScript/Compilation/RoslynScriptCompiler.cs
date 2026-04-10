@@ -108,10 +108,10 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
     internal Script<object> BuildScript(string source) =>
         CSharpScript.Create<object>(
             source,
-            CreateScriptOptions(),
+            BuildScriptOptions(),
             globalsType: typeof(QuantScriptGlobals));
 
-    internal static ScriptOptions CreateScriptOptions() =>
+    private static ScriptOptions BuildScriptOptions() =>
         ScriptOptions.Default
             .AddReferences(
                 typeof(QuantScriptGlobals).Assembly,

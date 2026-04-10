@@ -53,10 +53,10 @@ Implement `IRiskRule` from `Meridian.Risk` and register it in DI. The `Composite
 dotnet tool update -g docfx
 
 # Full build — outputs to docs/_site/
-docfx docfx.json
+docfx docs/docfx/docfx.json
 
 # Serve locally with live preview
-docfx docfx.json --serve
+docfx docs/docfx/docfx.json --serve
 ```
 
 > **Note:** The source code must build successfully before DocFX can extract XML documentation.

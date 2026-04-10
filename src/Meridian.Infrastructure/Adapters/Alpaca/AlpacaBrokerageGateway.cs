@@ -8,7 +8,6 @@ using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
-using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.Logging;
 using AlpacaOptions = Meridian.Application.Config.AlpacaOptions;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
@@ -406,7 +405,7 @@ public sealed class AlpacaBrokerageGateway : IBrokerageGateway
 
     private HttpClient CreateHttpClient()
     {
-        var client = _httpClientFactory.CreateClient(HttpClientNames.Alpaca);
+        var client = _httpClientFactory.CreateClient("AlpacaBrokerage");
         client.DefaultRequestHeaders.Add("APCA-API-KEY-ID", _options.KeyId);
         client.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", _options.SecretKey);
         return client;

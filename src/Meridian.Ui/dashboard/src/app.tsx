@@ -22,66 +22,65 @@ export function App() {
   const bootstrapFailed = !loading && !session && !research && !trading;
 
   return (
-    /* Edge-to-edge application shell: sidebar + main column */
-    <div className="flex h-screen overflow-hidden">
-      <WorkspaceNav />
+    <div className="min-h-screen p-4 lg:p-6">
+      <div className="mx-auto flex max-w-[1720px] flex-col gap-4 lg:flex-row">
+        <WorkspaceNav />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <WorkspaceHeader
-          workspace={activeWorkspace}
-          session={session}
-          onOpenCommandPalette={() => setCommandOpen(true)}
-          onRefresh={refresh}
-        />
+        <main className="panel-surface min-h-[calc(100vh-3rem)] flex-1 overflow-hidden p-6 lg:p-8">
+          <WorkspaceHeader
+            workspace={activeWorkspace}
+            session={session}
+            onOpenCommandPalette={() => setCommandOpen(true)}
+            onRefresh={refresh}
+          />
 
-        {/* Scrollable content area */}
-        <main className="flex-1 overflow-auto p-5 lg:p-6">
-          {!loading && degradedWorkspaceCount > 0 ? (
-            <Card className="mb-4 border-warning/30">
-              <CardHeader>
-                <CardTitle>Workstation bootstrap is partially degraded</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {error ?? "Some prefetched workspace summaries did not load. Routes remain available while those slices recover."}
-              </CardContent>
-            </Card>
-          ) : null}
-
-          {loading ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Booting workstation shell</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Loading session state, workspace summaries, and the initial research slice.
-              </CardContent>
-            </Card>
-          ) : bootstrapFailed ? (
-            <Card className="border-danger/20">
-              <CardHeader>
-                <CardTitle>Workstation bootstrap failed</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-danger">{error}</CardContent>
-            </Card>
-          ) : (
-            <Routes>
-              <Route path="/overview" element={<OverviewScreen data={overview} session={session} />} />
-              <Route path="/" element={<ResearchScreen data={research} />} />
-              <Route
-                path="/trading/*"
-                element={<TradingScreen data={trading} />}
-              />
-              <Route
-                path="/data-operations/*"
-                element={<DataOperationsScreen data={dataOperations} />}
-              />
-              <Route
-                path="/governance/*"
-                element={<GovernanceScreen data={governance} />}
-              />
-              <Route path="*" element={<Navigate to="/overview" replace />} />
-            </Routes>
-          )}
+          <div className="mt-8">
+            {!loading && degradedWorkspaceCount > 0 ? (
+              <Card className="mb-4 border-warning/30">
+                <CardHeader>
+                  <CardTitle>Workstation bootstrap is partially degraded</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  {error ?? "Some prefetched workspace summaries did not load. Routes remain available while those slices recover."}
+                </CardContent>
+              </Card>
+            ) : null}
+            {loading ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Booting workstation shell</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  Loading session state, workspace summaries, and the initial research slice.
+                </CardContent>
+              </Card>
+            ) : bootstrapFailed ? (
+                <Card className="border-danger/20">
+                  <CardHeader>
+                    <CardTitle>Workstation bootstrap failed</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-danger">{error}</CardContent>
+                </Card>
+              ) : (
+              <Routes>
+                <Route path="/overview" element={<OverviewScreen data={overview} session={session} />} />
+                <Route path="/" element={<ResearchScreen data={research} />} />
+                <Route
+                  path="/trading/*"
+                  element={<TradingScreen data={trading} />}
+                />
+                <Route
+                  path="/data-operations/*"
+                  element={<DataOperationsScreen data={dataOperations} />}
+                />
+                <Route
+                  path="/governance/*"
+                  element={<GovernanceScreen data={governance} />}
+                />
+                <Route path="*" element={<Navigate to="/overview" replace />} />
+              </Routes>
+            )}
+          </div>
         </main>
       </div>
 

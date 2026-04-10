@@ -179,7 +179,7 @@
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
                                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                                <Border Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                                <Border Background="{StaticResource ConsoleAccentBlueAlpha20}"
                                                         CornerRadius="999" Padding="8,3" Margin="8,0,0,0">
                                                     <TextBlock Text="{Binding Provider}" FontSize="11" />
                                                 </Border>

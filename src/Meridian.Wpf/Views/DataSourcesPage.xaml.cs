@@ -80,21 +80,6 @@ public partial class DataSourcesPage : Page
             PolygonApiKeyBox.Password = string.Empty;
     }
 
-    // ── Edit / delete row actions ─────────────────────────────────────────
-    // Buttons in the DataTemplate carry the source Id in their Tag property.
-
-    private void EditDataSource_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string sourceId })
-            _viewModel.EditSourceCommand.Execute(sourceId);
-    }
-
-    private async void DeleteDataSource_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is Button { Tag: string sourceId })
-            await _viewModel.DeleteSourceCommand.ExecuteAsync(sourceId);
-    }
-
     // ── Edit form initialization – syncs combo selections ─────────────────
     // Raised when the edit panel becomes visible with a pre-populated form.
 
@@ -111,6 +96,21 @@ public partial class DataSourcesPage : Page
         // Restore PasswordBox when editing an existing Polygon source
         if (_viewModel.SelectedProvider == "Polygon")
             PolygonApiKeyBox.Password = _viewModel.PolygonApiKey;
+    }
+
+    // ── Row-level Edit / Delete buttons ──────────────────────────────────
+    // Buttons in DataTemplates carry the source ID in their Tag property.
+
+    private void EditDataSource_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: string id })
+            _viewModel.EditSourceCommand.Execute(id);
+    }
+
+    private async void DeleteDataSource_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: string id })
+            await _viewModel.DeleteSourceCommand.ExecuteAsync(id);
     }
 
     // ── Source enabled toggle (row-level; DataTemplate cannot bind commands

@@ -25,36 +25,6 @@ refreshed by the `Refresh UI Screenshots` workflow on the same schedule as the w
 screenshots. They are captured using Windows UI Automation and the built-in Command
 Palette to navigate between pages.
 
-### Local automation script (Windows)
-
-For local/runner use on Windows, run:
-
-```powershell
-pwsh -File scripts/dev/capture-desktop-screenshots.ps1
-```
-
-Optional flags:
-
-```powershell
-# Reuse an existing build
-pwsh -File scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild
-
-# Keep the app open after capture for manual inspection
-pwsh -File scripts/dev/capture-desktop-screenshots.ps1 -KeepAppOpen
-```
-
-The script builds `src/Meridian.Wpf`, launches fixture mode (`MDC_FIXTURE_MODE=1`),
-navigates each page via the shared desktop workflow runner, and writes PNGs to `docs/screenshots/desktop/`.
-
-For other scripted desktop walkthroughs, use:
-
-```powershell
-pwsh -File scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
-pwsh -File scripts/dev/generate-desktop-user-manual.ps1
-```
-
-`Symbols` is currently excluded from the automated screenshot refresh flow because the page exits the desktop shell in fixture-mode automation; the committed `desktop/wpf-symbols.png` remains as the last known-good capture until that crash is fixed.
-
 ---
 
 ## 01 – Main Dashboard

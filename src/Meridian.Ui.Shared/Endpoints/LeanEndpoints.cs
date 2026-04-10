@@ -298,17 +298,12 @@ public static class LeanEndpoints
             if (!s_backtests.TryGetValue(backtestId, out var info))
                 return Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
 
-            s_ingestedResults.TryGetValue(backtestId, out var ingested);
-
-            return Results.Json(new LeanBacktestResultsResponseDto
+            return Results.Json(new
             {
-                BacktestId = info.Id,
-                AlgorithmName = info.AlgorithmName,
-                Status = info.Status,
-                Results = info.Status == "completed" && ingested != null
-                    ? ingested.Results
-                    : null,
-                Message = info.Status != "completed"
+                backtestId = info.Id,
+                status = info.Status,
+                results = info.Status == "completed" ? new { totalReturn = 0.0, sharpeRatio = 0.0, totalTrades = 0 } : (object?)null,
+                message = info.Status != "completed"
                     ? $"Backtest is currently '{info.Status}'. Results will be available when the backtest completes."
                     : null
             }, jsonOptions);
@@ -338,19 +333,7 @@ public static class LeanEndpoints
             var history = s_backtests.Values
                 .OrderByDescending(b => b.StartedAt)
                 .Take(limit ?? 20)
-                .Select(b =>
-                {
-                    s_ingestedResults.TryGetValue(b.Id, out var ingested);
-                    return new
-                    {
-                        backtestId = b.Id,
-                        algorithmName = b.AlgorithmName,
-                        status = b.Status,
-                        startedAt = b.StartedAt,
-                        totalReturn = ingested?.Results.TotalReturn,
-                        sharpeRatio = ingested?.Results.SharpeRatio
-                    };
-                });
+                .Select(b => new { backtestId = b.Id, algorithmName = b.AlgorithmName, status = b.Status, startedAt = b.StartedAt });
 
             return Results.Json(new { backtests = history, total = s_backtests.Count, timestamp = DateTimeOffset.UtcNow }, jsonOptions);
         })
@@ -435,48 +418,12 @@ public static class LeanEndpoints
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Results artifact inspection — POST /api/lean/results/artifact
-        // Parses a Lean backtest results JSON file without mutating launcher/runtime state.
-        group.MapPost(UiApiRoutes.LeanResultsArtifact, async (
-            [FromBody] LeanResultsImportRequestDto? req) =>
-        {
-            if (req == null || string.IsNullOrWhiteSpace(req.ResultsFilePath))
-            {
-                return Results.BadRequest(new { error = "resultsFilePath is required." });
-            }
-
-            if (!File.Exists(req.ResultsFilePath))
-            {
-                return Results.NotFound(new
-                {
-                    error = $"Results file not found: {req.ResultsFilePath}"
-                });
-            }
-
-            try
-            {
-                var artifact = await ParseLeanResultsArtifactAsync(req).ConfigureAwait(false);
-                return Results.Json(artifact, jsonOptions);
-            }
-            catch (JsonException ex)
-            {
-                return Results.BadRequest(new
-                {
-                    error = $"Failed to parse results file: {ex.Message}"
-                });
-            }
-        })
-        .WithName("InspectLeanResultsArtifact")
-        .Produces<LeanResultsArtifactSummaryDto>(200)
-        .Produces(400)
-        .Produces(404);
-
         // Results ingest — POST /api/lean/results/ingest
         // Reads a Lean backtest result JSON file and stores it as a completed backtest record.
         group.MapPost(UiApiRoutes.LeanResultsIngest, async (
-            [FromBody] LeanResultsImportRequestDto? req) =>
+            [FromBody] LeanResultsIngestRequest? req) =>
         {
-            if (req == null || string.IsNullOrWhiteSpace(req.ResultsFilePath))
+            if (req == null || string.IsNullOrEmpty(req.ResultsFilePath))
             {
                 return Results.BadRequest(new { error = "resultsFilePath is required." });
             }
@@ -491,38 +438,55 @@ public static class LeanEndpoints
 
             try
             {
-                var artifact = await ParseLeanResultsArtifactAsync(req).ConfigureAwait(false);
-                var backtestId = req.BacktestId ?? artifact.BacktestId ?? Guid.NewGuid().ToString("N")[..12];
-                var algorithmName = req.AlgorithmName ?? artifact.AlgorithmName;
-                var completedAt = DateTimeOffset.UtcNow;
+                var json = await File.ReadAllTextAsync(req.ResultsFilePath).ConfigureAwait(false);
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
 
-                var info = new BacktestInfo(backtestId, algorithmName, "completed", completedAt);
+                // Extract common fields from Lean's backtest result JSON
+                var backtestId = req.BacktestId ?? Guid.NewGuid().ToString("N")[..12];
+                var algorithmName = req.AlgorithmName
+                    ?? (root.TryGetProperty("AlgorithmConfiguration", out var algCfg)
+                        && algCfg.TryGetProperty("Algorithm", out var algElem)
+                        ? algElem.GetString() ?? "unknown"
+                        : "unknown");
+
+                var info = new BacktestInfo(backtestId, algorithmName, "completed", DateTimeOffset.UtcNow);
                 s_backtests[backtestId] = info;
 
-                var summary = BuildBacktestResultsSummary(algorithmName, artifact);
+                // Extract summary statistics
+                decimal? totalReturn = null;
+                decimal? sharpe = null;
+                int? totalTrades = null;
+
+                if (root.TryGetProperty("Statistics", out var stats))
+                {
+                    if (stats.TryGetProperty("Total Return", out var tr) &&
+                        decimal.TryParse(tr.GetString()?.TrimEnd('%'), out var trVal))
+                        totalReturn = trVal / 100m;
+
+                    if (stats.TryGetProperty("Sharpe Ratio", out var sr) &&
+                        decimal.TryParse(sr.GetString(), out var srVal))
+                        sharpe = srVal;
+
+                    if (stats.TryGetProperty("Total Trades", out var tt) &&
+                        int.TryParse(tt.GetString(), out var ttVal))
+                        totalTrades = ttVal;
+                }
+
                 s_ingestedResults[backtestId] = new IngestedResultInfo(
+                    backtestId, algorithmName, req.ResultsFilePath,
+                    totalReturn, sharpe, totalTrades, DateTimeOffset.UtcNow);
+
+                return Results.Json(new
+                {
+                    success = true,
                     backtestId,
                     algorithmName,
-                    req.ResultsFilePath,
-                    summary,
-                    completedAt,
-                    artifact with { BacktestId = backtestId, AlgorithmName = algorithmName });
-
-                return Results.Json(new LeanResultsIngestResponseDto
-                {
-                    Success = true,
-                    BacktestId = backtestId,
-                    AlgorithmName = algorithmName,
-                    TotalReturn = summary.TotalReturn,
-                    AnnualizedReturn = summary.AnnualizedReturn,
-                    SharpeRatio = summary.SharpeRatio,
-                    MaxDrawdown = summary.MaxDrawdown,
-                    TotalTrades = summary.TotalTrades,
-                    WinRate = summary.WinRate,
-                    ProfitFactor = summary.ProfitFactor,
-                    ArtifactSummary = artifact with { BacktestId = backtestId, AlgorithmName = algorithmName },
-                    Message = "Lean backtest results ingested successfully.",
-                    Timestamp = completedAt
+                    totalReturn,
+                    sharpeRatio = sharpe,
+                    totalTrades,
+                    message = "Lean backtest results ingested successfully.",
+                    timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
             catch (JsonException ex)
@@ -562,131 +526,6 @@ public static class LeanEndpoints
         })
         .WithName("GetLeanSymbolMap")
         .Produces(200);
-    }
-
-    private static async Task<LeanResultsArtifactSummaryDto> ParseLeanResultsArtifactAsync(LeanResultsImportRequestDto request)
-    {
-        var json = await File.ReadAllTextAsync(request.ResultsFilePath).ConfigureAwait(false);
-        using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-        var fileInfo = new FileInfo(request.ResultsFilePath);
-
-        var hasAlgorithmConfiguration = root.TryGetProperty("AlgorithmConfiguration", out var algorithmConfiguration);
-        var statistics = ReadStringDictionary(root, "Statistics");
-        var parameters = hasAlgorithmConfiguration
-            ? ReadStringDictionary(algorithmConfiguration, "Parameters")
-            : new Dictionary<string, string>(StringComparer.Ordinal);
-        var algorithmName = request.AlgorithmName
-            ?? (hasAlgorithmConfiguration ? TryGetString(algorithmConfiguration, "Algorithm") : null)
-            ?? "unknown";
-
-        return new LeanResultsArtifactSummaryDto
-        {
-            BacktestId = request.BacktestId ?? TryGetString(root, "BacktestId"),
-            AlgorithmName = algorithmName,
-            ResultsFilePath = request.ResultsFilePath,
-            Statistics = statistics,
-            Parameters = parameters,
-            Sections = new LeanResultsArtifactSectionsDto
-            {
-                HasAlgorithmConfiguration = hasAlgorithmConfiguration,
-                HasParameters = parameters.Count > 0,
-                HasStatistics = statistics.Count > 0,
-                HasRuntimeStatistics = root.TryGetProperty("RuntimeStatistics", out _),
-                HasCharts = root.TryGetProperty("Charts", out _),
-                HasOrders = root.TryGetProperty("Orders", out _),
-                HasClosedTrades = root.TryGetProperty("ClosedTrades", out _) || root.TryGetProperty("Trades", out _)
-            },
-            Artifacts =
-            [
-                new LeanRawArtifactFileDto
-                {
-                    ArtifactType = "results-json",
-                    Path = request.ResultsFilePath,
-                    Exists = fileInfo.Exists,
-                    SizeBytes = fileInfo.Exists ? fileInfo.Length : 0,
-                    LastWriteTimeUtc = fileInfo.Exists ? fileInfo.LastWriteTimeUtc : null
-                }
-            ],
-            TotalReturn = TryParsePercentageStatistic(statistics, "Total Return"),
-            AnnualizedReturn = TryParsePercentageStatistic(statistics, "Compounding Annual Return")
-                ?? TryParsePercentageStatistic(statistics, "Annual Return"),
-            SharpeRatio = TryParseDecimalStatistic(statistics, "Sharpe Ratio"),
-            MaxDrawdown = TryParsePercentageStatistic(statistics, "Drawdown")
-                ?? TryParsePercentageStatistic(statistics, "Max Drawdown"),
-            TotalTrades = TryParseIntegerStatistic(statistics, "Total Trades"),
-            WinRate = TryParsePercentageStatistic(statistics, "Win Rate"),
-            ProfitFactor = TryParseDecimalStatistic(statistics, "Profit Factor")
-                ?? TryParseDecimalStatistic(statistics, "Profit-Loss Ratio")
-        };
-    }
-
-    private static LeanBacktestResultsSummaryDto BuildBacktestResultsSummary(string algorithmName, LeanResultsArtifactSummaryDto artifact)
-        => new()
-        {
-            AlgorithmName = algorithmName,
-            TotalReturn = artifact.TotalReturn ?? 0m,
-            AnnualizedReturn = artifact.AnnualizedReturn ?? 0m,
-            SharpeRatio = artifact.SharpeRatio ?? 0m,
-            MaxDrawdown = artifact.MaxDrawdown ?? 0m,
-            TotalTrades = artifact.TotalTrades ?? 0,
-            WinRate = artifact.WinRate ?? 0m,
-            ProfitFactor = artifact.ProfitFactor ?? 0m
-        };
-
-    private static Dictionary<string, string> ReadStringDictionary(JsonElement root, string propertyName)
-    {
-        if (!root.TryGetProperty(propertyName, out var property) || property.ValueKind != JsonValueKind.Object)
-        {
-            return new Dictionary<string, string>(StringComparer.Ordinal);
-        }
-
-        return property.EnumerateObject()
-            .ToDictionary(
-                item => item.Name,
-                item => item.Value.ValueKind == JsonValueKind.String ? item.Value.GetString() ?? string.Empty : item.Value.ToString(),
-                StringComparer.Ordinal);
-    }
-
-    private static string? TryGetString(JsonElement root, string propertyName)
-        => root.ValueKind == JsonValueKind.Object && root.TryGetProperty(propertyName, out var property)
-            ? property.GetString()
-            : null;
-
-    private static decimal? TryParsePercentageStatistic(IReadOnlyDictionary<string, string> statistics, string key)
-    {
-        if (!statistics.TryGetValue(key, out var value))
-        {
-            return null;
-        }
-
-        return decimal.TryParse(value.Trim().TrimEnd('%'), out var parsed)
-            ? parsed / 100m
-            : null;
-    }
-
-    private static decimal? TryParseDecimalStatistic(IReadOnlyDictionary<string, string> statistics, string key)
-    {
-        if (!statistics.TryGetValue(key, out var value))
-        {
-            return null;
-        }
-
-        return decimal.TryParse(value.Trim(), out var parsed)
-            ? parsed
-            : null;
-    }
-
-    private static int? TryParseIntegerStatistic(IReadOnlyDictionary<string, string> statistics, string key)
-    {
-        if (!statistics.TryGetValue(key, out var value))
-        {
-            return null;
-        }
-
-        return int.TryParse(value.Trim(), out var parsed)
-            ? parsed
-            : null;
     }
 
     private static string? DetectLeanVersion(string leanPath)
@@ -754,11 +593,13 @@ public static class LeanEndpoints
     private sealed record LeanSyncRequest(string[]? Symbols, DateTime? FromDate, DateTime? ToDate);
     private sealed record BacktestStartRequest(string? AlgorithmName, string? AlgorithmLanguage);
     private sealed record LeanAutoExportConfigureRequest(bool? Enabled, string? LeanDataPath, int IntervalSeconds, string[]? Symbols);
+    private sealed record LeanResultsIngestRequest(string ResultsFilePath, string? BacktestId, string? AlgorithmName);
     private sealed record IngestedResultInfo(
         string BacktestId,
         string AlgorithmName,
         string ResultsFilePath,
-        LeanBacktestResultsSummaryDto Results,
-        DateTimeOffset IngestedAt,
-        LeanResultsArtifactSummaryDto ArtifactSummary);
+        decimal? TotalReturn,
+        decimal? SharpeRatio,
+        int? TotalTrades,
+        DateTimeOffset IngestedAt);
 }

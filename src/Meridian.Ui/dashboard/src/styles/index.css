@@ -6,36 +6,31 @@
 
 @layer base {
   :root {
-    /* Deeper, flatter dark palette inspired by professional terminal UIs */
-    --background: 216 58% 5%;
-    --foreground: 207 50% 92%;
-    --card: 216 50% 7%;
-    --card-foreground: 207 50% 92%;
-    --popover: 216 52% 6%;
-    --popover-foreground: 207 50% 92%;
+    --background: 213 54% 7%;
+    --foreground: 207 55% 94%;
+    --card: 213 44% 10%;
+    --card-foreground: 207 55% 94%;
+    --popover: 213 46% 9%;
+    --popover-foreground: 207 55% 94%;
     --primary: 198 78% 52%;
-    --primary-foreground: 216 58% 5%;
-    --secondary: 216 30% 13%;
-    --secondary-foreground: 207 40% 88%;
-    --muted: 216 26% 12%;
-    --muted-foreground: 210 20% 58%;
+    --primary-foreground: 213 54% 7%;
+    --secondary: 213 32% 16%;
+    --secondary-foreground: 207 44% 90%;
+    --muted: 213 28% 15%;
+    --muted-foreground: 210 22% 62%;
     --accent: 36 80% 58%;
-    --accent-foreground: 216 55% 6%;
-    --border: 210 35% 18%;
-    --input: 210 35% 18%;
+    --accent-foreground: 213 52% 8%;
+    --border: 208 38% 22%;
+    --input: 208 38% 22%;
     --ring: 198 78% 52%;
     --paper: 214 82% 68%;
     --live: 198 78% 52%;
     --warning: 36 80% 58%;
     --success: 158 66% 44%;
     --danger: 354 68% 62%;
-    --panel-strong: 216 45% 8%;
-    --panel-soft: 216 34% 11%;
-    --surface-raise: 216 36% 15%;
-    /* Marquee-inspired toolbar/strip backgrounds */
-    --toolbar-bg: 216 62% 3.5%;
-    --strip-bg: 216 58% 4.5%;
-    --tab-bg: 216 60% 4%;
+    --panel-strong: 213 48% 12%;
+    --panel-soft: 213 36% 15%;
+    --surface-raise: 213 40% 18%;
     --radius-xl: 1.25rem;
     --radius-lg: 0.875rem;
     --radius-md: 0.625rem;
@@ -47,32 +42,28 @@
     @apply border-border;
   }
 
-  html, body {
-    @apply h-full;
-  }
-
   body {
-    @apply bg-background font-sans text-foreground antialiased;
-    background-color: hsl(var(--background));
-    /* Subtle ambient glow — less intense than before to match terminal aesthetic */
+    @apply min-h-screen bg-background font-sans text-foreground antialiased;
     background-image:
-      radial-gradient(ellipse at 5% 0%, rgba(42, 178, 212, 0.10) 0%, transparent 30%),
-      radial-gradient(ellipse at 95% 10%, rgba(96, 165, 250, 0.07) 0%, transparent 28%),
-      radial-gradient(ellipse at 95% 90%, rgba(214, 158, 56, 0.06) 0%, transparent 24%);
+      radial-gradient(ellipse at 10% 0%, rgba(42, 178, 212, 0.20) 0%, transparent 35%),
+      radial-gradient(ellipse at 88% 8%, rgba(96, 165, 250, 0.14) 0%, transparent 30%),
+      radial-gradient(ellipse at 92% 88%, rgba(214, 158, 56, 0.12) 0%, transparent 28%),
+      radial-gradient(ellipse at 4% 90%, rgba(52, 211, 153, 0.08) 0%, transparent 24%),
+      linear-gradient(175deg, rgba(6, 14, 24, 0.99) 0%, rgba(8, 18, 30, 1) 50%, rgba(6, 12, 20, 1) 100%);
   }
 
   #root {
-    @apply h-full;
+    @apply min-h-screen;
   }
 
   ::selection {
-    background: rgba(42, 178, 212, 0.28);
+    background: rgba(42, 178, 212, 0.30);
   }
 
   /* Scrollbar refinement */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -82,7 +73,7 @@
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.4);
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }
 
@@ -110,142 +101,7 @@
 
   /* Premium top-bar gradient shimmer */
   .top-bar-gradient {
-    background: linear-gradient(90deg, hsl(var(--toolbar-bg)) 0%, hsl(216 58% 5%) 50%, hsl(var(--toolbar-bg)) 100%);
-    border-bottom: 1px solid hsl(var(--border) / 0.5);
-  }
-
-  /* ─────────────────────────────────────────────────────────
-     Marquee-inspired layout primitives
-     ───────────────────────────────────────────────────────── */
-
-  /* Compact dark application toolbar (top header row) */
-  .mq-toolbar {
-    @apply flex h-12 shrink-0 items-center gap-3 px-5;
-    background: hsl(var(--toolbar-bg));
-    border-bottom: 1px solid hsl(var(--border) / 0.45);
-  }
-
-  /* Dense stat strip below the toolbar */
-  .mq-stat-strip {
-    @apply flex h-8 shrink-0 items-center px-5 overflow-x-auto;
-    background: hsl(var(--strip-bg));
-    border-bottom: 1px solid hsl(var(--border) / 0.35);
-    scrollbar-width: none;
-  }
-  .mq-stat-strip::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mq-stat-item {
-    @apply flex shrink-0 items-center gap-1.5;
-    padding-right: 1.25rem;
-    margin-right: 1.25rem;
-    border-right: 1px solid hsl(var(--border) / 0.28);
-  }
-  .mq-stat-item:last-child {
-    border-right: none;
-    margin-right: 0;
-    padding-right: 0;
-  }
-
-  .mq-stat-label {
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    @apply text-muted-foreground/55;
-  }
-
-  .mq-stat-value {
-    @apply font-mono text-[11px] text-foreground/85;
-  }
-
-  /* Horizontal analysis tab navigation (Marquee-style category tabs) */
-  .mq-tab-nav {
-    @apply flex shrink-0 items-end overflow-x-auto px-5;
-    background: hsl(var(--tab-bg));
-    border-bottom: 1px solid hsl(var(--border) / 0.50);
-    scrollbar-width: none;
-  }
-  .mq-tab-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mq-tab {
-    @apply relative flex cursor-pointer select-none items-center whitespace-nowrap px-3 py-2.5 transition-colors;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: hsl(var(--muted-foreground) / 0.65);
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-  }
-  .mq-tab:hover {
-    color: hsl(var(--foreground) / 0.85);
-  }
-  .mq-tab[data-active="true"] {
-    color: hsl(var(--primary));
-    border-bottom-color: hsl(var(--primary));
-  }
-
-  /* Two-column split panel grid (like Marquee's chart + fundamentals layout) */
-  .mq-split-2 {
-    @apply grid grid-cols-1 gap-4 md:grid-cols-2;
-  }
-
-  /* Three-column split panel grid */
-  .mq-split-3 {
-    @apply grid grid-cols-1 gap-4 md:grid-cols-3;
-  }
-
-  /* Dense bordered panel with a compact header label */
-  .mq-panel {
-    @apply overflow-hidden rounded-lg border border-border/50;
-    background: hsl(var(--panel-strong) / 0.85);
-  }
-
-  .mq-panel-header {
-    @apply flex items-center justify-between px-4 py-2;
-    border-bottom: 1px solid hsl(var(--border) / 0.40);
-    background: hsl(var(--toolbar-bg) / 0.6);
-  }
-
-  .mq-panel-title {
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    @apply text-muted-foreground;
-  }
-
-  /* Dense data row (for fundamentals / comparison tables) */
-  .mq-data-row {
-    @apply flex items-center px-4 py-1.5 text-[11px] transition-colors;
-    border-bottom: 1px solid hsl(var(--border) / 0.22);
-  }
-  .mq-data-row:last-child {
-    border-bottom: none;
-  }
-  .mq-data-row:hover {
-    background: hsl(var(--muted) / 0.25);
-  }
-
-  .mq-data-row-label {
-    @apply flex-1 text-muted-foreground;
-  }
-
-  .mq-data-row-value {
-    @apply font-mono font-medium text-foreground/90;
-  }
-
-  .mq-data-row-delta-pos {
-    @apply font-mono text-success;
-    margin-left: 0.75rem;
-  }
-
-  .mq-data-row-delta-neg {
-    @apply font-mono text-danger;
-    margin-left: 0.75rem;
+    background: linear-gradient(90deg, #07101c 0%, #0c1a2b 50%, #0a1422 100%);
+    border-bottom: 1px solid hsl(var(--border) / 0.6);
   }
 }

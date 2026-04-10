@@ -59,7 +59,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            GetPrimaryEventType(result, "TermsAmended"),
+            "TermsAmended",
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -154,7 +154,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            GetPrimaryEventType(result, "SecurityDeactivated"),
+            "SecurityDeactivated",
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -191,7 +191,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            GetPrimaryEventType(result, "SecurityCreated"),
+            "SecurityCreated",
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -287,11 +287,6 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         return SecurityMasterMapping.ToProjection(result.Snapshot, aliases);
     }
-
-    private static string GetPrimaryEventType(SecurityMasterCommandResultWrapper result, string fallbackEventType)
-        => string.IsNullOrWhiteSpace(result.PrimaryEventType)
-            ? fallbackEventType
-            : result.PrimaryEventType;
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {

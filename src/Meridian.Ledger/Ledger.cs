@@ -26,15 +26,9 @@ public sealed class Ledger : IReadOnlyLedger
     private readonly HashSet<Guid> _journalEntryIds = [];
     private readonly HashSet<Guid> _ledgerEntryIds = [];
     private readonly Dictionary<LedgerAccount, AccountTotals> _accountTotals = [];
-    private readonly IReadOnlyList<JournalEntry> _journalView;
-
-    public Ledger()
-    {
-        _journalView = _journal.AsReadOnly();
-    }
 
     /// <summary>All journal entries in chronological posting order.</summary>
-    public IReadOnlyList<JournalEntry> Journal => _journalView;
+    public IReadOnlyList<JournalEntry> Journal => _journal;
 
     /// <summary>All accounts that have been posted to, in first-seen order.</summary>
     public IReadOnlyCollection<LedgerAccount> Accounts => _accountTotals.Keys;
@@ -56,7 +50,7 @@ public sealed class Ledger : IReadOnlyLedger
 
         ValidateJournalEntry(entry);
 
-        InsertJournalEntry(entry);
+        _journal.Add(entry);
         _journalEntryIds.Add(entry.JournalEntryId);
 
         foreach (var line in entry.Lines)
@@ -281,7 +275,7 @@ public sealed class Ledger : IReadOnlyLedger
             result[account] = CalculateNetBalance(account, totals.Debits, totals.Credits);
         }
 
-        return ReadOnlyCollectionHelpers.FreezeDictionary(result);
+        return result;
     }
 
     /// <summary>
@@ -307,7 +301,7 @@ public sealed class Ledger : IReadOnlyLedger
             }
         }
 
-        return ReadOnlyCollectionHelpers.FreezeDictionary(result);
+        return result;
     }
 
     /// <summary>
@@ -431,39 +425,6 @@ public sealed class Ledger : IReadOnlyLedger
 
         if (!validation.IsValid)
             throw new LedgerValidationException(validation.Errors[0]);
-    }
-
-    private void InsertJournalEntry(JournalEntry entry)
-    {
-        if (_journal.Count == 0 || _journal[^1].Timestamp <= entry.Timestamp)
-        {
-            _journal.Add(entry);
-            return;
-        }
-
-        var insertIndex = FindInsertionIndex(entry.Timestamp);
-        _journal.Insert(insertIndex, entry);
-    }
-
-    private int FindInsertionIndex(DateTimeOffset timestamp)
-    {
-        var low = 0;
-        var high = _journal.Count;
-
-        while (low < high)
-        {
-            var mid = low + ((high - low) / 2);
-            if (_journal[mid].Timestamp <= timestamp)
-            {
-                low = mid + 1;
-            }
-            else
-            {
-                high = mid;
-            }
-        }
-
-        return low;
     }
 
     private static bool MatchesFinancialAccount(LedgerAccount account, string? financialAccountId)

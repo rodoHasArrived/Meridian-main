@@ -1,5 +1,5 @@
-name: "{name}"
-description: "{description}"
+name: {name}
+description: {description}
 # Auto-generated prompt from workflow results - {workflow_name}
 # Generated: {now}
 # Source: {run_url}
@@ -7,9 +7,9 @@ description: "{description}"
 messages:
   - role: system
     content: |
-      {system_content}
+{system_content}
 
-      {error_context}
+{error_context}
       ## Resolution Approach
       1. Read the error messages and stack traces carefully
       2. Identify the root cause (not just symptoms)

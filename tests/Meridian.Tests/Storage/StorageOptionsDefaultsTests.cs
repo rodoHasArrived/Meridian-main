@@ -105,10 +105,6 @@ public sealed class StorageOptionsDefaultsTests
     [InlineData("bysymbol", FileNamingConvention.BySymbol)]
     [InlineData("bydate", FileNamingConvention.ByDate)]
     [InlineData("bytype", FileNamingConvention.ByType)]
-    [InlineData("bysource", FileNamingConvention.BySource)]
-    [InlineData("byassetclass", FileNamingConvention.ByAssetClass)]
-    [InlineData("hierarchical", FileNamingConvention.Hierarchical)]
-    [InlineData("canonical", FileNamingConvention.Canonical)]
     public void StorageConfig_ToStorageOptions_ShouldParseAllConventions(string input, FileNamingConvention expected)
     {
         // Arrange

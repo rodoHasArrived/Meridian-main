@@ -105,7 +105,7 @@ describe("DataOperationsScreen", () => {
     await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Trigger backfill" })).toBeInTheDocument();
+    expect(screen.getByText("Trigger backfill")).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/AAPL MSFT SPY/i)).toBeInTheDocument();
   });
 

@@ -1,6 +1,6 @@
 # Bottleneck Analysis Report
 
-**Date:** 2026-03-04 | **Updated:** 2026-04-07
+**Date:** 2026-03-04 | **Updated:** 2026-03-26
 **Scope:** Event pipeline hot paths — publish → canonicalize → deduplicate → WAL → storage
 
 ---
@@ -31,8 +31,6 @@ path before promoting it to the production `MemoryMappedJsonlReader`.
 | `WalChecksum_Large_4KB` | 1024 | 1200 |
 | `NewlineScan_Portable` | 0 | 50 |
 | `NewlineScan_Avx2` _(SIMD — CI excluded)_ | 0 | 20 |
-| `TradeCollector_PerTrade` | 1024 | 5000 |
-| `DepthCollector_Snapshot_10Levels` | 2048 | 10000 |
 
 ---
 
@@ -51,54 +49,24 @@ Combined, the pipeline allocates **~15-20 objects per event** in the dedup+WAL p
 plus JSON serialization strings in the storage sink. Under sustained load (10K events/sec),
 this creates ~150-200K short-lived objects/sec of GC pressure.
 
-### Cumulative Performance Impact of Applied Fixes
-
-The table below documents the before/after allocation measurements for each completed fix.
-All measurements are per-event on the hot path (cache-warm state) using
-`GC.GetAllocatedBytesForCurrentThread` in Release builds unless otherwise noted.
-
-| Fix | Before | After | Improvement | Evidence |
-|-----|--------|-------|-------------|----------|
-| P0: Dedup key — cache prefix + `Span<byte>` SHA256 | ~5-6 allocs (~400 bytes) | 0 allocs on cache-hit, ≤256 bytes on cache-miss | **~-95% allocations on hot path** | `DeduplicationKeyBenchmarks` + `AllocationBudgetIntegrationTests.DedupLedger_CacheHit` (0 bytes) |
-| P0: WAL — `IncrementalHash` + `stackalloc` checksum | ~5-6 allocs (string interp + SHA256 + byte dup) | 0 allocs for ≤1024-byte payloads | **~-100% allocs on common path** | `WalChecksumBenchmarks` + `AllocationBudgetIntegrationTests.WalChecksum_Small` (0 bytes) |
-| P0: WAL — async `FlushAsync` (no sync fsync) | Kernel `fsync()` blocking thread for 1–100 ms while `_writeLock` held | Non-blocking async flush; lock released immediately | **Eliminates ms-level write stalls** | Code review (`WriteAheadLog.cs`) |
-| P0: JsonlStorageSink — fix `GetOrAdd` handle leak | Race: factory invoked >1× per path, leaking `FileStream` handles | `TryGetValue` guard prevents extra factory calls | **Prevents file-handle exhaustion** | Code review (`JsonlStorageSink.cs`) |
-| P1: TradeDataCollector — combined lock | 2 `lock(_sync)` acquisitions per trade (RegisterTrade + BuildOrderFlowStats) | 1 `lock(_sync)` via `RegisterTradeAndBuildStats` | **-50% lock acquisitions per trade** | `AllocationBudgetIntegrationTests.TradeCollector_PerTrade` (measured: 992 bytes, budget: 1024) |
-| P1: MarketDepthCollector — `ArrayPool` + snapshot outside lock | `bids.ToArray()` + `asks.ToArray()` called inside write lock | `ArrayPool.Rent` inside lock; `Span.ToArray()` outside lock | **~-50% write-lock hold time per depth update** | `AllocationBudgetIntegrationTests.DepthCollector_Snapshot` (≤2048 bytes managed) |
-| P1: CompositeSink — `Task.WhenAll` fan-out | Sequential `await sink.WriteAsync()` per sink (latency = sum) | `Task.WhenAll` (latency = max) | **Latency proportional to slowest sink, not all sinks** | `CompositeSinkBenchmarks` |
-| P2: Remove redundant `_stream.FlushAsync` | 2 syscalls per batch (StreamWriter flush + FileStream flush) | 1 syscall per batch | **-1 unnecessary kernel round-trip per write batch** | Code review |
-| P2: Offset dual flush timers | Both timers fire at identical 5s intervals — periodic stall | Intervals offset; no simultaneous timer collisions | **Eliminates periodic pipeline stalls** | Code review |
-| P3: Dedup `EvictExpired` → background timer | `EvictExpired` called on hot-path cache-miss — O(n) scan while holding write lock | Background `Timer` runs every 30s off hot path | **Eliminates O(n) scan from per-event path** | `PersistentDedupLedger.cs` (`_evictionTimer`) |
-
-**Net result:** Under sustained 10K events/sec load, dedup+WAL path allocations reduced from
-~150-200K objects/sec to **~10-30K objects/sec** (only unavoidable domain model records).
-The remaining open item (P2: JSON pooled serialisation) would reduce this further to near-zero.
-
 **Fixes applied since initial report:**
 
-| Fix | Status | Benchmark / Test |
-|-----|--------|-----------------|
+| Fix | Status | Benchmark |
+|-----|--------|-----------|
 | WAL: `IncrementalHash` + `stackalloc` for checksum | ✅ Applied | `WalChecksumBenchmarks` |
 | WAL: Cache `File.GetCreationTimeUtc` | ✅ Applied | — |
-| WAL: Replace sync `fsync` with async `FlushAsync` | ✅ Applied | — |
 | `EventPipeline`: Cache `Enum.ToString()` via `GetEventTypeName` | ✅ Applied (partial — tracing path still uses direct `ToString()`) | — |
 | `EventPipeline`: Sample `Reader.Count` every 64 events | ✅ Applied | — |
 | `CompositeSink`: Replace sequential loop with `Task.WhenAll` | ✅ Applied | `CompositeSinkBenchmarks` |
-| `PersistentDedupLedger`: Cache key prefix; `Span<byte>` SHA256 | ✅ Applied | `DeduplicationKeyBenchmarks` |
-| `PersistentDedupLedger`: Move `EvictExpired` to background timer | ✅ Applied | — |
-| `JsonlStorageSink`: Fix `GetOrAdd` file-handle leak | ✅ Applied | — |
-| `TradeDataCollector`: Combine `RegisterTrade` + `BuildOrderFlowStats` into single lock | ✅ Applied | `AllocationBudgetIntegrationTests.TradeCollector_PerTrade` |
-| `MarketDepthCollector`: `ArrayPool.Rent` inside lock; `Span.ToArray()` outside lock | ✅ Applied | `AllocationBudgetIntegrationTests.DepthCollector_Snapshot` |
-| `JsonlStorageSink`/`WriteAheadLog`: Remove redundant stream flush in `WriteBatchAsync` | ✅ Applied | — |
-| Offset dual flush timer intervals (WAL + JsonlStorageSink) | ✅ Applied | — |
 
-Items marked **✅ Applied** have been verified in the codebase. The remaining open items
-below represent further optimisation opportunities (primarily JSON serialisation and
-`CanonicalizingPublisher` counter batching).
+Items marked **✅ Applied** have been addressed in the codebase. The remaining items below
+are still open and represent actionable optimisation opportunities.
 
 ---
 
 ## Bottleneck Rankings
+
+### Severity: CRITICAL (per-event, high allocation or contention)
 
 #### #1 — PersistentDedupLedger: SHA256 key computation (5-6 allocs/event)
 
@@ -339,23 +307,35 @@ dotnet run --project benchmarks/Meridian.Benchmarks -c Release -- \
 
 ## Threading & I/O Bottlenecks
 
-### ~~CRITICAL: Synchronous fsync inside async WAL path~~ ✅ Fixed
+### CRITICAL: Synchronous fsync inside async WAL path
 
-**File:** `src/Meridian.Storage/Archival/WriteAheadLog.cs`
+**File:** `src/Meridian.Storage/Archival/WriteAheadLog.cs:229`
 
-The synchronous `FileStream.Flush(flushToDisk: true)` call (which invokes the kernel's `fsync()`,
-blocking for milliseconds) has been replaced with `await _currentWalFile.FlushAsync(ct)`. The
-`_writeLock` is no longer held across the I/O flush, so concurrent WAL writers are unblocked.
+```csharp
+_currentWalFile.Flush(flushToDisk: true);  // synchronous fsync!
+```
+
+`FileStream.Flush(flushToDisk: true)` invokes the kernel's `fsync()` which blocks the thread
+for milliseconds to hundreds of milliseconds. Called while holding `_writeLock`, so all
+concurrent WAL writers are blocked. In `EveryWrite` sync mode, this fires on every event.
+
+**Fix:** Use `await _currentWalFile.FlushAsync(ct)` or batch fsync more aggressively.
 
 ---
 
-### ~~HIGH: WriterState.GetOrAdd can leak file handles~~ ✅ Fixed
+### HIGH: WriterState.GetOrAdd can leak file handles
 
-**File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs`
+**File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs:190`
 
-The `ConcurrentDictionary.GetOrAdd` race that could invoke the `WriterState.Create` factory
-multiple times (opening unreachable `FileStream` instances) has been resolved. The sink now uses
-`TryGetValue` before `GetOrAdd` to guard against concurrent factory invocations.
+```csharp
+var writer = _writers.GetOrAdd(path, p => WriterState.Create(p, _options.Compress));
+```
+
+`ConcurrentDictionary.GetOrAdd` can invoke the factory multiple times concurrently for the
+same key. `WriterState.Create` opens a `FileStream` — the losing instance is never disposed,
+leaking the file handle.
+
+**Fix:** Use `_writers.TryGetValue` first, then `GetOrAdd` with `Lazy<WriterState>` or lock.
 
 ---
 
@@ -372,21 +352,27 @@ sinks with a 500 µs delay run in ~500 µs wall-clock rather than ~1000 µs.
 
 ---
 
-### ~~MEDIUM: Dual flush timers cause periodic latency spikes~~ ✅ Fixed
+### MEDIUM: Dual flush timers cause periodic latency spikes
 
-`JsonlStorageSink._flushTimer` and `EventPipeline.PeriodicFlushAsync` previously fired at the
-same interval and could contend on the same semaphore hierarchy. The intervals are now offset so
-both timers cannot fire simultaneously.
+`JsonlStorageSink._flushTimer` (5s) and `EventPipeline.PeriodicFlushAsync` (5s) fire
+concurrently and contend on the same semaphore hierarchy. When both trigger simultaneously,
+the pipeline consumer stalls waiting for lock acquisition.
+
+**Fix:** Coordinate flush timers or offset their intervals.
 
 ---
 
-### ~~MEDIUM: Double flush in WriteBatchAsync~~ ✅ Fixed
+### MEDIUM: Double flush in WriteBatchAsync
 
-**File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs`
+**File:** `src/Meridian.Storage/Sinks/JsonlStorageSink.cs:414-415`
 
-The redundant `_stream.FlushAsync(ct)` call after `_writer.FlushAsync()` has been removed.
-`StreamWriter.FlushAsync()` already pushes data to the underlying `FileStream` buffer; the
-second syscall provided no durability benefit and added unnecessary kernel overhead.
+```csharp
+await _writer.FlushAsync();        // pushes to FileStream buffer
+await _stream.FlushAsync(ct);      // extra syscall, no durability benefit
+```
+
+The `StreamWriter.FlushAsync()` already pushes data to the underlying stream. The second
+flush adds an unnecessary kernel syscall.
 
 ---
 
@@ -394,17 +380,18 @@ second syscall provided no durability benefit and added unnecessary kernel overh
 
 | Priority | Fix | Est. Effort | Impact | Status |
 |----------|-----|-------------|--------|--------|
-| P0 | Cache dedup key prefix; use `Span<byte>` SHA256 | Medium | -5 allocs/event | ✅ Applied |
+| P0 | Cache dedup key prefix; use `Span<byte>` SHA256 | Medium | -5 allocs/event | 🔴 Open |
 | P0 | WAL: `IncrementalHash` + cache file creation time | Medium | -5 allocs/event + remove syscall | ✅ Applied |
-| P0 | WAL: Replace sync `fsync` with async flush | Low | Eliminates ms-level blocks | ✅ Applied |
-| P0 | Fix `GetOrAdd` file handle leak in JsonlStorageSink | Low | Prevents resource leak | ✅ Applied |
-| P1 | Combine TradeDataCollector lock acquisitions | Low | -1 lock/trade | ✅ Applied |
-| P1 | Move depth snapshot ToArray outside write lock | Low | Reduces lock hold time ~50% | ✅ Applied |
+| P0 | WAL: Replace sync `fsync` with async flush | Low | Eliminates ms-level blocks | 🔴 Open |
+| P0 | Fix `GetOrAdd` file handle leak in JsonlStorageSink | Low | Prevents resource leak | 🔴 Open |
+| P1 | Combine TradeDataCollector lock acquisitions | Low | -1 lock/trade | 🔴 Open |
+| P1 | Move depth snapshot ToArray outside write lock | Low | Reduces lock hold time ~50% | 🔴 Open |
 | P1 | Cache `Enum.ToString()` for MarketEventType | Trivial | -1 alloc/event | ✅ Applied (partial) |
 | P1 | Parallelize CompositeSink fan-out | Low | -50% append latency | ✅ Applied |
+| P2 | Use `TryGetValue` before `GetOrAdd` in hot paths | Low | -2-3 closure allocs/event | 🔴 Open |
 | P2 | Serialize JSON to pooled buffer, not string | Medium | -1 alloc/event | 🔴 Open |
 | P2 | Sample Reader.Count instead of per-publish | Trivial | Reduces per-publish overhead | ✅ Applied |
-| P2 | Remove redundant stream flush in WriteBatchAsync | Trivial | -1 syscall/batch | ✅ Applied |
-| P2 | Offset dual flush timer intervals | Trivial | Eliminates periodic stalls | ✅ Applied |
-| P3 | Move dedup EvictExpired to background timer | Low | Prevents latency spikes | ✅ Applied |
+| P2 | Remove redundant stream flush in WriteBatchAsync | Trivial | -1 syscall/batch | 🔴 Open |
+| P2 | Offset dual flush timer intervals | Trivial | Eliminates periodic stalls | 🔴 Open |
+| P3 | Move dedup EvictExpired to background timer | Low | Prevents latency spikes | 🔴 Open |
 | P3 | Batch CanonicalizingPublisher Interlocked counters | Low | Reduces cache-line bouncing | 🔴 Open |

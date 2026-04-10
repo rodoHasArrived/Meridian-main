@@ -12,6 +12,5 @@ public interface IScriptRunner
     Task<ScriptRunResult> RunAsync(
         string source,
         IReadOnlyDictionary<string, object?> parameters,
-        ScriptExecutionCheckpoint? previousCheckpoint = null,
         CancellationToken ct = default);
 }

@@ -23,13 +23,13 @@ public sealed class RoslynScriptCompilerTests
     }
 
     [Fact]
-    public async Task CompileAsync_ValidSource_CompletesWithinReasonableTime()
+    public async Task CompileAsync_ValidSource_ReturnsInUnderFiveSeconds()
     {
         var compiler = BuildCompiler();
 
         var result = await compiler.CompileAsync("System.Math.Sqrt(4);");
 
-        result.CompilationTime.Should().BeLessThan(TimeSpan.FromSeconds(15));
+        result.CompilationTime.Should().BeLessThan(TimeSpan.FromSeconds(5));
     }
 
     [Fact]

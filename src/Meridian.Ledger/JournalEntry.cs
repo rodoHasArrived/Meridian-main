@@ -77,7 +77,7 @@ public sealed record JournalEntry
         JournalEntryId = journalEntryId;
         Timestamp = timestamp;
         Description = description;
-        Lines = ReadOnlyCollectionHelpers.FreezeList(lines);
+        Lines = lines;
         Metadata = metadata?.Normalize() ?? new JournalEntryMetadata();
     }
 

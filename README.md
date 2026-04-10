@@ -588,6 +588,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── prometheus.yml
 │   └── systemd
 │       └── meridian.service
+├── desktop.ini
 ├── docfx.json
 ├── docs
 │   ├── DEPENDENCIES.md
@@ -662,6 +663,7 @@ Use these documents together when planning or implementing new work:
 │   ├── audits
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
+│   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── README.md
 │   │   ├── audit-architecture-results.txt
@@ -4242,6 +4244,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── index.md
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
+│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   └── temp-metadata-only.json
 │   ├── evaluations
@@ -4277,6 +4280,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
 │   │   ├── documentation-coverage.md
+│   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
 │   │   ├── provider-registry.md
@@ -4428,6 +4432,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── known-vulnerabilities.md
 │   ├── status
 │   │   ├── CHANGELOG.md
+│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
@@ -4436,6 +4441,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
+│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
@@ -4789,6 +4795,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
+│   │   │   ├── SecurityKindMapping.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterConflictService.cs
@@ -5907,6 +5914,8 @@ Use these documents together when planning or implementing new work:
 │   │       └── workstation
 │   │           ├── assets
 │   │           │   ├── index-BUqJ19Wh.css
+│   │           │   ├── index-CnAc-D_d.js
+│   │           │   ├── index-DLXsLZLB.css
 │   │           │   └── index-VxIQhfQW.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
@@ -7134,6 +7143,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-491 directories, 6504 files
+491 directories, 6513 files
 ```
 <!-- readme-tree end -->

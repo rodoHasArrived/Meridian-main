@@ -4,21 +4,19 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using System.Windows.Forms;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
-using Meridian.Application.FundAccounts;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
-using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
-using Meridian.QuantScript.Documents;
+using Meridian.QuantScript.Plotting;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
@@ -43,7 +41,6 @@ public partial class App : System.Windows.Application
 {
     private static bool     _isFirstRun;
     private static bool     _isFixtureMode;
-    private static bool     _mainWindowShown;
     private static string[] _launchArgs = [];
     private IHost? _host;
 
@@ -133,7 +130,7 @@ public partial class App : System.Windows.Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) =>
             {
-                ConfigureServices(services, context.Configuration);
+                ConfigureServices(services);
             })
             .Build();
 
@@ -152,7 +149,6 @@ public partial class App : System.Windows.Application
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
         mainWindow.Show();
-        _mainWindowShown = true;
 
         // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
         WpfServices.JumpListService.Instance.Register();
@@ -215,11 +211,10 @@ public partial class App : System.Windows.Application
     /// C1: DI-first registration — services registered by interface where possible.
     /// Pages registered as transient for constructor injection via NavigationService.
     /// </summary>
-    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    private static void ConfigureServices(IServiceCollection services)
     {
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
-        services.Configure<QuantScriptOptions>(configuration.GetSection(QuantScriptOptions.SectionName));
 
         // ILogger<T> infrastructure — must be first so all services can resolve loggers
         services.AddLogging();
@@ -230,7 +225,6 @@ public partial class App : System.Windows.Application
         // ── Fixture mode service (offline mock data) ────────────────────────
         services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
         services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
-        services.AddSingleton(_ => ProviderManagementService.Instance);
 
         // ── Core services (by interface + concrete type) ────────────────────
         services.AddSingleton<IConnectionService>(_ => WpfServices.ConnectionService.Instance);
@@ -242,22 +236,18 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Ui.Services.Contracts.ILoggingService>(_ => WpfServices.LoggingService.Instance);
         services.AddSingleton(_ => WpfServices.LoggingService.Instance);
 
-        services.AddSingleton<WpfServices.ConfigService>(_ => WpfServices.ConfigService.Instance);
+        services.AddSingleton(_ => WpfServices.ConfigService.Instance);
         services.AddSingleton(_ => WpfServices.ThemeService.Instance);
         services.AddSingleton(_ => WpfServices.NotificationService.Instance);
         services.AddSingleton(_ => WpfServices.KeyboardShortcutService.Instance);
         services.AddSingleton(_ => WpfServices.MessagingService.Instance);
-        services.AddSingleton<Meridian.Ui.Services.Contracts.IStatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton(_ => WpfServices.StatusService.Instance);
         services.AddSingleton(_ => WpfServices.FirstRunService.Instance);
 
         // ── Onboarding / workspace services ──────────────────────────────────
         services.AddSingleton(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
-        services.AddSingleton<WpfServices.WorkspaceService>(_ => WpfServices.WorkspaceService.Instance);
+        services.AddSingleton(_ => WpfServices.WorkspaceService.Instance);
         services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
-        services.AddSingleton(_ => WpfServices.FundContextService.Instance);
-        services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
-        services.AddSingleton<WpfServices.WorkspaceShellContextService>();
 
         // ── Domain / feature services ───────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BackendServiceManager.Instance);
@@ -293,10 +283,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton<MainWindow>();
 
         // ── Pages (transient — created per navigation) ──────────────────────
-        services.AddTransient<FundProfileSelectionPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<MainPage>();
-        services.AddTransient<Meridian.Wpf.ViewModels.DashboardViewModel>();
         services.AddTransient<DashboardPage>();
         services.AddTransient<WatchlistPage>();
         services.AddTransient<ProviderPage>();
@@ -328,8 +316,6 @@ public partial class App : System.Windows.Application
         services.AddTransient<TradingHoursPage>();
         services.AddTransient<AdvancedAnalyticsPage>();
         services.AddTransient<ChartingPage>();
-        services.AddTransient<ScatterAnalysisViewModel>();
-        services.AddTransient<ScatterAnalysisPage>();
         services.AddTransient<OrderBookPage>();
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
         services.AddTransient<DataCalendarPage>();
@@ -350,13 +336,10 @@ public partial class App : System.Windows.Application
         services.AddTransient<DataBrowserPage>();
         services.AddTransient<BacktestPage>();
         services.AddTransient<RunMatPage>();
-        services.AddTransient<QuantScriptPage>();
         services.AddTransient<StrategyRunsPage>();
         services.AddTransient<RunDetailPage>();
         services.AddTransient<RunPortfolioPage>();
         services.AddTransient<RunLedgerPage>();
-        services.AddTransient<FundLedgerPage>();
-        services.AddTransient<FundAccountsPage>();
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
@@ -368,8 +351,6 @@ public partial class App : System.Windows.Application
         services.AddTransient<QualityArchivePage>();
         services.AddTransient<ResearchWorkspaceShellPage>();
         services.AddTransient<TradingWorkspaceShellPage>();
-        services.AddTransient<DataOperationsWorkspaceShellPage>();
-        services.AddTransient<GovernanceWorkspaceShellPage>();
         services.AddTransient<RunRiskPage>();
 
         // ── Missing pages (registered for DI-aware navigation) ───────────────
@@ -400,27 +381,17 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => Meridian.Ui.Services.BackfillService.Instance);
         services.AddSingleton(_ => WpfServices.TaskbarProgressService.Instance);
         services.AddSingleton(_ => WpfServices.TearOffPanelService.Instance);
-        services.AddSingleton<WpfServices.FundLedgerReadService>();
-        services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
-        services.AddSingleton<WpfServices.FundAccountReadService>();
-        services.AddSingleton<WpfServices.CashFinancingReadService>();
-        services.AddSingleton<WpfServices.ReconciliationReadService>();
-        services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
-        services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
+        services.AddSingleton(_ => WpfServices.StrategyRunWorkspaceService.Instance);
 
         // ── ViewModels (transient — new instance per page navigation) ────────
-        services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunPortfolioViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
-        services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
@@ -441,30 +412,33 @@ public partial class App : System.Windows.Application
                               Meridian.Ui.Services.Services.QualityArchiveStore>();
         services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
 
+        // ── QuantScript services ─────────────────────────────────────────────
+        services.Configure<Meridian.QuantScript.QuantScriptOptions>(_ => { });
+        services.AddSingleton(sp =>
+        {
+            var dataRoot = Environment.GetEnvironmentVariable("MDC_DATA_PATH") ?? "data";
+            return new Meridian.Storage.Store.JsonlMarketDataStore(dataRoot);
+        });
+        services.AddSingleton<Meridian.QuantScript.Api.IQuantDataContext,
+                              Meridian.QuantScript.Api.QuantDataContext>();
+        services.AddSingleton<Meridian.QuantScript.Plotting.PlotQueue>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IQuantScriptCompiler,
+                              Meridian.QuantScript.Compilation.RoslynScriptCompiler>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IScriptRunner,
+                              Meridian.QuantScript.Compilation.ScriptRunner>();
+        services.AddSingleton<WpfServices.IQuantScriptLayoutService,
+                              WpfServices.QuantScriptLayoutService>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
+
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
         services.AddSingleton<Meridian.Application.Services.IPluginLoaderService,
                               Meridian.Application.Services.PluginLoaderService>();
-
-        // ── QuantScript notebook services ───────────────────────────────────
-        services.AddSingleton(sp =>
-        {
-            var options = sp.GetRequiredService<IOptions<QuantScriptOptions>>().Value;
-            return new JsonlMarketDataStore(options.DefaultDataRoot);
-        });
-        services.AddSingleton<IQuantDataContext, QuantDataContext>();
-        services.AddSingleton<IQuantScriptCompiler, RoslynScriptCompiler>();
-        services.AddSingleton<IQuantScriptNotebookStore>(sp =>
-            new QuantScriptNotebookStore(sp.GetRequiredService<IOptions<QuantScriptOptions>>().Value));
-        services.AddSingleton<WpfServices.IQuantScriptLayoutService, WpfServices.QuantScriptLayoutService>();
-        services.AddTransient<NotebookExecutionSession>();
-        services.AddTransient<IScriptRunner, ScriptRunner>();
     }
 
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)
     {
         var securityMasterConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING");
-        var polygonApiKey = Environment.GetEnvironmentVariable("POLYGON_API_KEY");
         if (!string.IsNullOrWhiteSpace(securityMasterConnectionString))
         {
             services.AddSingleton(sp => new SecurityMasterOptions
@@ -486,7 +460,6 @@ public partial class App : System.Windows.Application
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
-            services.AddSingleton<ISecurityMasterRuntimeStatus>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
 
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
@@ -499,15 +472,6 @@ public partial class App : System.Windows.Application
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
-
-            if (!string.IsNullOrWhiteSpace(polygonApiKey))
-            {
-                services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
-            }
-            else
-            {
-                services.AddSingleton<ITradingParametersBackfillService, NullTradingParametersBackfillService>();
-            }
         }
         else
         {
@@ -540,15 +504,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
-        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
-        services.AddSingleton<ReconciliationProjectionService>();
-        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         services.AddSingleton(sp =>
         {
             var service = new WpfServices.StrategyRunWorkspaceService(
                 sp.GetRequiredService<IStrategyRepository>(),
-                sp.GetRequiredService<StrategyRunReadService>(),
-                sp.GetRequiredService<WpfServices.FundContextService>());
+                sp.GetRequiredService<StrategyRunReadService>());
             WpfServices.StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });
@@ -762,9 +722,8 @@ public partial class App : System.Windows.Application
         try
         {
 
-            // Close any floating tear-off quote panels and floating page windows before service shutdown
+            // Close any floating tear-off quote panels before service shutdown
             WpfServices.TearOffPanelService.Instance.CloseAll();
-            WpfServices.FloatingPageService.Instance.CloseAll();
 
             using var cts = new CancellationTokenSource(ShutdownTimeoutMs);
 
@@ -911,15 +870,12 @@ public partial class App : System.Windows.Application
         var ex = e.Exception;
 
         // Determine whether the exception is likely recoverable (transient UI or I/O issues).
-        // InvalidOperationException is only recoverable after the main window has been shown;
-        // before that point it likely indicates a startup failure and must not be swallowed,
-        // otherwise the process keeps running with no visible window (CI hang).
         var isRecoverable =
-            ex is System.Net.Http.HttpRequestException or
+            ex is InvalidOperationException or
+                 System.Net.Http.HttpRequestException or
                  TimeoutException or
                  OperationCanceledException or
-                 System.IO.IOException
-            || (ex is InvalidOperationException && _mainWindowShown);
+                 System.IO.IOException;
 
         // Always log with structured logging so the error is visible in the log file.
         WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);

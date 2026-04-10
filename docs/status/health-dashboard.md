@@ -1,27 +1,27 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-04-08T03:35:19.308062+00:00
+> Last updated: 2026-04-10T19:32:50.168164+00:00
 
 ## Overall Health Score
 
 ```
-  [###########################---] 90/100
-  Rating: Excellent
+  [##########################----] 88/100
+  Rating: Good
 ```
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| Total documentation files | 329 |
-| Total lines | 120,479 |
-| Average file size (lines) | 366.2 |
-| Orphaned files | 71 |
+| Total documentation files | 334 |
+| Total lines | 135,139 |
+| Average file size (lines) | 404.6 |
+| Orphaned files | 85 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 318 |
-| **Health score** | **90/100** |
+| TODO/FIXME markers | 367 |
+| **Health score** | **88/100** |
 
 ### Score Breakdown
 
@@ -42,6 +42,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.claude/agents/meridian-blueprint.md`
 - `.claude/agents/meridian-cleanup.md`
 - `.claude/agents/meridian-docs.md`
+- `.claude/agents/meridian-navigation.md`
 - `.claude/skills/meridian-blueprint/references/blueprint-patterns.md`
 - `.claude/skills/meridian-blueprint/references/pipeline-position.md`
 - `.claude/skills/meridian-brainstorm/SKILL.md`
@@ -58,8 +59,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.codex/skills/meridian-archive-organizer/references/archive-placement-guide.md`
 - `.codex/skills/meridian-archive-organizer/references/evaluation-harness.md`
 - `.codex/skills/meridian-blueprint/references/blueprint-patterns.md`
-- `.codex/skills/meridian-brainstorm/references/competitive-landscape.md`
-- ... and 51 more
+- ... and 65 more
 
 ## Trend
 
@@ -67,7 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-| 2026-04-08 | 90 | 329 | 71 | 0 |
+| 2026-04-10 | 88 | 334 | 85 | 0 |
 
 ---
 

@@ -59,15 +59,11 @@ public sealed class ThemeService : ThemeServiceBase
 
         try
         {
-            // Only remove the optional runtime light/dark dictionaries.
-            // The workstation style system lives in App.xaml merged dictionaries
-            // such as ThemeTokens/ThemeSurfaces/ThemeControls and must remain loaded.
+            // Remove existing theme dictionaries
             var toRemove = new System.Collections.Generic.List<ResourceDictionary>();
             foreach (var dict in System.Windows.Application.Current.Resources.MergedDictionaries)
             {
-                var source = dict.Source?.OriginalString;
-                if (string.Equals(source, LightThemeUri, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(source, DarkThemeUri, StringComparison.OrdinalIgnoreCase))
+                if (dict.Source?.OriginalString.Contains("Theme", StringComparison.OrdinalIgnoreCase) is true)
                 {
                     toRemove.Add(dict);
                 }
@@ -78,20 +74,12 @@ public sealed class ThemeService : ThemeServiceBase
                 System.Windows.Application.Current.Resources.MergedDictionaries.Remove(dict);
             }
 
-            // Add the optional runtime theme dictionary only when it exists.
-            // Meridian's core workstation brushes/styles are already loaded in App.xaml.
-            try
+            // Add new theme dictionary
+            var newThemeDict = new ResourceDictionary
             {
-                var newThemeDict = new ResourceDictionary
-                {
-                    Source = new Uri(themeUri, UriKind.Absolute)
-                };
-                System.Windows.Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
-            }
-            catch
-            {
-                // Theme pack not present; keep the existing merged dictionaries intact.
-            }
+                Source = new Uri(themeUri, UriKind.Absolute)
+            };
+            System.Windows.Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
 
             // Update system colors for window chrome
             UpdateWindowChrome(theme);

@@ -1,4 +1,3 @@
-using Meridian.Contracts.Domain.Models;
 using Meridian.Ledger;
 
 namespace Meridian.Backtesting.Sdk;
@@ -86,35 +85,4 @@ public interface IBacktestContext
     /// The ledger is read-only to prevent strategy code from corrupting the audit trail.
     /// </summary>
     IReadOnlyLedger Ledger { get; }
-
-    /// <summary>
-    /// Fetches an option chain snapshot for the given underlying symbol and expiration date.
-    /// Uses the options chain provider configured in the backtest request, or returns
-    /// <c>null</c> when no options provider is available.
-    /// </summary>
-    /// <param name="underlyingSymbol">The underlying symbol (e.g., "AAPL", "SPY").</param>
-    /// <param name="expiration">The desired expiration date.</param>
-    /// <param name="strikeRange">
-    /// Optional number of strikes above and below ATM to include.
-    /// If null, returns all available strikes.
-    /// </param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>The chain snapshot, or <c>null</c> if unavailable or no provider configured.</returns>
-    Task<OptionChainSnapshot?> GetOptionChainAsync(
-        string underlyingSymbol,
-        DateOnly expiration,
-        int? strikeRange = null,
-        CancellationToken ct = default);
-
-    /// <summary>
-    /// Gets the nearest available option expiration date at or after <paramref name="minDte"/> days from today.
-    /// Returns <c>null</c> when no options provider is configured.
-    /// </summary>
-    /// <param name="underlyingSymbol">The underlying symbol.</param>
-    /// <param name="minDte">Minimum days-to-expiration required (default: 0).</param>
-    /// <param name="ct">Cancellation token.</param>
-    Task<DateOnly?> GetNearestExpirationAsync(
-        string underlyingSymbol,
-        int minDte = 0,
-        CancellationToken ct = default);
 }

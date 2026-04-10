@@ -46,8 +46,8 @@ public sealed class LedgerReadService
             })
             .ToArray();
 
-        var resolvedCount = lookup.Values.Count(IsResolvedCoverage);
-        var missingCount = lookup.Values.Count(IsMissingCoverage);
+        var resolvedCount = lookup.Values.Count(static value => value is not null);
+        var missingCount = lookup.Count - resolvedCount;
 
         return summary with
         {
@@ -105,8 +105,7 @@ public sealed class LedgerReadService
             RevenueBalance: SumBalance(accountSummaries, LedgerAccountType.Revenue),
             ExpenseBalance: SumBalance(accountSummaries, LedgerAccountType.Expense),
             TrialBalance: trialBalance,
-            Journal: journal,
-            FundProfileId: entry.FundProfileId);
+            Journal: journal);
     }
 
     private static decimal SumBalance(
@@ -135,13 +134,4 @@ public sealed class LedgerReadService
 
         return lookup;
     }
-
-    private static bool IsResolvedCoverage(WorkstationSecurityReference? reference)
-        => reference?.CoverageStatus is WorkstationSecurityCoverageStatus.Resolved
-            or WorkstationSecurityCoverageStatus.Partial;
-
-    private static bool IsMissingCoverage(WorkstationSecurityReference? reference)
-        => reference is null ||
-           reference.CoverageStatus is WorkstationSecurityCoverageStatus.Missing
-            or WorkstationSecurityCoverageStatus.Unavailable;
 }

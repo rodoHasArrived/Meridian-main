@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
@@ -19,8 +18,7 @@ public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
     Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null,
-    ICorporateActionAdjustmentService? corporateActionAdjustment = null,
-    Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider? optionsProvider = null)
+    ICorporateActionAdjustmentService? corporateActionAdjustment = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -70,7 +68,7 @@ public sealed class BacktestEngine(
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
-        var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId, optionsProvider);
+        var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
         var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate);
         var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
@@ -150,12 +148,7 @@ public sealed class BacktestEngine(
 
         var tradeTickets = BuildTradeTickets(allCashFlows);
         var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
-        var allClosedLots = portfolio.GetClosedLots();
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, allClosedLots)
-        {
-            Coverage = BuildNativeArtifactCoverage(),
-            EngineMetadata = BuildNativeEngineMetadata()
-        };
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -472,35 +465,7 @@ public sealed class BacktestEngine(
     private static BacktestResult CreateEmptyResult(BacktestRequest request, IReadOnlySet<string> universe, TimeSpan elapsed)
     {
         var metrics = BacktestMetricsEngine.Compute([], [], [], request);
-        var tcaReport = PostSimulationTcaReporter.Generate(request, []);
-        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, [], tcaReport)
-        {
-            Coverage = BuildNativeArtifactCoverage(),
-            EngineMetadata = BuildNativeEngineMetadata()
-        };
-    }
-
-    private static BacktestArtifactCoverage BuildNativeArtifactCoverage() => new(
-        Snapshots: BacktestArtifactStatus.Complete,
-        CashFlows: BacktestArtifactStatus.Complete,
-        Fills: BacktestArtifactStatus.Complete,
-        TradeTickets: BacktestArtifactStatus.Complete,
-        Ledger: BacktestArtifactStatus.Complete,
-        TcaReport: BacktestArtifactStatus.Complete);
-
-    private static BacktestEngineMetadata BuildNativeEngineMetadata()
-    {
-        var assembly = typeof(BacktestEngine).Assembly;
-        var version =
-            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? assembly.GetName().Version?.ToString()
-            ?? "unknown";
-
-        return new BacktestEngineMetadata(
-            EngineId: "MeridianNative",
-            EngineVersion: version,
-            SourceFormat: "Meridian.Backtesting.BacktestResult",
-            Diagnostics: new Dictionary<string, string>());
+        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, []);
     }
 
     private static IFillModel SelectFillModel(

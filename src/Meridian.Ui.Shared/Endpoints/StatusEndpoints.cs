@@ -209,7 +209,10 @@ public static class StatusEndpoints
             ctx.Response.Headers.CacheControl = "no-cache";
             ctx.Response.Headers.Connection = "keep-alive";
 
-            var sseJsonOptions = new JsonSerializerOptions(jsonOptions);
+            var sseJsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
 
             try
             {

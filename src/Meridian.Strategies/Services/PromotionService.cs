@@ -1,6 +1,6 @@
 using Meridian.Backtesting.Sdk;
-using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
@@ -74,26 +74,27 @@ public sealed class PromotionService
         var effectiveCriteria = criteria ?? PromotionCriteria.Default;
         var targetMode = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
         var eligible = _promoter.MeetsPromotionThresholds(run.Metrics, effectiveCriteria);
-        var requiresHumanApproval = targetMode == RunType.Live;
-        var requiresManualOverride = targetMode == RunType.Live;
-        var requiredManualOverrideKind = requiresManualOverride
-            ? ExecutionManualOverrideKinds.AllowLivePromotion
-            : null;
-        var blockingReasons = BuildLiveGovernanceBlockingReasons(targetMode);
+
+        // Governance checks for live promotion
+        var blockingReasons = new List<string>();
+        var requiresHumanApproval = false;
+        var requiresManualOverride = false;
+        string? requiredManualOverrideKind = null;
+
+        if (targetMode == RunType.Live)
+        {
+            if (_brokerageConfiguration is { LiveExecutionEnabled: false })
+            {
+                blockingReasons.Add("Live execution is not enabled in the brokerage configuration.");
+                requiresHumanApproval = true;
+                requiresManualOverride = true;
+                requiredManualOverrideKind = ExecutionManualOverrideKinds.AllowLivePromotion;
+            }
+        }
 
         _logger.LogInformation(
             "Promotion evaluation for run {RunId}: eligible={Eligible}, target={Target}, sharpe={Sharpe:F3}",
             runId, eligible, targetMode, run.Metrics.Metrics.SharpeRatio);
-
-        var reason = eligible switch
-        {
-            false => "Does not meet minimum promotion criteria.",
-            true when targetMode == RunType.Live && blockingReasons.Count > 0 =>
-                "Meets thresholds but live promotion is currently blocked by governance controls.",
-            true when targetMode == RunType.Live =>
-                "Meets thresholds and awaits human approval for live promotion.",
-            _ => "Meets all promotion thresholds."
-        };
 
         return new PromotionEvaluationResult(
             RunId: runId,
@@ -105,13 +106,15 @@ public sealed class PromotionService
             SharpeRatio: run.Metrics.Metrics.SharpeRatio,
             MaxDrawdownPercent: run.Metrics.Metrics.MaxDrawdownPercent,
             TotalReturn: run.Metrics.Metrics.TotalReturn,
-            Reason: reason,
+            Reason: eligible
+                ? "Meets all promotion thresholds."
+                : "Does not meet minimum promotion criteria.",
             Found: true,
             Ready: true,
             RequiresHumanApproval: requiresHumanApproval,
             RequiresManualOverride: requiresManualOverride,
             RequiredManualOverrideKind: requiredManualOverrideKind,
-            BlockingReasons: blockingReasons);
+            BlockingReasons: blockingReasons.Count > 0 ? blockingReasons : null);
     }
 
     /// <summary>
@@ -133,72 +136,7 @@ public sealed class PromotionService
                 Reason: "Run not found, incomplete, or has no metrics.");
         }
 
-        var evaluation = await EvaluateAsync(run.RunId, ct: ct).ConfigureAwait(false);
-        if (!evaluation.Ready)
-        {
-            return new PromotionDecisionResult(
-                Success: false,
-                PromotionId: null,
-                NewRunId: null,
-                Reason: evaluation.Reason);
-        }
-
-        if (!evaluation.IsEligible)
-        {
-            return new PromotionDecisionResult(
-                Success: false,
-                PromotionId: null,
-                NewRunId: null,
-                Reason: evaluation.Reason);
-        }
-
-        var targetRunType = evaluation.TargetMode ?? (run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live);
-        var approvedBy = NormalizeActor(request.ApprovedBy);
-        var approvalReason = NormalizeApprovalReason(request);
-
-        if (targetRunType == RunType.Live)
-        {
-            if (string.IsNullOrWhiteSpace(approvedBy))
-            {
-                return new PromotionDecisionResult(
-                    Success: false,
-                    PromotionId: null,
-                    NewRunId: null,
-                    Reason: "Paper -> Live promotion requires an approving operator.");
-            }
-
-            if (!IsLiveExecutionConfigured())
-            {
-                return new PromotionDecisionResult(
-                    Success: false,
-                    PromotionId: null,
-                    NewRunId: null,
-                    Reason: "Live execution is not enabled. Configure a non-paper brokerage gateway before approving a live promotion.");
-            }
-
-            if (_operatorControls is null)
-            {
-                return new PromotionDecisionResult(
-                    Success: false,
-                    PromotionId: null,
-                    NewRunId: null,
-                    Reason: "Execution operator controls are not available.");
-            }
-
-            var liveControlDecision = _operatorControls.EvaluateLivePromotion(
-                run.RunId,
-                run.StrategyId,
-                request.ManualOverrideId);
-
-            if (!liveControlDecision.IsAllowed)
-            {
-                return new PromotionDecisionResult(
-                    Success: false,
-                    PromotionId: null,
-                    NewRunId: null,
-                    Reason: liveControlDecision.RejectReason ?? "Live promotion is currently blocked by operator controls.");
-            }
-        }
+        var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
 
         // Create audit record
         var promotionRecord = _promoter.CreatePromotionRecord(
@@ -206,9 +144,7 @@ public sealed class PromotionService
             run.StrategyId,
             run.StrategyName,
             targetRunType,
-            sourceRunId: run.RunId,
-            approvedBy: approvedBy,
-            approvalReason: approvalReason,
+            approvedBy: request.ApprovedBy,
             manualOverrideId: request.ManualOverrideId);
 
         // Create new run entry for the target mode, inheriting parameters
@@ -229,23 +165,6 @@ public sealed class PromotionService
 
         await _repository.RecordRunAsync(newRun, ct).ConfigureAwait(false);
 
-        var auditEntry = await RecordPromotionAuditAsync(
-            action: "PromotionApproved",
-            outcome: "Completed",
-            run: run,
-            targetRunType: targetRunType,
-            actor: approvedBy,
-            promotionId: promotionRecord.PromotionId,
-            newRunId: newRun.RunId,
-            reason: approvalReason ?? evaluation.Reason,
-            manualOverrideId: request.ManualOverrideId,
-            ct: ct).ConfigureAwait(false);
-
-        if (!string.IsNullOrWhiteSpace(auditEntry?.AuditId))
-        {
-            promotionRecord = promotionRecord with { AuditReference = auditEntry.AuditId };
-        }
-
         lock (_lock)
         {
             _promotionHistory.Add(promotionRecord);
@@ -255,19 +174,34 @@ public sealed class PromotionService
             "Promoted strategy {StrategyId} from {Source} to {Target}: promotionId={PromotionId}, newRunId={NewRunId}",
             run.StrategyId, run.RunType, targetRunType, promotionRecord.PromotionId, newRun.RunId);
 
+        // Record promotion approval in the execution audit trail
+        if (_auditTrail is not null)
+        {
+            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Promotion",
+                Action: "PromotionApproved",
+                Outcome: "Approved",
+                OccurredAt: DateTimeOffset.UtcNow,
+                Actor: request.ApprovedBy,
+                RunId: request.RunId,
+                CorrelationId: promotionRecord.PromotionId,
+                Message: request.ApprovalReason), ct).ConfigureAwait(false);
+        }
+
         return new PromotionDecisionResult(
             Success: true,
             PromotionId: promotionRecord.PromotionId,
             NewRunId: newRun.RunId,
             Reason: $"Strategy promoted from {run.RunType} to {targetRunType}.",
-            AuditReference: auditEntry?.AuditId ?? promotionRecord.PromotionId,
-            ApprovedBy: approvedBy);
+            AuditReference: promotionRecord.AuditReference,
+            ApprovedBy: request.ApprovedBy);
     }
 
     /// <summary>
     /// Rejects a promotion with a recorded reason.
     /// </summary>
-    public async Task<PromotionDecisionResult> RejectAsync(
+    public Task<PromotionDecisionResult> RejectAsync(
         PromotionRejectionRequest request,
         CancellationToken ct = default)
     {
@@ -277,27 +211,11 @@ public sealed class PromotionService
             "Promotion rejected for run {RunId}: {Reason}",
             request.RunId, request.Reason);
 
-        var run = await FindRunAsync(request.RunId, ct).ConfigureAwait(false);
-        var auditEntry = run is null
-            ? null
-            : await RecordPromotionAuditAsync(
-                action: "PromotionRejected",
-                outcome: "Rejected",
-                run: run,
-                targetRunType: run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live,
-                actor: NormalizeActor(request.RejectedBy),
-                promotionId: $"reject-{request.RunId}",
-                newRunId: null,
-                reason: request.Reason,
-                manualOverrideId: null,
-                ct: ct).ConfigureAwait(false);
-
-        return new PromotionDecisionResult(
+        return Task.FromResult(new PromotionDecisionResult(
             Success: true,
             PromotionId: null,
             NewRunId: null,
-            Reason: $"Promotion rejected: {request.Reason}",
-            AuditReference: auditEntry?.AuditId);
+            Reason: $"Promotion rejected: {request.Reason}"));
     }
 
     /// <summary>Returns the full promotion audit trail.</summary>
@@ -320,95 +238,6 @@ public sealed class PromotionService
         }
 
         return null;
-    }
-
-    private IReadOnlyList<string> BuildLiveGovernanceBlockingReasons(RunType targetMode)
-    {
-        if (targetMode != RunType.Live)
-        {
-            return Array.Empty<string>();
-        }
-
-        var blockingReasons = new List<string>();
-
-        if (!IsLiveExecutionConfigured())
-        {
-            blockingReasons.Add(
-                "Live execution is not enabled. Configure a non-paper brokerage gateway before promoting a run to live.");
-        }
-
-        var circuitBreaker = _operatorControls?.GetSnapshot().CircuitBreaker;
-        if (circuitBreaker?.IsOpen == true)
-        {
-            blockingReasons.Add(
-                circuitBreaker.Reason ?? "Execution circuit breaker is open.");
-        }
-
-        return blockingReasons;
-    }
-
-    private bool IsLiveExecutionConfigured() =>
-        _brokerageConfiguration is { LiveExecutionEnabled: true } brokerageConfig &&
-        !string.Equals(brokerageConfig.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
-
-    private async Task<ExecutionAuditEntry?> RecordPromotionAuditAsync(
-        string action,
-        string outcome,
-        StrategyRunEntry run,
-        RunType targetRunType,
-        string? actor,
-        string promotionId,
-        string? newRunId,
-        string reason,
-        string? manualOverrideId,
-        CancellationToken ct)
-    {
-        if (_auditTrail is null)
-        {
-            return null;
-        }
-
-        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["promotionId"] = promotionId,
-            ["strategyId"] = run.StrategyId,
-            ["sourceMode"] = run.RunType.ToString(),
-            ["targetMode"] = targetRunType.ToString()
-        };
-
-        if (!string.IsNullOrWhiteSpace(newRunId))
-        {
-            metadata["newRunId"] = newRunId;
-        }
-
-        if (!string.IsNullOrWhiteSpace(manualOverrideId))
-        {
-            metadata["manualOverrideId"] = manualOverrideId;
-        }
-
-        return await _auditTrail.RecordAsync(
-            category: "Promotion",
-            action: action,
-            outcome: outcome,
-            actor: actor,
-            brokerName: targetRunType == RunType.Live ? _brokerageConfiguration?.Gateway : "paper",
-            runId: run.RunId,
-            correlationId: promotionId,
-            message: reason,
-            metadata: metadata,
-            ct: ct).ConfigureAwait(false);
-    }
-
-    private static string? NormalizeActor(string? actor) =>
-        string.IsNullOrWhiteSpace(actor) ? null : actor.Trim();
-
-    private static string? NormalizeApprovalReason(PromotionApprovalRequest request)
-    {
-        var reason = !string.IsNullOrWhiteSpace(request.ApprovalReason)
-            ? request.ApprovalReason
-            : request.ReviewNotes;
-
-        return string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
     }
 }
 
@@ -457,8 +286,7 @@ public sealed record PromotionApprovalRequest(
 /// <summary>Request to reject a strategy promotion.</summary>
 public sealed record PromotionRejectionRequest(
     string RunId,
-    string Reason,
-    string? RejectedBy = null);
+    string Reason);
 
 /// <summary>Result of a promotion approval or rejection.</summary>
 public sealed record PromotionDecisionResult(

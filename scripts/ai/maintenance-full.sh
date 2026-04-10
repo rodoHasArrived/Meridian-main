@@ -82,35 +82,7 @@ fi
 
 run_step "dotnet-restore" dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
 run_step "dotnet-build" dotnet build Meridian.sln -c Release --no-restore --nologo /p:EnableWindowsTargeting=true
-
-# Full maintenance should stay stable on runners without Docker while still
-# exercising the repo's unit-oriented test surface.
-export MERIDIAN_DISABLE_DOCKER_TESTS="${MERIDIAN_DISABLE_DOCKER_TESTS:-true}"
-
-run_step "dotnet-test-core" \
-    dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
-        -c Release --no-build --nologo --filter "Category!=Integration" /p:EnableWindowsTargeting=true
-run_step "dotnet-test-backtesting" \
-    dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj \
-        -c Release --no-build --nologo --filter "Category!=Integration" /p:EnableWindowsTargeting=true
-run_step "dotnet-test-fsharp" \
-    dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj \
-        -c Release --no-build --nologo /p:EnableWindowsTargeting=true
-run_step "dotnet-test-direct-lending" \
-    dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj \
-        -c Release --no-build --nologo /p:EnableWindowsTargeting=true
-run_step "dotnet-test-ui" \
-    dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj \
-        -c Release --no-build --nologo /p:EnableWindowsTargeting=true
-run_step "dotnet-test-wpf" \
-    dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj \
-        -c Release --no-build --nologo /p:EnableWindowsTargeting=true
-run_step "dotnet-test-quantscript" \
-    dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj \
-        -c Release --no-build --nologo /p:EnableWindowsTargeting=true
-run_step "dotnet-test-mcpserver" \
-    dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj \
-        -c Release --no-build --nologo /p:EnableWindowsTargeting=true
+run_step "dotnet-test" dotnet test Meridian.sln -c Release --no-build --nologo --filter "Category!=Integration" /p:EnableWindowsTargeting=true
 
 if [[ "$MAKE_AVAILABLE" == true && -f Makefile ]]; then
     grep -qE '^[[:space:]]*doctor:' Makefile 2>/dev/null && \

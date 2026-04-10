@@ -71,36 +71,6 @@ public sealed class FixtureModeDetector
     };
 
     /// <summary>
-    /// Gets the currently active fixture scenario.
-    /// Only meaningful when <see cref="IsFixtureMode"/> is true.
-    /// </summary>
-    public FixtureScenario ActiveScenario => FixtureDataService.Instance.ActiveScenario;
-
-    /// <summary>
-    /// Gets a short human-readable label for the active fixture scenario,
-    /// suitable for display in the fixture banner (e.g. "Connected (healthy)").
-    /// </summary>
-    public string ScenarioLabel => FixtureDataService.GetScenarioLabel(FixtureDataService.Instance.ActiveScenario);
-
-    /// <summary>
-    /// Advances the fixture data to the next scenario in the cycle and raises
-    /// <see cref="ModeChanged"/> so the UI banner refreshes.
-    /// Has no effect when <see cref="IsFixtureMode"/> is false.
-    /// </summary>
-    /// <returns>The new active scenario after cycling.</returns>
-    public FixtureScenario CycleScenario()
-    {
-        if (!_isFixtureMode)
-        {
-            return FixtureDataService.Instance.ActiveScenario;
-        }
-
-        var next = FixtureDataService.Instance.CycleToNextScenario();
-        ModeChanged?.Invoke(this, EventArgs.Empty);
-        return next;
-    }
-
-    /// <summary>
     /// Gets the banner background color suggestion.
     /// Fixture mode: amber/orange, Offline: red.
     /// </summary>
@@ -129,6 +99,35 @@ public sealed class FixtureModeDetector
         {
             ModeChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    /// <summary>
+    /// Gets the currently active fixture scenario label for display in the UI.
+    /// </summary>
+    public string ScenarioLabel => FixtureDataService.GetScenarioLabel(FixtureDataService.Instance.ActiveScenario);
+
+    /// <summary>
+    /// Gets the currently active fixture scenario.
+    /// </summary>
+    public FixtureScenario ActiveScenario => FixtureDataService.Instance.ActiveScenario;
+
+    /// <summary>
+    /// Cycles to the next scenario in the <see cref="FixtureScenario"/> sequence.
+    /// No-op when fixture mode is off.
+    /// </summary>
+    /// <returns>The scenario that is now active after the cycle.</returns>
+    public FixtureScenario CycleScenario()
+    {
+        if (!_isFixtureMode)
+            return FixtureDataService.Instance.ActiveScenario;
+
+        var values = Enum.GetValues<FixtureScenario>();
+        var current = FixtureDataService.Instance.ActiveScenario;
+        var nextIndex = ((int)current + 1) % values.Length;
+        var next = values[nextIndex];
+        FixtureDataService.Instance.SetScenario(next);
+        ModeChanged?.Invoke(this, EventArgs.Empty);
+        return next;
     }
 
     /// <summary>

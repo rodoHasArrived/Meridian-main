@@ -136,12 +136,10 @@ jobs:
             exit 1
           fi
 
-          {
-            echo "normalized_symbols=$normalized_symbols"
-            echo "validated_date_from=$date_from"
-            echo "validated_date_to=$date_to"
-            echo "validated_output_format=$output_format"
-          } >> "$GITHUB_OUTPUT"
+          echo "normalized_symbols=$normalized_symbols" >> "$GITHUB_OUTPUT"
+          echo "validated_date_from=$date_from" >> "$GITHUB_OUTPUT"
+          echo "validated_date_to=$date_to" >> "$GITHUB_OUTPUT"
+          echo "validated_output_format=$output_format" >> "$GITHUB_OUTPUT"
 
           echo "Normalized symbols: $normalized_symbols"
           echo "date_from: ${date_from:-<empty>}"
@@ -218,27 +216,24 @@ jobs:
       - name: Generate job summary
         if: always()
         run: |
+          echo "## Ticker Data Collection Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Symbols:** \`${{ steps.normalize-inputs.outputs.normalized_symbols }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Date range:** \`${{ steps.normalize-inputs.outputs.validated_date_from || 'all history' }} → ${{ steps.normalize-inputs.outputs.validated_date_to || 'latest' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Output format:** \`${{ steps.normalize-inputs.outputs.validated_output_format }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Run:** #${{ github.run_number }} | **Commit:** \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
           OUTPUT_DIR="${{ steps.find-output.outputs.output_dir }}"
-          SHORT_SHA="${GITHUB_SHA::7}"
-          {
-            echo "## Ticker Data Collection Results"
-            echo ""
-            echo "**Symbols:** \`${{ steps.normalize-inputs.outputs.normalized_symbols }}\`"
-            echo "**Date range:** \`${{ steps.normalize-inputs.outputs.validated_date_from || 'all history' }} → ${{ steps.normalize-inputs.outputs.validated_date_to || 'latest' }}\`"
-            echo "**Output format:** \`${{ steps.normalize-inputs.outputs.validated_output_format }}\`"
-            echo "**Run:** #${{ github.run_number }} | **Commit:** \`$SHORT_SHA\`"
-            echo ""
+          if [ -n "$OUTPUT_DIR" ] && [ -f "$OUTPUT_DIR/collection_summary.txt" ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat "$OUTPUT_DIR/collection_summary.txt" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "> No collection summary available." >> $GITHUB_STEP_SUMMARY
+          fi
 
-            if [ -n "$OUTPUT_DIR" ] && [ -f "$OUTPUT_DIR/collection_summary.txt" ]; then
-              echo '```'
-              cat "$OUTPUT_DIR/collection_summary.txt"
-              echo '```'
-            else
-              echo "> No collection summary available."
-            fi
-
-            echo ""
-            echo "### Artifacts"
-            echo "- **ticker-data-${{ github.run_number }}-$SHORT_SHA** — ${{ steps.normalize-inputs.outputs.validated_output_format }} files with historical bar data"
-            echo "- **ticker-test-results-${{ github.run_number }}** — Test result (.trx) file"
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- **ticker-data-${{ github.run_number }}-${GITHUB_SHA}** — ${{ steps.normalize-inputs.outputs.validated_output_format }} files with historical bar data" >> $GITHUB_STEP_SUMMARY
+          echo "- **ticker-test-results-${{ github.run_number }}** — Test result (.trx) file" >> $GITHUB_STEP_SUMMARY
