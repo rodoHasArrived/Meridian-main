@@ -185,14 +185,15 @@ internal static class SecurityEconomicDefinitionAdapter
         });
 
     /// Maps a <see cref="VotingRightsCat"/> DU to a stable wire token.
-    /// For <c>OtherVoting</c>, the payload string is used directly as the token.
+    /// For <c>OtherVotingRights</c>, the payload string is used directly as the token.
     private static string SerializeVotingRightsCat(VotingRightsCat cat)
     {
-        if (cat.IsOtherVoting)
-            return ((VotingRightsCat.OtherVoting)cat).Item;
-        if (cat.IsFull) return "Full";
-        if (cat.IsRestricted) return "Restricted";
+        if (cat.IsOtherVotingRights)
+            return ((VotingRightsCat.OtherVotingRights)cat).Item;
+        if (cat.IsFullVoting) return "FullVoting";
+        if (cat.IsLimitedVoting) return "LimitedVoting";
         if (cat.IsNonVoting) return "NonVoting";
+        if (cat.IsDualClass) return "DualClass";
         if (cat.IsSuperVoting) return "SuperVoting";
         throw new InvalidOperationException($"Unsupported {nameof(VotingRightsCat)} case encountered during serialization.");
     }
