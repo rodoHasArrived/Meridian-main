@@ -48,33 +48,18 @@
                                 ToolTip="{Binding Tooltip}"
                                 Margin="0,0,4,0"
                                 Padding="8,6,8,6"
-                                Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                BorderBrush="{StaticResource ConsoleBorderBrush}"
-                                BorderThickness="1"
                                 Cursor="Hand"
                                 FontSize="12">
-                            <StackPanel Orientation="Horizontal">
-                                <!-- Icon (if present) -->
-                                <TextBlock Text="{Binding Icon}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           Margin="0,0,6,0"
-                                           VerticalAlignment="Center"
-                                           Visibility="{Binding Icon, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                                <!-- Label -->
-                                <TextBlock Text="{Binding Label}"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                            <!-- Trigger style change for primary actions -->
                             <Button.Style>
                                 <Style TargetType="Button">
-                                    <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}"/>
-                                    <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}"/>
+                                    <Setter Property="Background"      Value="{StaticResource ConsoleBackgroundLightBrush}"/>
+                                    <Setter Property="Foreground"      Value="{StaticResource ConsoleTextPrimaryBrush}"/>
+                                    <Setter Property="BorderBrush"     Value="{StaticResource ConsoleBorderBrush}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsPrimary}" Value="True">
                                             <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenDimBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentGreen}"/>
+                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentGreenDimBrush}"/>
                                             <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}"/>
                                         </DataTrigger>
                                         <Trigger Property="IsMouseOver" Value="True">
@@ -88,6 +73,18 @@
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <!-- Icon (if present) -->
+                                <TextBlock Text="{Binding Icon}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           Margin="0,0,6,0"
+                                           VerticalAlignment="Center"
+                                           Visibility="{Binding Icon, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <!-- Label -->
+                                <TextBlock Text="{Binding Label}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

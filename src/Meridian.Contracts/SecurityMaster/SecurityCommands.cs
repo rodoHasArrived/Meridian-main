@@ -40,6 +40,19 @@ public sealed record AmendConvertibleEquityTermsRequest(
     string? SourceRecordId,
     string? Reason);
 
+public sealed record AmendConvertibleEquityTermsRequest(
+    long ExpectedVersion,
+    Guid UnderlyingSecurityId,
+    decimal ConversionRatio,
+    decimal? ConversionPrice,
+    DateOnly? ConversionStartDate,
+    DateOnly? ConversionEndDate,
+    DateTimeOffset EffectiveFrom,
+    string SourceSystem,
+    string UpdatedBy,
+    string? SourceRecordId,
+    string? Reason);
+
 public sealed record DeactivateSecurityRequest(
     Guid SecurityId,
     long ExpectedVersion,

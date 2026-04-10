@@ -665,6 +665,7 @@ internal static class SecurityMasterMapping
         return JsonSerializer.SerializeToElement(assetSpecificNode);
     }
 
+
     public static JsonElement BuildConvertibleEquityTermsPatch(SecurityProjectionRecord current, AmendConvertibleEquityTermsRequest request)
     {
         if (!string.Equals(current.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
