@@ -9,6 +9,14 @@
 
 ```
 [==========----------] 49.6%
+> Generated: 2026-04-10 19:18:06 UTC
+
+## Overall Coverage
+
+**3484 / 3818** items documented (**91.3%**) &mdash; Grade: **A**
+
+```
+[==================--] 91.3%
 ```
 
 ## Coverage by Category
@@ -18,6 +26,9 @@
 | Public Classes / Interfaces | 1642 | 3243 | 50.6% | D |
 | API Endpoints | 69 | 157 | 43.9% | D |
 | Configuration Options | 28 | 118 | 23.7% | F |
+| Public Classes / Interfaces | 3358 | 3508 | 95.7% | A |
+| API Endpoints | 74 | 179 | 41.3% | D |
+| Configuration Options | 39 | 118 | 33.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 13 | 13 | 100.0% | A |
 
@@ -80,6 +91,63 @@
 | ... and 1551 more | |
 
 ### API Endpoints (88 undocumented)
+### Public Classes / Interfaces (150 undocumented)
+
+| Item | Location |
+|------|----------|
+| `AmendConvertibleEquityTermsRequest` | `src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:46` |
+| `WorkstationSecurityCoverageStatus` | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:61` |
+| `OpenLotSummary` | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:447` |
+| `ClosedLotSummary` | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:460` |
+| `RunLotSummary` | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:475` |
+| `ScheduledTask` | `src/Meridian.Wpf/Services/BackgroundTaskSchedulerService.cs:13` |
+| `RunMatOutputKind` | `src/Meridian.Wpf/Services/RunMatService.cs:12` |
+| `RunMatOutputLine` | `src/Meridian.Wpf/Services/RunMatService.cs:19` |
+| `RunMatScriptDocument` | `src/Meridian.Wpf/Services/RunMatService.cs:21` |
+| `RunMatSettings` | `src/Meridian.Wpf/Services/RunMatService.cs:28` |
+| `RunMatExecutionRequest` | `src/Meridian.Wpf/Services/RunMatService.cs:36` |
+| `RunMatExecutionResult` | `src/Meridian.Wpf/Services/RunMatService.cs:47` |
+| `RunMatStatus` | `src/Meridian.Wpf/Services/RunMatService.cs:69` |
+| `IFundReconciliationWorkbenchService` | `src/Meridian.Wpf/Services/FundReconciliationWorkbenchService.cs:7` |
+| `ConfigServiceValidationResult` | `src/Meridian.Wpf/Services/ConfigService.cs:17` |
+| `InlineValidationResult` | `src/Meridian.Wpf/Services/ConfigService.cs:35` |
+| `ThemeChangedEventArgs` | `src/Meridian.Wpf/Services/ThemeService.cs:151` |
+| `FundProfileChangedEventArgs` | `src/Meridian.Wpf/Services/FundContextService.cs:250` |
+| `WorkstationReconciliationActionResult` | `src/Meridian.Wpf/Services/WorkstationReconciliationApiClient.cs:4` |
+| `IWorkstationReconciliationApiClient` | `src/Meridian.Wpf/Services/WorkstationReconciliationApiClient.cs:9` |
+| `ArchiveHealthEventArgs` | `src/Meridian.Wpf/Services/ArchiveHealthService.cs:494` |
+| `VerificationJobEventArgs` | `src/Meridian.Wpf/Services/ArchiveHealthService.cs:499` |
+| `ArchiveIssueEventArgs` | `src/Meridian.Wpf/Services/ArchiveHealthService.cs:504` |
+| `ComparisonRow` | `src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:10` |
+| `SectorETFItem` | `src/Meridian.Wpf/ViewModels/IndexSubscriptionViewModel.cs:165` |
+| `AggregatedPositionRow` | `src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:161` |
+| `LeanDialogRequestArgs` | `src/Meridian.Wpf/ViewModels/LeanIntegrationViewModel.cs:756` |
+| `HolidayDisplayItem` | `src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs:230` |
+| `FallbackChainViewModel` | `src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:77` |
+| `DryRunResultViewModel` | `src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:113` |
+| `AuditLogViewModel` | `src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:123` |
+| `ClusterNodeItem` | `src/Meridian.Wpf/ViewModels/ClusterStatusViewModel.cs:12` |
+| `CredentialEntryViewModel` | `src/Meridian.Wpf/ViewModels/CredentialManagementViewModel.cs:17` |
+| `CredentialFieldViewModel` | `src/Meridian.Wpf/ViewModels/CredentialManagementViewModel.cs:49` |
+| `SampleSummary` | `src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:234` |
+| `ScatterPoint` | `src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs:13` |
+| `DataSheetRow` | `src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs:16` |
+| `QuickstartTemplate` | `src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs:22` |
+| `EventReplaySession` | `src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs:138` |
+| `MessageTypeItem` | `src/Meridian.Wpf/ViewModels/MessagingHubViewModel.cs:202` |
+| `BatchRunResultItem` | `src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:14` |
+| `PriceLabelViewModel` | `src/Meridian.Wpf/ViewModels/OrderBookHeatmapViewModel.cs:11` |
+| `FillEventVm` | `src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:302` |
+| `CashFlowVm` | `src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:312` |
+| `SymbolAttributionVm` | `src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:337` |
+| `SymbolItem` | `src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:387` |
+| `WpfVolumeBarVm` | `src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:393` |
+| `WpfVolumeProfileBarVm` | `src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:400` |
+| `WpfIndicatorValueVm` | `src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:407` |
+| `PluginItem` | `src/Meridian.Wpf/ViewModels/PluginManagementViewModel.cs:10` |
+| ... and 100 more | |
+
+### API Endpoints (105 undocumented)
 
 | Item | Location |
 |------|----------|
@@ -135,7 +203,7 @@
 | `/{loanId:guid}/journals` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:523` |
 | ... and 38 more | |
 
-### Configuration Options (90 undocumented)
+### Configuration Options (79 undocumented)
 
 | Item | Location |
 |------|----------|
@@ -158,8 +226,6 @@
 | `Synthetic.DefaultHistoryStart` | `config/appsettings.sample.json` |
 | `Synthetic.DefaultHistoryEnd` | `config/appsettings.sample.json` |
 | `Backfill.Enabled` | `config/appsettings.sample.json` |
-| `Backfill.From` | `config/appsettings.sample.json` |
-| `Backfill.Granularity` | `config/appsettings.sample.json` |
 | `Backfill.EnableFallback` | `config/appsettings.sample.json` |
 | `Backfill.PreferAdjustedPrices` | `config/appsettings.sample.json` |
 | `Backfill.EnableSymbolResolution` | `config/appsettings.sample.json` |
@@ -168,7 +234,6 @@
 | `Backfill.RateLimitRotationThreshold` | `config/appsettings.sample.json` |
 | `Backfill.SkipExistingData` | `config/appsettings.sample.json` |
 | `Backfill.FillGapsOnly` | `config/appsettings.sample.json` |
-| `Backfill.Jobs` | `config/appsettings.sample.json` |
 | `DataSources.DefaultRealTimeSourceId` | `config/appsettings.sample.json` |
 | `DataSources.DefaultHistoricalSourceId` | `config/appsettings.sample.json` |
 | `DataSources.EnableFailover` | `config/appsettings.sample.json` |
@@ -176,7 +241,6 @@
 | `DataSources.HealthCheckIntervalSeconds` | `config/appsettings.sample.json` |
 | `DataSources.AutoRecover` | `config/appsettings.sample.json` |
 | `DataSources.FailoverRules` | `config/appsettings.sample.json` |
-| `DataSources.SymbolMappings` | `config/appsettings.sample.json` |
 | `Alpaca.UseSandbox` | `config/appsettings.sample.json` |
 | `Alpaca.SubscribeQuotes` | `config/appsettings.sample.json` |
 | `StockSharp.Enabled` | `config/appsettings.sample.json` |
@@ -187,15 +251,22 @@
 | `StockSharp.EnableHistorical` | `config/appsettings.sample.json` |
 | `StockSharp.UseBinaryStorage` | `config/appsettings.sample.json` |
 | `StockSharp.StoragePath` | `config/appsettings.sample.json` |
-| `StockSharp.Rithmic` | `config/appsettings.sample.json` |
-| `StockSharp.IQFeed` | `config/appsettings.sample.json` |
-| ... and 40 more | |
+| `Storage.IncludeProvider` | `config/appsettings.sample.json` |
+| `Storage.FilePrefix` | `config/appsettings.sample.json` |
+| `Storage.RetentionDays` | `config/appsettings.sample.json` |
+| `Storage.MaxTotalMegabytes` | `config/appsettings.sample.json` |
+| `Derivatives.Enabled` | `config/appsettings.sample.json` |
+| `Derivatives.Underlyings` | `config/appsettings.sample.json` |
+| ... and 29 more | |
 
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 1601 undocumented types. Consider generating API docs with DocFX (`docfx docs/docfx/docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 88 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 90 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+1. **Public Classes / Interfaces**: 150 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 105 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+3. **Configuration Options**: 79 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
 
