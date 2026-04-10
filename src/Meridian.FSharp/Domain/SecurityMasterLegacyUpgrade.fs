@@ -10,6 +10,32 @@ module SecurityMasterLegacyUpgrade =
         | Some (EquityClassification.ConvertiblePreferred (preferred, _)) -> Some preferred
         | _ -> None
 
+    let private mapDistributionPolicy = function
+        | None -> None
+        | Some label -> DistributionPolicy.OtherDistribution label |> Some
+
+    let private mapRedemptionStyle = function
+        | None -> None
+        | Some label -> RedemptionStyle.OtherRedemption label |> Some
+
+    let private mapCouponKind = function
+        | "ZeroCoupon" -> CouponKind.ZeroCoupon
+        | "Floating" -> CouponKind.Floating
+        | "Fixed" -> CouponKind.Fixed
+        | "Discount" -> CouponKind.DiscountNote
+        | "SimpleInterest" -> CouponKind.OtherCoupon "SimpleInterest"
+        | other -> CouponKind.OtherCoupon other
+
+    let private mapDayCount = Option.map DayCountConvention.OtherDayCount
+
+    let private mapSweepVehicle = function
+        | "MoneyMarketFund" -> SweepVehicle.MoneyMarketFund
+        | "BankDeposit" -> SweepVehicle.BankDeposit
+        | "Repo" -> SweepVehicle.Repo
+        | other -> SweepVehicle.OtherVehicle other
+
+    let private mapSweepFrequency = Option.map PaymentFrequency.OtherFrequency
+
     let private classificationFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -217,13 +243,16 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             ShareClass = terms.ShareClass
                             VotingRights = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
-                            DistributionType = preferredTerms |> Option.map (fun preferred -> DividendType.asString preferred.DividendType)
+                            DistributionType =
+                                preferredTerms
+                                |> Option.map (fun preferred -> preferred.DividendType |> DividendType.asString |> DistributionPolicy.OtherDistribution)
                         }
                     Redemption =
                         preferredTerms
                         |> Option.map (fun preferred ->
                             {
-                                RedemptionType = Some (LiquidationPreference.asString preferred.LiquidationPreference)
+                                RedemptionType =
+                                    Some (preferred.LiquidationPreference |> LiquidationPreference.asString |> RedemptionStyle.OtherRedemption)
                                 RedemptionPrice = preferred.RedemptionPrice
                                 IsBullet = None
                                 IsAmortizing = None
@@ -268,10 +297,14 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some (match terms.Coupon with BondCouponStructure.ZeroCoupon -> "ZeroCoupon" | BondCouponStructure.Floating _ -> "Floating" | _ -> "Fixed")
+                            CouponType =
+                                Some (match terms.Coupon with
+                                      | BondCouponStructure.ZeroCoupon -> CouponKind.ZeroCoupon
+                                      | BondCouponStructure.Floating _ -> CouponKind.Floating
+                                      | _ -> CouponKind.Fixed)
                             CouponRate = BondTerms.couponRate terms
                             PaymentFrequency = None
-                            DayCount = BondTerms.dayCount terms
+                            DayCount = BondTerms.dayCount terms |> mapDayCount
                         }
             }
         | SecurityKind.FxSpot _ ->
@@ -287,10 +320,10 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some "SimpleInterest"
+                            CouponType = Some (mapCouponKind "SimpleInterest")
                             CouponRate = terms.InterestRate
                             PaymentFrequency = None
-                            DayCount = terms.DayCount
+                            DayCount = terms.DayCount |> mapDayCount
                         }
                     Call =
                         Some {
@@ -327,10 +360,10 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some "Fixed"
+                            CouponType = Some CouponKind.Fixed
                             CouponRate = terms.CouponRate
                             PaymentFrequency = None
-                            DayCount = terms.DayCount
+                            DayCount = terms.DayCount |> mapDayCount
                         }
                     Call =
                         Some {
@@ -361,10 +394,10 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some "Discount"
+                            CouponType = Some (mapCouponKind "Discount")
                             CouponRate = None
                             PaymentFrequency = None
-                            DayCount = terms.DayCount
+                            DayCount = terms.DayCount |> mapDayCount
                         }
                     Issuer =
                         Some {
@@ -428,8 +461,8 @@ module SecurityMasterLegacyUpgrade =
                     Sweep =
                         Some {
                             ProgramName = Some terms.ProgramName
-                            SweepVehicleType = Some terms.SweepVehicleType
-                            SweepFrequency = terms.SweepFrequency
+                            SweepVehicleType = Some (mapSweepVehicle terms.SweepVehicleType)
+                            SweepFrequency = terms.SweepFrequency |> mapSweepFrequency
                             TargetAccountType = terms.TargetAccountType
                         }
                     Discount =

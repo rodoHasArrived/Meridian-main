@@ -40,6 +40,26 @@ type CashLadderInterop = {
     NetPosition            : decimal
 }
 
+[<CLIMutable>]
+type ActualCashEventDto = {
+    FlowId       : Guid
+    SecurityGuid : Guid
+    Amount       : decimal
+    Currency     : string
+    PostedAt     : DateTimeOffset
+    SourceSystem : string
+    Notes        : string option
+}
+
+[<CLIMutable>]
+type CashFlowStateDto = {
+    State               : string
+    Projection          : CashFlowProjectionInput
+    Actual              : ActualCashEventDto option
+    BreakClassification : string option
+    BreakSeverity       : string option
+}
+
 [<RequireQualifiedAccess>]
 module private EventKindMapping =
     let ofLabel (label: string) =
@@ -55,6 +75,62 @@ module private EventKindMapping =
         | "Redemption"                         -> CashFlowEventKind.Redemption
         | "RollPrincipal"                      -> CashFlowEventKind.RollPrincipal
         | other                                -> CashFlowEventKind.OtherCashFlow other
+
+[<RequireQualifiedAccess>]
+module private CashFlowStateMapping =
+
+    let private toProjectionInput (event: ProjectedCashEvent) =
+        let (SecurityId securityGuid) = event.SecurityId
+        {
+            FlowId = event.FlowId
+            SecurityGuid = securityGuid
+            EventKindLabel = CashFlowEventKind.label event.EventKind
+            ExpectedAmount = event.ExpectedAmount
+            ExpectedCurrency = event.ExpectedCurrency
+            DueDate = event.DueDate
+            IsPrincipalFlow = event.IsPrincipalFlow
+            IsIncomeFlow = event.IsIncomeFlow
+            Notes = event.Notes |> Option.defaultValue String.Empty
+        }
+
+    let private toActualDto (actual: ActualCashEvent) =
+        let (SecurityId securityGuid) = actual.SecurityId
+        {
+            FlowId = actual.FlowId
+            SecurityGuid = securityGuid
+            Amount = actual.Amount
+            Currency = actual.Currency
+            PostedAt = actual.PostedAt
+            SourceSystem = actual.SourceSystem
+            Notes = actual.Notes
+        }
+
+    let toDto = function
+        | CashFlowState.ProjectedOnly projected ->
+            {
+                State = CashFlowState.label (CashFlowState.ProjectedOnly projected)
+                Projection = toProjectionInput projected
+                Actual = None
+                BreakClassification = None
+                BreakSeverity = None
+            }
+        | CashFlowState.Settled (projected, actual) ->
+            {
+                State = CashFlowState.label (CashFlowState.Settled (projected, actual))
+                Projection = toProjectionInput projected
+                Actual = Some (toActualDto actual)
+                BreakClassification = None
+                BreakSeverity = None
+            }
+        | CashFlowState.Broken (projected, reason) ->
+            let severity = BreakSeverityInfo.ofClassification projected.ExpectedAmount reason |> BreakSeverityInfo.asString
+            {
+                State = CashFlowState.label (CashFlowState.Broken (projected, reason))
+                Projection = toProjectionInput projected
+                Actual = None
+                BreakClassification = Some (BreakClassificationInfo.asString reason)
+                BreakSeverity = Some severity
+            }
 
 /// C#-facing sealed class that builds a time-bucketed cash ladder from C#-provided inputs.
 [<Sealed>]
@@ -116,3 +192,9 @@ type CashFlowProjector private () =
             TotalProjectedOutflows = ladder.TotalProjectedOutflows
             NetPosition            = ladder.NetPosition
         }
+
+    /// Convert a sequence of <see cref="CashFlowState"/> values into C#-friendly DTOs.
+    static member ToStateDtos(states: seq<CashFlowState>) : CashFlowStateDto array =
+        states
+        |> Seq.map CashFlowStateMapping.toDto
+        |> Seq.toArray

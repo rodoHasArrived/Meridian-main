@@ -618,7 +618,8 @@ let ``SecurityMasterLegacyUpgrade preserves convertible preferred classification
 
     let equityBehavior = definition.Terms.EquityBehavior |> Option.defaultWith (fun () -> failwith "Expected equity behavior terms")
     equityBehavior.ShareClass |> should equal (Some "A")
-    equityBehavior.DistributionType |> should equal (Some (DividendType.asString preferredTerms.DividendType))
+    equityBehavior.DistributionType
+    |> should equal (Some (DistributionPolicy.OtherDistribution(DividendType.asString preferredTerms.DividendType)))
 
     let redemption = definition.Terms.Redemption |> Option.defaultWith (fun () -> failwith "Expected redemption terms")
     redemption.RedemptionPrice |> should equal preferredTerms.RedemptionPrice

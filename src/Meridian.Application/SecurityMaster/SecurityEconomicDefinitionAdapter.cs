@@ -94,10 +94,10 @@ internal static class SecurityEconomicDefinitionAdapter
             },
             coupon = definition.Terms.Coupon is null ? null : new
             {
-                couponType = definition.Terms.Coupon.Value.CouponType is null ? null : definition.Terms.Coupon.Value.CouponType.Value,
+                couponType = definition.Terms.Coupon.Value.CouponType is null ? null : CouponKind.Label(definition.Terms.Coupon.Value.CouponType.Value),
                 couponRate = definition.Terms.Coupon.Value.CouponRate,
-                paymentFrequency = definition.Terms.Coupon.Value.PaymentFrequency is null ? null : definition.Terms.Coupon.Value.PaymentFrequency.Value,
-                dayCount = definition.Terms.Coupon.Value.DayCount is null ? null : definition.Terms.Coupon.Value.DayCount.Value
+                paymentFrequency = definition.Terms.Coupon.Value.PaymentFrequency is null ? null : PaymentFrequency.Label(definition.Terms.Coupon.Value.PaymentFrequency.Value),
+                dayCount = definition.Terms.Coupon.Value.DayCount is null ? null : DayCountConvention.Label(definition.Terms.Coupon.Value.DayCount.Value)
             },
             discount = definition.Terms.Discount is null ? null : new
             {
@@ -110,17 +110,18 @@ internal static class SecurityEconomicDefinitionAdapter
                 accrualStartDate = definition.Terms.Accrual.Value.AccrualStartDate,
                 exDividendDays = definition.Terms.Accrual.Value.ExDividendDays,
                 businessDayConvention = definition.Terms.Accrual.Value.BusinessDayConvention is null ? null : definition.Terms.Accrual.Value.BusinessDayConvention.Value,
-                holidayCalendar = definition.Terms.Accrual.Value.HolidayCalendar is null ? null : definition.Terms.Accrual.Value.HolidayCalendar.Value
+                holidayCalendar = definition.Terms.Accrual.Value.HolidayCalendar is null ? null : definition.Terms.Accrual.Value.HolidayCalendar.Value,
+                dayCount = definition.Terms.Accrual.Value.DayCount is null ? null : DayCountConvention.Label(definition.Terms.Accrual.Value.DayCount.Value)
             },
             payment = definition.Terms.Payment is null ? null : new
             {
-                paymentFrequency = definition.Terms.Payment.Value.PaymentFrequency is null ? null : definition.Terms.Payment.Value.PaymentFrequency.Value,
+                paymentFrequency = definition.Terms.Payment.Value.PaymentFrequency is null ? null : PaymentFrequency.Label(definition.Terms.Payment.Value.PaymentFrequency.Value),
                 paymentLagDays = definition.Terms.Payment.Value.PaymentLagDays,
                 paymentCurrency = definition.Terms.Payment.Value.PaymentCurrency is null ? null : definition.Terms.Payment.Value.PaymentCurrency.Value
             },
             redemption = definition.Terms.Redemption is null ? null : new
             {
-                redemptionType = definition.Terms.Redemption.Value.RedemptionType is null ? null : definition.Terms.Redemption.Value.RedemptionType.Value,
+                redemptionType = definition.Terms.Redemption.Value.RedemptionType is null ? null : RedemptionStyle.Label(definition.Terms.Redemption.Value.RedemptionType.Value),
                 redemptionPrice = definition.Terms.Redemption.Value.RedemptionPrice,
                 isBullet = definition.Terms.Redemption.Value.IsBullet,
                 isAmortizing = definition.Terms.Redemption.Value.IsAmortizing
@@ -139,8 +140,8 @@ internal static class SecurityEconomicDefinitionAdapter
             sweep = definition.Terms.Sweep is null ? null : new
             {
                 programName = definition.Terms.Sweep.Value.ProgramName is null ? null : definition.Terms.Sweep.Value.ProgramName.Value,
-                sweepVehicleType = definition.Terms.Sweep.Value.SweepVehicleType is null ? null : definition.Terms.Sweep.Value.SweepVehicleType.Value,
-                sweepFrequency = definition.Terms.Sweep.Value.SweepFrequency is null ? null : definition.Terms.Sweep.Value.SweepFrequency.Value,
+                sweepVehicleType = definition.Terms.Sweep.Value.SweepVehicleType is null ? null : SweepVehicle.Label(definition.Terms.Sweep.Value.SweepVehicleType.Value),
+                sweepFrequency = definition.Terms.Sweep.Value.SweepFrequency is null ? null : PaymentFrequency.Label(definition.Terms.Sweep.Value.SweepFrequency.Value),
                 targetAccountType = definition.Terms.Sweep.Value.TargetAccountType is null ? null : definition.Terms.Sweep.Value.TargetAccountType.Value
             },
             financing = definition.Terms.Financing is null ? null : new
@@ -161,7 +162,7 @@ internal static class SecurityEconomicDefinitionAdapter
             {
                 shareClass = definition.Terms.EquityBehavior.Value.ShareClass is null ? null : definition.Terms.EquityBehavior.Value.ShareClass.Value,
                 votingRights = definition.Terms.EquityBehavior.Value.VotingRights is null ? null : definition.Terms.EquityBehavior.Value.VotingRights.Value,
-                distributionType = definition.Terms.EquityBehavior.Value.DistributionType is null ? null : definition.Terms.EquityBehavior.Value.DistributionType.Value
+                distributionType = definition.Terms.EquityBehavior.Value.DistributionType is null ? null : DistributionPolicy.Label(definition.Terms.EquityBehavior.Value.DistributionType.Value)
             },
             fund = definition.Terms.Fund is null ? null : new
             {

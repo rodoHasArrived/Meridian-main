@@ -63,6 +63,31 @@ type PortfolioLedgerCheckResultDto = {
     HasActualAsOf: bool
 }
 
+[<CLIMutable>]
+type ReconciliationOutcomeDto = {
+    Outcome: string
+    Variance: decimal option
+    DaysLate: int option
+    ExpectedCurrency: string option
+    ActualCurrency: string option
+}
+
+[<CLIMutable>]
+type ReconciliationResultDto = {
+    SecurityId: string
+    FlowId: string
+    EventId: string
+    ExpectedAmount: decimal
+    ActualAmount: decimal
+    Variance: decimal
+    ExpectedCurrency: string
+    ActualCurrency: string
+    DueDate: DateTimeOffset
+    PostedAt: DateTimeOffset
+    Outcome: ReconciliationOutcomeDto
+    Status: string
+}
+
 [<Sealed; Extension>]
 type LedgerInterop private () =
 
@@ -147,3 +172,32 @@ type LedgerInterop private () =
                 HasExpectedAsOf = result.HasExpectedAsOf
                 HasActualAsOf = result.HasActualAsOf
             } : PortfolioLedgerCheckResultDto))
+
+    static member private OutcomeToDto(outcome: ReconciliationOutcome) : ReconciliationOutcomeDto =
+        let ccy = ReconciliationOutcome.currencies outcome
+        {
+            Outcome = ReconciliationOutcome.label outcome
+            Variance = ReconciliationOutcome.variance outcome
+            DaysLate = ReconciliationOutcome.daysLate outcome
+            ExpectedCurrency = ccy |> Option.map fst
+            ActualCurrency = ccy |> Option.map snd
+        }
+
+    static member ToReconciliationResultDtos(results: seq<ReconciliationResult>) : ReconciliationResultDto array =
+        results
+        |> Seq.map (fun result ->
+            {
+                SecurityId = result.SecurityId
+                FlowId = result.FlowId
+                EventId = result.EventId
+                ExpectedAmount = result.ExpectedAmount
+                ActualAmount = result.ActualAmount
+                Variance = result.Variance
+                ExpectedCurrency = result.ExpectedCurrency
+                ActualCurrency = result.ActualCurrency
+                DueDate = result.DueDate
+                PostedAt = result.PostedAt
+                Outcome = LedgerInterop.OutcomeToDto result.Outcome
+                Status = result.OutcomeLabel
+            })
+        |> Seq.toArray

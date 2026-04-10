@@ -2,30 +2,6 @@ namespace Meridian.FSharp.Domain
 
 open System
 
-/// Tolerance parameters for matching projected against actual cash events
-type MatchTolerance = {
-    AmountTolerancePct  : decimal
-    TimingToleranceDays : int
-    RequireCurrencyExact: bool
-}
-
-/// Severity assigned to a reconciliation break
-type BreakSeverity =
-    | Critical
-    | High
-    | Medium
-    | Low
-    | Info
-
-/// Structural classification of how a projected cash event broke
-type BreakClassification =
-    | AmountMismatch    of expected: decimal * actual: decimal * variancePct: decimal
-    | CurrencyMismatch  of expected: string  * actual: string
-    | TimingMismatch    of expectedDate: DateTimeOffset * actualDate: DateTimeOffset * daysLate: int
-    | MissingActual
-    | ClassificationGap of reason: string
-    | OtherBreak        of reason: string
-
 /// A single identified break between a projected and an actual cash event
 [<CLIMutable>]
 type CashFlowBreak = {
@@ -42,7 +18,7 @@ type CashFlowBreak = {
 }
 
 [<RequireQualifiedAccess>]
-module MatchTolerance =
+module MatchToleranceDefaults =
 
     let ``default`` : MatchTolerance = {
         AmountTolerancePct   = 0.01m
@@ -57,7 +33,7 @@ module MatchTolerance =
     }
 
 [<RequireQualifiedAccess>]
-module BreakSeverity =
+module BreakSeverityInfo =
 
     let asString = function
         | Critical -> "Critical"
@@ -81,7 +57,7 @@ module BreakSeverity =
         | OtherBreak _                                                           -> Medium
 
 [<RequireQualifiedAccess>]
-module BreakClassification =
+module BreakClassificationInfo =
 
     let asString = function
         | AmountMismatch _    -> "AmountMismatch"
@@ -128,26 +104,36 @@ module CashFlowRules =
             (projected: ProjectedCashEvent)
             (classification: BreakClassification) : CashFlowBreak =
 
-        let sev = BreakSeverity.ofClassification projected.ExpectedAmount classification
+        let sev = BreakSeverityInfo.ofClassification projected.ExpectedAmount classification
         {
             BreakId             = Guid.NewGuid()
             SecurityId          = securityIdRaw
             FlowId              = projected.FlowId
             EventKind           = CashFlowEventKind.label projected.EventKind
-            ClassificationLabel = BreakClassification.asString classification
-            SeverityLabel       = BreakSeverity.asString sev
+            ClassificationLabel = BreakClassificationInfo.asString classification
+            SeverityLabel       = BreakSeverityInfo.asString sev
             BreakAmount         = projected.ExpectedAmount
             Currency            = projected.ExpectedCurrency
             AsOf                = projected.DueDate
             Notes               = projected.Notes
         }
 
+    /// Evaluate a projected event against a single actual, yielding a strongly-typed state.
+    let classifyState
+            (tolerance: MatchTolerance)
+            (projected: ProjectedCashEvent)
+            (actual: ActualCashEvent) : CashFlowState =
+
+        match applyTolerance tolerance projected actual.Amount actual.Currency actual.PostedAt with
+        | None -> CashFlowState.Settled(projected, actual)
+        | Some classification -> CashFlowState.Broken(projected, classification)
+
     /// Evaluate a list of projected events against supplied actuals, returning all breaks.
-    /// <paramref name="actuals"/> is a map from (securityId, flowId) to (amount, currency, postedAt).
+    /// <paramref name="actuals"/> is a map from (securityId, flowId) to <see cref="ActualCashEvent"/>.
     let classifyAll
             (tolerance: MatchTolerance)
             (events: ProjectedCashEvent list)
-            (actuals: Map<Guid * Guid, decimal * string * DateTimeOffset>) : CashFlowBreak list =
+            (actuals: Map<Guid * Guid, ActualCashEvent>) : CashFlowBreak list =
 
         events
         |> List.choose (fun projected ->
@@ -155,6 +141,19 @@ module CashFlowRules =
             match actuals |> Map.tryFind (sid, projected.FlowId) with
             | None ->
                 Some (buildBreak sid projected MissingActual)
-            | Some (amt, ccy, date) ->
-                applyTolerance tolerance projected amt ccy date
+            | Some actual ->
+                applyTolerance tolerance projected actual.Amount actual.Currency actual.PostedAt
                 |> Option.map (buildBreak sid projected))
+
+    /// Evaluate a list of projected events and return their state machine representation.
+    let classifyStates
+            (tolerance: MatchTolerance)
+            (events: ProjectedCashEvent list)
+            (actuals: Map<Guid * Guid, ActualCashEvent>) : CashFlowState list =
+
+        events
+        |> List.map (fun projected ->
+            let (SecurityId sid) = projected.SecurityId
+            match actuals |> Map.tryFind (sid, projected.FlowId) with
+            | Some actual -> classifyState tolerance projected actual
+            | None -> CashFlowState.Broken(projected, MissingActual))
