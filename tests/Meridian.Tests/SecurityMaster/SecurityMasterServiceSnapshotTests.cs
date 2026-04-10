@@ -150,6 +150,76 @@ public sealed class SecurityMasterServiceSnapshotTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task CreateAsync_RecordsConflictsWithoutFailingWhenDetectionThrows()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var cache = new SecurityMasterProjectionCache();
+
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        eventStore.AppendAsync(Arg.Any<Guid>(), Arg.Any<long>(), Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        store.UpsertProjectionAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        snapshotStore.SaveAsync(Arg.Any<SecuritySnapshotRecord>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        conflictService.RecordConflictsForProjectionAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>())
+            .Returns<Task>(_ => throw new InvalidOperationException("conflict detection failure"));
+
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            conflictService,
+            projectionCache: cache);
+
+        var request = new CreateSecurityRequest(
+            securityId,
+            "Equity",
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Equity Conflict",
+                currency = "USD",
+                exchange = "XNYS",
+                lotSize = 1,
+                tickSize = 0.01m
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                shareClass = "Common"
+            }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "EQ-CONFLICT", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+            },
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "create");
+
+        var detail = await service.CreateAsync(request);
+
+        detail.SecurityId.Should().Be(securityId);
+        cache.Get(securityId).Should().NotBeNull();
+        await conflictService.Received(1).RecordConflictsForProjectionAsync(
+            Arg.Is<SecurityProjectionRecord>(p => p.SecurityId == securityId),
+            Arg.Any<CancellationToken>());
+    }
+
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,
         string assetClass,

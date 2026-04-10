@@ -53,6 +53,16 @@ Migrations run automatically on platform startup via `SecurityMasterMigrationRun
 - `security_master.corporate_actions` — Corporate action log
 - Supporting indexes and constraints
 
+### Projection Cache vs. Snapshots (duplication audit)
+
+- **Today:** An in-memory `SecurityMasterProjectionCache` is warmed from snapshot+event rebuilds, while durable snapshots live in `security_snapshots`. Warmup also persists the rebuilt projection batch back into `security_master_cache`, so we hold the same projection state in three places (cache, snapshot store, projection table).
+- **Risk:** Divergence between the cache and persisted projections when only one path is updated (e.g., cache warmed but batch persist fails, or snapshots saved without cache refresh) leads to stale query results and inconsistent conflict detection.
+- **Consolidation plan:**  
+  1. Make the projection table the single source of truth for warm starts: load projections from `PersistProjectionBatchAsync` first, falling back to snapshot+event rebuild only when the batch is missing or stale.  
+  2. Treat `SecurityMasterProjectionCache` as a read-through layer that is always populated from the projection table; writes flow store → cache via a single hook.  
+  3. Emit a single checkpoint after both the projection batch and cache are updated to avoid split-brain states; surface metrics when batch write or cache hydrate diverge.  
+  4. Longer term: collapse snapshot writes into the same transaction as projection persistence so rebuilds use one persisted shape.
+
 To verify:
 
 ```sql

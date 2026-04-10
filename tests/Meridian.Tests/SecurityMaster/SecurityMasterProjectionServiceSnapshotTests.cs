@@ -64,6 +64,43 @@ public sealed class SecurityMasterProjectionServiceSnapshotTests
         cached.Version.Should().Be(3);
     }
 
+    [Fact]
+    public async Task WarmAsync_ReplacesExistingCacheEntries()
+    {
+        var existingSecurityId = Guid.NewGuid();
+        var replacementSecurityId = Guid.NewGuid();
+
+        var store = Substitute.For<ISecurityMasterStore>();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var cache = new SecurityMasterProjectionCache();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+
+        cache.Upsert(CreateProjection(existingSecurityId, "Stale", 1));
+
+        var rebuiltProjection = CreateProjection(replacementSecurityId, "Fresh", 2);
+
+        store.LoadAllAsync(Arg.Any<CancellationToken>())
+            .Returns(new[] { rebuiltProjection });
+
+        snapshotStore.LoadAsync(replacementSecurityId, Arg.Any<CancellationToken>())
+            .Returns((SecuritySnapshotRecord?)null);
+        eventStore.LoadAsync(replacementSecurityId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityMasterEventEnvelope>());
+
+        var service = new SecurityMasterProjectionService(
+            store,
+            cache,
+            rebuilder,
+            NullLogger<SecurityMasterProjectionService>.Instance);
+
+        await service.WarmAsync();
+
+        cache.Count.Should().Be(1);
+        cache.Get(existingSecurityId).Should().BeNull();
+        cache.Get(replacementSecurityId)!.DisplayName.Should().Be("Fresh");
+    }
+
     private static SecurityProjectionRecord CreateProjection(Guid securityId, string displayName, long version)
         => new(
             securityId,
