@@ -303,6 +303,8 @@ public static class UiApiRoutes
     public const string SecurityMasterDeactivate = "/api/security-master/deactivate";
     public const string SecurityMasterAliasesUpsert = "/api/security-master/aliases/upsert";
     public const string SecurityMasterTradingParameters = "/api/security-master/{securityId:guid}/trading-parameters";
+    public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
+    public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";

@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using AppSecurityMaster = Meridian.Application.SecurityMaster;
 
