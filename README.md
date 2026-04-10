@@ -4937,6 +4937,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
+│   │   ├── IntermediateMetrics.cs
 │   │   ├── Ledger
 │   │   │   ├── BacktestLedger.cs
 │   │   │   ├── JournalEntry.cs
@@ -6224,6 +6225,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ArchiveHealthService.cs
 │       │   ├── BackendServiceManager.cs
 │       │   ├── BackgroundTaskSchedulerService.cs
+│       │   ├── BacktestDataAvailabilityService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
 │       │   ├── CashFinancingReadService.cs
@@ -7145,6 +7147,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-492 directories, 6514 files
+492 directories, 6516 files
 ```
 <!-- readme-tree end -->
