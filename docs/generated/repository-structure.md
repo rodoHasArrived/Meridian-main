@@ -1,7 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-03 07:07:41 UTC. Do not edit manually.
-> Auto-generated on 2026-04-10 19:17:59 UTC. Do not edit manually.
+> Auto-generated on 2026-04-10 19:32:45 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -76,6 +75,19 @@ Meridian-main
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
+│   │   ├── meridian-archive-organizer
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   ├── archive-placement-guide.md
+│   │   │   │   └── evaluation-harness.md
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── trace_archive_candidates.py
+│   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
 │   │   │   ├── references
 │   │   │   │   └── blueprint-patterns.md
@@ -85,6 +97,8 @@ Meridian-main
 │   │   │   │   └── competitive-landscape.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
+│   │   │   ├── scripts
+│   │   │   │   └── repo-updater.ps1
 │   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
 │   │   │   └── SKILL.md
@@ -192,6 +206,8 @@ Meridian-main
 │   │   ├── docker.yml
 │   │   ├── documentation.yml
 │   │   ├── export-project-artifact.yml
+│   │   ├── export-standalone-exe.yml
+│   │   ├── generate-build-artifact.yml
 │   │   ├── golden-path-validation.yml
 │   │   ├── labeling.yml
 │   │   ├── maintenance-self-test.yml
@@ -438,7 +454,8 @@ Meridian-main
 │   │   ├── storage-design.md
 │   │   ├── ui-redesign.md
 │   │   ├── why-this-architecture.md
-│   │   └── wpf-shell-mvvm.md
+│   │   ├── wpf-shell-mvvm.md
+│   │   └── wpf-workstation-shell-ux.md
 │   ├── audits
 │   │   ├── audit-architecture-results.txt
 │   │   ├── audit-code-results.json
@@ -618,8 +635,6 @@ Meridian-main
 │   │   └── ui-navigation-map.svg
 │   ├── docfx
 │   │   ├── api
-│   │   │   └── index.md
-│   │   ├── docfx.json
 │   │   │   ├── .manifest
 │   │   │   ├── index.md
 │   │   │   ├── Meridian.Application.Backfill.BackfillCostEstimate.yml
@@ -4024,6 +4039,7 @@ Meridian-main
 │   │   │   ├── Meridian.yml
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
+│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   ├── README.md
 │   │   └── temp-metadata-only.json
@@ -4078,6 +4094,7 @@ Meridian-main
 │   │   ├── deployment.md
 │   │   ├── governance-operator-workflow.md
 │   │   ├── high-availability.md
+│   │   ├── live-execution-controls.md
 │   │   ├── msix-packaging.md
 │   │   ├── operator-runbook.md
 │   │   ├── performance-tuning.md
@@ -4087,6 +4104,8 @@ Meridian-main
 │   │   └── service-level-objectives.md
 │   ├── plans
 │   │   ├── assembly-performance-roadmap.md
+│   │   ├── backtest-studio-unification-blueprint.md
+│   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
@@ -4095,6 +4114,8 @@ Meridian-main
 │   │   ├── l3-inference-implementation-plan.md
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
+│   │   ├── options-roadmap.md
+│   │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
 │   │   ├── quant-script-page-implementation-guide.md
 │   │   ├── quantscript-l3-multiinstance-round2-roadmap.md
@@ -4140,6 +4161,7 @@ Meridian-main
 │   │   └── stocksharp-connectors.md
 │   ├── reference
 │   │   ├── api-reference.md
+│   │   ├── brand-assets.md
 │   │   ├── data-dictionary.md
 │   │   ├── data-uniformity.md
 │   │   ├── design-review-memo.md
@@ -4147,6 +4169,22 @@ Meridian-main
 │   │   ├── open-source-references.md
 │   │   └── README.md
 │   ├── screenshots
+│   │   ├── desktop
+│   │   │   ├── wpf-backfill.png
+│   │   │   ├── wpf-backtest.png
+│   │   │   ├── wpf-dashboard.png
+│   │   │   ├── wpf-data-browser.png
+│   │   │   ├── wpf-data-quality.png
+│   │   │   ├── wpf-diagnostics.png
+│   │   │   ├── wpf-live-data.png
+│   │   │   ├── wpf-provider-health.png
+│   │   │   ├── wpf-providers.png
+│   │   │   ├── wpf-quant-script.png
+│   │   │   ├── wpf-security-master.png
+│   │   │   ├── wpf-settings.png
+│   │   │   ├── wpf-storage.png
+│   │   │   ├── wpf-strategy-runs.png
+│   │   │   └── wpf-symbols.png
 │   │   ├── 01-dashboard.png
 │   │   ├── 02-workstation.png
 │   │   ├── 03-swagger.png
@@ -4204,12 +4242,15 @@ Meridian-main
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
+│   │   ├── OPPORTUNITY_SCAN.md
 │   │   ├── production-status.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
+│   │   ├── ROADMAP_COMBINED.md
 │   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
+│   │   ├── TARGET_END_PRODUCT.md
 │   │   └── TODO.md
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
@@ -4233,6 +4274,31 @@ Meridian-main
 │       │   └── main.cpp
 │       ├── CMakeLists.txt
 │       └── README.md
+├── plugins
+│   └── csharp-dotnet-development
+│       ├── .github
+│       │   └── plugin
+│       │       └── plugin.json
+│       ├── agents
+│       │   └── expert-dotnet-software-engineer.md
+│       ├── skills
+│       │   ├── aspnet-minimal-api-openapi
+│       │   │   └── SKILL.md
+│       │   ├── csharp-async
+│       │   │   └── SKILL.md
+│       │   ├── csharp-mstest
+│       │   │   └── SKILL.md
+│       │   ├── csharp-nunit
+│       │   │   └── SKILL.md
+│       │   ├── csharp-tunit
+│       │   │   └── SKILL.md
+│       │   ├── csharp-xunit
+│       │   │   └── SKILL.md
+│       │   ├── dotnet-best-practices
+│       │   │   └── SKILL.md
+│       │   └── dotnet-upgrade
+│       │       └── SKILL.md
+│       └── README.md
 ├── PROJECTS
 │   └── Phase_1.5_Preferred_and_Convertible_Equity_Support.md
 ├── scripts
@@ -4247,6 +4313,8 @@ Meridian-main
 │   │   └── setup.sh
 │   ├── dev
 │   │   ├── build-ibapi-smoke.ps1
+│   │   ├── capture-desktop-screenshots.ps1
+│   │   ├── cleanup-generated.ps1
 │   │   ├── desktop-dev.ps1
 │   │   ├── desktop-workflows.json
 │   │   ├── diagnose-uwp-xaml.ps1
@@ -4260,7 +4328,8 @@ Meridian-main
 │   ├── compare_benchmarks.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
-│   └── report_canonicalization_drift.py
+│   ├── report_canonicalization_drift.py
+│   └── wpf_finance_ux_checks.py
 ├── src
 │   ├── Meridian
 │   │   ├── Integrations
@@ -4277,9 +4346,11 @@ Meridian-main
 │   │   │       ├── credentials.html
 │   │   │       ├── index.html
 │   │   │       └── index.js
+│   │   ├── app.ico
 │   │   ├── app.manifest
 │   │   ├── DashboardServerBridge.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── HostedBrokerageGatewayServiceCollectionExtensions.cs
 │   │   ├── Meridian.csproj
 │   │   ├── Program.cs
 │   │   ├── runtimeconfig.template.json
@@ -4293,6 +4364,8 @@ Meridian-main
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
 │   │   │   └── SymbolValidationSignal.cs
+│   │   ├── Backtesting
+│   │   │   └── BacktestStudioContracts.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -4340,6 +4413,7 @@ Meridian-main
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
+│   │   │   │   ├── ProviderRoutingFeatureRegistration.cs
 │   │   │   │   ├── StorageFeatureRegistration.cs
 │   │   │   │   └── SymbolManagementFeatureRegistration.cs
 │   │   │   ├── Startup
@@ -4359,6 +4433,7 @@ Meridian-main
 │   │   │   │   └── StartupOrchestrator.cs
 │   │   │   ├── CircuitBreakerCallbackRouter.cs
 │   │   │   ├── DirectLendingStartup.cs
+│   │   │   ├── FundAccountsStartup.cs
 │   │   │   ├── HostAdapters.cs
 │   │   │   ├── HostStartup.cs
 │   │   │   ├── SecurityMasterStartup.cs
@@ -4377,11 +4452,13 @@ Meridian-main
 │   │   │   ├── ConfigValidationHelper.cs
 │   │   │   ├── ConfigValidatorCli.cs
 │   │   │   ├── ConfigWatcher.cs
+│   │   │   ├── CredentialPlaceholderDetector.cs
 │   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DeploymentContext.cs
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── SensitiveValueMasker.cs
-│   │   │   └── StorageConfigExtensions.cs
+│   │   │   ├── StorageConfigExtensions.cs
+│   │   │   └── StorageConfigRules.cs
 │   │   ├── Coordination
 │   │   │   ├── ClusterCoordinatorService.cs
 │   │   │   ├── CoordinationSnapshot.cs
@@ -4419,6 +4496,9 @@ Meridian-main
 │   │   │   └── EtlServices.cs
 │   │   ├── Filters
 │   │   │   └── MarketEventFilter.cs
+│   │   ├── FundAccounts
+│   │   │   ├── IFundAccountService.cs
+│   │   │   └── InMemoryFundAccountService.cs
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   ├── ArchiveMaintenanceEndpoints.cs
@@ -4487,6 +4567,12 @@ Meridian-main
 │   │   │   ├── IngestionJobService.cs
 │   │   │   ├── PersistentDedupLedger.cs
 │   │   │   └── SchemaUpcasterRegistry.cs
+│   │   ├── ProviderRouting
+│   │   │   ├── ProviderBindingService.cs
+│   │   │   ├── ProviderConnectionService.cs
+│   │   │   ├── ProviderOperationsSupportServices.cs
+│   │   │   ├── ProviderRoutingEngine.cs
+│   │   │   └── ProviderRoutingMapper.cs
 │   │   ├── Results
 │   │   │   ├── ErrorCode.cs
 │   │   │   ├── OperationError.cs
@@ -4505,6 +4591,7 @@ Meridian-main
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
+│   │   │   ├── SecurityKindMapping.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterConflictService.cs
@@ -4627,11 +4714,13 @@ Meridian-main
 │   │   │   ├── ICommissionModel.cs
 │   │   │   ├── LinkedListExtensions.cs
 │   │   │   └── SimulatedPortfolio.cs
+│   │   ├── BacktestStudioRunOrchestrator.cs
 │   │   ├── BatchBacktestService.cs
 │   │   ├── CorporateActionAdjustmentService.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── ICorporateActionAdjustmentService.cs
-│   │   └── Meridian.Backtesting.csproj
+│   │   ├── Meridian.Backtesting.csproj
+│   │   └── MeridianNativeBacktestStudioEngine.cs
 │   ├── Meridian.Backtesting.Sdk
 │   │   ├── Ledger
 │   │   │   ├── BacktestLedger.cs
@@ -4640,6 +4729,18 @@ Meridian-main
 │   │   │   ├── LedgerAccounts.cs
 │   │   │   ├── LedgerAccountType.cs
 │   │   │   └── LedgerEntry.cs
+│   │   ├── Strategies
+│   │   │   ├── AdvancedCarry
+│   │   │   │   ├── AdvancedCarryDecisionEngine.cs
+│   │   │   │   └── AdvancedCarryModels.cs
+│   │   │   └── OptionsOverwrite
+│   │   │       ├── BlackScholesCalculator.cs
+│   │   │       ├── CoveredCallOverwriteStrategy.cs
+│   │   │       ├── OptionsOverwriteFilters.cs
+│   │   │       ├── OptionsOverwriteMetricsCalculator.cs
+│   │   │       ├── OptionsOverwriteModels.cs
+│   │   │       ├── OptionsOverwriteParams.cs
+│   │   │       └── OptionsOverwriteScoring.cs
 │   │   ├── AssetEvent.cs
 │   │   ├── BacktestEngineMode.cs
 │   │   ├── BacktestProgressEvent.cs
@@ -4669,9 +4770,11 @@ Meridian-main
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
 │   │   │   ├── ErrorResponse.cs
+│   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── ProviderCatalog.cs
+│   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── StatusEndpointModels.cs
 │   │   │   ├── StatusModels.cs
 │   │   │   ├── UiApiClient.cs
@@ -4695,6 +4798,7 @@ Meridian-main
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
 │   │   │   ├── DerivativesConfigDto.cs
+│   │   │   ├── ProviderConnectionsConfigDto.cs
 │   │   │   └── SymbolConfig.cs
 │   │   ├── Credentials
 │   │   │   ├── CredentialModels.cs
@@ -4768,6 +4872,8 @@ Meridian-main
 │   │   │   ├── ExportPreset.cs
 │   │   │   └── StandardPresets.cs
 │   │   ├── FundStructure
+│   │   │   ├── AccountManagementDtos.cs
+│   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
 │   │   │   ├── FundStructureDtos.cs
 │   │   │   └── FundStructureQueries.cs
@@ -4782,6 +4888,7 @@ Meridian-main
 │   │   ├── SecurityMaster
 │   │   │   ├── ISecurityMasterAmender.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
+│   │   │   ├── ISecurityMasterRuntimeStatus.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
@@ -4798,6 +4905,8 @@ Meridian-main
 │   │   ├── Treasury
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
+│   │   │   ├── FundLedgerDtos.cs
+│   │   │   ├── FundOperationsDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
 │   │   │   └── StrategyRunReadModels.cs
@@ -4814,6 +4923,7 @@ Meridian-main
 │   │   │   ├── DataSourceKindConverter.cs
 │   │   │   ├── DerivativesConfig.cs
 │   │   │   ├── IConfigurationProvider.cs
+│   │   │   ├── ProviderConnectionsConfig.cs
 │   │   │   ├── StockSharpConfig.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
 │   │   │   └── ValidatedConfig.cs
@@ -4944,6 +5054,8 @@ Meridian-main
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── ExecutionAuditTrailService.cs
+│   │   │   ├── ExecutionOperatorControlService.cs
 │   │   │   ├── IPaperSessionStore.cs
 │   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
@@ -4977,9 +5089,11 @@ Meridian-main
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IOrderManager.cs
+│   │   ├── IPosition.cs
 │   │   ├── IPositionTracker.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── PositionExtensions.cs
 │   │   └── TaxLot.cs
 │   ├── Meridian.FSharp
 │   │   ├── Calculations
@@ -4989,6 +5103,7 @@ Meridian-main
 │   │   ├── Canonicalization
 │   │   │   └── MappingRules.fs
 │   │   ├── Domain
+│   │   │   ├── AccountStatements.fs
 │   │   │   ├── CashFlowProjection.fs
 │   │   │   ├── CashFlowRules.fs
 │   │   │   ├── DirectLending.fs
@@ -5021,6 +5136,7 @@ Meridian-main
 │   │   │   ├── TradeValidator.fs
 │   │   │   ├── ValidationPipeline.fs
 │   │   │   └── ValidationTypes.fs
+│   │   ├── Interop.AccountDetails.fs
 │   │   ├── Interop.CashFlow.fs
 │   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.fs
@@ -5060,6 +5176,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
+│   │   │   │   ├── AlpacaOptionsChainProvider.cs
 │   │   │   │   ├── AlpacaProviderModule.cs
 │   │   │   │   └── AlpacaSymbolSearchProviderRefactored.cs
 │   │   │   ├── AlphaVantage
@@ -5096,6 +5213,9 @@ Meridian-main
 │   │   │   │   ├── ResponseHandler.cs
 │   │   │   │   ├── SymbolSearchUtility.cs
 │   │   │   │   └── WebSocketProviderBase.cs
+│   │   │   ├── Edgar
+│   │   │   │   ├── EdgarSecurityMasterIngestProvider.cs
+│   │   │   │   └── EdgarSymbolSearchProvider.cs
 │   │   │   ├── Failover
 │   │   │   │   ├── FailoverAwareMarketDataClient.cs
 │   │   │   │   ├── StreamingFailoverRegistry.cs
@@ -5136,6 +5256,7 @@ Meridian-main
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
+│   │   │   │   ├── PolygonOptionsChainProvider.cs
 │   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
@@ -5143,6 +5264,7 @@ Meridian-main
 │   │   │   │   ├── RobinhoodBrokerageGateway.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProvider.cs
 │   │   │   │   ├── RobinhoodMarketDataClient.cs
+│   │   │   │   ├── RobinhoodOptionsChainProvider.cs
 │   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
 │   │   │   ├── StockSharp
@@ -5160,6 +5282,7 @@ Meridian-main
 │   │   │   ├── Synthetic
 │   │   │   │   ├── SyntheticHistoricalDataProvider.cs
 │   │   │   │   ├── SyntheticMarketDataClient.cs
+│   │   │   │   ├── SyntheticOptionsChainProvider.cs
 │   │   │   │   └── SyntheticReferenceDataCatalog.cs
 │   │   │   ├── Templates
 │   │   │   │   └── TemplateBrokerageGateway.cs
@@ -5260,7 +5383,8 @@ Meridian-main
 │   │   ├── LedgerValidationException.cs
 │   │   ├── LedgerViewKind.cs
 │   │   ├── Meridian.Ledger.csproj
-│   │   └── ProjectLedgerBook.cs
+│   │   ├── ProjectLedgerBook.cs
+│   │   └── ReadOnlyCollectionHelpers.cs
 │   ├── Meridian.Mcp
 │   │   ├── Prompts
 │   │   │   ├── CodeReviewPrompts.cs
@@ -5312,12 +5436,14 @@ Meridian-main
 │   │   ├── IMarketDataClient.cs
 │   │   ├── ImplementsAdrAttribute.cs
 │   │   ├── IOptionsChainProvider.cs
+│   │   ├── IProviderFamilyAdapter.cs
 │   │   ├── IProviderMetadata.cs
 │   │   ├── IProviderModule.cs
 │   │   ├── IRealtimeDataSource.cs
 │   │   ├── Meridian.ProviderSdk.csproj
 │   │   ├── ProviderHttpUtilities.cs
 │   │   ├── ProviderModuleLoader.cs
+│   │   ├── ProviderRoutingModels.cs
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
 │   │   ├── Api
@@ -5340,10 +5466,16 @@ Meridian-main
 │   │   │   ├── Contracts.cs
 │   │   │   ├── IQuantScriptCompiler.cs
 │   │   │   ├── IScriptRunner.cs
+│   │   │   ├── NotebookExecutionSession.cs
 │   │   │   ├── QuantScriptGlobals.cs
 │   │   │   ├── RoslynScriptCompiler.cs
+│   │   │   ├── ScriptExecutionCheckpoint.cs
 │   │   │   ├── ScriptRunner.cs
 │   │   │   └── ScriptRunResult.cs
+│   │   ├── Documents
+│   │   │   ├── IQuantScriptNotebookStore.cs
+│   │   │   ├── QuantScriptDocumentModels.cs
+│   │   │   └── QuantScriptNotebookStore.cs
 │   │   ├── Plotting
 │   │   │   ├── PlotQueue.cs
 │   │   │   ├── PlotRequest.cs
@@ -5397,6 +5529,10 @@ Meridian-main
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
 │   │   │   └── ExportVerificationReport.cs
+│   │   ├── FundAccounts
+│   │   │   ├── Migrations
+│   │   │   │   └── 001_fund_accounts.sql
+│   │   │   └── IFundAccountStore.cs
 │   │   ├── Interfaces
 │   │   │   ├── IMarketDataStore.cs
 │   │   │   ├── ISourceRegistry.cs
@@ -5572,9 +5708,9 @@ Meridian-main
 │   │   │   │   └── dashboard.css
 │   │   │   └── workstation
 │   │   │       ├── assets
-│   │   │       │   ├── index-CnAc-D_d.js
-│   │   │       │   └── index-DLXsLZLB.css
 │   │   │       │   ├── index-BUqJ19Wh.css
+│   │   │       │   ├── index-CnAc-D_d.js
+│   │   │       │   ├── index-DLXsLZLB.css
 │   │   │       │   └── index-VxIQhfQW.js
 │   │   │       └── index.html
 │   │   ├── app.manifest
@@ -5649,6 +5785,7 @@ Meridian-main
 │   │   │   ├── ExportPresetServiceBase.cs
 │   │   │   ├── FixtureDataService.cs
 │   │   │   ├── FixtureModeDetector.cs
+│   │   │   ├── FixtureScenario.cs
 │   │   │   ├── FormatHelpers.cs
 │   │   │   ├── FormValidationRules.cs
 │   │   │   ├── HttpClientConfiguration.cs
@@ -5671,6 +5808,7 @@ Meridian-main
 │   │   │   ├── PortfolioImportService.cs
 │   │   │   ├── ProviderHealthService.cs
 │   │   │   ├── ProviderManagementService.cs
+│   │   │   ├── ProviderOperationsResults.cs
 │   │   │   ├── QualityArchiveStore.cs
 │   │   │   ├── RetentionAssuranceModels.cs
 │   │   │   ├── ScheduledMaintenanceService.cs
@@ -5721,6 +5859,7 @@ Meridian-main
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
+│   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
 │   │   │   ├── HistoricalEndpoints.cs
 │   │   │   ├── IBEndpoints.cs
@@ -5765,58 +5904,67 @@ Meridian-main
 │   │   ├── LeanSymbolMapper.cs
 │   │   ├── LoginSessionService.cs
 │   │   ├── Meridian.Ui.Shared.csproj
+│   │   ├── StaticAssetPathResolver.cs
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── Assets
-│       │   └── Icons
-│       │       ├── account-portfolio.svg
-│       │       ├── admin-maintenance.svg
-│       │       ├── aggregate-portfolio.svg
-│       │       ├── archive-health.svg
-│       │       ├── backfill.svg
-│       │       ├── backtest.svg
-│       │       ├── charting.svg
-│       │       ├── collection-sessions.svg
-│       │       ├── dashboard.svg
-│       │       ├── data-browser.svg
-│       │       ├── data-calendar.svg
-│       │       ├── data-export.svg
-│       │       ├── data-operations.svg
-│       │       ├── data-quality.svg
-│       │       ├── data-sampling.svg
-│       │       ├── data-sources.svg
-│       │       ├── diagnostics.svg
-│       │       ├── event-replay.svg
-│       │       ├── governance.svg
-│       │       ├── help.svg
-│       │       ├── index-subscription.svg
-│       │       ├── keyboard-shortcuts.svg
-│       │       ├── lean-integration.svg
-│       │       ├── live-data.svg
-│       │       ├── order-book.svg
-│       │       ├── portfolio-import.svg
-│       │       ├── provider-health.svg
-│       │       ├── README.md
-│       │       ├── research.svg
-│       │       ├── retention-assurance.svg
-│       │       ├── run-detail.svg
-│       │       ├── run-ledger.svg
-│       │       ├── run-mat.svg
-│       │       ├── run-portfolio.svg
-│       │       ├── schedule-manager.svg
-│       │       ├── security-master.svg
-│       │       ├── service-manager.svg
-│       │       ├── settings.svg
-│       │       ├── storage-optimization.svg
-│       │       ├── storage.svg
-│       │       ├── strategy-runs.svg
-│       │       ├── symbol-storage.svg
-│       │       ├── symbols.svg
-│       │       ├── system-health.svg
-│       │       ├── trading-hours.svg
-│       │       ├── trading.svg
-│       │       └── watchlist.svg
+│       │   ├── Brand
+│       │   │   ├── meridian-hero.svg
+│       │   │   ├── meridian-mark.svg
+│       │   │   ├── meridian-tile-256.png
+│       │   │   ├── meridian-tile.svg
+│       │   │   └── meridian-wordmark.svg
+│       │   ├── Icons
+│       │   │   ├── account-portfolio.svg
+│       │   │   ├── admin-maintenance.svg
+│       │   │   ├── aggregate-portfolio.svg
+│       │   │   ├── archive-health.svg
+│       │   │   ├── backfill.svg
+│       │   │   ├── backtest.svg
+│       │   │   ├── charting.svg
+│       │   │   ├── collection-sessions.svg
+│       │   │   ├── dashboard.svg
+│       │   │   ├── data-browser.svg
+│       │   │   ├── data-calendar.svg
+│       │   │   ├── data-export.svg
+│       │   │   ├── data-operations.svg
+│       │   │   ├── data-quality.svg
+│       │   │   ├── data-sampling.svg
+│       │   │   ├── data-sources.svg
+│       │   │   ├── diagnostics.svg
+│       │   │   ├── event-replay.svg
+│       │   │   ├── governance.svg
+│       │   │   ├── help.svg
+│       │   │   ├── index-subscription.svg
+│       │   │   ├── keyboard-shortcuts.svg
+│       │   │   ├── lean-integration.svg
+│       │   │   ├── live-data.svg
+│       │   │   ├── order-book.svg
+│       │   │   ├── portfolio-import.svg
+│       │   │   ├── provider-health.svg
+│       │   │   ├── README.md
+│       │   │   ├── research.svg
+│       │   │   ├── retention-assurance.svg
+│       │   │   ├── run-detail.svg
+│       │   │   ├── run-ledger.svg
+│       │   │   ├── run-mat.svg
+│       │   │   ├── run-portfolio.svg
+│       │   │   ├── schedule-manager.svg
+│       │   │   ├── security-master.svg
+│       │   │   ├── service-manager.svg
+│       │   │   ├── settings.svg
+│       │   │   ├── storage-optimization.svg
+│       │   │   ├── storage.svg
+│       │   │   ├── strategy-runs.svg
+│       │   │   ├── symbol-storage.svg
+│       │   │   ├── symbols.svg
+│       │   │   ├── system-health.svg
+│       │   │   ├── trading-hours.svg
+│       │   │   ├── trading.svg
+│       │   │   └── watchlist.svg
+│       │   └── app.ico
 │       ├── Behaviors
+│       │   ├── AvalonEditNotebookBehavior.cs
 │       │   ├── ParameterTemplateSelector.cs
 │       │   └── PlotRenderBehavior.cs
 │       ├── Contracts
@@ -5827,9 +5975,11 @@ Meridian-main
 │       │   ├── BoolToVisibilityConverter.cs
 │       │   ├── ConsoleEntryKindToBrushConverter.cs
 │       │   ├── CountToVisibilityConverter.cs
+│       │   ├── IntToVisibilityConverter.cs
 │       │   ├── InvertBoolConverter.cs
 │       │   ├── NullToCollapsedConverter.cs
-│       │   └── StringToBoolConverter.cs
+│       │   ├── StringToBoolConverter.cs
+│       │   └── StringToVisibilityConverter.cs
 │       ├── Models
 │       │   ├── ActionEntry.cs
 │       │   ├── ActivityLogModels.cs
@@ -5839,6 +5989,8 @@ Meridian-main
 │       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
+│       │   ├── FundProfileModels.cs
+│       │   ├── FundReconciliationWorkbenchModels.cs
 │       │   ├── LeanModels.cs
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
@@ -5853,6 +6005,7 @@ Meridian-main
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
+│       │   ├── WorkspaceShellChromeModels.cs
 │       │   └── WorkspaceShellModels.cs
 │       ├── Services
 │       │   ├── AgentLoopService.cs
@@ -5861,6 +6014,7 @@ Meridian-main
 │       │   ├── BackgroundTaskSchedulerService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
+│       │   ├── CashFinancingReadService.cs
 │       │   ├── ClipboardWatcherService.cs
 │       │   ├── ConfigService.cs
 │       │   ├── ConnectionService.cs
@@ -5870,9 +6024,16 @@ Meridian-main
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
 │       │   ├── FirstRunService.cs
+│       │   ├── FloatingPageService.cs
 │       │   ├── FormValidationService.cs
+│       │   ├── FundAccountReadService.cs
+│       │   ├── FundContextService.cs
+│       │   ├── FundLedgerReadService.cs
+│       │   ├── FundProfileKeyTranslator.cs
+│       │   ├── FundReconciliationWorkbenchService.cs
 │       │   ├── GlobalHotkeyService.cs
 │       │   ├── ICommandContextProvider.cs
+│       │   ├── IFundProfileCatalog.cs
 │       │   ├── InfoBarService.cs
 │       │   ├── IQuantScriptLayoutService.cs
 │       │   ├── JumpListService.cs
@@ -5884,6 +6045,7 @@ Meridian-main
 │       │   ├── OfflineTrackingPersistenceService.cs
 │       │   ├── PendingOperationsQueueService.cs
 │       │   ├── QuantScriptLayoutService.cs
+│       │   ├── ReconciliationReadService.cs
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
@@ -5900,10 +6062,13 @@ Meridian-main
 │       │   ├── TooltipService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
-│       │   └── WorkspaceService.cs
+│       │   ├── WorkspaceService.cs
+│       │   ├── WorkspaceShellContextService.cs
+│       │   └── WorkstationReconciliationApiClient.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
+│       │   ├── BrandResources.xaml
 │       │   ├── IconResources.xaml
 │       │   ├── ThemeControls.xaml
 │       │   ├── ThemeSurfaces.xaml
@@ -5939,6 +6104,11 @@ Meridian-main
 │       │   ├── DirectLendingViewModel.cs
 │       │   ├── EventReplayViewModel.cs
 │       │   ├── ExportPresetsViewModel.cs
+│       │   ├── FundAccountProviderPanelModels.cs
+│       │   ├── FundAccountsViewModel.cs
+│       │   ├── FundLedgerViewModel.cs
+│       │   ├── FundLedgerViewModel.Reconciliation.cs
+│       │   ├── FundProfileSelectionViewModel.cs
 │       │   ├── IndexSubscriptionViewModel.cs
 │       │   ├── IPageActionBarProvider.cs
 │       │   ├── LeanIntegrationViewModel.cs
@@ -5962,6 +6132,7 @@ Meridian-main
 │       │   ├── QuoteFloatViewModel.cs
 │       │   ├── RunMatViewModel.cs
 │       │   ├── RunRiskViewModel.cs
+│       │   ├── ScatterAnalysisViewModel.cs
 │       │   ├── SecurityMasterDeactivateViewModel.cs
 │       │   ├── SecurityMasterEditViewModel.cs
 │       │   ├── SecurityMasterViewModel.cs
@@ -6030,6 +6201,8 @@ Meridian-main
 │       │   ├── DataCalendarPage.xaml.cs
 │       │   ├── DataExportPage.xaml
 │       │   ├── DataExportPage.xaml.cs
+│       │   ├── DataOperationsWorkspaceShellPage.xaml
+│       │   ├── DataOperationsWorkspaceShellPage.xaml.cs
 │       │   ├── DataQualityPage.xaml
 │       │   ├── DataQualityPage.xaml.cs
 │       │   ├── DataSamplingPage.xaml
@@ -6047,6 +6220,16 @@ Meridian-main
 │       │   ├── EventReplayPage.xaml.cs
 │       │   ├── ExportPresetsPage.xaml
 │       │   ├── ExportPresetsPage.xaml.cs
+│       │   ├── FloatingPageWindow.xaml
+│       │   ├── FloatingPageWindow.xaml.cs
+│       │   ├── FundAccountsPage.xaml
+│       │   ├── FundAccountsPage.xaml.cs
+│       │   ├── FundLedgerPage.xaml
+│       │   ├── FundLedgerPage.xaml.cs
+│       │   ├── FundProfileSelectionPage.xaml
+│       │   ├── FundProfileSelectionPage.xaml.cs
+│       │   ├── GovernanceWorkspaceShellPage.xaml
+│       │   ├── GovernanceWorkspaceShellPage.xaml.cs
 │       │   ├── HelpPage.xaml
 │       │   ├── HelpPage.xaml.cs
 │       │   ├── IndexSubscriptionPage.xaml
@@ -6111,6 +6294,8 @@ Meridian-main
 │       │   ├── RunRiskPage.xaml.cs
 │       │   ├── SaveWatchlistDialog.xaml
 │       │   ├── SaveWatchlistDialog.xaml.cs
+│       │   ├── ScatterAnalysisPage.xaml
+│       │   ├── ScatterAnalysisPage.xaml.cs
 │       │   ├── ScheduleManagerPage.xaml
 │       │   ├── ScheduleManagerPage.xaml.cs
 │       │   ├── SecurityMasterPage.xaml
@@ -6151,8 +6336,12 @@ Meridian-main
 │       │   ├── WatchlistPage.xaml.cs
 │       │   ├── WelcomePage.xaml
 │       │   ├── WelcomePage.xaml.cs
+│       │   ├── WorkspaceCommandBarControl.xaml
+│       │   ├── WorkspaceCommandBarControl.xaml.cs
 │       │   ├── WorkspacePage.xaml
-│       │   └── WorkspacePage.xaml.cs
+│       │   ├── WorkspacePage.xaml.cs
+│       │   ├── WorkspaceShellContextStripControl.xaml
+│       │   └── WorkspaceShellContextStripControl.xaml.cs
 │       ├── App.xaml
 │       ├── App.xaml.cs
 │       ├── AssemblyInfo.cs
@@ -6163,6 +6352,7 @@ Meridian-main
 │       └── README.md
 ├── tests
 │   ├── Meridian.Backtesting.Tests
+│   │   ├── AdvancedCarryDecisionEngineTests.cs
 │   │   ├── BacktestEngineIntegrationTests.cs
 │   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
@@ -6175,12 +6365,15 @@ Meridian-main
 │   │   ├── LotLevelTrackingTests.cs
 │   │   ├── MarketImpactFillModelTests.cs
 │   │   ├── Meridian.Backtesting.Tests.csproj
+│   │   ├── MeridianNativeBacktestStudioEngineTests.cs
+│   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── TcaReporterTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.DirectLending.Tests
 │   │   ├── BankTransactionSeedTests.cs
+│   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
 │   │   ├── DirectLendingServiceTests.cs
@@ -6189,6 +6382,7 @@ Meridian-main
 │   │   ├── Meridian.DirectLending.Tests.csproj
 │   │   └── PaymentApprovalTests.cs
 │   ├── Meridian.FSharp.Tests
+│   │   ├── AccountDetailsTests.fs
 │   │   ├── CalculationTests.fs
 │   │   ├── CanonicalizationTests.fs
 │   │   ├── CashFlowProjectorTests.fs
@@ -6217,6 +6411,7 @@ Meridian-main
 │   │   ├── PlotQueueTests.cs
 │   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
+│   │   ├── QuantScriptNotebookStoreTests.cs
 │   │   ├── RoslynScriptCompilerTests.cs
 │   │   ├── ScriptRunnerTests.cs
 │   │   └── StatisticsEngineTests.cs
@@ -6235,6 +6430,8 @@ Meridian-main
 │   │   │   │   ├── RateLimiterTests.cs
 │   │   │   │   ├── ScheduledBackfillTests.cs
 │   │   │   │   └── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   ├── Backtesting
+│   │   │   │   └── BacktestStudioRunOrchestratorTests.cs
 │   │   │   ├── Canonicalization
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── alpaca_trade_extended_hours.json
@@ -6267,7 +6464,8 @@ Meridian-main
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   ├── ConfigValidationPipelineTests.cs
-│   │   │   │   └── ConfigValidatorTests.cs
+│   │   │   │   ├── ConfigValidatorTests.cs
+│   │   │   │   └── ProviderCredentialResolverTests.cs
 │   │   │   ├── Coordination
 │   │   │   │   ├── ClusterCoordinatorServiceTests.cs
 │   │   │   │   ├── LeaseManagerTests.cs
@@ -6283,6 +6481,8 @@ Meridian-main
 │   │   │   │   ├── EtlJobDefinitionStoreTests.cs
 │   │   │   │   ├── EtlJobOrchestratorTests.cs
 │   │   │   │   └── EtlNormalizationServiceTests.cs
+│   │   │   ├── FundAccounts
+│   │   │   │   └── FundAccountServiceTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -6322,6 +6522,8 @@ Meridian-main
 │   │   │   │   ├── MarketDataClientFactoryTests.cs
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
+│   │   │   ├── ProviderRouting
+│   │   │   │   └── ProviderRoutingServiceTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── DataQuality
 │   │   │   │   │   ├── AnomalyDetectorTests.cs
@@ -6382,6 +6584,7 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
+│   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
@@ -6393,6 +6596,8 @@ Meridian-main
 │   │   │   │   └── CredentialConfigTests.cs
 │   │   │   ├── Etl
 │   │   │   │   └── CsvPartnerFileParserTests.cs
+│   │   │   ├── Http
+│   │   │   │   └── HttpClientConfigurationTests.cs
 │   │   │   ├── Providers
 │   │   │   │   ├── Fixtures
 │   │   │   │   │   ├── InteractiveBrokers
@@ -6421,6 +6626,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
+│   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
@@ -6433,14 +6639,17 @@ Meridian-main
 │   │   │   │   ├── IBSimulationClientContractTests.cs
 │   │   │   │   ├── IBSimulationClientTests.cs
 │   │   │   │   ├── MarketDataClientContractTests.cs
+│   │   │   │   ├── NyseMarketDataClientContractTests.cs
 │   │   │   │   ├── NyseMarketDataClientTests.cs
 │   │   │   │   ├── NYSEMessageParsingTests.cs
+│   │   │   │   ├── NyseMessagePipelineTests.cs
 │   │   │   │   ├── NyseNationalTradesCsvParserTests.cs
 │   │   │   │   ├── NyseSharedLifecycleTests.cs
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
 │   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
+│   │   │   │   ├── PolygonProviderContractTests.cs
 │   │   │   │   ├── PolygonRecordedSessionReplayTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
 │   │   │   │   ├── ProviderBehaviorBuilderTests.cs
@@ -6452,10 +6661,13 @@ Meridian-main
 │   │   │   │   ├── RobinhoodMarketDataClientTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
 │   │   │   │   ├── StockSharpConnectorFactoryTests.cs
+│   │   │   │   ├── StockSharpConverterEdgeCaseTests.cs
 │   │   │   │   ├── StockSharpMessageConversionTests.cs
+│   │   │   │   ├── StockSharpProviderContractTests.cs
 │   │   │   │   ├── StockSharpSubscriptionTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
+│   │   │   │   ├── SyntheticOptionsChainProviderTests.cs
 │   │   │   │   └── WebSocketProviderBaseTests.cs
 │   │   │   ├── Resilience
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
@@ -6491,7 +6703,8 @@ Meridian-main
 │   │   │   │   ├── RoleAuthorizationTests.cs
 │   │   │   │   ├── StatusEndpointTests.cs
 │   │   │   │   ├── StorageEndpointTests.cs
-│   │   │   │   └── SymbolEndpointTests.cs
+│   │   │   │   ├── SymbolEndpointTests.cs
+│   │   │   │   └── UiEndpointsJsonOptionsTests.cs
 │   │   │   ├── ConfigurableTickerDataCollectionTests.cs
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
@@ -6525,7 +6738,9 @@ Meridian-main
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
+│   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
+│   │   │   ├── SecurityMasterQueryServiceEquityTermsTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
@@ -6565,6 +6780,7 @@ Meridian-main
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
+│   │   │   ├── PromotionServiceLiveGovernanceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
@@ -6593,7 +6809,10 @@ Meridian-main
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
 │   │   │   ├── DirectLendingEndpointsTests.cs
+│   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
+│   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
+│   │   │   ├── StaticAssetPathResolverTests.cs
 │   │   │   └── WorkstationEndpointsTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj
@@ -6629,6 +6848,7 @@ Meridian-main
 │   │   │   ├── ErrorHandlingServiceTests.cs
 │   │   │   ├── EventReplayServiceTests.cs
 │   │   │   ├── FixtureDataServiceTests.cs
+│   │   │   ├── FixtureModeDetectorTests.cs
 │   │   │   ├── FormValidationServiceTests.cs
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
@@ -6661,11 +6881,13 @@ Meridian-main
 │   ├── Meridian.Wpf.Tests
 │   │   ├── Services
 │   │   │   ├── AdminMaintenanceServiceTests.cs
+│   │   │   ├── AppServiceRegistrationTests.cs
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
 │   │   │   ├── ConfigServiceTests.cs
 │   │   │   ├── ConnectionServiceTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
+│   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
 │   │   │   ├── MessagingServiceTests.cs
@@ -6680,15 +6902,20 @@ Meridian-main
 │   │   │   ├── StrategyRunWorkspaceServiceTests.cs
 │   │   │   ├── TooltipServiceTests.cs
 │   │   │   ├── WatchlistServiceTests.cs
-│   │   │   └── WorkspaceServiceTests.cs
+│   │   │   ├── WorkspaceServiceTests.cs
+│   │   │   └── WorkspaceShellContextServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
+│   │   │   ├── FakeWorkstationReconciliationApiClient.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── AddProviderWizardViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── DataQualityViewModelCharacterizationTests.cs
+│   │   │   ├── FundAccountsViewModelTests.cs
+│   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
@@ -6701,9 +6928,11 @@ Meridian-main
 │   │   │   ├── QuantScriptPageTests.cs
 │   │   │   ├── RunMatUiSmokeTests.cs
 │   │   │   ├── RunMatWorkflowSmokeTests.cs
-│   │   │   └── SplitPaneHostControlTests.cs
+│   │   │   ├── SplitPaneHostControlTests.cs
+│   │   │   └── SystemHealthPageSmokeTests.cs
 │   │   ├── GlobalUsings.cs
-│   │   └── Meridian.Wpf.Tests.csproj
+│   │   ├── Meridian.Wpf.Tests.csproj
+│   │   └── TestAssemblyConfiguration.cs
 │   ├── scripts
 │   │   └── setup-verification.sh
 │   ├── coverlet.runsettings
@@ -6722,6 +6951,7 @@ Meridian-main
 ├── desktop.ini
 ├── Directory.Build.props
 ├── Directory.Packages.props
+├── docfx.json
 ├── environment.yml
 ├── global.json
 ├── LICENSE

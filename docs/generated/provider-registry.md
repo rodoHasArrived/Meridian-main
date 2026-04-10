@@ -1,29 +1,40 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-02 21:30:59 UTC. Do not edit manually.
+> Auto-generated on 2026-04-10 19:32:45 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
 | `src/Meridian/Integrations/Lean/MeridianDataProvider.cs` |
 | `src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs` |
+| `src/Meridian.Application/Composition/Features/ProviderRoutingFeatureRegistration.cs` |
 | `src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs` |
 | `src/Meridian.Application/Monitoring/DataQuality/CrossProviderComparisonService.cs` |
 | `src/Meridian.Application/Monitoring/DataQuality/LiquidityProfileProvider.cs` |
 | `src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs` |
 | `src/Meridian.Application/Monitoring/ProviderLatencyService.cs` |
 | `src/Meridian.Application/Monitoring/ProviderMetricsStatus.cs` |
+| `src/Meridian.Application/ProviderRouting/ProviderBindingService.cs` |
+| `src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs` |
+| `src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs` |
+| `src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs` |
+| `src/Meridian.Application/ProviderRouting/ProviderRoutingMapper.cs` |
 | `src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs` |
 | `src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs` |
 | `src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs` |
 | `src/Meridian.Contracts/Api/ProviderCatalog.cs` |
+| `src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs` |
+| `src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs` |
 | `src/Meridian.Contracts/Credentials/ISecretProvider.cs` |
 | `src/Meridian.Contracts/Domain/ProviderId.cs` |
 | `src/Meridian.Contracts/Domain/ProviderSymbol.cs` |
 | `src/Meridian.Core/Config/IConfigurationProvider.cs` |
+| `src/Meridian.Core/Config/ProviderConnectionsConfig.cs` |
 | `src/Meridian.Core/Exceptions/DataProviderException.cs` |
 | `src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs` |
+| `src/Meridian.Execution/MultiCurrency/IFxRateProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs` |
 | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
 | `src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs` |
@@ -41,20 +52,25 @@
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
 | `src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Polygon/PolygonOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Stooq/StooqHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs` |
@@ -62,18 +78,22 @@
 | `src/Meridian.Mcp/Tools/ProviderTools.cs` |
 | `src/Meridian.McpServer/Tools/ProviderTools.cs` |
 | `src/Meridian.ProviderSdk/IOptionsChainProvider.cs` |
+| `src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs` |
 | `src/Meridian.ProviderSdk/IProviderMetadata.cs` |
 | `src/Meridian.ProviderSdk/IProviderModule.cs` |
 | `src/Meridian.ProviderSdk/ProviderHttpUtilities.cs` |
 | `src/Meridian.ProviderSdk/ProviderModuleLoader.cs` |
+| `src/Meridian.ProviderSdk/ProviderRoutingModels.cs` |
 | `src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs` |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` |
 | `src/Meridian.Ui.Services/Services/ProviderManagementService.cs` |
+| `src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs` |
 | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs` |
 | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs` |
 | `src/Meridian.Wpf/Models/ProviderHealthModels.cs` |
 | `src/Meridian.Wpf/Services/ICommandContextProvider.cs` |
 | `src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs` |
+| `src/Meridian.Wpf/ViewModels/FundAccountProviderPanelModels.cs` |
 | `src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs` |
 | `src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs` |
 | `src/Meridian.Wpf/ViewModels/ProviderPageModels.cs` |

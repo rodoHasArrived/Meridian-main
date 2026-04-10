@@ -1,7 +1,6 @@
 # Workflows Overview
 
-> Auto-generated on 2026-04-03 07:07:41 UTC. Do not edit manually.
-> Auto-generated on 2026-04-10 19:17:59 UTC. Do not edit manually.
+> Auto-generated on 2026-04-10 19:32:45 UTC. Do not edit manually.
 
 | Workflow File | Name |
 |---|---|
@@ -19,6 +18,8 @@
 | `.github/workflows/docker.yml` | Docker |
 | `.github/workflows/documentation.yml` | Documentation Automation |
 | `.github/workflows/export-project-artifact.yml` | Export Project Artifact |
+| `.github/workflows/export-standalone-exe.yml` | Export Standalone Executable |
+| `.github/workflows/generate-build-artifact.yml` | Generate Build Artifact |
 | `.github/workflows/golden-path-validation.yml` | Golden Path Validation |
 | `.github/workflows/labeling.yml` | Labeling |
 | `.github/workflows/maintenance-self-test.yml` | Maintenance Self-Test |

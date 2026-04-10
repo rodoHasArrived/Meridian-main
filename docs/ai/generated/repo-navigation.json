@@ -1,6 +1,5 @@
 {
-  "generatedAt": "2026-04-03T07:07:41Z",
-  "generatedAt": "2026-04-10T19:17:59Z",
+  "generatedAt": "2026-04-10T19:32:45Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "/home/runner/work/Meridian-main/Meridian-main",
   "subsystems": [
@@ -515,7 +514,8 @@
       "projectReferences": [
         "..\\Meridian.Application\\Meridian.Application",
         "..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk",
-        "..\\Meridian.Storage\\Meridian.Storage"
+        "..\\Meridian.Storage\\Meridian.Storage",
+        "..\\Meridian.Strategies\\Meridian.Strategies"
       ],
       "relatedDocs": []
     },
