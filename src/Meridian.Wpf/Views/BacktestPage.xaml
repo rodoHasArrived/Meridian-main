@@ -368,6 +368,83 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Data Availability Calendar ─────────────────── -->
+                        <Border CornerRadius="8"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                Padding="12"
+                                Margin="0,0,0,12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <TextBlock Text="DATA AVAILABILITY" Style="{StaticResource SectionEyebrowStyle}" VerticalAlignment="Center" />
+                                    <Button HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Content="Fix Gaps"
+                                            Command="{Binding FixGapsCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Padding="8,3"
+                                            FontSize="10">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasCoverageGaps}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding CoverageRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,0,0,4">
+                                                <TextBlock Text="{Binding Symbol}"
+                                                           FontSize="10"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           Margin="0,0,0,2" />
+                                                <ItemsControl ItemsSource="{Binding Cells}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel Orientation="Horizontal" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Width="12" Height="10" Margin="1" CornerRadius="2"
+                                                                    ToolTip="{Binding Tooltip}">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <!-- Full coverage: blue/info -->
+                                                                        <Setter Property="Background" Value="{StaticResource InfoColorBrush}" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Level}" Value="Partial">
+                                                                                <!-- Partial: warning orange -->
+                                                                                <Setter Property="Background" Value="{StaticResource WarningColorBrush}" />
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Level}" Value="Major">
+                                                                                <!-- Major gap: error red -->
+                                                                                <Setter Property="Background" Value="{StaticResource ErrorColorBrush}" />
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Level}" Value="None">
+                                                                                <!-- No data: muted border -->
+                                                                                <Setter Property="Background" Value="{StaticResource ConsoleBorderBrush}" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
                         <Button Content="Cancel"
                                 Command="{Binding CancelBacktestCommand}"
                                 Style="{StaticResource GhostButtonStyle}"
@@ -402,7 +479,7 @@
             <!-- ─── RIGHT ▸ Equity curve + Results Explorer ──────────── -->
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="176" />
+                    <RowDefinition Height="Auto" MinHeight="176" />
                     <!-- Equity curve card -->
                     <RowDefinition Height="16" />
                     <RowDefinition Height="*" />
@@ -419,6 +496,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -452,6 +530,48 @@
                                      Height="4"
                                      Margin="0,8,0,0"
                                      IsIndeterminate="False" />
+
+                        <!-- Live metrics strip — visible while IsLiveMetricsActive -->
+                        <Border Grid.Row="3" Grid.ColumnSpan="2"
+                                Margin="0,6,0,0"
+                                Padding="8,5"
+                                CornerRadius="5"
+                                Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLiveMetricsActive}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <!-- Sharpe chip -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <Ellipse Width="6" Height="6" VerticalAlignment="Center" Margin="0,0,5,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="{StaticResource InfoColorBrush}" />
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <TextBlock Text="Sharpe " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveSharpe}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <!-- Drawdown chip -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <TextBlock Text="DD " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveDrawdown}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <!-- Trades chip -->
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Trades " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveTradeCount}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
 

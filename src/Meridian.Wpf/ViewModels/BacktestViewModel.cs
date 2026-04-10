@@ -19,6 +19,10 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     private readonly BacktestService _backtestService;
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _strategyRunWorkspaceService;
+    private readonly BacktestDataAvailabilityService _availabilityService;
+
+    // ── Coverage debounce ────────────────────────────────────────────────────
+    private CancellationTokenSource _coverageCts = new();
 
     // ── Configuration properties ─────────────────────────────────────────────
 
@@ -52,6 +56,32 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     public string StatusText { get => _statusText; set => SetProperty(ref _statusText, value); }
 
     public bool CanRun => !_isRunning;
+
+    // ── Live metrics (updated during run once ≥ 60 days have elapsed) ────────
+
+    private bool _isLiveMetricsActive;
+    public bool IsLiveMetricsActive { get => _isLiveMetricsActive; set => SetProperty(ref _isLiveMetricsActive, value); }
+
+    private string _liveSharpe = "-";
+    public string LiveSharpe { get => _liveSharpe; set => SetProperty(ref _liveSharpe, value); }
+
+    private string _liveDrawdown = "-";
+    public string LiveDrawdown { get => _liveDrawdown; set => SetProperty(ref _liveDrawdown, value); }
+
+    private string _liveTradeCount = "-";
+    public string LiveTradeCount { get => _liveTradeCount; set => SetProperty(ref _liveTradeCount, value); }
+
+    // ── Data availability calendar ────────────────────────────────────────────
+
+    public ObservableCollection<CoverageRowVm> CoverageRows { get; } = [];
+
+    private bool _hasCoverageGaps;
+    public bool HasCoverageGaps { get => _hasCoverageGaps; set => SetProperty(ref _hasCoverageGaps, value); }
+
+    private bool _isCoverageLoading;
+    public bool IsCoverageLoading { get => _isCoverageLoading; set => SetProperty(ref _isCoverageLoading, value); }
+
+    public IAsyncRelayCommand FixGapsCommand { get; private set; } = null!;
 
     // ── Equity curve ─────────────────────────────────────────────────────────
 
@@ -156,13 +186,16 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
     public BacktestViewModel(
         BacktestService backtestService,
         NavigationService navigationService,
-        StrategyRunWorkspaceService strategyRunWorkspaceService)
+        StrategyRunWorkspaceService strategyRunWorkspaceService,
+        BacktestDataAvailabilityService availabilityService)
     {
         _backtestService = backtestService;
         _navigationService = navigationService;
         _strategyRunWorkspaceService = strategyRunWorkspaceService;
+        _availabilityService = availabilityService;
         RunBacktestCommand = new AsyncRelayCommand(RunBacktestAsync, () => CanRun);
         CancelBacktestCommand = new RelayCommand(CancelBacktest, () => IsRunning);
+        FixGapsCommand = new AsyncRelayCommand(FixGapsAsync);
         OpenRunBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(() => OpenRunSurface("RunDetail"), () => HasLatestRecordedRun);
         OpenRunPortfolioCommand = new RelayCommand(() => OpenRunSurface("RunPortfolio"), () => HasLatestRecordedRun);
@@ -171,6 +204,12 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
         _backtestService.BacktestCompleted += OnBacktestCompleted;
         _backtestService.BacktestCancelled += OnBacktestCancelled;
+
+        PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(SymbolsText) or nameof(FromDate) or nameof(ToDate) or nameof(DataRoot))
+                ScheduleCoverageRefresh();
+        };
     }
 
     // ── Command implementations ───────────────────────────────────────────────
@@ -183,6 +222,10 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         Attribution.Clear();
         StatusText = "Running…";
         ProgressFraction = 0;
+        IsLiveMetricsActive = false;
+        LiveSharpe = "-";
+        LiveDrawdown = "-";
+        LiveTradeCount = "-";
         IsRunning = true;
 
         var symbols = string.IsNullOrWhiteSpace(SymbolsText)
@@ -222,7 +265,15 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
             ProgressFraction = evt.ProgressFraction;
             StatusText = $"{evt.CurrentDate:yyyy-MM-dd} — {evt.EventsProcessed:N0} events — equity {evt.PortfolioValue:C0}";
             EquityCurvePoints.Add(new EquityCurvePoint(evt.CurrentDate.DayNumber, (double)evt.PortfolioValue));
-        }, DispatcherPriority.Background);
+
+            if (evt.LiveMetrics is { } m)
+            {
+                IsLiveMetricsActive = true;
+                LiveSharpe = $"{m.RollingSharpe:F2} (through {evt.CurrentDate:yyyy-MM})";
+                LiveDrawdown = $"{m.CurrentDrawdownPct:P1}";
+                LiveTradeCount = $"{m.TradeCount:N0}";
+            }
+        }, System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void OnBacktestCompleted(object? sender, BacktestResult result)
@@ -230,6 +281,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             IsRunning = false;
+            IsLiveMetricsActive = false;
             ProgressFraction = 1.0;
             StatusText = $"Complete — {result.TotalEventsProcessed:N0} events in {result.ElapsedTime.TotalSeconds:F1}s";
             ApplyResult(result);
@@ -286,10 +338,101 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         }
     }
 
+    // ── Coverage calendar helpers ─────────────────────────────────────────────
+
+    private void ScheduleCoverageRefresh()
+    {
+        _coverageCts.Cancel();
+        _coverageCts.Dispose();
+        _coverageCts = new CancellationTokenSource();
+        _ = DelayThenRefreshAsync(_coverageCts.Token);
+    }
+
+    private async Task DelayThenRefreshAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            await RefreshCoverageAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task RefreshCoverageAsync(CancellationToken cancellationToken)
+    {
+        var rawSymbols = string.IsNullOrWhiteSpace(SymbolsText) ? [] :
+            SymbolsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                       .ToList();
+
+        if (rawSymbols.Count == 0) return;
+
+        var from = DateOnly.FromDateTime(FromDate);
+        var to = DateOnly.FromDateTime(ToDate);
+
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            IsCoverageLoading = true;
+            CoverageRows.Clear();
+        });
+
+        try
+        {
+            var coverage = await _availabilityService.GetCoverageAsync(rawSymbols, from, to, DataRoot, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Build months list sorted ascending
+            var months = coverage.Values
+                .SelectMany(m => m.Keys)
+                .Distinct()
+                .OrderBy(k => k.Year).ThenBy(k => k.Month)
+                .ToList();
+
+            var rows = new List<CoverageRowVm>();
+            var anyGaps = false;
+
+            foreach (var (symbol, monthMap) in coverage.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                var cells = months.Select(m =>
+                {
+                    if (!monthMap.TryGetValue(m, out var entry))
+                        return new CoverageCellVm(m.Year, m.Month, CoverageLevel.None, $"{m.Year}/{m.Month}: no data");
+                    var (present, trading) = entry;
+                    var level = trading == 0 ? CoverageLevel.Full :
+                                present >= trading ? CoverageLevel.Full :
+                                present >= trading * 0.75 ? CoverageLevel.Partial :
+                                present >= trading * 0.25 ? CoverageLevel.Major :
+                                CoverageLevel.None;
+                    if (level != CoverageLevel.Full) anyGaps = true;
+                    return new CoverageCellVm(m.Year, m.Month, level, $"{m.Year}/{m.Month}: {present}/{trading} days");
+                }).ToList();
+                rows.Add(new CoverageRowVm(symbol, cells));
+            }
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                CoverageRows.Clear();
+                foreach (var r in rows) CoverageRows.Add(r);
+                HasCoverageGaps = anyGaps;
+                IsCoverageLoading = false;
+            });
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task FixGapsAsync(CancellationToken cancellationToken = default)
+    {
+        // Stub: in a fully wired implementation this would call BackfillApiService
+        // to request fills for amber/red cells. For now just invalidate and refresh.
+        _availabilityService.InvalidateCache();
+        await RefreshCoverageAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     public void Dispose()
     {
         _backtestService.BacktestCompleted -= OnBacktestCompleted;
         _backtestService.BacktestCancelled -= OnBacktestCancelled;
+        _coverageCts.Cancel();
+        _coverageCts.Dispose();
     }
 }
 
@@ -297,6 +440,27 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
 /// <summary>Single point on the equity curve (day number × portfolio value).</summary>
 public sealed record EquityCurvePoint(int DayNumber, double Value);
+
+// ── Data availability calendar types ─────────────────────────────────────────
+
+/// <summary>Data coverage quality for a single calendar month.</summary>
+public enum CoverageLevel
+{
+    /// <summary>≥ 100% of expected trading days present.</summary>
+    Full,
+    /// <summary>75–99% of expected trading days present.</summary>
+    Partial,
+    /// <summary>25–74% of expected trading days present.</summary>
+    Major,
+    /// <summary>0–24% of expected trading days present.</summary>
+    None,
+}
+
+/// <summary>A single cell in the coverage calendar (one month for one symbol).</summary>
+public sealed record CoverageCellVm(int Year, int Month, CoverageLevel Level, string Tooltip);
+
+/// <summary>One row in the coverage calendar — symbol + ordered month cells.</summary>
+public sealed record CoverageRowVm(string Symbol, IReadOnlyList<CoverageCellVm> Cells);
 
 /// <summary>UI display wrapper for a fill event.</summary>
 public sealed record FillEventVm(FillEvent Fill)
