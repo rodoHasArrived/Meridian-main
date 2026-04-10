@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-10 21:09:48 UTC. Do not edit manually.
+> Auto-generated on 2026-04-10 21:25:21 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -4754,6 +4754,7 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
+│   │   ├── IntermediateMetrics.cs
 │   │   ├── LotSelectionMethod.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
 │   │   ├── OpenLot.cs
@@ -6014,6 +6015,7 @@ Meridian-main
 │       │   ├── ArchiveHealthService.cs
 │       │   ├── BackendServiceManager.cs
 │       │   ├── BackgroundTaskSchedulerService.cs
+│       │   ├── BacktestDataAvailabilityService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
 │       │   ├── CashFinancingReadService.cs

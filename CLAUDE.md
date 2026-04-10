@@ -4880,6 +4880,7 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
+│   │   ├── IntermediateMetrics.cs
 │   │   ├── LotSelectionMethod.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
 │   │   ├── OpenLot.cs
@@ -6140,6 +6141,7 @@ Meridian-main
 │       │   ├── ArchiveHealthService.cs
 │       │   ├── BackendServiceManager.cs
 │       │   ├── BackgroundTaskSchedulerService.cs
+│       │   ├── BacktestDataAvailabilityService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
 │       │   ├── CashFinancingReadService.cs
