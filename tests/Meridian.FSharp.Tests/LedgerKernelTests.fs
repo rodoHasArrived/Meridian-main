@@ -72,7 +72,7 @@ let ``Ledger reconciliation marks exact cash flow as matched`` () =
 
     let result = Reconciliation.reconcilePayment 0 projected actual
 
-    result.Status |> should equal Matched
+    result.Outcome |> should equal ReconciliationOutcome.Matched
     result.Variance |> should equal 0m
 
 [<Fact>]
@@ -98,7 +98,7 @@ let ``Ledger reconciliation flags underpayment`` () =
 
     let result = Reconciliation.reconcilePayment 0 projected actual
 
-    result.Status |> should equal UnderPaid
+    result.Outcome |> should equal (ReconciliationOutcome.UnderPaid -50m)
     result.Variance |> should equal -50m
 
 [<Fact>]
@@ -124,7 +124,7 @@ let ``Ledger reconciliation flags currency mismatch before amount comparison`` (
 
     let result = Reconciliation.reconcilePayment 0 projected actual
 
-    result.Status |> should equal CurrencyMismatch
+    result.Outcome |> should equal (ReconciliationOutcome.CurrencyMismatch ("USD", "EUR"))
 
 [<Fact>]
 let ``Ledger reconciliation flags timing mismatch outside tolerance`` () =
@@ -149,7 +149,7 @@ let ``Ledger reconciliation flags timing mismatch outside tolerance`` () =
 
     let result = Reconciliation.reconcilePayment 1 projected actual
 
-    result.Status |> should equal TimingMismatch
+    result.Outcome |> should equal (ReconciliationOutcome.TimingMismatch 3)
 
 [<Fact>]
 let ``Ledger reconciliation matches event stream by security and flow id`` () =
@@ -194,8 +194,8 @@ let ``Ledger reconciliation matches event stream by security and flow id`` () =
     let results = Reconciliation.reconcileEventStream 0 projectedFlows events
 
     results.Length |> should equal 2
-    results |> Array.find (fun result -> result.FlowId = "coupon-1") |> fun result -> result.Status |> should equal Matched
-    results |> Array.find (fun result -> result.FlowId = "coupon-2") |> fun result -> result.Status |> should equal Matched
+    results |> Array.find (fun result -> result.FlowId = "coupon-1") |> fun result -> result.Outcome |> should equal ReconciliationOutcome.Matched
+    results |> Array.find (fun result -> result.FlowId = "coupon-2") |> fun result -> result.Outcome |> should equal ReconciliationOutcome.Matched
 
 [<Fact>]
 let ``Ledger reconciliation aggregates multiple events for one projected flow`` () =
@@ -232,7 +232,7 @@ let ``Ledger reconciliation aggregates multiple events for one projected flow`` 
 
     let result = Reconciliation.reconcileEventStream 0 projectedFlows events |> Array.exactlyOne
 
-    result.Status |> should equal Matched
+    result.Outcome |> should equal ReconciliationOutcome.Matched
     result.ActualAmount |> should equal 1000m
     result.EventId |> should equal "evt-a,evt-b"
 
@@ -263,7 +263,7 @@ let ``Ledger reconciliation treats disbursement as negative cash movement`` () =
 
     let result = Reconciliation.reconcileEventStream 0 projectedFlows events |> Array.exactlyOne
 
-    result.Status |> should equal Matched
+    result.Outcome |> should equal ReconciliationOutcome.Matched
     result.ActualAmount |> should equal -250m
 
 [<Fact>]
@@ -402,7 +402,7 @@ let ``Ledger reconciliation reports missing actual when no event exists for flow
 
     let result = Reconciliation.reconcileEventStream 0 projectedFlows Array.empty |> Array.exactlyOne
 
-    result.Status |> should equal MissingActual
+    result.Outcome |> should equal ReconciliationOutcome.MissingActual
     result.Variance |> should equal -75m
 
 // ---------------------------------------------------------------------------

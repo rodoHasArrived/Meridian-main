@@ -40,6 +40,15 @@ type BreakRecord = {
     IsResolved    : bool
 }
 
+/// Outcome of reconciling a single projected flow against actuals.
+type ReconciliationOutcome =
+    | Matched
+    | UnderPaid of variance: decimal
+    | OverPaid of variance: decimal
+    | CurrencyMismatch of expected: string * actual: string
+    | TimingMismatch of daysLate: int
+    | MissingActual
+
 /// Lifecycle status of a reconciliation run
 type ReconciliationRunStatus =
     | Pending
@@ -112,6 +121,30 @@ module LedgerBreakClassification =
         | DuplicateEntry                                                                   -> High
         | ClassificationBreak _                                                            -> High
         | OtherBreak _                                                                     -> Medium
+
+[<RequireQualifiedAccess>]
+module ReconciliationOutcome =
+
+    let label = function
+        | Matched -> "Matched"
+        | UnderPaid _ -> "UnderPaid"
+        | OverPaid _ -> "OverPaid"
+        | CurrencyMismatch _ -> "CurrencyMismatch"
+        | TimingMismatch _ -> "TimingMismatch"
+        | MissingActual -> "MissingActual"
+
+    let variance = function
+        | UnderPaid variance
+        | OverPaid variance -> Some variance
+        | _ -> None
+
+    let daysLate = function
+        | TimingMismatch days -> Some days
+        | _ -> None
+
+    let currencies = function
+        | CurrencyMismatch (expected, actual) -> Some (expected, actual)
+        | _ -> None
 
 [<RequireQualifiedAccess>]
 module ReconciliationRunStatus =

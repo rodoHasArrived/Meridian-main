@@ -2,6 +2,56 @@ namespace Meridian.FSharp.Domain
 
 open System
 
+/// Payment cadence for income or fee streams.
+type PaymentFrequency =
+    | Daily
+    | Weekly
+    | Monthly
+    | Quarterly
+    | SemiAnnual
+    | Annual
+    | OtherFrequency of string
+
+/// Day-count basis for accrual calculations.
+type DayCountConvention =
+    | Actual360
+    | Actual365
+    | Thirty360
+    | Business252
+    | OtherDayCount of string
+
+/// Coupon style for interest-bearing instruments.
+type CouponKind =
+    | Fixed
+    | Floating
+    | ZeroCoupon
+    | Step
+    | DiscountNote
+    | OtherCoupon of string
+
+/// Redemption structure for principal return.
+type RedemptionStyle =
+    | Bullet
+    | Callable
+    | Putable
+    | Amortizing
+    | Perpetual
+    | OtherRedemption of string
+
+/// Distribution policy for equity-like instruments.
+type DistributionPolicy =
+    | Accumulating
+    | Distributing
+    | Sweep
+    | OtherDistribution of string
+
+/// Vehicle used when sweeping idle cash.
+type SweepVehicle =
+    | MoneyMarketFund
+    | BankDeposit
+    | Repo
+    | OtherVehicle of string
+
 type MaturityTerms = {
     EffectiveDate: DateOnly option
     IssueDate: DateOnly option
@@ -9,10 +59,10 @@ type MaturityTerms = {
 }
 
 type CouponTerms = {
-    CouponType: string option
+    CouponType: CouponKind option
     CouponRate: decimal option
-    PaymentFrequency: string option
-    DayCount: string option
+    PaymentFrequency: PaymentFrequency option
+    DayCount: DayCountConvention option
 }
 
 type DiscountTerms = {
@@ -34,16 +84,17 @@ type AccrualTerms = {
     ExDividendDays: int option
     BusinessDayConvention: string option
     HolidayCalendar: string option
+    DayCount: DayCountConvention option
 }
 
 type PaymentTerms = {
-    PaymentFrequency: string option
+    PaymentFrequency: PaymentFrequency option
     PaymentLagDays: int option
     PaymentCurrency: string option
 }
 
 type RedemptionTerms = {
-    RedemptionType: string option
+    RedemptionType: RedemptionStyle option
     RedemptionPrice: decimal option
     IsBullet: bool option
     IsAmortizing: bool option
@@ -83,8 +134,8 @@ type AuctionTerms = {
 
 type SweepTerms = {
     ProgramName: string option
-    SweepVehicleType: string option
-    SweepFrequency: string option
+    SweepVehicleType: SweepVehicle option
+    SweepFrequency: PaymentFrequency option
     TargetAccountType: string option
 }
 
@@ -133,15 +184,16 @@ module VotingRightsCat =
 
 type EquityBehaviorTerms = {
     ShareClass: string option
-    VotingRightsCat: VotingRightsCat option
-    DistributionType: string option
-    /// Total shares issued (including restricted).
-    SharesOutstanding: int64 option
-    /// Free-float share count (excludes insider / restricted holdings).
-    FloatShares: int64 option
-    IsRestricted: bool
-    IsDualClass: bool
-    IsPrimaryListing: bool
+    VotingRights: string option
+    DistributionType: DistributionPolicy option
+}
+
+type DepositaryReceiptTerms = {
+    DepositaryBank: string option
+    OrdinaryShareRatio: decimal option
+    UnderlyingCurrency: string option
+    UnderlyingIsin: string option
+    UnderlyingCountry: string option
 }
 
 type FundTerms = {
@@ -364,6 +416,74 @@ type SecurityTermModules = {
     // --- Structured / factorable bond module ---
     StructuredProduct: StructuredProductTerms option
 }
+
+[<RequireQualifiedAccess>]
+module PaymentFrequency =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | Daily -> "Daily"
+        | Weekly -> "Weekly"
+        | Monthly -> "Monthly"
+        | Quarterly -> "Quarterly"
+        | SemiAnnual -> "SemiAnnual"
+        | Annual -> "Annual"
+        | OtherFrequency other -> other
+
+[<RequireQualifiedAccess>]
+module DayCountConvention =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | Actual360 -> "Actual360"
+        | Actual365 -> "Actual365"
+        | Thirty360 -> "Thirty360"
+        | Business252 -> "Business252"
+        | OtherDayCount other -> other
+
+[<RequireQualifiedAccess>]
+module CouponKind =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | Fixed -> "Fixed"
+        | Floating -> "Floating"
+        | ZeroCoupon -> "ZeroCoupon"
+        | Step -> "Step"
+        | DiscountNote -> "DiscountNote"
+        | OtherCoupon other -> other
+
+[<RequireQualifiedAccess>]
+module RedemptionStyle =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | Bullet -> "Bullet"
+        | Callable -> "Callable"
+        | Putable -> "Putable"
+        | Amortizing -> "Amortizing"
+        | Perpetual -> "Perpetual"
+        | OtherRedemption other -> other
+
+[<RequireQualifiedAccess>]
+module DistributionPolicy =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | Accumulating -> "Accumulating"
+        | Distributing -> "Distributing"
+        | Sweep -> "Sweep"
+        | OtherDistribution other -> other
+
+[<RequireQualifiedAccess>]
+module SweepVehicle =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | MoneyMarketFund -> "MoneyMarketFund"
+        | BankDeposit -> "BankDeposit"
+        | Repo -> "Repo"
+        | OtherVehicle other -> other
 
 [<RequireQualifiedAccess>]
 module SecurityTermModules =
