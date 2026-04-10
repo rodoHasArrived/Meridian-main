@@ -66,7 +66,7 @@ public static class ExecutionEndpoints
                 PortfolioValue: portfolio.PortfolioValue,
                 UnrealisedPnl: portfolio.UnrealisedPnl,
                 RealisedPnl: portfolio.RealisedPnl,
-                Positions: portfolio.Positions.Values.ToArray(),
+                Positions: portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray(),
                 AsOf: DateTimeOffset.UtcNow);
 
             return Results.Json(snapshot, jsonOptions);
@@ -430,7 +430,7 @@ public static class ExecutionEndpoints
 
     private static ExecutionAccountDetailSnapshot BuildLegacySingleAccountSnapshot(IPortfolioState portfolio)
     {
-        var positions = portfolio.Positions.Values.ToArray();
+        var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
         var longMv = positions.Where(static p => !p.IsShort).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
         var shortMv = positions.Where(static p => p.IsShort).Sum(static p => (decimal)p.AbsoluteQuantity * p.AverageCostBasis);
         return new ExecutionAccountDetailSnapshot(
