@@ -29,6 +29,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         IReadOnlyList<SecurityProjectionRecord> records,
         CancellationToken ct = default)
     {
+        _ = projectionName;
+        _ = lastGlobalSequence;
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
@@ -37,7 +40,6 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false);
         }
 
-        await SaveCheckpointCoreAsync(connection, transaction, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 

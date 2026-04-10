@@ -45,10 +45,20 @@ public sealed class SecurityMasterProjectionService
 
     public async Task WarmAsync(CancellationToken ct = default)
     {
+        var persistedRecords = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        if (persistedRecords.Count > 0)
+        {
+            _cache.ReplaceAll(persistedRecords);
+            _logger.LogInformation(
+                "Warmed security master projection cache from persisted projections ({Count} records)",
+                persistedRecords.Count);
+            return;
+        }
+
         var rebuiltRecords = await BuildWarmSetAsync(ct).ConfigureAwait(false);
         _cache.ReplaceAll(rebuiltRecords);
         _logger.LogInformation(
-            "Warmed security master projection cache with {Count} rebuilt records from snapshots/events",
+            "Warmed security master projection cache from snapshot/event rebuild ({Count} records)",
             rebuiltRecords.Count);
     }
 }

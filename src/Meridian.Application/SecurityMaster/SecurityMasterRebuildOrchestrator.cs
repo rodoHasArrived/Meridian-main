@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
@@ -45,13 +47,22 @@ public sealed class SecurityMasterRebuildOrchestrator
             return;
         }
 
-        if (checkpoint is null || _cache.Count == 0)
+        var persistedBatch = await _store.LoadAllAsync(ct).ConfigureAwait(false);
+        if (persistedBatch.Count > 0)
+        {
+            ReplaceCacheWithMetrics(persistedBatch);
+            _logger.LogInformation(
+                "Hydrated security master cache from persisted projections ({Count} records, checkpoint {Checkpoint})",
+                persistedBatch.Count,
+                checkpoint);
+        }
+
+        if (checkpoint is null || persistedBatch.Count == 0)
         {
             var rebuiltRecords = await _projectionService.BuildWarmSetAsync(ct).ConfigureAwait(false);
-            await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, rebuiltRecords, ct).ConfigureAwait(false);
-            _cache.ReplaceAll(rebuiltRecords);
+            await PersistBatchThenCheckpointAsync(rebuiltRecords, latestSequence, replaceAll: true, ct).ConfigureAwait(false);
             _logger.LogInformation(
-                "Security master rebuild performed full warm and checkpointed sequence {Sequence}",
+                "Security master rebuild performed full warm from snapshots/events and checkpointed sequence {Sequence}",
                 latestSequence);
             return;
         }
@@ -86,16 +97,66 @@ public sealed class SecurityMasterRebuildOrchestrator
                 cursor = Math.Max(cursor, @event.GlobalSequence ?? cursor);
             }
 
-            await _store.PersistProjectionBatchAsync(ProjectionName, cursor, rebuiltRecords, ct).ConfigureAwait(false);
-            foreach (var rebuilt in rebuiltRecords)
-            {
-                _cache.Upsert(rebuilt);
-            }
+            await PersistBatchThenCheckpointAsync(rebuiltRecords, cursor, replaceAll: false, ct).ConfigureAwait(false);
         }
 
         _logger.LogInformation(
             "Security master rebuild replayed events through sequence {Sequence} using batch size {BatchSize}",
             cursor,
             _options.ProjectionReplayBatchSize);
+    }
+
+    private async Task PersistBatchThenCheckpointAsync(
+        IReadOnlyList<SecurityProjectionRecord> records,
+        long sequence,
+        bool replaceAll,
+        CancellationToken ct)
+    {
+        await _store.PersistProjectionBatchAsync(ProjectionName, sequence, records, ct).ConfigureAwait(false);
+
+        if (replaceAll)
+        {
+            ReplaceCacheWithMetrics(records);
+        }
+        else
+        {
+            UpsertCacheWithMetrics(records);
+        }
+
+        await _store.SaveCheckpointAsync(ProjectionName, sequence, ct).ConfigureAwait(false);
+    }
+
+    private void ReplaceCacheWithMetrics(IReadOnlyCollection<SecurityProjectionRecord> records)
+    {
+        _cache.ReplaceAll(records);
+
+        var expected = records.Select(r => r.SecurityId).Distinct().Count();
+        var actual = _cache.Count;
+        if (actual != expected)
+        {
+            _logger.LogWarning(
+                "Projection cache hydrate mismatch after replace-all: expected {Expected} unique records, found {Actual}",
+                expected,
+                actual);
+        }
+    }
+
+    private void UpsertCacheWithMetrics(IEnumerable<SecurityProjectionRecord> records)
+    {
+        var distinctIds = new HashSet<Guid>();
+        foreach (var record in records)
+        {
+            distinctIds.Add(record.SecurityId);
+            _cache.Upsert(record);
+        }
+
+        var missing = distinctIds.Count(id => _cache.Get(id) is null);
+        if (missing > 0)
+        {
+            _logger.LogWarning(
+                "Projection cache hydrate divergence: persisted {Persisted} records but {Missing} cache entries were missing after upsert",
+                distinctIds.Count,
+                missing);
+        }
     }
 }

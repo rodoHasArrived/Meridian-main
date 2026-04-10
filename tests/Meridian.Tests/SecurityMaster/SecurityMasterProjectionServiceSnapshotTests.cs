@@ -25,7 +25,7 @@ public sealed class SecurityMasterProjectionServiceSnapshotTests
         var tailProjection = CreateProjection(securityId, "Tail Name", 3);
 
         store.LoadAllAsync(Arg.Any<CancellationToken>())
-            .Returns(new[] { staleProjection });
+            .Returns(Array.Empty<SecurityProjectionRecord>());
 
         snapshotStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(new SecuritySnapshotRecord(

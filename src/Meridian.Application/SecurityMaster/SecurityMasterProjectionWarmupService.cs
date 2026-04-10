@@ -11,18 +11,18 @@ namespace Meridian.Application.SecurityMaster;
 /// </summary>
 public sealed class SecurityMasterProjectionWarmupService : IHostedService
 {
-    private readonly SecurityMasterProjectionService _projectionService;
+    private readonly SecurityMasterRebuildOrchestrator _rebuildOrchestrator;
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterProjectionWarmupService> _logger;
     private readonly SecurityMasterCanonicalSymbolSeedService? _seedService;
 
     public SecurityMasterProjectionWarmupService(
-        SecurityMasterProjectionService projectionService,
+        SecurityMasterRebuildOrchestrator rebuildOrchestrator,
         SecurityMasterOptions options,
         ILogger<SecurityMasterProjectionWarmupService> logger,
         SecurityMasterCanonicalSymbolSeedService? seedService = null)
     {
-        _projectionService = projectionService;
+        _rebuildOrchestrator = rebuildOrchestrator;
         _options = options;
         _logger = logger;
         _seedService = seedService;
@@ -40,7 +40,7 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService
 
         try
         {
-            await _projectionService.WarmAsync(cancellationToken).ConfigureAwait(false);
+            await _rebuildOrchestrator.RebuildAsync(cancellationToken).ConfigureAwait(false);
 
             // Seed the canonical symbol registry from the freshly-populated projection cache.
             if (_seedService is not null)

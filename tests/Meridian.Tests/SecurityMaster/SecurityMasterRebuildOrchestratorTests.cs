@@ -42,11 +42,11 @@ public sealed class SecurityMasterRebuildOrchestratorTests
             42L,
             Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 0),
             Arg.Any<CancellationToken>());
-        await store.DidNotReceive().SaveCheckpointAsync(Arg.Any<string>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+        await store.Received(1).SaveCheckpointAsync("security_master_cache", 42L, Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task RebuildAsync_WhenCheckpointExistsButCacheIsCold_PersistsWarmSetInsteadOfIncrementalReplay()
+    public async Task RebuildAsync_WhenCheckpointIsCurrent_HydratesCacheFromProjectionTable()
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -60,10 +60,8 @@ public sealed class SecurityMasterRebuildOrchestratorTests
         var projection = CreateProjection(securityId, "Tail Name", 3);
 
         store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(5L);
-        eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(7L);
+        eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(5L);
         store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { projection });
-        snapshotStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns((SecuritySnapshotRecord?)null);
 
         var orchestrator = new SecurityMasterRebuildOrchestrator(
             eventStore,
@@ -78,21 +76,18 @@ public sealed class SecurityMasterRebuildOrchestratorTests
 
         await store.Received(1).LoadAllAsync(Arg.Any<CancellationToken>());
         await eventStore.DidNotReceive().LoadSinceSequenceAsync(Arg.Any<long>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
-        await eventStore.Received(1).LoadAsync(securityId, Arg.Any<CancellationToken>());
+        cache.Get(securityId).Should().NotBeNull();
         cache.Count.Should().Be(1);
-        await store.Received(1).PersistProjectionBatchAsync(
-            "security_master_cache",
-            7L,
-            Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records =>
-                records.Count == 1 &&
-                records[0].SecurityId == securityId &&
-                records[0].DisplayName == "Tail Name"),
+        await store.DidNotReceive().PersistProjectionBatchAsync(
+            Arg.Any<string>(),
+            Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
             Arg.Any<CancellationToken>());
         await store.DidNotReceive().SaveCheckpointAsync(Arg.Any<string>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task RebuildAsync_WhenCheckpointExistsAndCacheIsWarm_PersistsReplayBatchBeforeUpdatingCache()
+    public async Task RebuildAsync_WhenCheckpointIsStale_ReplaysEventsAndCheckpointsAfterCacheUpdate()
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -109,6 +104,7 @@ public sealed class SecurityMasterRebuildOrchestratorTests
 
         store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(5L);
         eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(7L);
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { projection });
         eventStore.LoadSinceSequenceAsync(5L, 10, Arg.Any<CancellationToken>())
             .Returns(new[]
             {
@@ -151,10 +147,11 @@ public sealed class SecurityMasterRebuildOrchestratorTests
                 6L,
                 Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 1 && records[0].SecurityId == securityId),
                 Arg.Any<CancellationToken>());
+            store.SaveCheckpointAsync("security_master_cache", 6L, Arg.Any<CancellationToken>());
         });
 
         cache.Get(securityId).Should().NotBeNull();
-        await store.DidNotReceive().SaveCheckpointAsync(Arg.Any<string>(), Arg.Any<long>(), Arg.Any<CancellationToken>());
+        await store.Received(1).SaveCheckpointAsync("security_master_cache", 6L, Arg.Any<CancellationToken>());
     }
 
     private static SecurityProjectionRecord CreateProjection(Guid securityId, string displayName, long version)
