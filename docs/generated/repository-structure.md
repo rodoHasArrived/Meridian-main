@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-04-10 19:32:45 UTC. Do not edit manually.
+> Auto-generated on 2026-04-10 20:56:11 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -5622,6 +5622,8 @@ Meridian-main
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
+│   │   ├── Serialization
+│   │   │   └── FSharpInteropJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs

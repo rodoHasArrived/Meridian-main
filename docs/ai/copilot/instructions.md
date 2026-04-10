@@ -5733,6 +5733,8 @@ Meridian-main
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
+│   │   ├── Serialization
+│   │   │   └── FSharpInteropJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
