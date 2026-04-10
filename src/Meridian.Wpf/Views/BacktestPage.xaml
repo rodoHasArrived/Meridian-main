@@ -416,16 +416,20 @@
                                                                     ToolTip="{Binding Tooltip}">
                                                                 <Border.Style>
                                                                     <Style TargetType="Border">
-                                                                        <Setter Property="Background" Value="#FF3A7BD5" />
+                                                                        <!-- Full coverage: blue/info -->
+                                                                        <Setter Property="Background" Value="{StaticResource InfoColorBrush}" />
                                                                         <Style.Triggers>
                                                                             <DataTrigger Binding="{Binding Level}" Value="Partial">
-                                                                                <Setter Property="Background" Value="#FFF5A623" />
+                                                                                <!-- Partial: warning orange -->
+                                                                                <Setter Property="Background" Value="{StaticResource WarningColorBrush}" />
                                                                             </DataTrigger>
                                                                             <DataTrigger Binding="{Binding Level}" Value="Major">
-                                                                                <Setter Property="Background" Value="#FFE53935" />
+                                                                                <!-- Major gap: error red -->
+                                                                                <Setter Property="Background" Value="{StaticResource ErrorColorBrush}" />
                                                                             </DataTrigger>
                                                                             <DataTrigger Binding="{Binding Level}" Value="None">
-                                                                                <Setter Property="Background" Value="#FF3D3D4A" />
+                                                                                <!-- No data: muted border -->
+                                                                                <Setter Property="Background" Value="{StaticResource ConsoleBorderBrush}" />
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>

@@ -124,7 +124,7 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, request.DefaultExecutionModel);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
@@ -402,6 +402,7 @@ public sealed class BacktestEngine(
         BacktestContext ctx,
         List<FillEvent> allFills,
         ILogger<BacktestEngine> logger,
+        RollingMetricsState rollingState,
         ExecutionModel requestDefault = ExecutionModel.Auto)
     {
         var filled = new List<Guid>();
@@ -432,6 +433,7 @@ public sealed class BacktestEngine(
 
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
+                rollingState.IncrementFills();
                 strategy.OnOrderFill(fill, ctx);
 
                 foreach (var contingentOrder in ContingentOrderManager.CreateContingentOrders(order, fill))

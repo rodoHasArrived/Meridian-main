@@ -345,20 +345,20 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         _coverageCts.Cancel();
         _coverageCts.Dispose();
         _coverageCts = new CancellationTokenSource();
-        var ct = _coverageCts.Token;
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Task.Delay(500, ct).ConfigureAwait(false);
-                await RefreshCoverageAsync(ct).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) { }
-        }, ct);
+        _ = DelayThenRefreshAsync(_coverageCts.Token);
     }
 
-    private async Task RefreshCoverageAsync(CancellationToken ct)
+    private async Task DelayThenRefreshAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+            await RefreshCoverageAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task RefreshCoverageAsync(CancellationToken cancellationToken)
     {
         var rawSymbols = string.IsNullOrWhiteSpace(SymbolsText) ? [] :
             SymbolsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -377,7 +377,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
         try
         {
-            var coverage = await _availabilityService.GetCoverageAsync(rawSymbols, from, to, DataRoot, ct)
+            var coverage = await _availabilityService.GetCoverageAsync(rawSymbols, from, to, DataRoot, cancellationToken)
                 .ConfigureAwait(false);
 
             // Build months list sorted ascending
@@ -419,12 +419,12 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         catch (OperationCanceledException) { }
     }
 
-    private async Task FixGapsAsync(CancellationToken ct = default)
+    private async Task FixGapsAsync(CancellationToken cancellationToken = default)
     {
         // Stub: in a fully wired implementation this would call BackfillApiService
         // to request fills for amber/red cells. For now just invalidate and refresh.
         _availabilityService.InvalidateCache();
-        await RefreshCoverageAsync(ct).ConfigureAwait(false);
+        await RefreshCoverageAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public void Dispose()

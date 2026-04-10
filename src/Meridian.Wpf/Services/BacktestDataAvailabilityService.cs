@@ -10,7 +10,7 @@ namespace Meridian.Wpf.Services;
 /// </summary>
 public sealed class BacktestDataAvailabilityService
 {
-    private static readonly Regex DateInFilename = new(@"\d{4}-\d{2}-\d{2}", RegexOptions.Compiled);
+    private static readonly Regex _dateInFilenameRegex = new(@"\d{4}-\d{2}-\d{2}", RegexOptions.Compiled);
 
     private record CacheKey(string Symbols, DateOnly From, DateOnly To, string DataRoot);
 
@@ -27,7 +27,7 @@ public sealed class BacktestDataAvailabilityService
             DateOnly from,
             DateOnly to,
             string dataRoot,
-            CancellationToken ct = default)
+            CancellationToken cancellationToken = default)
     {
         var key = new CacheKey(
             string.Join(",", symbols.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)),
@@ -38,11 +38,11 @@ public sealed class BacktestDataAvailabilityService
 
         return Task.Run(() =>
         {
-            ct.ThrowIfCancellationRequested();
-            var result = BuildCoverage(symbols, from, to, dataRoot, ct);
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = BuildCoverage(symbols, from, to, dataRoot, cancellationToken);
             _cache.TryAdd(key, result);
             return result;
-        }, ct);
+        }, cancellationToken);
     }
 
     private static Dictionary<string, Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>>
@@ -51,13 +51,13 @@ public sealed class BacktestDataAvailabilityService
             DateOnly from,
             DateOnly to,
             string dataRoot,
-            CancellationToken ct)
+            CancellationToken cancellationToken)
     {
         var perSymbol = new Dictionary<string, Dictionary<(int, int), (int, int)>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var symbol in symbols)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             var symbolDir = Path.Combine(dataRoot, symbol);
             var presentDates = new HashSet<DateOnly>();
 
@@ -65,7 +65,7 @@ public sealed class BacktestDataAvailabilityService
             {
                 foreach (var file in Directory.EnumerateFiles(symbolDir, "*.jsonl", SearchOption.AllDirectories))
                 {
-                    var match = DateInFilename.Match(Path.GetFileName(file));
+                    var match = _dateInFilenameRegex.Match(Path.GetFileName(file));
                     if (!match.Success) continue;
                     if (!DateOnly.TryParse(match.Value, out var date)) continue;
                     if (date >= from && date <= to)
