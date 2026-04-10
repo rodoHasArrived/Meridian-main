@@ -74,18 +74,6 @@ public static class UiApiRoutes
     public const string ProviderMetrics = "/api/providers/metrics";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
-    public const string ProviderOperationsConnections = "/api/provider-operations/connections";
-    public const string ProviderOperationsConnectionById = "/api/provider-operations/connections/{connectionId}";
-    public const string ProviderOperationsBindings = "/api/provider-operations/bindings";
-    public const string ProviderOperationsBindingById = "/api/provider-operations/bindings/{bindingId}";
-    public const string ProviderOperationsPolicies = "/api/provider-operations/policies";
-    public const string ProviderOperationsRoutePreview = "/api/provider-operations/route-preview";
-    public const string ProviderOperationsRouteHistory = "/api/provider-operations/route-history";
-    public const string ProviderOperationsPresets = "/api/provider-operations/presets";
-    public const string ProviderOperationsApplyPreset = "/api/provider-operations/presets/apply";
-    public const string ProviderOperationsCertifications = "/api/provider-operations/certifications";
-    public const string ProviderOperationsCertificationRun = "/api/provider-operations/certifications/run";
-    public const string ProviderOperationsTrust = "/api/provider-operations/trust";
     public const string ProviderById = "/api/providers/{providerName}";
     public const string ProviderFailover = "/api/providers/failover";
     public const string ProviderFailoverTrigger = "/api/providers/failover/trigger";
@@ -315,9 +303,9 @@ public static class UiApiRoutes
     public const string SecurityMasterDeactivate = "/api/security-master/deactivate";
     public const string SecurityMasterAliasesUpsert = "/api/security-master/aliases/upsert";
     public const string SecurityMasterTradingParameters = "/api/security-master/{securityId:guid}/trading-parameters";
+    public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
+    public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
-    public const string SecurityMasterPreferredEquityTerms = "/api/security-master/equities/{securityId:guid}/preferred-terms";
-    public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/equities/{securityId:guid}/conversion-terms";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterImport = "/api/security-master/import";
@@ -396,7 +384,6 @@ public static class UiApiRoutes
     public const string LeanBacktestDelete = "/api/lean/backtest/{backtestId}/delete";
     public const string LeanAutoExportStatus = "/api/lean/auto-export";
     public const string LeanAutoExportConfigure = "/api/lean/auto-export/configure";
-    public const string LeanResultsArtifact = "/api/lean/results/artifact";
     public const string LeanResultsIngest = "/api/lean/results/ingest";
     public const string LeanSymbolMap = "/api/lean/symbol-map";
 

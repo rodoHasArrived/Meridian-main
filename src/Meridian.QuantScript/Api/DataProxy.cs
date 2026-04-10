@@ -14,19 +14,6 @@ public sealed class DataProxy(IQuantDataContext context, Func<CancellationToken>
 {
     // ── DateOnly overloads (preferred) ────────────────────────────────────────
 
-    public PriceSeries Prices(string symbol)
-        => Prices(
-            symbol,
-            DateOnly.FromDateTime(DateTime.Today.AddYears(-10)),
-            DateOnly.FromDateTime(DateTime.Today));
-
-    public PriceSeries Prices(string symbol, string? provider)
-        => Prices(
-            symbol,
-            DateOnly.FromDateTime(DateTime.Today.AddYears(-10)),
-            DateOnly.FromDateTime(DateTime.Today),
-            provider);
-
     public PriceSeries Prices(string symbol, DateOnly from, DateOnly to)
         => context.PricesAsync(symbol, from, to, ctProvider()).GetAwaiter().GetResult();
 

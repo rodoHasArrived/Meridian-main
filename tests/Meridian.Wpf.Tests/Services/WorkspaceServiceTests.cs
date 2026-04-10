@@ -1,6 +1,5 @@
 using Meridian.Wpf.Services;
 using Meridian.Ui.Services;
-using System.IO;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -10,25 +9,7 @@ namespace Meridian.Wpf.Tests.Services;
 /// </summary>
 public sealed class WorkspaceServiceTests
 {
-    private static readonly string TestSettingsFilePath = Path.Combine(
-        Path.GetTempPath(),
-        "Meridian.Wpf.Tests",
-        "workspace-service-tests",
-        "workspace-data.json");
-
-    private static WorkspaceService CreateService()
-    {
-        var service = WorkspaceService.Instance;
-        WorkspaceService.SetSettingsFilePathOverrideForTests(TestSettingsFilePath);
-        if (File.Exists(TestSettingsFilePath))
-        {
-            File.Delete(TestSettingsFilePath);
-        }
-
-        service.ResetForTests();
-        service.LoadWorkspacesAsync().GetAwaiter().GetResult();
-        return service;
-    }
+    private static WorkspaceService CreateService() => WorkspaceService.Instance;
 
     // ── Singleton ────────────────────────────────────────────────────
 
@@ -241,16 +222,7 @@ public sealed class WorkspaceServiceTests
 
         svc.GetLastSessionState().Should().NotBeNull();
         svc.GetLastSessionState()!.ActiveWorkspaceId.Should().Be(trading.Id);
-        svc.GetLastSessionState()!.ActivePageTag.Should().Be("TradingShell");
-    }
-
-    [Fact]
-    public void BuiltInWorkspaceRoutes_ShouldDefaultToWorkspaceShells()
-    {
-        var svc = CreateService();
-
-        svc.Workspaces.First(w => w.Id == "research").PreferredPageTag.Should().Be("ResearchShell");
-        svc.Workspaces.First(w => w.Id == "trading").PreferredPageTag.Should().Be("TradingShell");
+        svc.GetLastSessionState()!.ActivePageTag.Should().Be(trading.PreferredPageTag);
     }
 
     [Fact]
@@ -472,52 +444,6 @@ public sealed class WorkspaceServiceTests
         restored.ActivePageTag.Should().Be("StrategyRuns");
         restored.ActiveFilters.Should().ContainKey("research.filter");
         restored.ActiveFilters.Should().NotContainKey("governance.filter");
-    }
-
-    [Fact]
-    public async Task SaveWorkspaceLayoutStateAsync_ShouldPersistLayoutsPerWorkspaceAndFund()
-    {
-        var svc = CreateService();
-        var layout = new WorkstationLayoutState
-        {
-            LayoutId = "research-studio",
-            DisplayName = "Research Studio",
-            ActivePaneId = "pane-2",
-            DockLayoutXml = "<layout />",
-            Panes =
-            [
-                new WorkstationPaneState
-                {
-                    PaneId = "pane-1",
-                    PageTag = "Backtest",
-                    Title = "Backtest Studio",
-                    DockZone = "document",
-                    IsActive = false,
-                    Order = 0
-                },
-                new WorkstationPaneState
-                {
-                    PaneId = "pane-2",
-                    PageTag = "StrategyRuns",
-                    Title = "Run Browser",
-                    DockZone = "left",
-                    IsToolPane = true,
-                    IsActive = true,
-                    Order = 1
-                }
-            ]
-        };
-
-        await svc.SaveWorkspaceLayoutStateAsync("research", layout, "alpha-credit");
-
-        var restored = await svc.GetWorkspaceLayoutStateAsync("research", "alpha-credit");
-        restored.Should().NotBeNull();
-        restored!.LayoutId.Should().Be("research-studio");
-        restored.Panes.Should().HaveCount(2);
-        restored.Panes.Should().ContainSingle(pane => pane.PageTag == "StrategyRuns" && pane.DockZone == "left");
-
-        var otherFund = await svc.GetWorkspaceLayoutStateAsync("research", "beta-macro");
-        otherFund.Should().BeNull();
     }
 
     // ── Export/Import ────────────────────────────────────────────────

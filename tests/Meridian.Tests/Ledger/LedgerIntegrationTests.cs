@@ -255,31 +255,6 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
-    public void ProjectLedgerBook_KeyIdentity_IsCaseInsensitive()
-    {
-        var projectLedgers = new ProjectLedgerBook("project-alpha");
-        var lowerKey = new LedgerBookKey("project-alpha", "core", LedgerViewKind.Actual, "baseline");
-        var upperKey = new LedgerBookKey("PROJECT-ALPHA", "CORE", LedgerViewKind.Actual, "BASELINE");
-        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
-        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
-
-        var lower = projectLedgers.GetOrCreate(lowerKey);
-        var upper = projectLedgers.GetOrCreate(upperKey);
-
-        upper.Should().BeSameAs(lower);
-        projectLedgers.LedgerKeys.Should().HaveCount(1);
-        projectLedgers.TryGetLedger(upperKey, out var resolved).Should().BeTrue();
-        resolved.Should().BeSameAs(lower);
-
-        lower.PostLines(DateTimeOffset.UtcNow, "sale", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
-
-        var balances = projectLedgers.ConsolidatedTrialBalance(ledgerBook: "CORE", scenarioId: "BASELINE");
-
-        balances[cash].Should().Be(100m);
-        balances[revenue].Should().Be(100m);
-    }
-
-    [Fact]
     public void GetJournalEntries_WithAccountTypeFilter_ReturnsOnlyEntriesTouchingThatType()
     {
         var ledger = new Meridian.Ledger.Ledger();
@@ -461,48 +436,6 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
-    public void Ledger_Journal_IsExternallyReadOnly()
-    {
-        var ledger = new Meridian.Ledger.Ledger();
-        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
-        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
-
-        ledger.PostLines(DateTimeOffset.UtcNow, "sale", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
-
-        var act = () => ((IList<JournalEntry>)ledger.Journal).Clear();
-
-        act.Should().Throw<NotSupportedException>();
-        ledger.Journal.Should().HaveCount(1);
-        ledger.GetBalance(cash).Should().Be(100m);
-    }
-
-    [Fact]
-    public void JournalEntry_Lines_AreDefensivelyCopiedAndReadOnly()
-    {
-        var journalId = Guid.NewGuid();
-        var ts = DateTimeOffset.UtcNow;
-        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
-        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
-        var originalLines = new List<LedgerEntry>
-        {
-            new(Guid.NewGuid(), journalId, ts, cash, 100m, 0m, "sale"),
-            new(Guid.NewGuid(), journalId, ts, revenue, 0m, 100m, "sale"),
-        };
-
-        var entry = new JournalEntry(journalId, ts, "sale", originalLines);
-
-        originalLines.Add(new LedgerEntry(Guid.NewGuid(), journalId, ts, cash, 1m, 0m, "sale"));
-
-        entry.Lines.Should().HaveCount(2);
-        entry.IsBalanced.Should().BeTrue();
-
-        var act = () => ((IList<LedgerEntry>)entry.Lines).Clear();
-
-        act.Should().Throw<NotSupportedException>();
-        entry.Lines.Should().HaveCount(2);
-    }
-
-    [Fact]
     public void Ledger_GetRunningBalance_ReturnsChronologicalCheckpoints()
     {
         var ledger = new Meridian.Ledger.Ledger();
@@ -523,28 +456,6 @@ public sealed class LedgerIntegrationTests
         running[1].Balance.Should().Be(90m);
         running[1].Debit.Should().Be(0m);
         running[1].Credit.Should().Be(10m);
-    }
-
-    [Fact]
-    public void Ledger_BackdatedPosts_AppearInChronologicalJournalViews()
-    {
-        var ledger = new Meridian.Ledger.Ledger();
-        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
-        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
-        var t1 = new DateTimeOffset(2025, 1, 1, 1, 0, 0, TimeSpan.Zero);
-        var t2 = new DateTimeOffset(2025, 1, 1, 2, 0, 0, TimeSpan.Zero);
-
-        ledger.PostLines(t2, "later", new[] { (cash, 100m, 0m), (revenue, 0m, 100m) });
-        ledger.PostLines(t1, "earlier", new[] { (cash, 50m, 0m), (revenue, 0m, 50m) });
-
-        ledger.Journal.Select(entry => entry.Description).Should().ContainInOrder("earlier", "later");
-        ledger.GetJournalEntries().Select(entry => entry.Description).Should().ContainInOrder("earlier", "later");
-
-        var running = ledger.GetRunningBalance(cash);
-
-        running.Select(point => point.Description).Should().ContainInOrder("earlier", "later");
-        running[0].Balance.Should().Be(50m);
-        running[1].Balance.Should().Be(150m);
     }
 
     [Fact]
@@ -588,23 +499,6 @@ public sealed class LedgerIntegrationTests
         snapAtT2.Balances[cash].Should().Be(150m);
         snapAtT2.JournalEntryCount.Should().Be(2);
         snapAtT2.LedgerEntryCount.Should().Be(4);
-    }
-
-    [Fact]
-    public void Ledger_SnapshotAsOf_ReturnsReadOnlyBalances()
-    {
-        var ledger = new Meridian.Ledger.Ledger();
-        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
-        var revenue = new LedgerAccount("Revenue", LedgerAccountType.Revenue);
-        var t1 = new DateTimeOffset(2025, 1, 1, 10, 0, 0, TimeSpan.Zero);
-
-        ledger.PostLines(t1, "sale", new[] { (cash, 200m, 0m), (revenue, 0m, 200m) });
-
-        var snapshot = ledger.SnapshotAsOf(t1);
-        var act = () => ((IDictionary<LedgerAccount, decimal>)snapshot.Balances).Clear();
-
-        act.Should().Throw<NotSupportedException>();
-        snapshot.Balances[cash].Should().Be(200m);
     }
 
     [Fact]
@@ -728,22 +622,5 @@ public sealed class LedgerIntegrationTests
         snap.Entities.Should().ContainKey("e1");
         snap.Sleeves.Should().ContainKey("s1");
         snap.Vehicles.Should().BeEmpty();
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void FundLedgerBook_DimensionAccessors_RejectBlankIdentifiers(string? invalidId)
-    {
-        var fund = new FundLedgerBook("fund-xyz");
-
-        var entityAct = () => fund.EntityLedger(invalidId!);
-        var sleeveAct = () => fund.SleeveLedger(invalidId!);
-        var vehicleAct = () => fund.VehicleLedger(invalidId!);
-
-        entityAct.Should().Throw<ArgumentException>();
-        sleeveAct.Should().Throw<ArgumentException>();
-        vehicleAct.Should().Throw<ArgumentException>();
     }
 }

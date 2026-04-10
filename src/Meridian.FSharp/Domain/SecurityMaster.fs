@@ -25,6 +25,14 @@ type CommonTerms = {
     Exchange: string option
     LotSize: decimal option
     TickSize: decimal option
+    /// ISO 10383 Market Identifier Code of the primary listing venue (e.g. "XNAS", "XNYS").
+    PrimaryListingMic: string option
+    /// Country of legal incorporation; may differ from CountryOfRisk (e.g. Bermuda-domiciled NYSE-listed company).
+    CountryOfIncorporation: string option
+    /// Standard settlement lag in business days (e.g. 1 for T+1 US equities, 2 for most bonds and EU equities).
+    SettlementCycleDays: int option
+    /// Named holiday calendar used for settlement and accrual calculations (e.g. "NYSE", "LDN", "T2S").
+    HolidayCalendarId: string option
 }
 
 [<RequireQualifiedAccess>]
@@ -40,28 +48,8 @@ module CommonTerms =
             terms with
                 DisplayName = normalizedDisplayName terms
                 Currency = normalizedCurrency terms
+                PrimaryListingMic = terms.PrimaryListingMic |> Option.map (fun m -> m.Trim().ToUpperInvariant())
         }
-
-/// Categorisation of voting rights attached to an equity share class.
-[<RequireQualifiedAccess>]
-type VotingRightsCat =
-    | FullVoting
-    | LimitedVoting
-    | NonVoting
-    | DualClass
-    | SuperVoting
-    | OtherVotingRights of string
-
-[<RequireQualifiedAccess>]
-module VotingRightsCat =
-    let asString cat =
-        match cat with
-        | VotingRightsCat.FullVoting -> "FullVoting"
-        | VotingRightsCat.LimitedVoting -> "LimitedVoting"
-        | VotingRightsCat.NonVoting -> "NonVoting"
-        | VotingRightsCat.DualClass -> "DualClass"
-        | VotingRightsCat.SuperVoting -> "SuperVoting"
-        | VotingRightsCat.OtherVotingRights v -> v
 
 [<RequireQualifiedAccess>]
 type DividendType =
@@ -130,7 +118,7 @@ module EquityClassification =
         | EquityClassification.Preferred _ -> "Preferred"
         | EquityClassification.Convertible _ -> "Convertible"
         | EquityClassification.ConvertiblePreferred _ -> "ConvertiblePreferred"
-        | EquityClassification.Other _ -> "Other"
+        | EquityClassification.Other s -> s
 
 type EquityTerms = {
     ShareClass: string option
@@ -138,13 +126,27 @@ type EquityTerms = {
     Classification: EquityClassification option
 }
 
+/// Exercise style for options and warrants.
+[<RequireQualifiedAccess>]
+type ExerciseStyle =
+    | American
+    | European
+    | Bermudan
+
 type OptionTerms = {
     UnderlyingId: SecurityId
     PutCall: string
     Strike: decimal
     Expiry: DateOnly
     Multiplier: decimal
-    UnderlyingInstrumentType: Meridian.Contracts.Domain.Enums.InstrumentType option
+    /// Links this contract to its option chain / series aggregate.
+    OptChainId: string option
+    ExerciseStyle: ExerciseStyle option
+    /// "Physical" or "Cash".
+    SettlementType: string option
+    /// True when this contract has been adjusted for a corporate action (split, special dividend, etc.).
+    IsAdjusted: bool
+    LastTradingDt: DateOnly option
 }
 
 type FutureTerms = {
@@ -152,38 +154,57 @@ type FutureTerms = {
     ContractMonth: string
     Expiry: DateOnly
     Multiplier: decimal
+    LastTradingDt: DateOnly option
+    FirstNoticeDt: DateOnly option
+    DeliveryMonthDt: DateOnly option
+    /// "Physical" or "Cash".
+    SettlementType: string option
+    /// Delivery point code for physically settled commodity futures.
+    DeliveryLocationCode: string option
+    /// True when this contract is the current front-month / roll target.
+    IsRollTarget: bool
+    /// Number of calendar days before expiry when the roll window opens.
+    RollWindowDays: int option
 }
+
+/// Discriminated union identifying the bond's economic subclass.
+[<RequireQualifiedAccess>]
+type BondSubclass =
+    | Sovereign
+    | Corporate
+    | Municipal
+    | Agency
+    | Convertible
+    | InflationLinked
+    | FloatingRate
+    // --- Asset-backed / structured credit ---
+    /// Generic asset-backed security (auto loans, credit cards, student loans, etc.).
+    | AssetBacked
+    /// Agency or non-agency residential mortgage-backed security (pass-through pool).
+    | MortgageBacked
+    /// Agency MBS guaranteed by Fannie Mae, Freddie Mac, or Ginnie Mae.
+    | AgencyMbs
+    /// Commercial mortgage-backed security.
+    | CommercialMbs
+    /// Collateralized Mortgage Obligation — a CMO tranche carved from an MBS pool.
+    | Cmo
+    /// Collateralized Loan Obligation — CLO tranche backed by leveraged loans.
+    | Clo
+    /// Collateralized Debt Obligation — generic CDO tranche.
+    | Cdo
+    /// Principal-Only strip: receives only scheduled and unscheduled principal cash flows.
+    | PrincipalOnly
+    /// Interest-Only strip: receives only interest cash flows; notional-referenced.
+    | InterestOnly
+    /// Inverse Interest-Only strip: leveraged IO with inverse-floating coupon.
+    | InverseInterestOnly
+    | Other of string
 
 [<RequireQualifiedAccess>]
 type BondCouponStructure =
     | Fixed of rate: decimal * dayCount: string option
     | Floating of index: string * spreadBps: decimal option * capRate: decimal option * floorRate: decimal option * dayCount: string option
     | ZeroCoupon
-
-/// Subcategory of a bond instrument.
-[<RequireQualifiedAccess>]
-type BondSubclass =
-    | Corporate
-    | Government
-    | Municipal
-    | Convertible
-    | HighYield
-    | AssetBacked
-    | MortgageBacked
-    | OtherBond of string
-
-[<RequireQualifiedAccess>]
-module BondSubclass =
-    let asString sub =
-        match sub with
-        | BondSubclass.Corporate -> "Corporate"
-        | BondSubclass.Government -> "Government"
-        | BondSubclass.Municipal -> "Municipal"
-        | BondSubclass.Convertible -> "Convertible"
-        | BondSubclass.HighYield -> "HighYield"
-        | BondSubclass.AssetBacked -> "AssetBacked"
-        | BondSubclass.MortgageBacked -> "MortgageBacked"
-        | BondSubclass.OtherBond v -> v
 
 type BondTerms = {
     Maturity: DateOnly
@@ -193,19 +214,20 @@ type BondTerms = {
     CallDate: DateOnly option
     IssuerName: string option
     Seniority: string option
-    Subclass: BondSubclass option
+    /// Economic subclass of this bond instrument.
+    Subclass: BondSubclass
 }
 
 [<RequireQualifiedAccess>]
 module BondTerms =
     let fixedRate maturity couponRate dayCount issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
 
     let floatingRate maturity index spreadBps issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.FloatingRate }
 
     let zeroCoupon maturity issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -299,7 +321,6 @@ type SwapTerms = {
     EffectiveDate: DateOnly
     MaturityDate: DateOnly
     Legs: SwapLeg list
-    CalendarRefs: string list
 }
 
 type Covenant = {

@@ -1,11 +1,9 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
-using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
-using SdkOrderStatus = Meridian.Execution.Sdk.OrderStatus;
 
 namespace Meridian.Execution;
 
@@ -23,7 +21,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ExecutionAuditTrailService? _auditTrail;
-    private readonly IPortfolioState? _portfolioState;
+    private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private int _orderSequence;
@@ -35,7 +33,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ISecurityMasterGate? securityMasterGate = null,
         ExecutionOperatorControlService? operatorControls = null,
         ExecutionAuditTrailService? auditTrail = null,
-        IPortfolioState? portfolioState = null)
+        Meridian.Execution.Models.IPortfolioState? portfolioState = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -60,48 +58,39 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ArgumentNullException.ThrowIfNull(request);
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
-        var actor = TryGetMetadata(request.Metadata, "actor");
-        var correlationId = TryGetMetadata(request.Metadata, "correlationId");
-        var requestedOverrideId = TryGetMetadata(request.Metadata, "manualOverrideId");
-        var runId = TryGetMetadata(request.Metadata, "runId") ?? request.StrategyId;
 
-        await RecordAuditAsync(
-            action: "OrderSubmitRequested",
-            outcome: "Pending",
-            actor: actor,
-            orderId: orderId,
-            runId: runId,
-            symbol: request.Symbol,
-            correlationId: correlationId,
-            message: $"Submitting {request.Side} {request.Quantity:G29} {request.Symbol} as {request.Type}.",
-            metadata: BuildOrderMetadata(request, ("requestedOverrideId", requestedOverrideId)),
-            ct: ct).ConfigureAwait(false);
+        // Extract metadata fields for audit correlation
+        string? actor = null;
+        string? correlationId = null;
+        string? runId = null;
+        request.Metadata?.TryGetValue("actor", out actor);
+        request.Metadata?.TryGetValue("correlationId", out correlationId);
+        request.Metadata?.TryGetValue("runId", out runId);
 
+        // Operator controls gate — rejects orders when circuit breaker is open (unless bypassed)
         if (_operatorControls is not null)
         {
             var controlDecision = _operatorControls.EvaluateOrder(request, _portfolioState);
             if (!controlDecision.IsApproved)
             {
-                _logger.LogWarning(
-                    "Order {OrderId} for {Symbol} rejected by execution controls: {Reason}",
-                    orderId,
-                    request.Symbol,
-                    controlDecision.RejectReason);
+                _logger.LogWarning("Order {OrderId} for {Symbol} rejected by operator controls: {Reason}",
+                    orderId, request.Symbol, controlDecision.RejectReason);
 
-                await RecordAuditAsync(
-                    action: "OrderRejected",
-                    outcome: "Rejected",
-                    actor: actor,
-                    orderId: orderId,
-                    runId: runId,
-                    symbol: request.Symbol,
-                    correlationId: correlationId,
-                    message: controlDecision.RejectReason,
-                    metadata: BuildOrderMetadata(
-                        request,
-                        ("rejectedBy", "ExecutionControls"),
-                        ("appliedOverrideId", controlDecision.AppliedManualOverrideId)),
-                    ct: ct).ConfigureAwait(false);
+                if (_auditTrail is not null)
+                {
+                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: Guid.NewGuid().ToString("N"),
+                        Category: "Order",
+                        Action: "OrderRejected",
+                        Outcome: "Rejected",
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: actor,
+                        OrderId: orderId,
+                        RunId: runId,
+                        Symbol: request.Symbol,
+                        CorrelationId: correlationId,
+                        Message: controlDecision.RejectReason), ct).ConfigureAwait(false);
+                }
 
                 return new OrderResult
                 {
@@ -121,18 +110,6 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 _logger.LogWarning("Order {OrderId} for {Symbol} rejected by Security Master gate: {Reason}",
                     orderId, request.Symbol, gateResult.Reason);
 
-                await RecordAuditAsync(
-                    action: "OrderRejected",
-                    outcome: "Rejected",
-                    actor: actor,
-                    orderId: orderId,
-                    runId: runId,
-                    symbol: request.Symbol,
-                    correlationId: correlationId,
-                    message: gateResult.Reason,
-                    metadata: BuildOrderMetadata(request, ("rejectedBy", "SecurityMasterGate")),
-                    ct: ct).ConfigureAwait(false);
-
                 return new OrderResult
                 {
                     Success = false,
@@ -150,18 +127,6 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             {
                 _logger.LogWarning("Order {OrderId} for {Symbol} rejected by risk: {Reason}",
                     orderId, request.Symbol, riskResult.RejectReason);
-
-                await RecordAuditAsync(
-                    action: "OrderRejected",
-                    outcome: "Rejected",
-                    actor: actor,
-                    orderId: orderId,
-                    runId: runId,
-                    symbol: request.Symbol,
-                    correlationId: correlationId,
-                    message: riskResult.RejectReason,
-                    metadata: BuildOrderMetadata(request, ("rejectedBy", "RiskValidator")),
-                    ct: ct).ConfigureAwait(false);
 
                 return new OrderResult
                 {
@@ -181,7 +146,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             Quantity = request.Quantity,
             LimitPrice = request.LimitPrice,
             StopPrice = request.StopPrice,
-            Status = SdkOrderStatus.PendingNew,
+            Status = OrderStatus.PendingNew,
             CreatedAt = DateTimeOffset.UtcNow,
             StrategyId = request.StrategyId
         };
@@ -190,8 +155,6 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
         try
         {
-            await EnsureGatewayConnectedAsync(ct).ConfigureAwait(false);
-
             var report = await _gateway.SubmitOrderAsync(request with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
 
@@ -201,25 +164,32 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, request.Symbol, request.Side, request.Quantity, updatedState.Status);
 
+            // Record submitted order in the audit trail when connected
+            if (_auditTrail is not null)
+            {
+                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                    AuditId: Guid.NewGuid().ToString("N"),
+                    Category: "Order",
+                    Action: "OrderSubmitted",
+                    Outcome: updatedState.Status.ToString(),
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    Actor: actor,
+                    OrderId: orderId,
+                    RunId: runId,
+                    Symbol: request.Symbol,
+                    CorrelationId: correlationId), ct).ConfigureAwait(false);
+            }
+
             // Publish fills to the execution channel so portfolio trackers and other
             // consumers can subscribe without coupling directly to the gateway.
-            if (report.OrderStatus is SdkOrderStatus.Filled or SdkOrderStatus.PartiallyFilled)
+            if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
             {
                 _executionChannel.Writer.TryWrite(report);
             }
 
-            await RecordExecutionReportAsync(
-                action: "OrderSubmitted",
-                actor: actor,
-                request: request,
-                report: report,
-                correlationId: correlationId,
-                runId: runId,
-                ct: ct).ConfigureAwait(false);
-
             return new OrderResult
             {
-                Success = report.OrderStatus is not SdkOrderStatus.Rejected,
+                Success = report.OrderStatus is not OrderStatus.Rejected,
                 OrderId = orderId,
                 OrderState = updatedState,
                 ErrorMessage = report.RejectReason
@@ -229,23 +199,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, request.Symbol);
 
-            _orders[orderId] = orderState with
-            {
-                Status = SdkOrderStatus.Rejected,
-                LastUpdatedAt = DateTimeOffset.UtcNow
-            };
-
-            await RecordAuditAsync(
-                action: "OrderRejected",
-                outcome: "Rejected",
-                actor: actor,
-                orderId: orderId,
-                runId: runId,
-                symbol: request.Symbol,
-                correlationId: correlationId,
-                message: ex.Message,
-                metadata: BuildOrderMetadata(request, ("rejectedBy", "GatewayException")),
-                ct: ct).ConfigureAwait(false);
+            _orders[orderId] = orderState with { Status = OrderStatus.Rejected };
 
             return new OrderResult
             {
@@ -261,44 +215,14 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
-            await RecordAuditAsync(
-                action: "OrderCancelRequested",
-                outcome: "Rejected",
-                orderId: orderId,
-                runId: null,
-                symbol: null,
-                message: "Order not found.",
-                metadata: null,
-                ct: ct).ConfigureAwait(false);
-
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
-        await EnsureGatewayConnectedAsync(ct).ConfigureAwait(false);
         var report = await _gateway.CancelOrderAsync(orderId, ct).ConfigureAwait(false);
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
 
-        await RecordAuditAsync(
-            action: "OrderCancelRequested",
-            outcome: report.OrderStatus is SdkOrderStatus.Cancelled ? "Completed" : "Rejected",
-            orderId: orderId,
-            runId: state.StrategyId,
-            symbol: state.Symbol,
-            message: report.RejectReason ?? $"Cancel returned {report.OrderStatus}.",
-            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["status"] = report.OrderStatus.ToString()
-            },
-            ct: ct).ConfigureAwait(false);
-
-        return new OrderResult
-        {
-            Success = report.OrderStatus is SdkOrderStatus.Cancelled,
-            OrderId = orderId,
-            ErrorMessage = report.OrderStatus is SdkOrderStatus.Cancelled ? null : report.RejectReason ?? "Cancel rejected",
-            OrderState = updated
-        };
+        return new OrderResult { Success = true, OrderId = orderId, OrderState = updated };
     }
 
     /// <inheritdoc />
@@ -306,51 +230,21 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
-            await RecordAuditAsync(
-                action: "OrderModifyRequested",
-                outcome: "Rejected",
-                orderId: orderId,
-                runId: null,
-                symbol: null,
-                message: "Order not found.",
-                metadata: null,
-                ct: ct).ConfigureAwait(false);
-
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
-        await EnsureGatewayConnectedAsync(ct).ConfigureAwait(false);
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
 
-        await RecordAuditAsync(
-            action: "OrderModifyRequested",
-            outcome: report.OrderStatus is SdkOrderStatus.Rejected ? "Rejected" : "Completed",
-            orderId: orderId,
-            runId: state.StrategyId,
-            symbol: state.Symbol,
-            message: report.RejectReason ?? $"Modify returned {report.OrderStatus}.",
-            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["status"] = report.OrderStatus.ToString()
-            },
-            ct: ct).ConfigureAwait(false);
-
-        return new OrderResult
-        {
-            Success = report.OrderStatus is not SdkOrderStatus.Rejected,
-            OrderId = orderId,
-            ErrorMessage = report.OrderStatus is SdkOrderStatus.Rejected ? report.RejectReason ?? "Modify rejected" : null,
-            OrderState = updated
-        };
+        return new OrderResult { Success = true, OrderId = orderId, OrderState = updated };
     }
 
     /// <inheritdoc />
     public IReadOnlyList<OrderState> GetOpenOrders()
     {
         return _orders.Values
-            .Where(o => o.Status is SdkOrderStatus.PendingNew or SdkOrderStatus.Accepted or SdkOrderStatus.PartiallyFilled)
+            .Where(o => o.Status is OrderStatus.PendingNew or OrderStatus.Accepted or OrderStatus.PartiallyFilled)
             .ToList()
             .AsReadOnly();
     }
@@ -360,11 +254,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         return _orders.Values
             .Where(static o => o.Status is
-                SdkOrderStatus.Filled or
-                SdkOrderStatus.PartiallyFilled or
-                SdkOrderStatus.Cancelled or
-                SdkOrderStatus.Rejected or
-                SdkOrderStatus.Expired)
+                OrderStatus.Filled or
+                OrderStatus.PartiallyFilled or
+                OrderStatus.Cancelled or
+                OrderStatus.Rejected or
+                OrderStatus.Expired)
             .OrderByDescending(static o => o.LastUpdatedAt ?? o.CreatedAt)
             .Take(take)
             .ToList()
@@ -402,146 +296,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
 
-    private async Task EnsureGatewayConnectedAsync(CancellationToken ct)
-    {
-        if (_gateway.IsConnected)
-        {
-            return;
-        }
-
-        await _gateway.ConnectAsync(ct).ConfigureAwait(false);
-        await RecordAuditAsync(
-            action: "GatewayConnected",
-            outcome: "Completed",
-            orderId: null,
-            symbol: null,
-            message: $"Connected execution gateway {_gateway.GatewayId}.",
-            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["gatewayId"] = _gateway.GatewayId
-            },
-            ct: ct).ConfigureAwait(false);
-    }
-
     private string GenerateOrderId()
     {
         var seq = Interlocked.Increment(ref _orderSequence);
         return $"MDN-{DateTimeOffset.UtcNow:yyyyMMdd}-{seq:D6}";
-    }
-
-    private async Task RecordExecutionReportAsync(
-        string action,
-        string? actor,
-        OrderRequest request,
-        ExecutionReport report,
-        string? correlationId,
-        string? runId,
-        CancellationToken ct)
-    {
-        await RecordAuditAsync(
-            action: action,
-            outcome: report.OrderStatus is SdkOrderStatus.Rejected ? "Rejected" : "Completed",
-            actor: actor,
-            orderId: report.OrderId,
-            runId: runId,
-            symbol: report.Symbol,
-            correlationId: correlationId,
-            message: report.RejectReason ?? $"{report.OrderStatus} via {_gateway.GatewayId}.",
-            metadata: BuildOrderMetadata(
-                request,
-                ("status", report.OrderStatus.ToString()),
-                ("gatewayOrderId", report.GatewayOrderId),
-                ("filledQuantity", report.FilledQuantity.ToString("G29")),
-                ("fillPrice", report.FillPrice?.ToString("G29"))),
-            ct: ct).ConfigureAwait(false);
-    }
-
-    private Task RecordAuditAsync(
-        string action,
-        string outcome,
-        string? actor = null,
-        string? orderId = null,
-        string? runId = null,
-        string? symbol = null,
-        string? correlationId = null,
-        string? message = null,
-        IReadOnlyDictionary<string, string>? metadata = null,
-        CancellationToken ct = default)
-    {
-        if (_auditTrail is null)
-        {
-            return Task.CompletedTask;
-        }
-
-        return _auditTrail.RecordAsync(
-            category: "Order",
-            action: action,
-            outcome: outcome,
-            actor: actor,
-            brokerName: _gateway.GatewayId,
-            orderId: orderId,
-            runId: runId,
-            symbol: symbol,
-            correlationId: correlationId,
-            message: message,
-            metadata: metadata,
-            ct: ct);
-    }
-
-    private static string? TryGetMetadata(IReadOnlyDictionary<string, string>? metadata, string key)
-    {
-        if (metadata is null)
-        {
-            return null;
-        }
-
-        return metadata.TryGetValue(key, out var value) ? value : null;
-    }
-
-    private static IReadOnlyDictionary<string, string> BuildOrderMetadata(
-        OrderRequest request,
-        params (string Key, string? Value)[] extras)
-    {
-        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["side"] = request.Side.ToString(),
-            ["type"] = request.Type.ToString(),
-            ["quantity"] = request.Quantity.ToString("G29"),
-            ["timeInForce"] = request.TimeInForce.ToString()
-        };
-
-        if (request.LimitPrice.HasValue)
-        {
-            metadata["limitPrice"] = request.LimitPrice.Value.ToString("G29");
-        }
-
-        if (request.StopPrice.HasValue)
-        {
-            metadata["stopPrice"] = request.StopPrice.Value.ToString("G29");
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.StrategyId))
-        {
-            metadata["strategyId"] = request.StrategyId;
-        }
-
-        if (request.Metadata is not null)
-        {
-            foreach (var (key, value) in request.Metadata)
-            {
-                metadata[key] = value;
-            }
-        }
-
-        foreach (var (key, value) in extras)
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                metadata[key] = value;
-            }
-        }
-
-        return metadata;
     }
 
     private static OrderState ApplyReport(OrderState current, ExecutionReport report)

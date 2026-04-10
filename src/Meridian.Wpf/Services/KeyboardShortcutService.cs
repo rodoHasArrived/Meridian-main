@@ -138,6 +138,9 @@ public sealed class KeyboardShortcutService
         RegisterShortcut("RunBackfill", Key.R, ModifierKeys.Control,
             "Run Backfill", ShortcutCategory.Backfill);
 
+        RegisterShortcut("PauseBackfill", Key.P, ModifierKeys.Control | ModifierKeys.Shift,
+            "Pause/Resume Backfill", ShortcutCategory.Backfill);
+
         RegisterShortcut("CancelBackfill", Key.Escape, ModifierKeys.None,
             "Cancel Backfill", ShortcutCategory.Backfill);
 

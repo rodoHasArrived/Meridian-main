@@ -39,8 +39,7 @@ public sealed class StorageToolsTests : IDisposable
         {
             TotalFiles = 42,
             UniqueSymbols = 3,
-            TotalBytesCompressed = 1_024_000,
-            TotalBytesRaw = 2_048_000
+            TotalBytes = 1_024_000
         });
 
         var sut = CreateSut();

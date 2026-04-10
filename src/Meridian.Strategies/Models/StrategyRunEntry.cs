@@ -23,24 +23,40 @@ public sealed record StrategyRunEntry(
     string? Engine = null,
     IReadOnlyDictionary<string, string>? ParameterSet = null,
     StrategyRunStatus? TerminalStatus = null,
-    string? ParentRunId = null,
-    string? FundProfileId = null,
-    string? FundDisplayName = null)
+    string? ParentRunId = null)
 {
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
+    public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType) =>
+        new(
+            RunId: Guid.NewGuid().ToString("N"),
+            StrategyId: strategyId,
+            StrategyName: strategyName,
+            RunType: runType,
+            StartedAt: DateTimeOffset.UtcNow,
+            EndedAt: null,
+            Metrics: null,
+            PortfolioId: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
+            LedgerReference: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
+            Engine: runType switch
+            {
+                RunType.Backtest => "MeridianNative",
+                RunType.Paper => "BrokerPaper",
+                RunType.Live => "BrokerLive",
+                _ => "Unknown"
+            });
+
+    /// <summary>Creates a new run entry with an explicit run ID and optional metadata fields.</summary>
     public static StrategyRunEntry Start(
         string strategyId,
         string strategyName,
         RunType runType,
-        string? runId = null,
+        string runId,
         string? datasetReference = null,
         string? feedReference = null,
         string? engine = null,
-        IReadOnlyDictionary<string, string>? parameterSet = null,
-        string? fundProfileId = null,
-        string? fundDisplayName = null) =>
+        IReadOnlyDictionary<string, string>? parameterSet = null) =>
         new(
-            RunId: runId ?? Guid.NewGuid().ToString("N"),
+            RunId: runId,
             StrategyId: strategyId,
             StrategyName: strategyName,
             RunType: runType,
@@ -51,16 +67,8 @@ public sealed record StrategyRunEntry(
             FeedReference: feedReference,
             PortfolioId: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
             LedgerReference: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
-            Engine: engine ?? runType switch
-            {
-                RunType.Backtest => "MeridianNative",
-                RunType.Paper => "BrokerPaper",
-                RunType.Live => "BrokerLive",
-                _ => "Unknown"
-            },
-            ParameterSet: parameterSet,
-            FundProfileId: fundProfileId,
-            FundDisplayName: fundDisplayName);
+            Engine: engine,
+            ParameterSet: parameterSet);
 
     /// <summary>Returns a copy of this entry marked as ended with the provided metrics.</summary>
     public StrategyRunEntry Complete(BacktestResult? metrics) =>

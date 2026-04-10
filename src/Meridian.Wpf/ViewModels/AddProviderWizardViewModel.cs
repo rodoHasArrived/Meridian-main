@@ -1,40 +1,50 @@
-using System.Windows;
-using System.Windows.Media;
+using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
-/// ViewModel for the relationship-first provider onboarding wizard.
+/// ViewModel for the Add Provider Wizard page.
+/// Holds all display state for the provider-detail panel, credential guidance,
+/// connection-test feedback, save feedback, and step-progress indicators.
+/// The code-behind sets properties here instead of mutating UI elements directly.
 /// </summary>
 public sealed class AddProviderWizardViewModel : BindableBase
 {
+    // ---- Static brush constants (avoids FindResource in ViewModel) ----
     private static readonly SolidColorBrush SuccessBrush = new(Color.FromRgb(63, 185, 80));
-    private static readonly SolidColorBrush InfoBrush = new(Color.FromRgb(88, 166, 255));
+    private static readonly SolidColorBrush InfoBrush    = new(Color.FromRgb(88, 166, 255));
     private static readonly SolidColorBrush WarningBrush = new(Color.FromRgb(210, 153, 34));
-    private static readonly SolidColorBrush ErrorBrush = new(Color.FromRgb(248, 81, 73));
-    private static readonly SolidColorBrush MutedBrush = new(Color.FromRgb(139, 148, 158));
+    private static readonly SolidColorBrush ErrorBrush   = new(Color.FromRgb(248, 81, 73));
+    private static readonly SolidColorBrush MutedBrush   = new(Color.FromRgb(139, 148, 158));
 
-    private string _selectedProviderName = "Select a relationship";
-    private string _selectedProviderDescription = "Choose a connection type, then pick a provider family from the catalog or enter one manually.";
-    private Visibility _detailsVisibility = Visibility.Visible;
-    private string _summaryConnectionTypeText = "Not set";
-    private string _summaryOperatingModeText = "ReadOnly";
-    private string _summaryScopeText = "Global";
-    private string _summaryCapabilitiesText = "No capabilities selected";
-    private string _summaryCredentialText = "No credential reference yet";
-    private string _summaryPresetText = "No preset applied";
-    private string _summaryCertificationText = "Not certified";
-    private string _credentialsInfoText = "Select a provider family to load credential guidance.";
+    // ---- Backing fields ----
+
+    // Provider-detail panel
+    private string _selectedProviderName = "None selected";
+    private string _selectedProviderDescription = string.Empty;
+    private Visibility _detailsVisibility = Visibility.Collapsed;
+    private string _detailStreamingText = string.Empty;
+    private string _detailHistoricalText = string.Empty;
+    private string _detailSearchText = string.Empty;
+    private string _detailRateLimitText = string.Empty;
+    private string _detailCredentialsText = string.Empty;
+
+    // Credentials step
+    private string _credentialsInfoText = string.Empty;
     private Visibility _noCredentialsVisibility = Visibility.Collapsed;
+
+    // Connection test
     private Brush _connectionTestDotBrush = MutedBrush;
-    private string _connectionTestStatusText = "No validation run yet.";
+    private string _connectionTestStatusText = "Not tested yet";
+
+    // Save status
     private string _saveStatusText = string.Empty;
     private Brush _saveStatusBrush = MutedBrush;
-    private string _routePreviewText = "Save a connection to preview the effective route.";
-    private Brush _routePreviewBrush = MutedBrush;
-    private string _certificationStatusText = "Certification not started.";
-    private Brush _certificationStatusBrush = MutedBrush;
+
+    // Step progress
     private int _currentStep = 1;
+
+    // ---- Selected-provider display properties ----
 
     public string SelectedProviderName
     {
@@ -54,47 +64,37 @@ public sealed class AddProviderWizardViewModel : BindableBase
         set => SetProperty(ref _detailsVisibility, value);
     }
 
-    public string SummaryConnectionTypeText
+    public string DetailStreamingText
     {
-        get => _summaryConnectionTypeText;
-        set => SetProperty(ref _summaryConnectionTypeText, value);
+        get => _detailStreamingText;
+        set => SetProperty(ref _detailStreamingText, value);
     }
 
-    public string SummaryOperatingModeText
+    public string DetailHistoricalText
     {
-        get => _summaryOperatingModeText;
-        set => SetProperty(ref _summaryOperatingModeText, value);
+        get => _detailHistoricalText;
+        set => SetProperty(ref _detailHistoricalText, value);
     }
 
-    public string SummaryScopeText
+    public string DetailSearchText
     {
-        get => _summaryScopeText;
-        set => SetProperty(ref _summaryScopeText, value);
+        get => _detailSearchText;
+        set => SetProperty(ref _detailSearchText, value);
     }
 
-    public string SummaryCapabilitiesText
+    public string DetailRateLimitText
     {
-        get => _summaryCapabilitiesText;
-        set => SetProperty(ref _summaryCapabilitiesText, value);
+        get => _detailRateLimitText;
+        set => SetProperty(ref _detailRateLimitText, value);
     }
 
-    public string SummaryCredentialText
+    public string DetailCredentialsText
     {
-        get => _summaryCredentialText;
-        set => SetProperty(ref _summaryCredentialText, value);
+        get => _detailCredentialsText;
+        set => SetProperty(ref _detailCredentialsText, value);
     }
 
-    public string SummaryPresetText
-    {
-        get => _summaryPresetText;
-        set => SetProperty(ref _summaryPresetText, value);
-    }
-
-    public string SummaryCertificationText
-    {
-        get => _summaryCertificationText;
-        set => SetProperty(ref _summaryCertificationText, value);
-    }
+    // ---- Credentials display ----
 
     public string CredentialsInfoText
     {
@@ -108,6 +108,8 @@ public sealed class AddProviderWizardViewModel : BindableBase
         set => SetProperty(ref _noCredentialsVisibility, value);
     }
 
+    // ---- Connection test ----
+
     public Brush ConnectionTestDotBrush
     {
         get => _connectionTestDotBrush;
@@ -119,6 +121,8 @@ public sealed class AddProviderWizardViewModel : BindableBase
         get => _connectionTestStatusText;
         set => SetProperty(ref _connectionTestStatusText, value);
     }
+
+    // ---- Save status ----
 
     public string SaveStatusText
     {
@@ -132,29 +136,7 @@ public sealed class AddProviderWizardViewModel : BindableBase
         set => SetProperty(ref _saveStatusBrush, value);
     }
 
-    public string RoutePreviewText
-    {
-        get => _routePreviewText;
-        set => SetProperty(ref _routePreviewText, value);
-    }
-
-    public Brush RoutePreviewBrush
-    {
-        get => _routePreviewBrush;
-        set => SetProperty(ref _routePreviewBrush, value);
-    }
-
-    public string CertificationStatusText
-    {
-        get => _certificationStatusText;
-        set => SetProperty(ref _certificationStatusText, value);
-    }
-
-    public Brush CertificationStatusBrush
-    {
-        get => _certificationStatusBrush;
-        set => SetProperty(ref _certificationStatusBrush, value);
-    }
+    // ---- Step-progress (computed from CurrentStep) ----
 
     public int CurrentStep
     {
@@ -171,99 +153,85 @@ public sealed class AddProviderWizardViewModel : BindableBase
         }
     }
 
-    public Brush Step1Fill => _currentStep > 1 ? SuccessBrush : (_currentStep == 1 ? InfoBrush : MutedBrush);
+    /// <summary>Step 1 dot fill — green once step 1 is reached.</summary>
+    public Brush Step1Fill => _currentStep >= 1 ? SuccessBrush : MutedBrush;
 
+    /// <summary>Step 2 dot fill — blue while active, green when passed.</summary>
     public Brush Step2Fill => _currentStep > 2 ? SuccessBrush : (_currentStep == 2 ? InfoBrush : MutedBrush);
 
+    /// <summary>Step 3 dot fill — blue while active, green when passed.</summary>
     public Brush Step3Fill => _currentStep > 3 ? SuccessBrush : (_currentStep == 3 ? InfoBrush : MutedBrush);
 
+    /// <summary>Step 4 dot fill — green when reached.</summary>
     public Brush Step4Fill => _currentStep >= 4 ? SuccessBrush : MutedBrush;
 
-    public void ApplyRelationshipSummary(
-        string providerName,
-        string providerDescription,
-        string connectionType,
-        string operatingMode,
-        string scopeSummary,
-        string capabilitiesSummary,
-        string credentialSummary,
-        string presetSummary,
-        string certificationSummary)
+    // ---- Helper methods called by code-behind ----
+
+    /// <summary>Populates the right-panel detail properties from the selected provider entry.</summary>
+    public void ApplySelectedProvider(ProviderCatalogEntry provider)
     {
-        SelectedProviderName = string.IsNullOrWhiteSpace(providerName) ? "Select a relationship" : providerName;
-        SelectedProviderDescription = string.IsNullOrWhiteSpace(providerDescription)
-            ? "Choose a provider family from the catalog or enter one manually."
-            : providerDescription;
-        SummaryConnectionTypeText = connectionType;
-        SummaryOperatingModeText = operatingMode;
-        SummaryScopeText = scopeSummary;
-        SummaryCapabilitiesText = capabilitiesSummary;
-        SummaryCredentialText = credentialSummary;
-        SummaryPresetText = presetSummary;
-        SummaryCertificationText = certificationSummary;
-        DetailsVisibility = Visibility.Visible;
+        SelectedProviderName        = provider.DisplayName;
+        SelectedProviderDescription = provider.Description;
+        DetailsVisibility           = Visibility.Visible;
+        DetailStreamingText  = provider.SupportsStreaming    ? "Yes" : "No";
+        DetailHistoricalText = provider.SupportsHistorical   ? "Yes" : "No";
+        DetailSearchText     = provider.SupportsSymbolSearch ? "Yes" : "No";
+        DetailRateLimitText  = provider.RateLimitPerMinute > 0
+            ? $"{provider.RateLimitPerMinute}/min"
+            : "None";
+        DetailCredentialsText = provider.CredentialFields.Length > 0
+            ? $"{provider.CredentialFields.Length} required"
+            : "None";
     }
 
+    /// <summary>Sets credential-step display state based on whether the provider needs credentials.</summary>
     public void ApplyCredentialsInfo(string providerName, bool hasFields)
     {
         if (hasFields)
         {
-            CredentialsInfoText = $"Enter your {providerName} credential values and a reusable credential reference.";
-            NoCredentialsVisibility = Visibility.Collapsed;
+            CredentialsInfoText      = $"Enter your {providerName} credentials. " +
+                                       "These will be stored as user environment variables.";
+            NoCredentialsVisibility  = Visibility.Collapsed;
         }
         else
         {
-            CredentialsInfoText = $"{providerName} has no catalog-defined environment fields. Use the credential reference for external secret resolution.";
-            NoCredentialsVisibility = Visibility.Visible;
+            CredentialsInfoText      = $"{providerName} does not require API credentials.";
+            NoCredentialsVisibility  = Visibility.Visible;
         }
     }
 
-    public void SetConnectionTestTesting(string connectionName)
+    /// <summary>Transitions the connection-test dot to the "testing" (warning) state.</summary>
+    public void SetConnectionTestTesting(string providerName)
     {
-        ConnectionTestDotBrush = WarningBrush;
-        ConnectionTestStatusText = $"Validating configuration for {connectionName}...";
+        ConnectionTestDotBrush     = WarningBrush;
+        ConnectionTestStatusText   = $"Testing {providerName} connectivity...";
     }
 
-    public void SetConnectionTestSuccess(string message)
+    /// <summary>Marks the connection test as successful.</summary>
+    public void SetConnectionTestSuccess()
     {
-        ConnectionTestDotBrush = SuccessBrush;
-        ConnectionTestStatusText = message;
+        ConnectionTestDotBrush   = SuccessBrush;
+        ConnectionTestStatusText = "Credentials configured. Provider ready.";
     }
 
-    public void SetConnectionTestWarning(string message)
+    /// <summary>Marks the connection test as failed due to missing credentials.</summary>
+    public void SetConnectionTestError()
     {
-        ConnectionTestDotBrush = WarningBrush;
-        ConnectionTestStatusText = message;
+        ConnectionTestDotBrush   = ErrorBrush;
+        ConnectionTestStatusText = "Missing credentials. Please fill in all required fields above.";
     }
 
-    public void SetConnectionTestError(string message)
+    /// <summary>Sets a success message on the save-status line.</summary>
+    public void SetSaveSuccess(string providerName)
     {
-        ConnectionTestDotBrush = ErrorBrush;
-        ConnectionTestStatusText = message;
-    }
-
-    public void SetSaveSuccess(string message)
-    {
-        SaveStatusText = message;
+        SaveStatusText  = $"{providerName} configured successfully.";
         SaveStatusBrush = SuccessBrush;
     }
 
+    /// <summary>Sets an error message on the save-status line.</summary>
     public void SetSaveError(string message)
     {
-        SaveStatusText = message;
+        SaveStatusText  = $"Failed to save: {message}";
         SaveStatusBrush = ErrorBrush;
-    }
-
-    public void SetRoutePreview(string message, bool success)
-    {
-        RoutePreviewText = message;
-        RoutePreviewBrush = success ? SuccessBrush : WarningBrush;
-    }
-
-    public void SetCertificationStatus(string message, bool success)
-    {
-        CertificationStatusText = message;
-        CertificationStatusBrush = success ? SuccessBrush : WarningBrush;
-        SummaryCertificationText = success ? "Passed" : "Needs attention";
     }
 }

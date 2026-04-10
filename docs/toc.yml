@@ -2,7 +2,8 @@
   href: README.md
 
 - name: API Reference
-  href: ~/api/index.md
+  href: ~/api/
+  homepage: ~/api/index.md
 
 - name: User Guide
   href: HELP.md
@@ -28,12 +29,8 @@
       href: architecture/crystallized-storage-format.md
     - name: Deterministic Canonicalization
       href: architecture/deterministic-canonicalization.md
-    - name: Ledger Architecture
-      href: architecture/ledger-architecture.md
-    - name: Desktop Layers
+    - name: Desktop Layers (Delayed Implementation)
       href: architecture/desktop-layers.md
-    - name: WPF Shell MVVM
-      href: architecture/wpf-shell-mvvm.md
     - name: UI Redesign
       href: architecture/ui-redesign.md
     - name: Why This Architecture
@@ -50,29 +47,19 @@
       href: providers/provider-comparison.md
     - name: Backfill Guide
       href: providers/backfill-guide.md
-    - name: Provider Confidence Baseline
-      href: providers/provider-confidence-baseline.md
     - name: Alpaca Setup
       href: providers/alpaca-setup.md
     - name: Interactive Brokers Setup
       href: providers/interactive-brokers-setup.md
     - name: IB Free Equity Reference
       href: providers/interactive-brokers-free-equity-reference.md
-    - name: StockSharp Connectors
-      href: providers/stocksharp-connectors.md
-    - name: Security Master Guide
-      href: providers/security-master-guide.md
 
 - name: Operations
   items:
     - name: Deployment
       href: operations/deployment.md
-    - name: Preflight Checklist
-      href: operations/preflight-checklist.md
     - name: Operator Runbook
       href: operations/operator-runbook.md
-    - name: Governance Operator Workflow
-      href: operations/governance-operator-workflow.md
     - name: Performance Tuning
       href: operations/performance-tuning.md
     - name: High Availability
@@ -90,34 +77,24 @@
       href: development/repository-organization-guide.md
     - name: Provider Implementation
       href: development/provider-implementation.md
-    - name: WPF Implementation Notes
+    - name: WPF Implementation Notes (Delayed Implementation)
       href: development/wpf-implementation-notes.md
-    - name: Desktop Testing Guide
+    - name: Desktop Testing Guide (Delayed Implementation)
       href: development/desktop-testing-guide.md
-    - name: Repository Rule Set
-      href: development/repository-rule-set.md
     - name: Central Package Management
       href: development/central-package-management.md
     - name: GitHub Actions Summary
       href: development/github-actions-summary.md
-    - name: GitHub Actions Testing
-      href: development/github-actions-testing.md
     - name: Build Observability
       href: development/build-observability.md
     - name: Documentation Contribution Guide
       href: development/documentation-contribution-guide.md
     - name: Documentation Automation
       href: development/documentation-automation.md
-    - name: OTLP Trace Visualization
-      href: development/otlp-trace-visualization.md
-    - name: Git Hooks
-      href: development/git-hooks.md
     - name: Adding Custom Rules
       href: development/adding-custom-rules.md
     - name: Expanding Scripts
       href: development/expanding-scripts.md
-    - name: UI Fixture Mode
-      href: development/ui-fixture-mode-guide.md
 
 - name: Integrations
   items:
@@ -138,8 +115,6 @@
       href: reference/data-uniformity.md
     - name: Environment Variables
       href: reference/environment-variables.md
-    - name: Open Source References
-      href: reference/open-source-references.md
     - name: Design Review Memo
       href: reference/design-review-memo.md
 
@@ -152,38 +127,6 @@
   items:
     - name: Overview
       href: status/README.md
-    - name: Plans Overview
-      href: plans/README.md
-    - name: Combined Roadmap
-      href: status/ROADMAP_COMBINED.md
-    - name: Roadmap
-      href: status/ROADMAP.md
-    - name: Opportunity Scan
-      href: status/OPPORTUNITY_SCAN.md
-    - name: Target End Product
-      href: status/TARGET_END_PRODUCT.md
-    - name: Feature Inventory
-      href: status/FEATURE_INVENTORY.md
-    - name: Improvements
-      href: status/IMPROVEMENTS.md
-    - name: Production Status
-      href: status/production-status.md
-    - name: Provider Validation Matrix
-      href: status/provider-validation-matrix.md
-    - name: Meridian 6 Week Roadmap
-      href: plans/meridian-6-week-roadmap.md
-    - name: Trading Workstation Migration
-      href: plans/trading-workstation-migration-blueprint.md
-    - name: Governance And Fund Ops
-      href: plans/governance-fund-ops-blueprint.md
-    - name: Backtest Studio Unification
-      href: plans/backtest-studio-unification-blueprint.md
-    - name: QuantScript Environment Blueprint
-      href: plans/quant-script-environment-blueprint.md
-    - name: QuantScript Page Implementation Guide
-      href: plans/quant-script-page-implementation-guide.md
-    - name: QuantScript L3 Round 2 Roadmap
-      href: plans/quantscript-l3-multiinstance-round2-roadmap.md
     - name: UFL Asset Packages
       href: plans/ufl-supported-assets-index.md
     - name: UFL Direct Lending V2
@@ -204,7 +147,7 @@
       href: plans/ufl-deposit-target-state-v2.md
     - name: UFL Money Market Fund V2
       href: plans/ufl-money-market-fund-target-state-v2.md
-    - name: UFL Certificate Of Deposit V2
+    - name: UFL Certificate of Deposit V2
       href: plans/ufl-certificate-of-deposit-target-state-v2.md
     - name: UFL Commercial Paper V2
       href: plans/ufl-commercial-paper-target-state-v2.md
@@ -214,18 +157,20 @@
       href: plans/ufl-repo-target-state-v2.md
     - name: UFL Cash Sweep V2
       href: plans/ufl-cash-sweep-target-state-v2.md
-    - name: UFL Swap V2
-      href: plans/ufl-swap-target-state-v2.md
-    - name: UFL CFD V2
-      href: plans/ufl-cfd-target-state-v2.md
-    - name: UFL Commodity V2
-      href: plans/ufl-commodity-target-state-v2.md
-    - name: UFL Crypto V2
-      href: plans/ufl-crypto-target-state-v2.md
-    - name: UFL Warrant V2
-      href: plans/ufl-warrant-target-state-v2.md
     - name: UFL Other Security V2
       href: plans/ufl-other-security-target-state-v2.md
+    - name: UFL Swap V2
+      href: plans/ufl-swap-target-state-v2.md
+    - name: Roadmap
+      href: status/ROADMAP.md
+    - name: Feature Inventory
+      href: status/FEATURE_INVENTORY.md
+    - name: Improvements
+      href: status/IMPROVEMENTS.md
+    - name: Changelog
+      href: status/CHANGELOG.md
+    - name: Production Status
+      href: status/production-status.md
 
 - name: Evaluations
   items:

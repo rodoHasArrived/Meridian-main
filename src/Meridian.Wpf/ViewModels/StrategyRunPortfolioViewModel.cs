@@ -10,7 +10,6 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     private readonly StrategyRunWorkspaceService _runService;
     private readonly NavigationService _navigationService;
     private string? _runId;
-    private string? _fundProfileId;
     private object? _parameter;
 
     public object? Parameter
@@ -115,7 +114,6 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
     public IRelayCommand OpenCashFlowCommand { get; }
-    public IRelayCommand OpenFundContextCommand { get; }
 
     internal StrategyRunPortfolioViewModel(
         StrategyRunWorkspaceService runService,
@@ -127,7 +125,6 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenLedgerCommand = new RelayCommand(OpenLedger, () => !string.IsNullOrWhiteSpace(_runId));
         OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => !string.IsNullOrWhiteSpace(_runId));
-        OpenFundContextCommand = new RelayCommand(OpenFundContext, () => !string.IsNullOrWhiteSpace(_fundProfileId));
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -143,13 +140,9 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         var portfolio = await _runService.GetPortfolioAsync(runId, ct);
         if (portfolio is null)
         {
-            _fundProfileId = null;
             StatusText = $"No portfolio snapshot is available for run '{runId}'.";
-            OpenFundContextCommand.NotifyCanExecuteChanged();
             return;
         }
-
-        _fundProfileId = portfolio.FundProfileId;
 
         Title = $"Portfolio {portfolio.PortfolioId}";
         StatusText = portfolio.SecurityMissingCount > 0
@@ -175,7 +168,6 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenLedgerCommand.NotifyCanExecuteChanged();
         OpenCashFlowCommand.NotifyCanExecuteChanged();
-        OpenFundContextCommand.NotifyCanExecuteChanged();
     }
 
     private void OpenRunDetail()
@@ -200,18 +192,5 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         {
             _navigationService.NavigateTo("RunCashFlow", _runId);
         }
-    }
-
-    private void OpenFundContext()
-    {
-        if (string.IsNullOrWhiteSpace(_fundProfileId))
-        {
-            return;
-        }
-
-        _navigationService.NavigateTo("FundPortfolio", new FundOperationsNavigationContext(
-            Tab: FundOperationsTab.Portfolio,
-            FundProfileId: _fundProfileId,
-            RunId: _runId));
     }
 }

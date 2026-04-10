@@ -12,9 +12,7 @@
 
   <!-- Windows-only: Full test project -->
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
-    <!-- Match the app TFM so LiveCharts/SkiaSharp resolve their Windows-specific assemblies without NU1701 fallback warnings. -->
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
-    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -58,8 +56,6 @@
 
   <!-- Windows-only project references -->
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
-    <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
-    <ProjectReference Include="..\..\src\Meridian.Strategies\Meridian.Strategies.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Wpf\Meridian.Wpf.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
   </ItemGroup>

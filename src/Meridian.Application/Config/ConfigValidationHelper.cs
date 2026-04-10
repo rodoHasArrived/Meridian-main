@@ -97,7 +97,7 @@ public sealed class AlpacaOptionsValidator : AbstractValidator<AlpacaOptions>
             .WithMessage("Alpaca KeyId is required")
             .MinimumLength(10)
             .WithMessage("Alpaca KeyId appears to be invalid (too short)")
-            .Must(key => !CredentialPlaceholderDetector.ContainsPlaceholderMarker(key))
+            .Must(key => !IsPlaceholder(key))
             .WithMessage("Alpaca KeyId appears to be a placeholder value - please set a real API key");
 
         RuleFor(x => x.SecretKey)
@@ -105,7 +105,7 @@ public sealed class AlpacaOptionsValidator : AbstractValidator<AlpacaOptions>
             .WithMessage("Alpaca SecretKey is required")
             .MinimumLength(10)
             .WithMessage("Alpaca SecretKey appears to be invalid (too short)")
-            .Must(key => !CredentialPlaceholderDetector.ContainsPlaceholderMarker(key))
+            .Must(key => !IsPlaceholder(key))
             .WithMessage("Alpaca SecretKey appears to be a placeholder value - please set a real API key");
 
         RuleFor(x => x.Feed)
@@ -113,6 +113,15 @@ public sealed class AlpacaOptionsValidator : AbstractValidator<AlpacaOptions>
             .WithMessage("Alpaca Feed must be specified (e.g., 'iex', 'sip')")
             .Must(feed => feed == "iex" || feed == "sip")
             .WithMessage("Alpaca Feed must be either 'iex' or 'sip'");
+    }
+
+    private static bool IsPlaceholder(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var placeholders = new[] { "__SET_ME__", "YOUR_", "REPLACE_", "ENTER_", "INSERT_", "TODO" };
+        return placeholders.Any(p => value.Contains(p, StringComparison.OrdinalIgnoreCase));
     }
 }
 
@@ -277,11 +286,11 @@ public sealed class StorageConfigValidator : AbstractValidator<StorageConfig>
     public StorageConfigValidator()
     {
         RuleFor(x => x.NamingConvention)
-            .Must(StorageConfigRules.IsValidValidatorNamingConvention)
+            .Must(BeValidNamingConvention)
             .WithMessage("NamingConvention must be one of: Flat, BySymbol, ByDate, ByType");
 
         RuleFor(x => x.DatePartition)
-            .Must(StorageConfigRules.IsSupportedDatePartition)
+            .Must(BeValidDatePartition)
             .WithMessage("DatePartition must be one of: None, Daily, Hourly, Monthly");
 
         When(x => x.RetentionDays.HasValue, () =>
@@ -301,9 +310,36 @@ public sealed class StorageConfigValidator : AbstractValidator<StorageConfig>
         When(x => !string.IsNullOrWhiteSpace(x.Profile), () =>
         {
             RuleFor(x => x.Profile!)
-                .Must(StorageConfigRules.IsSupportedProfile)
+                .Must(BeValidProfile)
                 .WithMessage("Profile must be one of: Research, LowLatency, Archival");
         });
+    }
+
+    private static bool BeValidNamingConvention(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var valid = new[] { "flat", "bysymbol", "bydate", "bytype" };
+        return valid.Contains(value.ToLowerInvariant());
+    }
+
+    private static bool BeValidDatePartition(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var valid = new[] { "none", "daily", "hourly", "monthly" };
+        return valid.Contains(value.ToLowerInvariant());
+    }
+
+    private static bool BeValidProfile(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var valid = new[] { "research", "lowlatency", "archival" };
+        return valid.Contains(value.ToLowerInvariant());
     }
 }
 

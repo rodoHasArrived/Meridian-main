@@ -8,81 +8,72 @@
     <Grid Background="{DynamicResource ShellWindowBackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="340" />
+            <ColumnDefinition Width="350" />
         </Grid.ColumnDefinitions>
 
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,12,32">
-            <StackPanel MaxWidth="880">
+            <StackPanel MaxWidth="800">
+                <!-- Header -->
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
                     <StackPanel Orientation="Horizontal">
-                        <Button Style="{StaticResource GhostButtonStyle}" Click="BackButton_Click" Margin="0,0,8,0">
-                            <TextBlock Text="{StaticResource IconBack}" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="16" />
-                        </Button>
-                        <Border Width="44" Height="44" CornerRadius="14" Background="{StaticResource ConsoleAccentBlueAlpha20Brush}" BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                            <TextBlock Text="{StaticResource IconPlugin}" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        </Border>
-                        <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Add Provider Relationship" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Scope a broker, bank, custodian, exchange, or data vendor with capability bindings and certification." Style="{StaticResource CardDescriptionStyle}" />
-                        </StackPanel>
+                    <Button Style="{StaticResource GhostButtonStyle}"
+                            Click="BackButton_Click"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"
+                            ToolTip="Back to Settings">
+                        <TextBlock Text="{StaticResource IconBack}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16" />
+                    </Button>
+                    <Border Width="44" Height="44" CornerRadius="14"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
+                        <TextBlock Text="{StaticResource IconPlugin}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,0,0,0">
+                        <TextBlock Text="Add Data Provider"
+                                   Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Connect a new provider for real-time streaming or historical backfill."
+                                   Style="{StaticResource CardDescriptionStyle}" />
+                    </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                <!-- Step 1: Pick Provider -->
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                     <StackPanel>
-                        <TextBlock Text="1. Choose Relationship" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Connection Type" Style="{StaticResource FormLabelStyle}" />
-                                <ComboBox x:Name="ConnectionTypeCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="ConnectionType_SelectionChanged" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Preset" Style="{StaticResource FormLabelStyle}" />
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <ComboBox x:Name="PresetCombo" Style="{StaticResource FormComboBoxStyle}" DisplayMemberPath="Name" SelectionChanged="PresetCombo_SelectionChanged" />
-                                    <Button Grid.Column="1" Content="Apply" Style="{StaticResource SecondaryButtonStyle}" Click="PresetApply_Click" Margin="8,0,0,0" />
-                                </Grid>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Connection Label" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="ConnectionNameBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Provider Family ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="ProviderFamilyIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Institution ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="InstitutionIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="External Account ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="ExternalAccountIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                        </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Border Width="28" Height="28" CornerRadius="14"
+                                    Background="{StaticResource InfoColorBrush}" Margin="0,0,10,0">
+                                <TextBlock Text="1" FontWeight="Bold" FontSize="14"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Choose a Provider" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Filter Buttons -->
+                        <WrapPanel Margin="0,0,0,12">
+                            <Button x:Name="FilterAllBtn" Content="All"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="FilterAll_Click" Margin="0,0,8,4" />
+                            <Button x:Name="FilterFreeBtn" Content="Free"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Click="FilterFree_Click" Margin="0,0,8,4" />
+                            <Button x:Name="FilterStreamingBtn" Content="Streaming"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Click="FilterStreaming_Click" Margin="0,0,8,4" />
+                            <Button x:Name="FilterHistoricalBtn" Content="Historical"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Click="FilterHistorical_Click" Margin="0,0,8,4" />
+                        </WrapPanel>
+
+                        <!-- Provider Cards -->
                         <ItemsControl x:Name="ProviderCatalogList">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -91,19 +82,55 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Button Margin="0,0,8,8" Click="ProviderCard_Click" Tag="{Binding Id}" HorizontalContentAlignment="Stretch">
+                                    <Button Margin="0,0,8,8"
+                                            Click="ProviderCard_Click"
+                                            Tag="{Binding Id}"
+                                            HorizontalContentAlignment="Stretch">
                                         <Button.Style>
                                             <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
                                                 <Setter Property="Padding" Value="14,10" />
+                                                <Setter Property="HorizontalAlignment" Value="Stretch" />
                                             </Style>
                                         </Button.Style>
-                                        <StackPanel>
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                                <Ellipse Width="10" Height="10" Fill="{Binding CredentialStatusBrush}" Margin="0,0,8,0" />
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
+                                                <Ellipse Width="10" Height="10"
+                                                         Fill="{Binding CredentialStatusBrush}"
+                                                         VerticalAlignment="Center"
+                                                         Margin="0,0,8,0" />
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" />
                                             </StackPanel>
-                                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        </StackPanel>
+
+                                            <WrapPanel Grid.Row="1" Margin="0,0,0,4">
+                                                <Border CornerRadius="3" Padding="4,1" Margin="0,0,4,2"
+                                                        Background="{Binding TierBrush}">
+                                                    <TextBlock Text="{Binding TierLabel}" FontSize="10"
+                                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                </Border>
+                                                <Border CornerRadius="3" Padding="4,1" Margin="0,0,4,2"
+                                                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                                        Visibility="{Binding StreamingVisibility}">
+                                                    <TextBlock Text="Streaming" FontSize="10"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                </Border>
+                                                <Border CornerRadius="3" Padding="4,1" Margin="0,0,4,2"
+                                                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                                        Visibility="{Binding HistoricalVisibility}">
+                                                    <TextBlock Text="Historical" FontSize="10"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                </Border>
+                                            </WrapPanel>
+
+                                            <TextBlock Grid.Row="2" Text="{Binding Description}"
+                                                       TextWrapping="Wrap" FontSize="11"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        </Grid>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -111,151 +138,218 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                <!-- Step 2: Credentials -->
+                <Border x:Name="Step2Panel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="Collapsed">
                     <StackPanel>
-                        <TextBlock Text="2. Credentials And Scope" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Connection Mode" Style="{StaticResource FormLabelStyle}" />
-                                <ComboBox x:Name="OperatingModeCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="OperatingMode_SelectionChanged" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Credential Reference" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="CredentialReferenceBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                        </Grid>
-                        <TextBlock Text="{Binding CredentialsInfoText}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
-                        <StackPanel x:Name="CredentialFieldsPanel" />
-                        <TextBlock Text="No catalog-defined environment fields are required." Visibility="{Binding NoCredentialsVisibility}" Foreground="{StaticResource SuccessColorBrush}" Margin="0,0,0,12" />
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Workspace" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="WorkspaceBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Fund Profile ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="FundProfileIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Entity ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="EntityIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Sleeve ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="SleeveIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="4">
-                                <TextBlock Text="Vehicle ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="VehicleIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                        </Grid>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Account ID" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="AccountIdBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Relationship Notes" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="DescriptionBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
-                    <StackPanel>
-                        <TextBlock Text="3. Capabilities And Policy" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Safety Mode" Style="{StaticResource FormLabelStyle}" />
-                                <ComboBox x:Name="SafetyModeCombo" Style="{StaticResource FormComboBoxStyle}" SelectionChanged="SafetyMode_SelectionChanged" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Failover IDs (comma)" Style="{StaticResource FormLabelStyle}" />
-                                <TextBox x:Name="FailoverConnectionIdsBox" Style="{StaticResource FormTextBoxStyle}" TextChanged="TextInput_Changed" />
-                            </StackPanel>
-                        </Grid>
-                        <CheckBox x:Name="EnabledCheck" Content="Enable immediately" IsChecked="True" Margin="0,0,0,6" Checked="StateOption_Changed" Unchecked="StateOption_Changed" />
-                        <CheckBox x:Name="ProductionReadyCheck" Content="Require certification before live use" Margin="0,0,0,12" Checked="StateOption_Changed" Unchecked="StateOption_Changed" />
-                        <WrapPanel x:Name="CapabilityOptionsPanel" />
-                    </StackPanel>
-                </Border>
-
-                <Border Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="4. Save, Preview, And Certify" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                            <Ellipse Width="12" Height="12" Fill="{Binding ConnectionTestDotBrush}" Margin="0,0,10,0" />
-                            <TextBlock Text="{Binding ConnectionTestStatusText}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                            <Border Width="28" Height="28" CornerRadius="14"
+                                    Background="{StaticResource InfoColorBrush}" Margin="0,0,10,0">
+                                <TextBlock Text="2" FontWeight="Bold" FontSize="14"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Enter Credentials" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
                         </StackPanel>
-                        <WrapPanel Margin="0,0,0,12">
-                            <Button Content="Validate Draft" Style="{StaticResource SecondaryButtonStyle}" Click="TestProviderConnection_Click" Margin="0,0,8,8" />
-                            <Button Content="Save Relationship" Style="{StaticResource PrimaryButtonStyle}" Click="SaveProvider_Click" Margin="0,0,8,8" />
-                            <Button Content="Preview Route" Style="{StaticResource GhostButtonStyle}" Click="PreviewRoute_Click" Margin="0,0,8,8" />
-                            <Button Content="Run Certification" Style="{StaticResource GhostButtonStyle}" Click="RunCertification_Click" Margin="0,0,8,8" />
-                        </WrapPanel>
-                        <TextBlock Text="{Binding SaveStatusText}" Foreground="{Binding SaveStatusBrush}" Margin="0,0,0,8" />
-                        <TextBlock Text="{Binding RoutePreviewText}" Foreground="{Binding RoutePreviewBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
-                        <TextBlock Text="{Binding CertificationStatusText}" Foreground="{Binding CertificationStatusBrush}" TextWrapping="Wrap" />
+
+                        <TextBlock x:Name="CredentialsInfoText"
+                                   TextWrapping="Wrap"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   Margin="0,0,0,16" />
+
+                        <StackPanel x:Name="CredentialFieldsPanel" />
+
+                        <TextBlock x:Name="NoCredentialsNeededText"
+                                   Text="This provider does not require API credentials."
+                                   Foreground="{StaticResource SuccessColorBrush}"
+                                   Visibility="Collapsed"
+                                   Margin="0,0,0,8" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Step 3: Test Connection -->
+                <Border x:Name="Step3Panel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="Collapsed">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Border Width="28" Height="28" CornerRadius="14"
+                                    Background="{StaticResource InfoColorBrush}" Margin="0,0,10,0">
+                                <TextBlock Text="3" FontWeight="Bold" FontSize="14"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Test Connection" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Ellipse x:Name="ConnectionTestDot" Width="12" Height="12"
+                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,10,0"
+                                     VerticalAlignment="Center" />
+                            <TextBlock x:Name="ConnectionTestStatusText" Text="Not tested yet"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <Button Content="Test Connection"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Click="TestProviderConnection_Click" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Step 4: Configure -->
+                <Border x:Name="Step4Panel" Style="{StaticResource CardStyle}" Margin="0,0,0,24" Visibility="Collapsed">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                            <Border Width="28" Height="28" CornerRadius="14"
+                                    Background="{StaticResource InfoColorBrush}" Margin="0,0,10,0">
+                                <TextBlock Text="4" FontWeight="Bold" FontSize="14"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Configure Data Types" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <CheckBox x:Name="EnableTradesCheck"
+                                  Content="Subscribe to Trades"
+                                  IsChecked="True"
+                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                  Margin="0,0,0,8" />
+                        <CheckBox x:Name="EnableQuotesCheck"
+                                  Content="Subscribe to Quotes (BBO)"
+                                  IsChecked="True"
+                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                  Margin="0,0,0,8" />
+                        <CheckBox x:Name="EnableDepthCheck"
+                                  Content="Subscribe to Market Depth (L2)"
+                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                  Margin="0,0,0,8" />
+                        <CheckBox x:Name="EnableBackfillCheck"
+                                  Content="Enable for historical backfill"
+                                  IsChecked="True"
+                                  Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                  Margin="0,0,0,16" />
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Backfill Priority (lower = higher priority)" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                            <TextBox x:Name="PriorityBox"
+                                     Style="{StaticResource FormTextBoxStyle}"
+                                     Text="10" Width="100"
+                                     HorizontalAlignment="Left" />
+                        </StackPanel>
+
+                        <Button Content="Save Provider Configuration"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Click="SaveProvider_Click"
+                                Margin="0,16,0,0" />
+
+                        <TextBlock x:Name="SaveStatusText"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Margin="0,8,0,0" />
                     </StackPanel>
                 </Border>
             </StackPanel>
         </ScrollViewer>
 
-        <StackPanel Grid.Column="1" Margin="12,20,28,32">
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Summary" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,12" />
-                    <TextBlock Text="{Binding SelectedProviderName}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource InfoColorBrush}" />
-                    <TextBlock Text="{Binding SelectedProviderDescription}" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,12" />
-                    <TextBlock Text="{Binding SummaryConnectionTypeText}" Margin="0,2,0,0" />
-                    <TextBlock Text="{Binding SummaryOperatingModeText}" Margin="0,2,0,0" />
-                    <TextBlock Text="{Binding SummaryScopeText}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding SummaryCapabilitiesText}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding SummaryCredentialText}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding SummaryPresetText}" Margin="0,2,0,0" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding SummaryCertificationText}" Margin="0,2,0,0" />
-                </StackPanel>
-            </Border>
+        <!-- Right Panel - Selected Provider Summary -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="12,20,28,32">
+            <StackPanel>
+                <!-- Selected Provider Info -->
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Selected Provider"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Margin="0,0,0,12" />
 
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="Progress" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,12" />
-                    <StackPanel Orientation="Horizontal" Margin="0,4"><Ellipse Width="10" Height="10" Fill="{Binding Step1Fill}" Margin="0,0,8,0" /><TextBlock Text="Choose relationship" /></StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,4"><Ellipse Width="10" Height="10" Fill="{Binding Step2Fill}" Margin="0,0,8,0" /><TextBlock Text="Set credentials and scope" /></StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,4"><Ellipse Width="10" Height="10" Fill="{Binding Step3Fill}" Margin="0,0,8,0" /><TextBlock Text="Assign capabilities and policy" /></StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,4"><Ellipse Width="10" Height="10" Fill="{Binding Step4Fill}" Margin="0,0,8,0" /><TextBlock Text="Save, preview, and certify" /></StackPanel>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+                        <TextBlock x:Name="SelectedProviderName"
+                                   Text="{Binding SelectedProviderName}"
+                                   FontSize="18" FontWeight="Bold"
+                                   Foreground="{StaticResource InfoColorBrush}" />
+                        <TextBlock x:Name="SelectedProviderDescription"
+                                   Text="{Binding SelectedProviderDescription}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   Margin="0,4,0,12" />
+
+                        <Grid x:Name="ProviderDetailsGrid" Visibility="{Binding DetailsVisibility}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Streaming"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
+                            <TextBlock x:Name="DetailStreamingText" Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding DetailStreamingText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Historical"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
+                            <TextBlock x:Name="DetailHistoricalText" Grid.Row="1" Grid.Column="1"
+                                       Text="{Binding DetailHistoricalText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Symbol Search"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
+                            <TextBlock x:Name="DetailSearchText" Grid.Row="2" Grid.Column="1"
+                                       Text="{Binding DetailSearchText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Rate Limit"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
+                            <TextBlock x:Name="DetailRateLimitText" Grid.Row="3" Grid.Column="1"
+                                       Text="{Binding DetailRateLimitText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
+
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Credentials"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,4" />
+                            <TextBlock x:Name="DetailCredentialsText" Grid.Row="4" Grid.Column="1"
+                                       Text="{Binding DetailCredentialsText}"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontWeight="SemiBold" Margin="0,4" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Setup Progress -->
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Setup Progress"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Margin="0,0,0,12" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,4">
+                            <Ellipse x:Name="Step1Dot" Width="10" Height="10"
+                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                            <TextBlock x:Name="Step1Label" Text="Choose provider"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4">
+                            <Ellipse x:Name="Step2Dot" Width="10" Height="10"
+                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                            <TextBlock x:Name="Step2Label" Text="Enter credentials"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4">
+                            <Ellipse x:Name="Step3Dot" Width="10" Height="10"
+                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                            <TextBlock x:Name="Step3Label" Text="Test connection"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4">
+                            <Ellipse x:Name="Step4Dot" Width="10" Height="10"
+                                     Fill="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,8,0" />
+                            <TextBlock x:Name="Step4Label" Text="Configure &amp; save"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

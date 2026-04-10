@@ -40,7 +40,6 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 | [Environment Variables](environment-variables.md) | Credential and configuration reference |
 | [Open Source References](open-source-references.md) | Third-party library acknowledgements |
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions |
-| [Brand Assets](brand-assets.md) | Meridian logos, hero visuals, icons, and palette guidance |
 
 See also: [DEPENDENCIES.md](../DEPENDENCIES.md) — full third-party package inventory.
 

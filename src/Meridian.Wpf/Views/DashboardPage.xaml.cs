@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Ui.Services;
 using Meridian.Wpf.ViewModels;
+using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;
 
@@ -12,10 +14,25 @@ public partial class DashboardPage : Page
 {
     private readonly DashboardViewModel _viewModel;
 
-    public DashboardPage(DashboardViewModel viewModel)
+    public DashboardPage(
+        WpfServices.NavigationService navigationService,
+        WpfServices.ConnectionService connectionService,
+        WpfServices.StatusService statusService,
+        WpfServices.MessagingService messagingService,
+        WpfServices.NotificationService notificationService)
     {
         InitializeComponent();
-        _viewModel = viewModel;
+        _viewModel = new DashboardViewModel(
+            navigationService,
+            connectionService,
+            statusService,
+            messagingService,
+            notificationService,
+            AlertService.Instance,
+            ActivityFeedService.Instance,
+            WpfServices.TaskbarProgressService.Instance,
+            WpfServices.LoggingService.Instance,
+            CommandPaletteService.Instance);
         DataContext = _viewModel;
     }
 

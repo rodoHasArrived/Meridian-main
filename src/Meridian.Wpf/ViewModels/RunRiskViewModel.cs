@@ -4,7 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.Services;
-using ContractsEquityCurvePoint = Meridian.Contracts.Workstation.EquityCurvePoint;
+using CurvePt = Meridian.Contracts.Workstation.EquityCurvePoint;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -147,7 +147,7 @@ public sealed class RunRiskViewModel : BindableBase
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
-    public RunRiskViewModel(
+    internal RunRiskViewModel(
         StrategyRunWorkspaceService workspaceService,
         StrategyRunReadService readService,
         NavigationService navigationService)
@@ -273,7 +273,7 @@ public sealed class RunRiskViewModel : BindableBase
     /// Builds a <see cref="PlotRequest"/> showing the 21-day rolling annualised volatility
     /// derived from the equity curve's daily returns.
     /// </summary>
-    private static PlotRequest BuildVolatilityPlot(IReadOnlyList<ContractsEquityCurvePoint> points, int window = 21)
+    private static PlotRequest BuildVolatilityPlot(IReadOnlyList<CurvePt> points, int window = 21)
     {
         var series = new List<(DateOnly Date, double Value)>(points.Count);
 
@@ -290,7 +290,7 @@ public sealed class RunRiskViewModel : BindableBase
             Series: series);
     }
 
-    private static double ComputeRollingWindow(IReadOnlyList<ContractsEquityCurvePoint> points, int endIndex, int window)
+    private static double ComputeRollingWindow(IReadOnlyList<CurvePt> points, int endIndex, int window)
     {
         var start = endIndex - window + 1;
         var sum = 0.0;
@@ -317,7 +317,7 @@ public sealed class RunRiskViewModel : BindableBase
     /// Computes the full-period annualised volatility from all daily return observations
     /// using a single-pass algorithm to avoid double-iteration and intermediate allocations.
     /// </summary>
-    private static double ComputeAnnualisedVolatility(IReadOnlyList<ContractsEquityCurvePoint> points)
+    private static double ComputeAnnualisedVolatility(IReadOnlyList<CurvePt> points)
     {
         if (points.Count < 2)
             return double.NaN;

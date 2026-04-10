@@ -39,6 +39,7 @@ public sealed class OptionChainSnapshotTests
     }
 
     [Theory]
+    [InlineData(0)]
     [InlineData(-1)]
     public void Constructor_WithInvalidPrice_ThrowsArgumentOutOfRangeException(decimal price)
     {

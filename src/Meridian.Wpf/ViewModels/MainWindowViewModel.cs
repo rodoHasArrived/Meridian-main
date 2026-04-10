@@ -33,7 +33,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private Brush _fixtureModeBannerBackground = FixtureBrush;
     private Visibility _clipboardBannerVisibility = Visibility.Collapsed;
     private string _clipboardBannerText = string.Empty;
-    private string _fixtureScenarioLabel = string.Empty;
 
     public MainWindowViewModel(
         IConnectionService connectionService,
@@ -61,7 +60,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         RefreshCommand = new RelayCommand(() => _messagingService.Send("RefreshStatus"));
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
         DismissClipboardBannerCommand = new RelayCommand(HideClipboardBanner);
-        CycleFixtureScenarioCommand = new RelayCommand(CycleFixtureScenario, () => _fixtureModeDetector.IsFixtureMode);
 
         _clipboardBannerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
         _clipboardBannerTimer.Tick += OnClipboardBannerTimerTick;
@@ -84,12 +82,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     public IRelayCommand DismissClipboardBannerCommand { get; }
 
-    /// <summary>
-    /// Cycles the active fixture scenario to the next value in the sequence.
-    /// Only enabled when fixture mode is active.
-    /// </summary>
-    public IRelayCommand CycleFixtureScenarioCommand { get; }
-
     public Visibility FixtureModeBannerVisibility
     {
         get => _fixtureModeBannerVisibility;
@@ -106,16 +98,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     {
         get => _fixtureModeBannerBackground;
         private set => SetProperty(ref _fixtureModeBannerBackground, value);
-    }
-
-    /// <summary>
-    /// Short label for the currently active fixture scenario, e.g. "Connected (healthy)".
-    /// Displayed in the fixture banner to help developers know which state is active.
-    /// </summary>
-    public string FixtureScenarioLabel
-    {
-        get => _fixtureScenarioLabel;
-        private set => SetProperty(ref _fixtureScenarioLabel, value);
     }
 
     public Visibility ClipboardBannerVisibility
@@ -186,6 +168,9 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             case "RunBackfill":
                 Navigate("Backfill");
                 break;
+            case "PauseBackfill":
+                _messagingService.Send("PauseBackfill");
+                break;
             case "CancelBackfill":
                 _messagingService.Send("CancelBackfill");
                 break;
@@ -222,9 +207,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
                 break;
             case "Help":
                 Navigate("Help");
-                break;
-            case "CycleFixtureScenario":
-                CycleFixtureScenario();
                 break;
         }
     }
@@ -354,10 +336,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         FixtureModeBannerBackground = _fixtureModeDetector.IsFixtureMode
             ? FixtureBrush
             : OfflineBrush;
-        FixtureScenarioLabel = _fixtureModeDetector.IsFixtureMode
-            ? _fixtureModeDetector.ScenarioLabel
-            : string.Empty;
-        CycleFixtureScenarioCommand.NotifyCanExecuteChanged();
     }
 
     private void Navigate(string? pageTag)
@@ -368,11 +346,6 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         }
 
         _navigationService.NavigateTo(pageTag);
-    }
-
-    private void CycleFixtureScenario()
-    {
-        _fixtureModeDetector.CycleScenario();
     }
 
     private async Task StartCollectorAsync()

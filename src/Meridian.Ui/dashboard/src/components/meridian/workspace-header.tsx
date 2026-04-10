@@ -1,7 +1,6 @@
-import { Command, ChevronRight, RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
 
 interface WorkspaceHeaderProps {
@@ -13,105 +12,46 @@ interface WorkspaceHeaderProps {
 
 export function WorkspaceHeader({ workspace, session, onOpenCommandPalette, onRefresh }: WorkspaceHeaderProps) {
   return (
-    <header className="shrink-0">
-      {/* ── Toolbar row (Marquee-style compact dark bar) ── */}
-      <div className="mq-toolbar">
-        {/* Breadcrumb + title */}
-        <div className="flex flex-1 items-center gap-2 min-w-0">
-          <span className="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground/40 sm:block">
-            Meridian
-          </span>
-          <ChevronRight className="hidden size-3 shrink-0 text-muted-foreground/25 sm:block" />
-          <span className="truncate text-[13px] font-semibold text-foreground">
-            {workspace.label}
-          </span>
-
+    <header className="rounded-[1.75rem] border border-border bg-panel-strong/80 p-5 lg:p-6">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="outline">{workspace.label}</Badge>
           {session ? (
-            <Badge
-              variant={session.environment === "research" ? "default" : session.environment}
-              className="h-[18px] px-1.5 py-0 text-[10px]"
-            >
+            <Badge variant={session.environment === "research" ? "default" : session.environment}>
               {session.environment.toUpperCase()}
             </Badge>
           ) : null}
-
-          <Badge
-            variant={workspace.status === "Live" ? "success" : "warning"}
-            className="h-[18px] px-1.5 py-0 text-[10px]"
-          >
-            {workspace.status}
-          </Badge>
+          <Badge variant={workspace.status === "Live" ? "success" : "warning"}>{workspace.status}</Badge>
         </div>
-
-        {/* Action buttons */}
-        <div className="flex shrink-0 items-center gap-1.5">
-          {onRefresh && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onRefresh}
-              title="Refresh all workspace data"
-              className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <RefreshCcw className="size-3" />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onOpenCommandPalette}
-            aria-label="Open command palette (⌘K)"
-            className="h-7 gap-1 border-border/50 px-2.5 text-xs"
-          >
-            <Command className="size-3" />
-            <span className="hidden sm:inline">Command</span>
-            <kbd className="ml-1 hidden text-[10px] text-muted-foreground sm:inline">⌘K</kbd>
-          </Button>
+        <div className="space-y-2">
+          <div className="eyebrow-label">Meridian Workspace</div>
+          <h1 className="font-display text-4xl font-bold tracking-tight text-foreground">{workspace.label} Workstation</h1>
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{workspace.description}</p>
         </div>
       </div>
 
-      {/* ── Stat strip (dense session / workspace metadata row) ── */}
-      {session && (
-        <div className="mq-stat-strip">
-          <div className="mq-stat-item">
-            <span className="mq-stat-label">User</span>
-            <span className="mq-stat-value">{session.displayName}</span>
-          </div>
-          <div className="mq-stat-item">
-            <span className="mq-stat-label">Role</span>
-            <span className="mq-stat-value">{session.role}</span>
-          </div>
-          <div className="mq-stat-item">
-            <span className="mq-stat-label">Env</span>
-            <span
-              className={cn(
-                "mq-stat-value",
-                session.environment === "live" && "text-danger",
-                session.environment === "paper" && "text-warning",
-                session.environment === "research" && "text-blue-400"
-              )}
-            >
-              {session.environment}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="rounded-full border border-border bg-secondary/60 px-4 py-2 text-sm shadow-sm">
+          {session ? (
+            <span className="font-medium">
+              {session.displayName}
+              <span className="ml-2 text-muted-foreground">{session.role}</span>
             </span>
-          </div>
-          <div className="mq-stat-item">
-            <span className="mq-stat-label">Workspace</span>
-            <span
-              className={cn(
-                "mq-stat-value",
-                workspace.status === "Live" && "text-success"
-              )}
-            >
-              {workspace.status}
-            </span>
-          </div>
-          {/* Description pushed to the right */}
-          <div className="ml-auto hidden shrink-0 lg:block">
-            <span className="text-[10px] text-muted-foreground/35">{workspace.description}</span>
-          </div>
+          ) : (
+            <span className="text-muted-foreground">Loading session</span>
+          )}
         </div>
-      )}
+        {onRefresh && (
+          <Button variant="ghost" size="sm" onClick={onRefresh} title="Refresh all workspace data">
+            <RefreshCcw className="size-4" />
+          </Button>
+        )}
+        <Button variant="secondary" onClick={onOpenCommandPalette}>
+          Open Command Palette
+        </Button>
+      </div>
+      </div>
     </header>
   );
 }

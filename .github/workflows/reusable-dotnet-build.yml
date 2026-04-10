@@ -127,8 +127,9 @@ jobs:
           dotnet build Meridian.sln -c ${{ inputs.configuration }} --no-restore -p:EnableWindowsTargeting=true --verbosity minimal
 
       - name: Run tests
-        id: test
+        id: run-tests
         if: inputs.run-tests
+        id: test
         shell: bash
         env:
           MSYS_NO_PATHCONV: 1

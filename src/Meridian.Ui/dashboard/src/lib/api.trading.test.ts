@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { approvePromotion, evaluatePromotion, getPaperSessionDetail, getReplayStatus, getSecurityEconomicDefinition, getSecurityHistory, pauseReplay, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay } from "@/lib/api";
+import { approvePromotion, evaluatePromotion, getPaperSessionDetail, getReplayStatus, pauseReplay, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay } from "@/lib/api";
 
 describe("trading endpoint wiring", () => {
   const fetchMock = vi.fn();
@@ -35,19 +35,5 @@ describe("trading endpoint wiring", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/replay/rep-1/seek", expect.objectContaining({ method: "POST" }));
     expect(fetchMock).toHaveBeenCalledWith("/api/replay/rep-1/speed", expect.objectContaining({ method: "POST" }));
     expect(fetchMock).toHaveBeenCalledWith("/api/replay/rep-1/status", expect.anything());
-  });
-
-  it("wires security master drill-in endpoints", async () => {
-    await getSecurityHistory("security-aapl", 10);
-    await getSecurityEconomicDefinition("security-aapl");
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/security-master/securities/security-aapl/history?take=10",
-      expect.anything()
-    );
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/security-master/securities/security-aapl/economic-definition",
-      expect.anything()
-    );
   });
 });

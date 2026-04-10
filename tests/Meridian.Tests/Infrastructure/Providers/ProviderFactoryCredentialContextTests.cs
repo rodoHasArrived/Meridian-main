@@ -3,12 +3,10 @@ using Meridian.Application.Config;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
-using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Contracts;
 using Xunit;
@@ -46,8 +44,7 @@ public sealed class ProviderFactoryCredentialContextTests
                         Polygon: new PolygonConfig(ApiKey: "cfg-polygon-key"),
                         AlphaVantage: new AlphaVantageConfig(Enabled: true, ApiKey: "cfg-alpha-key"),
                         Finnhub: new FinnhubConfig(ApiKey: "cfg-finnhub-key"),
-                        Fred: new FredConfig(Enabled: true, ApiKey: "cfg-fred-key"),
-                        Robinhood: new RobinhoodConfig(Enabled: true, Priority: 35, RateLimitPerHour: 120)))),
+                        Fred: new FredConfig(Enabled: true, ApiKey: "cfg-fred-key")))),
             resolver);
 
         var providers = factory.CreateBackfillProviders();
@@ -59,7 +56,6 @@ public sealed class ProviderFactoryCredentialContextTests
         providers.Should().ContainSingle(p => p is AlphaVantageHistoricalDataProvider);
         providers.Should().ContainSingle(p => p is FredHistoricalDataProvider);
         providers.Should().ContainSingle(p => p is NasdaqDataLinkHistoricalDataProvider);
-        providers.Should().ContainSingle(p => p is RobinhoodHistoricalDataProvider);
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
@@ -91,41 +87,13 @@ public sealed class ProviderFactoryCredentialContextTests
 
         var providers = factory.CreateSymbolSearchProviders();
 
-        // EDGAR (SEC public API) requires no credentials and is always included.
-        // Credential-gated providers (Alpaca, Polygon, Finnhub) are skipped when no
-        // credentials are configured.
-        providers.Should().ContainSingle(p => p is EdgarSymbolSearchProvider,
-            because: "EDGAR is a free public data source that does not require credentials");
-        providers.Should().NotContain(p => p is AlpacaSymbolSearchProviderRefactored,
-            because: "Alpaca symbol search requires credentials that were not supplied");
-        providers.Should().NotContain(p => p is FinnhubSymbolSearchProviderRefactored,
-            because: "Finnhub symbol search requires credentials that were not supplied");
-        providers.Should().NotContain(p => p is PolygonSymbolSearchProvider,
-            because: "Polygon symbol search requires credentials that were not supplied");
-
+        providers.Should().BeEmpty();
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(AlpacaHistoricalDataProvider), ["ALPACA_KEY_ID", "ALPACA_SECRET_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(FinnhubHistoricalDataProvider), ["FINNHUB_API_KEY"]));
         resolver.ContextRequests.Should().ContainEquivalentOf(
             new ContextRequest(typeof(PolygonHistoricalDataProvider), ["POLYGON_API_KEY"]));
-    }
-
-    [Fact]
-    public void CreateSymbolSearchProviders_IncludesRobinhoodWhenProviderFamilyIsEnabled()
-    {
-        var resolver = new TrackingCredentialResolver();
-        var factory = new ProviderFactory(
-            new AppConfig(
-                Backfill: new BackfillConfig(
-                    Providers: new BackfillProvidersConfig(
-                        Robinhood: new RobinhoodConfig(Enabled: true)))),
-            resolver);
-
-        var providers = factory.CreateSymbolSearchProviders();
-
-        providers.Should().ContainSingle(p => p is RobinhoodSymbolSearchProvider);
-        providers.Should().ContainSingle(p => p is EdgarSymbolSearchProvider);
     }
 
     private sealed class TrackingCredentialResolver : IProviderCredentialResolver

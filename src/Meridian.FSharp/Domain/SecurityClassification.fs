@@ -54,6 +54,16 @@ type SecuritySubType =
     | DirectLoan
     | OtherSubType of string
 
+/// Structured sector / industry classification supporting multiple taxonomy schemes.
+type SectorTaxonomy = {
+    /// Taxonomy scheme identifier (e.g. "GICS", "ICB", "SIC", "NAICS").
+    TaxonomyScheme: string
+    SectorCode: string option
+    IndustryGroupCode: string option
+    IndustryCode: string option
+    SubIndustryCode: string option
+}
+
 type SecurityClassification = {
     AssetClass: AssetClass
     Family: AssetFamily option
@@ -61,6 +71,8 @@ type SecurityClassification = {
     TypeName: string
     IssuerType: string option
     RiskCountry: string option
+    /// Structured sector / industry taxonomy (GICS, ICB, SIC, NAICS, etc.).
+    Taxonomy: SectorTaxonomy option
 }
 
 [<RequireQualifiedAccess>]

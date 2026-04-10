@@ -1,33 +1,25 @@
 # ADR-015: Platform Restructuring — Meridian → Meridian
 
 ## Status
-Superseded by [ADR-015: Strategy Execution Contract](015-strategy-execution-contract.md) and [ADR-016: Platform Architecture Migration Mandate](016-platform-architecture-migration.md)
+Accepted
 
 ## Date
 2026-03-18
 
 ## Context
 
-The project has evolved from a focused market data collection tool into a broader
-algorithmic trading platform encompassing data collection, backtesting, live execution,
-and strategy lifecycle management. The original naming (`Meridian.*`) and
-the original dependency graph (documented in the shared project context) only captured
-one pillar of what is now a four-pillar platform.
+The Meridian project has outgrown its original name and scope. What started as a market data collection tool now encompasses:
 
-The decisions in this document were subsequently refined and split into two separate
-accepted ADRs:
+- Real-time streaming from 90+ data providers
+- Historical backfill from 10+ providers
+- Backtesting engine with strategy SDK, fill models, and portfolio simulation
+- Three-tier storage (JSONL/Parquet/Archive) with Write-Ahead Log
+- Web dashboard (ASP.NET Core) and WPF desktop app
+- MCP server for LLM integration
+- F# domain models with C# interop
+- QuantConnect Lean Engine integration
 
-- **[ADR-015: Strategy Execution Contract](015-strategy-execution-contract.md)** —
-  defines `IOrderGateway`, `IExecutionContext`, and the paper-first execution model.
-- **[ADR-016: Platform Architecture Migration Mandate](016-platform-architecture-migration.md)** —
-  defines the four named pillars (Data Collection, Backtesting, Execution, Strategies),
-  allowed dependency rules, and forbidden cross-pillar couplings.
-
-The proposed rename of `Meridian.*` to a shorter prefix was **not carried out**; all
-assembly and namespace names remain `Meridian.*` to preserve CI/CD pipelines, NuGet
-references, and existing documentation. ADR-016 documents this naming decision.
-
-This document is retained for historical context only.
+The platform needs to expand further to include **live strategy execution** (order management, execution gateways, risk management). The name "Meridian" no longer represents the system's capabilities.
 
 ## Decision
 

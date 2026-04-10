@@ -425,6 +425,30 @@ public sealed class BackfillService
     }
 
     /// <summary>
+    /// Pauses the current backfill operation.
+    /// </summary>
+    public void Pause()
+    {
+        if (_currentProgress != null && _currentProgress.Status == "Running")
+        {
+            _currentProgress.Status = "Paused";
+            ProgressUpdated?.Invoke(this, new BackfillProgressEventArgs { Progress = _currentProgress });
+        }
+    }
+
+    /// <summary>
+    /// Resumes a paused backfill operation.
+    /// </summary>
+    public void Resume()
+    {
+        if (_currentProgress != null && _currentProgress.Status == "Paused")
+        {
+            _currentProgress.Status = "Running";
+            ProgressUpdated?.Invoke(this, new BackfillProgressEventArgs { Progress = _currentProgress });
+        }
+    }
+
+    /// <summary>
     /// Cancels the current backfill operation.
     /// </summary>
     public void Cancel()

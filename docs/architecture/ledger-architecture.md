@@ -47,24 +47,13 @@ Key operations:
 
 Validation is delegated to `LedgerInterop.ValidateJournalEntry` (F#) before posting.
 
-Operational guarantees:
-
-- `Journal`, `JournalEntry.Lines`, and snapshot balance dictionaries are exposed through read-only wrappers so consumers cannot mutate ledger state after validation.
-- Standard in-order posts remain append-fast, while backdated posts are inserted into timestamp order so journal and running-balance views stay chronological.
-
 ### `ProjectLedgerBook`
 
 Manages a keyed collection of `Ledger` instances within a single host process. Use it when multiple parallel runs or projects need isolated ledgers but a single lookup point.
 
-Ledger-book identity is case-insensitive across `ProjectId`, `LedgerBook`, and `ScenarioId`, so callers can resolve the same logical book without coordinating casing.
-
 ```csharp
 var book = serviceProvider.GetRequiredService<ProjectLedgerBook>();
-var key = new LedgerBookKey(
-    projectId: "alpha-momentum",
-    ledgerBook: "run-42",
-    ledgerView: LedgerViewKind.Actual,
-    scenarioId: null);
+var key  = new LedgerBookKey(projectId: "alpha-momentum", runId: runId);
 var ledger = book.GetOrCreate(key);
 ledger.Post(journalEntry);
 ```
@@ -76,11 +65,11 @@ Registered as a singleton by `LedgerFeatureRegistration`.
 A thin wrapper around `ProjectLedgerBook` that provides fund-structure-aware accessors:
 
 ```csharp
-var fundBook = new FundLedgerBook(fundId);
+var fundBook = new FundLedgerBook(book, fundId);
 var sleeveLedger = fundBook.SleeveLedger(sleeveId);
 ```
 
-Useful for fund-of-funds structures where assets, liabilities, and P&L must be tracked per entity/sleeve/vehicle. Entity, sleeve, and vehicle identifiers are trimmed and must be non-blank before a sub-ledger is created.
+Useful for fund-of-funds structures where assets, liabilities, and P&L must be tracked per entity/sleeve/vehicle.
 
 ### `LedgerAccounts`
 

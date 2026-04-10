@@ -31,8 +31,6 @@
     <Compile Include="Domain/SecurityMasterEvents.fs" />
     <Compile Include="Domain/SecurityMasterCommands.fs" />
     <Compile Include="Domain/FundStructure.fs" />
-    <!-- Account statement types depend on AccountId/FundId from FundStructure.fs -->
-    <Compile Include="Domain/AccountStatements.fs" />
     <Compile Include="Domain/DirectLending.fs" />
 
     <!-- Comprehensive security master domain — self-contained, no inter-domain dependencies -->
@@ -66,7 +64,6 @@
     <Compile Include="Interop.CashFlow.fs" />
     <Compile Include="Interop.SecurityMaster.fs" />
     <Compile Include="Interop.DirectLending.fs" />
-    <Compile Include="Interop.AccountDetails.fs" />
     <Compile Include="Interop.fs" />
   </ItemGroup>
 

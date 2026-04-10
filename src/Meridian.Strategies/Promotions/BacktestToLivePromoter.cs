@@ -36,14 +36,12 @@ public sealed class BacktestToLivePromoter
         string strategyId,
         string strategyName,
         RunType targetRunType,
-        string? sourceRunId = null,
         string? approvedBy = null,
-        string? approvalReason = null,
-        string? manualOverrideId = null,
-        string? auditReference = null)
+        string? manualOverrideId = null)
     {
         ArgumentNullException.ThrowIfNull(result);
 
+        var auditReference = Guid.NewGuid().ToString("N");
         return new StrategyPromotionRecord(
             PromotionId: Guid.NewGuid().ToString("N"),
             StrategyId: strategyId,
@@ -54,11 +52,9 @@ public sealed class BacktestToLivePromoter
             QualifyingMaxDrawdownPercent: result.Metrics.MaxDrawdownPercent,
             QualifyingTotalReturn: result.Metrics.TotalReturn,
             PromotedAt: DateTimeOffset.UtcNow,
-            SourceRunId: sourceRunId,
+            AuditReference: auditReference,
             ApprovedBy: approvedBy,
-            ApprovalReason: approvalReason,
-            ManualOverrideId: manualOverrideId,
-            AuditReference: auditReference);
+            ManualOverrideId: manualOverrideId);
     }
 }
 
@@ -89,8 +85,6 @@ public sealed record StrategyPromotionRecord(
     decimal QualifyingMaxDrawdownPercent,
     decimal QualifyingTotalReturn,
     DateTimeOffset PromotedAt,
-    string? SourceRunId = null,
+    string? AuditReference = null,
     string? ApprovedBy = null,
-    string? ApprovalReason = null,
-    string? ManualOverrideId = null,
-    string? AuditReference = null);
+    string? ManualOverrideId = null);

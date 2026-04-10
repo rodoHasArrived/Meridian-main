@@ -1,13 +1,17 @@
 # Provider Documentation
 
-**Last Reviewed:** 2026-04-05
+**Last Updated:** 2026-03-21
 **Owner:** Core Team
 **Scope:** Engineering / Product - Provider-Facing
-**Review Cadence:** When providers change APIs, tiers, runtime behavior, or validation status
+**Review Cadence:** When providers change APIs, tiers, or rate limits
+
+---
 
 ## Purpose
 
-This directory contains setup guides, inventory references, connector notes, and validation context for the providers currently supported by Meridian.
+This directory contains setup guides, comparison tables, and usage instructions for the providers currently supported by Meridian.
+
+---
 
 ## Contents
 
@@ -16,20 +20,20 @@ This directory contains setup guides, inventory references, connector notes, and
 | Document | Description |
 |----------|-------------|
 | [Alpaca Setup](alpaca-setup.md) | Alpaca Markets API key setup and configuration |
-| [Interactive Brokers Setup](interactive-brokers-setup.md) | IB TWS and Gateway configuration |
-| [IB Free Equity Reference](interactive-brokers-free-equity-reference.md) | IB free-equity data availability reference |
-| [Security Master Guide](security-master-guide.md) | Security Master coverage and golden-record guidance |
+| [Interactive Brokers Setup](interactive-brokers-setup.md) | IB TWS / Gateway configuration |
+| [IB Free Equity Reference](interactive-brokers-free-equity-reference.md) | IB free equity data availability reference |
+| [Security Master Guide](security-master-guide.md) | Event-sourced golden record for securities across 14 asset classes |
 
-### Selection, Inventory, And Validation
+### Selection And Inventory
 
 | Document | Description |
 |----------|-------------|
 | [Provider Comparison](provider-comparison.md) | Side-by-side selection guidance for streaming, historical, and symbol-search providers |
 | [Data Sources Reference](data-sources.md) | Current provider inventory and implementation locations |
+| [Provider Confidence Baseline](provider-confidence-baseline.md) | Repo-grounded validation matrix for Polygon, NYSE, IB, and StockSharp |
 | [Backfill Guide](backfill-guide.md) | Historical data backfill procedures |
-| [Provider Confidence Baseline](provider-confidence-baseline.md) | Confidence narrative for the main provider families |
-| [Provider Validation Matrix](../status/provider-validation-matrix.md) | Evidence-backed readiness matrix used by status docs |
-| [StockSharp Connectors](stocksharp-connectors.md) | Connector-specific StockSharp setup and runtime notes |
+
+---
 
 ## Supported Provider Families
 
@@ -38,9 +42,9 @@ This directory contains setup guides, inventory references, connector notes, and
 | Provider | Notes |
 |----------|-------|
 | Alpaca | Easy entry point for US streaming workflows |
-| Interactive Brokers | Broker-aligned professional setup with `IBApi`-aware workflows |
-| Polygon | High-quality trades, quotes, and aggregates |
-| StockSharp | Connector-driven multi-exchange workflows with adapter-specific runtime behavior |
+| Interactive Brokers | Broker-aligned professional setup with `IBAPI`; real TWS / Gateway access requires the official `IBApi` path |
+| Polygon | Real-time trades, quotes, and aggregates |
+| StockSharp | Connector-driven multi-exchange workflows with package- and adapter-specific runtime behavior |
 | NYSE Streaming | NYSE-focused feed path |
 | Synthetic Market Data | Deterministic offline streaming and demos |
 
@@ -56,8 +60,8 @@ This directory contains setup guides, inventory references, connector notes, and
 | Finnhub | Historical plus company reference data |
 | Alpha Vantage | Narrow, rate-limited intraday lookups |
 | Polygon | Premium-quality historical market data |
-| Interactive Brokers | Broker-aligned historical workflows once the official `IBApi` path is available |
-| StockSharp | Connector-dependent historical access shaped by the configured adapter and package surface |
+| Interactive Brokers | Broker-aligned historical workflows once the official `IBApi` surface is enabled |
+| StockSharp | Connector-dependent historical access shaped by the configured adapter and available package surfaces |
 | Twelve Data | Credentialed international OHLCV fallback |
 | FRED | Economic time series mapped to daily bars |
 | Synthetic Historical | Deterministic offline fixtures |
@@ -74,9 +78,10 @@ This directory contains setup guides, inventory references, connector notes, and
 | StockSharp Symbol Search | Connector-native security lookup |
 | Synthetic Symbol Search | Offline stock and ETF catalog |
 
+---
+
 ## Related
 
-- [Environment Variables](../reference/environment-variables.md)
-- [Provider Implementation Guide](../development/provider-implementation.md)
-- [Historical Data Providers Evaluation](../evaluations/historical-data-providers-evaluation.md)
-- [Production Status](../status/production-status.md)
+- [Environment Variables Reference](../reference/environment-variables.md) - Credential and configuration reference
+- [Provider Implementation Guide](../development/provider-implementation.md) - Adding new providers
+- [Historical Data Providers Evaluation](../evaluations/historical-data-providers-evaluation.md) - Evaluation and tradeoff notes

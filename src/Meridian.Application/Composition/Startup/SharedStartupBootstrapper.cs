@@ -191,16 +191,8 @@ public static class SharedStartupHelpers
             : baseRequest.Symbols;
         var from = ParseDate(cliArgs.BackfillFrom) ?? baseRequest.From;
         var to = ParseDate(cliArgs.BackfillTo) ?? baseRequest.To;
-        var resumeFromCheckpoint = cliArgs.Resume || baseRequest.ResumeFromCheckpoint;
 
-        return new BackfillRequest(
-            provider,
-            symbols.ToArray(),
-            from,
-            to,
-            MaxConcurrentSymbols: baseRequest.MaxConcurrentSymbols,
-            SymbolPriorities: baseRequest.SymbolPriorities,
-            ResumeFromCheckpoint: resumeFromCheckpoint);
+        return new BackfillRequest(provider, symbols.ToArray(), from, to);
     }
 
     private static DateOnly? ParseDate(string? value)

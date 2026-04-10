@@ -281,14 +281,4 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
 
-    <!-- ── Extra icon glyphs referenced by individual views ── -->
-    <!-- IconKey: credentials / API-key icon (Segoe MDL2 "Permissions") -->
-    <sys:String x:Key="IconKey">&#xE8AC;</sys:String>
-    <!-- IconKeyboard: keyboard icon (reuses the KeyboardShortcut glyph) -->
-    <sys:String x:Key="IconKeyboard">&#xE765;</sys:String>
-    <!-- IconWizard: setup-wizard / wand icon (Segoe MDL2 "DeveloperTools") -->
-    <sys:String x:Key="IconWizard">&#xE8D7;</sys:String>
-    <!-- IconWrench: tool/wrench icon (Segoe MDL2 "Repair") -->
-    <sys:String x:Key="IconWrench">&#xE90F;</sys:String>
-
 </ResourceDictionary>

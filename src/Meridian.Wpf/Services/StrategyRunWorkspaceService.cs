@@ -21,37 +21,31 @@ public sealed class StrategyRunWorkspaceService
 
     private readonly IStrategyRepository _store;
     private readonly StrategyRunReadService _readService;
-    private readonly FundContextService _fundContextService;
-    private ActiveRunContext? _activeRunContext;
 
     public static StrategyRunWorkspaceService Instance => _instance ?? _fallbackInstance.Value;
 
     public StrategyRunWorkspaceService()
-        : this(new StrategyRunStore(), new PortfolioReadService(), new LedgerReadService(), FundContextService.Instance)
+        : this(new StrategyRunStore(), new PortfolioReadService(), new LedgerReadService())
     {
     }
 
     public StrategyRunWorkspaceService(
         IStrategyRepository store,
         PortfolioReadService portfolioReadService,
-        LedgerReadService ledgerReadService,
-        FundContextService? fundContextService = null)
+        LedgerReadService ledgerReadService)
         : this(store, new StrategyRunReadService(
             store ?? throw new ArgumentNullException(nameof(store)),
             portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService)),
-            ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService))),
-            fundContextService)
+            ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService))))
     {
     }
 
     public StrategyRunWorkspaceService(
         IStrategyRepository store,
-        StrategyRunReadService readService,
-        FundContextService? fundContextService = null)
+        StrategyRunReadService readService)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _readService = readService ?? throw new ArgumentNullException(nameof(readService));
-        _fundContextService = fundContextService ?? FundContextService.Instance;
     }
 
     public static void SetInstance(StrategyRunWorkspaceService service)
@@ -60,10 +54,8 @@ public sealed class StrategyRunWorkspaceService
     }
 
     public string? LastRecordedRunId { get; private set; }
-    public string? ActiveRunId { get; private set; }
 
     public event EventHandler<StrategyRunSummary>? RunRecorded;
-    public event EventHandler<ActiveRunContext?>? ActiveRunContextChanged;
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, CancellationToken ct = default) =>
         _readService.GetRunsAsync(strategyId, ct: ct);
@@ -100,99 +92,13 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<StrategyRunSummary?> GetLatestRunAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(strategyId: null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
         return runs.FirstOrDefault();
-    }
-
-    public async Task<ActiveRunContext?> GetActiveRunContextAsync(CancellationToken ct = default)
-    {
-        if (_activeRunContext is not null)
-        {
-            return _activeRunContext;
-        }
-
-        var latestRun = await GetLatestRunAsync(ct).ConfigureAwait(false);
-        if (latestRun is null)
-        {
-            return null;
-        }
-
-        return await SetActiveRunContextAsync(latestRun.RunId, ct).ConfigureAwait(false);
-    }
-
-    public async Task<ActiveRunContext?> SetActiveRunContextAsync(string? runId, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(runId))
-        {
-            ActiveRunId = null;
-            _activeRunContext = null;
-            ActiveRunContextChanged?.Invoke(this, null);
-            return null;
-        }
-
-        var detail = await _readService.GetRunDetailAsync(runId, ct).ConfigureAwait(false);
-        if (detail is null)
-        {
-            return null;
-        }
-
-        ActiveRunId = runId;
-        _activeRunContext = BuildActiveRunContext(detail);
-        ActiveRunContextChanged?.Invoke(this, _activeRunContext);
-        return _activeRunContext;
-    }
-
-    public async Task<ActiveRunContext?> PromoteToPaperAsync(string runId, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
-
-        var sourceRun = await FindRunEntryAsync(runId, ct).ConfigureAwait(false);
-        if (sourceRun is null || sourceRun.RunType != RunType.Backtest || sourceRun.Metrics is null)
-        {
-            return null;
-        }
-
-        var paperRun = new StrategyRunEntry(
-            RunId: Guid.NewGuid().ToString("N"),
-            StrategyId: sourceRun.StrategyId,
-            StrategyName: sourceRun.StrategyName,
-            RunType: RunType.Paper,
-            StartedAt: DateTimeOffset.UtcNow,
-            EndedAt: null,
-            Metrics: null,
-            DatasetReference: sourceRun.DatasetReference,
-            FeedReference: sourceRun.FeedReference,
-            PortfolioId: $"{sourceRun.StrategyId}-paper-portfolio",
-            LedgerReference: $"{sourceRun.StrategyId}-paper-ledger",
-            AuditReference: $"promotion-{sourceRun.RunId}",
-            Engine: "BrokerPaper",
-            ParameterSet: sourceRun.ParameterSet,
-            FundProfileId: sourceRun.FundProfileId,
-            FundDisplayName: sourceRun.FundDisplayName);
-
-        await _store.RecordRunAsync(paperRun, ct).ConfigureAwait(false);
-        LastRecordedRunId = paperRun.RunId;
-
-        var activeContext = await SetActiveRunContextAsync(paperRun.RunId, ct).ConfigureAwait(false);
-        var paperSummary = await _readService.GetRunDetailAsync(paperRun.RunId, ct).ConfigureAwait(false);
-        if (paperSummary is not null)
-        {
-            RunRecorded?.Invoke(this, paperSummary.Summary);
-        }
-
-        return activeContext;
     }
 
     public async Task<TradingWorkspaceSummary> GetTradingSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(strategyId: null, ct: ct).ConfigureAwait(false);
-        var activeFundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
-        if (!string.IsNullOrWhiteSpace(activeFundProfileId))
-        {
-            runs = runs
-                .Where(run => string.Equals(run.FundProfileId, activeFundProfileId, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-        }
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
 
         var paperRuns = runs.Where(r => r.Mode == StrategyRunMode.Paper).ToList();
         var liveRuns = runs.Where(r => r.Mode == StrategyRunMode.Live).ToList();
@@ -232,8 +138,6 @@ public sealed class StrategyRunWorkspaceService
             }
         }
 
-        var activeContext = await GetActiveRunContextAsync(ct).ConfigureAwait(false);
-
         return new TradingWorkspaceSummary
         {
             PaperRunCount = paperRuns.Count,
@@ -242,14 +146,13 @@ public sealed class StrategyRunWorkspaceService
             MaxDrawdownFormatted = "—",
             PositionLimitLabel = "—",
             OrderRateLabel = "—",
-            ActivePositions = positions,
-            ActiveRunContext = activeContext
+            ActivePositions = positions
         };
     }
 
     public async Task<ResearchWorkspaceSummary> GetResearchSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(strategyId: null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
 
         var promoted = runs.Count(r =>
             r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live);
@@ -292,30 +195,14 @@ public sealed class StrategyRunWorkspaceService
             })
             .ToList();
 
-        var activeContext = await GetActiveRunContextAsync(ct).ConfigureAwait(false);
-
         return new ResearchWorkspaceSummary
         {
             TotalRuns = runs.Count,
             PromotedCount = promoted,
             PendingReviewCount = promotionCandidates.Count,
             RecentRuns = recentRuns,
-            PromotionCandidates = candidateItems,
-            ActiveRunContext = activeContext
+            PromotionCandidates = candidateItems
         };
-    }
-
-    public async Task<IReadOnlyList<StrategyRunEntry>> GetRecordedRunsAsync(CancellationToken ct = default)
-    {
-        var results = new List<StrategyRunEntry>();
-        await foreach (var run in _store.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
-        {
-            results.Add(run);
-        }
-
-        return results
-            .OrderByDescending(run => run.StartedAt)
-            .ToArray();
     }
 
     private static SolidColorBrush MapStatusBrush(StrategyRunStatus status) => status switch
@@ -356,14 +243,11 @@ public sealed class StrategyRunWorkspaceService
             LedgerReference: $"{strategyId}-backtest-ledger",
             AuditReference: $"audit-{strategyId}-{completedAt:yyyyMMddHHmmss}",
             Engine: "MeridianNative",
-            ParameterSet: BuildParameterSet(request, result),
-            FundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
-            FundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName);
+            ParameterSet: BuildParameterSet(request, result));
 
         await _store.RecordRunAsync(entry, ct).ConfigureAwait(false);
 
         LastRecordedRunId = entry.RunId;
-        await SetActiveRunContextAsync(entry.RunId, ct).ConfigureAwait(false);
 
         var summary = await _readService.GetRunDetailAsync(entry.RunId, ct).ConfigureAwait(false);
         if (summary is not null)
@@ -438,56 +322,5 @@ public sealed class StrategyRunWorkspaceService
 
         var slug = new string(buffer.ToArray()).Trim('-');
         return string.IsNullOrWhiteSpace(slug) ? "strategy" : slug;
-    }
-
-    private async Task<StrategyRunEntry?> FindRunEntryAsync(string runId, CancellationToken ct)
-    {
-        await foreach (var run in _store.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
-        {
-            if (string.Equals(run.RunId, runId, StringComparison.Ordinal))
-            {
-                return run;
-            }
-        }
-
-        return null;
-    }
-
-    private static ActiveRunContext BuildActiveRunContext(StrategyRunDetail detail)
-    {
-        var portfolioPreview = detail.Portfolio is { Positions.Count: > 0 }
-            ? $"{detail.Portfolio.Positions.Count} positions · equity {detail.Portfolio.TotalEquity:C0}"
-            : "No current portfolio positions.";
-
-        var ledgerPreview = detail.Ledger is { TrialBalance.Count: > 0 }
-            ? $"{detail.Ledger.TrialBalance.Count} trial-balance lines · journals {detail.Ledger.Journal.Count}"
-            : "No ledger entries captured.";
-
-        var riskSummary = detail.Summary.TotalReturn.HasValue
-            ? $"Return {detail.Summary.TotalReturn.Value:P1} · status {detail.Summary.Status}"
-            : $"Status {detail.Summary.Status}";
-
-        return new ActiveRunContext
-        {
-            RunId = detail.Summary.RunId,
-            StrategyId = detail.Summary.StrategyId,
-            StrategyName = detail.Summary.StrategyName,
-            ModeLabel = detail.Summary.Mode.ToString(),
-            StatusLabel = detail.Summary.Status.ToString(),
-            FundScopeLabel = string.IsNullOrWhiteSpace(detail.Summary.FundDisplayName)
-                ? "Global"
-                : detail.Summary.FundDisplayName!,
-            CanPromoteToPaper = detail.Summary.Mode == StrategyRunMode.Backtest &&
-                detail.Summary.Status == StrategyRunStatus.Completed,
-            PromotionLabel = detail.Summary.Mode == StrategyRunMode.Backtest
-                ? "Promote to Paper"
-                : "Open Promotion Review",
-            TradingHandoffLabel = "Open in Trading Cockpit",
-            PortfolioPreview = portfolioPreview,
-            LedgerPreview = ledgerPreview,
-            RiskSummary = riskSummary,
-            Portfolio = detail.Portfolio,
-            Ledger = detail.Ledger
-        };
     }
 }

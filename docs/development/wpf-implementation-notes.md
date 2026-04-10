@@ -89,7 +89,6 @@ All pages registered in `NavigationService.RegisterAllPages()` and declared in `
 | `Dashboard` | `DashboardPage` | Default landing page |
 | `Watchlist` | `WatchlistPage` | |
 | `RunMat` | `RunMatPage` | Quant / script lab |
-| `QuantScript` | `QuantScriptPage` | Notebook-style research surface with sticky document state, inline parameter validation, and session-preserved parameter inputs |
 | `Charts` | `ChartingPage` | Candlestick / time-series |
 | `OrderBook` | `OrderBookPage` | Live L2 depth |
 | `StrategyRuns` | `StrategyRunsPage` | Strategy run browser |
@@ -277,68 +276,27 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 ## Research and Trading Workspace Shells
 
-Two dedicated workspace shell pages now provide the primary operator surface for the Research and Trading workspaces. They are no longer lightweight landing pages. Each shell owns a workstation-grade dock surface, restores pane layout per workspace and fund, and keeps a shared selected-run context alive between research, portfolio, ledger, and trading views.
+Two dedicated workspace shell pages provide the initial entry point into each primary workflow. They are lightweight presenter pages — no deep data logic — that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages.
 
 ### `ResearchWorkspaceShellPage` (`Views/ResearchWorkspaceShellPage.xaml`)
 
-**Purpose**: Backtest Studio for the Research workspace. Keeps strategy configuration, run context, run history, promotion actions, and embedded drill-ins in one screen.
+**Purpose**: Single-page landing for the Research workspace. Shows recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
 
 **Design zones**:
-1. **Header** — Studio title, selected-run context, KPI strip, and sticky fund scope
-2. **Action bar** — Reset studio, promote to paper, open trading cockpit, run browser, run detail, portfolio inspector, ledger inspector
-3. **Workbench panels** — Scenario/session rail, central run studio summary, right-side inspector summary
-4. **History + promotion rail** — Recent run queue with direct open actions and promotion candidates
-5. **Dock surface** — `MeridianDockingManager` hosting `Backtest`, `StrategyRuns`, `RunDetail`, `RunPortfolio`, `RunLedger`, `Charts`, and `LeanIntegration` as docked, tabbed, or floating panes
+1. **Header** — Active strategy count, cumulative P&L across completed runs, last-run timestamp
+2. **Recent Runs strip** — Horizontal scroll, `StrategyRunSummary` cards (mode badge, status, net P&L, return %)
+3. **Quick Actions** — New Backtest, Open RunMat, Open Charts, Open Run Browser
+4. **Promotion Pipeline** — Candidates for paper promotion (sourced from `StrategyRunPromotionState`)
 
 ### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
 
-**Purpose**: Trading Cockpit for the Trading workspace. Keeps live posture, active run context, blotter/order-book/risk panes, and capital posture in one workstation layout.
+**Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and key risk metrics.
 
 **Design zones**:
-1. **Header** — Cockpit title, fund scope, selected-run context, KPI strip
-2. **Desk action bar** — Pause, stop, flatten, cancel-all, acknowledge-risk
-3. **Workbench panels** — Strategy/watchlist rail, market core, and blotter/alerts/risk summary
-4. **Position + capital rail** — Active position list, cash/gross/net/financing posture, risk snapshot
-5. **Dock surface** — `MeridianDockingManager` hosting `LiveData`, `RunPortfolio`, `PositionBlotter`, `OrderBook`, `RunRisk`, `RunLedger`, and `NotificationCenter`
-
-### Main Shell Split/Float Workflow
-
-`MainPage` now exposes operator-facing pane actions in the shell command bar:
-
-- Preset workstation layouts
-- `Split Right` and `Split Below`
-- `Float`
-- `Save Layout`
-- `Reset`
-
-Keyboard shortcuts implemented in the shell:
-
-- `Ctrl+\` split right
-- `Ctrl+Shift+\` split below
-- `Ctrl+Alt+N` float the active pane
-- `Ctrl+1..4` focus panes
-- `Ctrl+Shift+R` reset the split layout
-
-Navigation list items, command palette results, and recent-page chips can now be dragged into the split host or workspace dock surfaces using the shared `Meridian.PageTag` drag payload.
-
-### Layout Persistence
-
-`WorkspaceService` persists workstation layout state additively alongside session restore:
-
-- preferred shell-first routes (`ResearchShell`, `TradingShell`)
-- dock layout XML keyed by workspace and optional fund profile
-- pane metadata (`PageTag`, dock zone, active pane, tool/document state)
-- floating window metadata
-- user-saveable layout presets in `SessionState` / `WorkspaceTemplate`
-
-`StrategyRunWorkspaceService` now owns the shared `ActiveRunContext` used by both shells for:
-
-- selected run ID and strategy identity
-- fund scope label
-- portfolio preview
-- ledger preview
-- trading handoff state
-- promote-to-paper eligibility
+1. **Header** — Active run count (paper + live), total equity under management, connection status
+2. **Live Positions strip** — `PortfolioPositionSummary` rows for active paper/live runs; gross/net exposure
+3. **Quick Actions** — Open Live Data, Open Portfolio, Import Positions, View Trading Hours
+4. **Risk Rail** — Drawdown gauge, position-limit utilization, order-rate throttle status (from `CompositeRiskValidator`)
 
 ---
 

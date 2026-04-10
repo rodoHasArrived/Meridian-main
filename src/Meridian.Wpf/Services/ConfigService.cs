@@ -72,7 +72,7 @@ public sealed class ConfigService : ConfigServiceBase
     /// </summary>
     public async Task<ConfigServiceValidationResult> ValidateConfigAsync(CancellationToken ct = default)
     {
-        var result = await ValidateConfigDetailAsync(ct);
+        var result = await ValidateConfigDetailAsync();
         return new ConfigServiceValidationResult
         {
             IsValid = result.IsValid,
@@ -112,7 +112,7 @@ public sealed class ConfigService : ConfigServiceBase
     /// <summary>
     /// Adds a new data source or updates an existing one (matched by <see cref="DataSourceConfigDto.Id"/>).
     /// </summary>
-    public new async Task AddOrUpdateDataSourceAsync(DataSourceConfigDto source, CancellationToken ct = default)
+    public async Task AddOrUpdateDataSourceAsync(DataSourceConfigDto source, CancellationToken ct = default)
     {
         var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
         config.DataSources ??= new DataSourcesConfigDto();
@@ -131,7 +131,7 @@ public sealed class ConfigService : ConfigServiceBase
     /// <summary>
     /// Deletes the data source with the specified <paramref name="id"/>.
     /// </summary>
-    public new async Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
+    public async Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
     {
         var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
         if (config.DataSources?.Sources == null) return;
@@ -145,7 +145,7 @@ public sealed class ConfigService : ConfigServiceBase
     /// <summary>
     /// Sets the default real-time or historical data source.
     /// </summary>
-    public new async Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
+    public async Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
     {
         var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
         config.DataSources ??= new DataSourcesConfigDto();
@@ -161,7 +161,7 @@ public sealed class ConfigService : ConfigServiceBase
     /// <summary>
     /// Updates the failover settings (enabled flag and timeout).
     /// </summary>
-    public new async Task UpdateFailoverSettingsAsync(bool enabled, int timeoutSeconds, CancellationToken ct = default)
+    public async Task UpdateFailoverSettingsAsync(bool enabled, int timeoutSeconds, CancellationToken ct = default)
     {
         var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
         config.DataSources ??= new DataSourcesConfigDto();

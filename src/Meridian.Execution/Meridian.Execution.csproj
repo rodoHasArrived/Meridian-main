@@ -15,7 +15,6 @@
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
-    <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>

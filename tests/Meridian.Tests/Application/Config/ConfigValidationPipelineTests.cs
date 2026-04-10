@@ -116,28 +116,6 @@ public class ConfigValidationPipelineTests
         results.Should().Contain(r => r.IsError && r.Message.Contains("placeholder"));
     }
 
-    [Theory]
-    [InlineData("CHANGE_ME")]
-    [InlineData("your-key-here")]
-    [InlineData("<API_KEY>")]
-    public void Validate_PlaceholderCredentialFormats_DoNotTriggerCredentialSecurityWarnings(string placeholder)
-    {
-        var pipeline = ConfigValidationPipeline.CreateDefault();
-        var config = CreateValidConfig() with
-        {
-            Polygon = new PolygonOptions
-            {
-                ApiKey = placeholder
-            }
-        };
-
-        var results = pipeline.Validate(config);
-
-        results.Should().NotContain(r =>
-            r.Severity == ConfigValidationSeverity.Warning &&
-            r.Property == "Polygon.ApiKey");
-    }
-
     [Fact]
     public void Validate_InvalidFeed_ReturnsError()
     {

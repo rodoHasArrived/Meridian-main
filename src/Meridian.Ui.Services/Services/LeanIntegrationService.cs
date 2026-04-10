@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Meridian.Contracts.Api;
 
 namespace Meridian.Ui.Services;
 
@@ -224,13 +223,13 @@ public sealed class LeanIntegrationService
     /// <summary>
     /// Gets backtest results.
     /// </summary>
-    public async Task<LeanBacktestResultsSummaryDto> GetBacktestResultsAsync(string backtestId, CancellationToken ct = default)
+    public async Task<BacktestResults> GetBacktestResultsAsync(string backtestId, CancellationToken ct = default)
     {
-        var response = await _apiClient.GetWithResponseAsync<LeanBacktestResultsResponseDto>(
-            UiApiRoutes.WithParam(UiApiRoutes.LeanBacktestResults, "backtestId", backtestId),
+        var response = await _apiClient.GetWithResponseAsync<BacktestResults>(
+            $"/api/lean/backtest/{backtestId}/results",
             ct);
 
-        return response.Data?.Results ?? new LeanBacktestResultsSummaryDto();
+        return response.Data ?? new BacktestResults();
     }
 
     /// <summary>
@@ -322,69 +321,29 @@ public sealed class LeanIntegrationService
     /// <summary>
     /// Ingests Lean backtest results from a local results file.
     /// </summary>
-    public async Task<LeanResultsArtifactSummaryDto> InspectBacktestResultsAsync(
-        LeanResultsImportRequestDto request,
-        CancellationToken ct = default)
-    {
-        var response = await _apiClient.PostWithResponseAsync<LeanResultsArtifactSummaryDto>(
-            UiApiRoutes.LeanResultsArtifact,
-            request,
-            ct);
-
-        return response.Data ?? new LeanResultsArtifactSummaryDto
-        {
-            ResultsFilePath = request.ResultsFilePath,
-            AlgorithmName = request.AlgorithmName ?? string.Empty,
-            BacktestId = request.BacktestId
-        };
-    }
-
-    /// <summary>
-    /// Ingests Lean backtest results from a local results file.
-    /// </summary>
-    public async Task<LeanResultsIngestResponseDto> IngestBacktestResultsAsync(
+    public async Task<LeanResultsIngestResult> IngestBacktestResultsAsync(
         string resultsFilePath,
         string? backtestId = null,
         string? algorithmName = null,
         CancellationToken ct = default)
     {
-        return await IngestBacktestResultsAsync(
-            new LeanResultsImportRequestDto
+        var response = await _apiClient.PostWithResponseAsync<LeanResultsIngestResult>(
+            "/api/lean/results/ingest",
+            new
             {
-                ResultsFilePath = resultsFilePath,
-                BacktestId = backtestId,
-                AlgorithmName = algorithmName
+                resultsFilePath,
+                backtestId,
+                algorithmName
             },
-            ct).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Ingests Lean backtest results from a local results file.
-    /// </summary>
-    public async Task<LeanResultsIngestResponseDto> IngestBacktestResultsAsync(
-        LeanResultsImportRequestDto request,
-        CancellationToken ct = default)
-    {
-        var response = await _apiClient.PostWithResponseAsync<LeanResultsIngestResponseDto>(
-            UiApiRoutes.LeanResultsIngest,
-            request,
             ct);
 
         if (response.Success && response.Data != null)
             return response.Data;
 
-        return new LeanResultsIngestResponseDto
+        return new LeanResultsIngestResult
         {
             Success = false,
-            Error = response.ErrorMessage ?? "Results ingestion failed",
-            BacktestId = request.BacktestId,
-            AlgorithmName = request.AlgorithmName,
-            ArtifactSummary = new LeanResultsArtifactSummaryDto
-            {
-                BacktestId = request.BacktestId,
-                AlgorithmName = request.AlgorithmName ?? string.Empty,
-                ResultsFilePath = request.ResultsFilePath
-            }
+            Error = response.ErrorMessage ?? "Results ingestion failed"
         };
     }
 
@@ -541,6 +500,44 @@ public enum BacktestState : byte
     Cancelled
 }
 
+public sealed class BacktestResults
+{
+    public string? BacktestId { get; set; }
+    public string? AlgorithmName { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public decimal InitialCapital { get; set; }
+    public decimal FinalCapital { get; set; }
+    public decimal TotalReturn { get; set; }
+    public decimal AnnualizedReturn { get; set; }
+    public decimal SharpeRatio { get; set; }
+    public decimal MaxDrawdown { get; set; }
+    public int TotalTrades { get; set; }
+    public decimal WinRate { get; set; }
+    public decimal ProfitFactor { get; set; }
+    public List<BacktestTradeRecord>? Trades { get; set; }
+    public List<EquityPoint>? EquityCurve { get; set; }
+}
+
+public sealed class BacktestTradeRecord
+{
+    public string Symbol { get; set; } = string.Empty;
+    public DateTime EntryTime { get; set; }
+    public DateTime ExitTime { get; set; }
+    public string Direction { get; set; } = string.Empty;
+    public decimal Quantity { get; set; }
+    public decimal EntryPrice { get; set; }
+    public decimal ExitPrice { get; set; }
+    public decimal ProfitLoss { get; set; }
+    public decimal ReturnPercent { get; set; }
+}
+
+public sealed class EquityPoint
+{
+    public DateTime Date { get; set; }
+    public decimal Equity { get; set; }
+}
+
 public sealed class BacktestSummary
 {
     public string BacktestId { get; set; } = string.Empty;
@@ -616,6 +613,20 @@ public sealed class LeanAutoExportConfigureOptions
     public string? LeanDataPath { get; set; }
     public int IntervalSeconds { get; set; }
     public List<string>? Symbols { get; set; }
+}
+
+
+
+public sealed class LeanResultsIngestResult
+{
+    public bool Success { get; set; }
+    public string? Error { get; set; }
+    public string? BacktestId { get; set; }
+    public string? AlgorithmName { get; set; }
+    public decimal? TotalReturn { get; set; }
+    public decimal? SharpeRatio { get; set; }
+    public int? TotalTrades { get; set; }
+    public string? Message { get; set; }
 }
 
 

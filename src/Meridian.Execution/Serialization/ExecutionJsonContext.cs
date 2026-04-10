@@ -41,6 +41,7 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(ExecutionCircuitBreakerState))]
 [JsonSerializable(typeof(ExecutionManualOverride))]
 [JsonSerializable(typeof(List<ExecutionManualOverride>))]
+// Operator control and audit trail types
 [JsonSerializable(typeof(ExecutionControlSnapshot))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {

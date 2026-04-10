@@ -189,51 +189,6 @@ public sealed class ProviderEndpointTests
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Fact]
-    public async Task RoutePreview_WithLegacyRealtimeDefaults_ReturnsExplainableSelection()
-    {
-        var payload = new
-        {
-            Capability = "RealtimeMarketData"
-        };
-        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-
-        var response = await _client.PostAsync("/api/provider-operations/route-preview", content);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var json = await DeserializeAsync(response);
-        json["isRoutable"].GetBoolean().Should().BeTrue();
-        json["selectedConnectionId"].GetString().Should().Be("test-alpaca");
-    }
-
-    [Fact]
-    public async Task ProviderConnectionsCrud_CreateAndFetchConnection()
-    {
-        var payload = new
-        {
-            ProviderFamilyId = "ib",
-            DisplayName = "Ops Broker",
-            ConnectionType = "Brokerage",
-            ConnectionMode = "Paper",
-            Enabled = true
-        };
-        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-
-        var createResponse = await _client.PostAsync("/api/provider-operations/connections", content);
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var created = await DeserializeAsync(createResponse);
-        var connectionId = created["connectionId"].GetString();
-        connectionId.Should().NotBeNullOrWhiteSpace();
-
-        var listResponse = await _client.GetAsync("/api/provider-operations/connections");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var body = await listResponse.Content.ReadAsStringAsync();
-        body.Should().Contain("Ops Broker");
-        body.Should().Contain(connectionId);
-    }
-
     #endregion
 
     private static async Task<Dictionary<string, JsonElement>> DeserializeAsync(HttpResponseMessage response)

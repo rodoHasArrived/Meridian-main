@@ -156,10 +156,6 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
 
             return bars.Count > 0;
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
         catch (Exception ex)
         {
             _log.Debug(ex, "IB availability check failed");
@@ -567,8 +563,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
         (HistoricalDataCapabilities.BarsOnly with { Intraday = true }).WithMarkets("US", "EU", "APAC");
 
     // IProviderMetadata
-    public string ProviderId => Name;
-    public string ProviderDisplayName => DisplayName;
+    public string ProviderId => "ibkr";
+    public string ProviderDisplayName => "Interactive Brokers";
     public string ProviderDescription => Description;
     public int ProviderPriority => Priority;
 

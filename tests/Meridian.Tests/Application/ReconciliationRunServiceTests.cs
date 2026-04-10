@@ -68,8 +68,6 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityCoverageIssues.Should().NotBeNull();
         detail.SecurityCoverageIssues!.Should().Contain(issue => issue.Source == "portfolio" && issue.Symbol == "TSLA");
         detail.SecurityCoverageIssues.Should().Contain(issue => issue.Source == "ledger" && issue.Symbol == "TSLA");
-        detail.SecurityCoverageIssues.Should().OnlyContain(issue => issue.CoverageStatus == WorkstationSecurityCoverageStatus.Missing);
-        detail.SecurityCoverageIssues.Should().OnlyContain(issue => issue.CoverageReason != null);
     }
 
     [Fact]
@@ -111,46 +109,6 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
         detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
         detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
-    }
-
-    [Fact]
-    public async Task RunAsync_WithPartialSecurityCoverage_ShouldExposeReviewIssueAndClassification()
-    {
-        var store = new StrategyRunStore();
-        await store.RecordRunAsync(TestRunFactory.BuildReconciliationReadyRun("run-partial"));
-
-        var lookup = new StubSecurityReferenceLookup();
-        lookup.Register("AAPL", new WorkstationSecurityReference(
-            SecurityId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            DisplayName: "Apple Inc.",
-            AssetClass: "Equity",
-            Currency: "USD",
-            Status: SecurityStatusDto.Active,
-            PrimaryIdentifier: "AAPL"));
-        lookup.Register("TSLA", new WorkstationSecurityReference(
-            SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            DisplayName: "Tesla Inc.",
-            AssetClass: "Equity",
-            Currency: "USD",
-            Status: SecurityStatusDto.Active,
-            PrimaryIdentifier: "TSLA",
-            CoverageStatus: WorkstationSecurityCoverageStatus.Partial,
-            MatchedIdentifierKind: "Ticker",
-            MatchedIdentifierValue: "TSLA",
-            ResolutionReason: "Matched using normalized identifier 'TSLA'."));
-
-        var service = CreateService(store, new InMemoryReconciliationRunRepository(), lookup);
-
-        var detail = await service.RunAsync(new ReconciliationRunRequest("run-partial"));
-
-        detail.Should().NotBeNull();
-        detail!.Summary.HasSecurityCoverageIssues.Should().BeTrue();
-        detail.SecurityCoverageIssues.Should().NotBeNull();
-        detail.SecurityCoverageIssues!.Should().Contain(issue =>
-            issue.Symbol == "TSLA" &&
-            issue.CoverageStatus == WorkstationSecurityCoverageStatus.Partial &&
-            issue.SecurityId == "22222222222222222222222222222222");
-        detail.SecurityClassifications.Should().ContainKey("TSLA");
     }
 
     [Fact]

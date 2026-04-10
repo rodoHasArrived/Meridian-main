@@ -56,18 +56,6 @@ public enum StrategyRunPromotionState : byte
 }
 
 /// <summary>
-/// Coverage/provenance state for Security Master enrichment shared across workstation surfaces.
-/// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter<WorkstationSecurityCoverageStatus>))]
-public enum WorkstationSecurityCoverageStatus : byte
-{
-    Resolved,
-    Partial,
-    Missing,
-    Unavailable
-}
-
-/// <summary>
 /// Shared execution summary used by workstation drill-ins and governance surfaces.
 /// </summary>
 public sealed record StrategyRunExecutionSummary(
@@ -129,9 +117,7 @@ public sealed record StrategyRunSummary(
     string? AuditReference = null,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
-    StrategyRunGovernanceSummary? Governance = null,
-    string? FundProfileId = null,
-    string? FundDisplayName = null);
+    StrategyRunGovernanceSummary? Governance = null);
 
 /// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.
@@ -158,12 +144,7 @@ public sealed record WorkstationSecurityReference(
     string Currency,
     SecurityStatusDto Status,
     string? PrimaryIdentifier,
-    string? SubType = null,
-    WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved,
-    string? MatchedIdentifierKind = null,
-    string? MatchedIdentifierValue = null,
-    string? MatchedProvider = null,
-    string? ResolutionReason = null);
+    string? SubType = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
@@ -184,10 +165,7 @@ public sealed record PortfolioSummary(
     decimal Financing,
     IReadOnlyList<PortfolioPositionSummary> Positions,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0,
-    string? FundProfileId = null,
-    IReadOnlyList<OpenLotSummary>? OpenLots = null,
-    IReadOnlyList<ClosedLotSummary>? ClosedLots = null);
+    int SecurityMissingCount = 0);
 
 /// <summary>
 /// Shared position row for workstation portfolio views.
@@ -218,8 +196,7 @@ public sealed record LedgerSummary(
     IReadOnlyList<LedgerTrialBalanceLine> TrialBalance,
     IReadOnlyList<LedgerJournalLine> Journal,
     int SecurityResolvedCount = 0,
-    int SecurityMissingCount = 0,
-    string? FundProfileId = null);
+    int SecurityMissingCount = 0);
 
 /// <summary>
 /// Shared trial-balance row for workstation ledger views.
@@ -436,46 +413,3 @@ public sealed record RunCashFlowSummary(
     decimal NetCashFlow,
     IReadOnlyList<CashFlowEntryDto> Entries,
     RunCashLadder Ladder);
-
-// ---------------------------------------------------------------------------
-// Lot-level tracking read models
-// ---------------------------------------------------------------------------
-
-/// <summary>
-/// Workstation-facing summary of a single open lot for a strategy run.
-/// </summary>
-public sealed record OpenLotSummary(
-    Guid LotId,
-    string Symbol,
-    long Quantity,
-    decimal EntryPrice,
-    DateTimeOffset OpenedAt,
-    decimal CurrentUnrealizedPnl,
-    bool IsLongTerm,
-    string? AccountId = null);
-
-/// <summary>
-/// Workstation-facing summary of a closed lot for a strategy run.
-/// </summary>
-public sealed record ClosedLotSummary(
-    Guid LotId,
-    string Symbol,
-    long Quantity,
-    decimal EntryPrice,
-    decimal ClosePrice,
-    DateTimeOffset OpenedAt,
-    DateTimeOffset ClosedAt,
-    decimal RealizedPnl,
-    bool IsLongTerm,
-    string? AccountId = null);
-
-/// <summary>
-/// Lot history for a single strategy run, optionally filtered to one symbol.
-/// </summary>
-public sealed record RunLotSummary(
-    string RunId,
-    int TotalOpenLots,
-    int TotalClosedLots,
-    decimal TotalRealizedPnl,
-    IReadOnlyList<OpenLotSummary> OpenLots,
-    IReadOnlyList<ClosedLotSummary> ClosedLots);

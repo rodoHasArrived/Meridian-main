@@ -1,6 +1,6 @@
 # UI Redesign Notes: Trading Workstation Migration
 
-**Last Updated:** 2026-04-04
+**Last Updated:** 2026-03-20
 **Status:** Superseded and aligned with the active [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
 
 ---
@@ -44,7 +44,6 @@ The canonical implementation plan lives in [`docs/plans/trading-workstation-migr
 - Active strategies
 - Orders / fills blotter
 - Positions and exposure
-- Capital & controls posture (cash, financing, unsettled activity)
 - Quote / order-book views
 - Risk and alert panels
 - Strategy controls (pause, stop, flatten)
@@ -62,12 +61,11 @@ The canonical implementation plan lives in [`docs/plans/trading-workstation-migr
 
 ### 4) Governance
 
-**Purpose:** Fund operations, ledger, diagnostics, retention assurance, audit, notifications, and settings.
+**Purpose:** Ledger, diagnostics, retention assurance, audit, notifications, and settings.
 
 **Primary surfaces**
-- Fund Operations workspace
-- Accounts, banking, and account portfolio drill-throughs
-- Cash & financing, trial balance, journal, reconciliation, and audit trail
+- Portfolio & Ledger workspace
+- Trial balance and journal explorer
 - Diagnostics and system status
 - Notifications and audit history
 - Retention and settings
@@ -99,17 +97,16 @@ The canonical implementation plan lives in [`docs/plans/trading-workstation-migr
 - Promote current live viewer and execution primitives into a cohesive paper-trading experience.
 - Keep live trading hidden behind explicit mode guards and confirmation affordances.
 
-### Fund Operations Workspace
+### Portfolio & Ledger Workspace
 
 **Tabs**
 - Overview
-- Accounts
-- Banking
-- Portfolio
+- Positions
+- Exposure
 - Cash & Financing
 - Journal
 - Trial Balance
-- Reconciliation
+- P&L Attribution
 - Audit Trail
 
 ---
@@ -127,7 +124,7 @@ The canonical implementation plan lives in [`docs/plans/trading-workstation-migr
 
 ### Near-term
 - Register missing workflow pages consistently in WPF navigation.
-- Add command palette entries for backtesting, trading, and governance fund-operations flows.
+- Add command palette entries for backtesting, trading, and portfolio/ledger flows.
 - Preserve existing pages where useful, but introduce workspace shells above them.
 
 ### Mid-term

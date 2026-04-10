@@ -159,6 +159,12 @@ public sealed class SemanticValidationStage : IConfigValidationStage
 /// </summary>
 public sealed class CredentialSecurityStage : IConfigValidationStage
 {
+    private static readonly string[] PlaceholderPatterns =
+    {
+        "your-", "YOUR_", "__SET_ME__", "REPLACE_", "ENTER_", "INSERT_",
+        "TODO", "xxx", "change-me", "placeholder"
+    };
+
     public IReadOnlyList<ConfigValidationResult> Validate(AppConfig config)
     {
         var results = new List<ConfigValidationResult>();
@@ -190,7 +196,7 @@ public sealed class CredentialSecurityStage : IConfigValidationStage
             return;
 
         // Skip placeholder values - those are expected in sample configs
-        if (CredentialPlaceholderDetector.ContainsPlaceholderMarker(value))
+        if (IsPlaceholder(value))
             return;
 
         // If the value looks like a real credential (not a placeholder), warn
@@ -200,5 +206,11 @@ public sealed class CredentialSecurityStage : IConfigValidationStage
             $"Credential '{propertyName}' appears to be set directly in config file. " +
             "Use environment variables instead to avoid accidental commits.",
             $"Set environment variable {envVarName} and remove the value from the config file"));
+    }
+
+    private static bool IsPlaceholder(string value)
+    {
+        return PlaceholderPatterns.Any(p =>
+            value.Contains(p, StringComparison.OrdinalIgnoreCase));
     }
 }

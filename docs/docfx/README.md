@@ -20,10 +20,10 @@ From repository root:
 dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true /p:GenerateDocumentationFile=true
 
 # Full build (API docs + conceptual docs)
-docfx docfx.json
+docfx docs/docfx/docfx.json
 
 # Serve locally for preview (opens http://localhost:8080)
-docfx docfx.json --serve
+docfx docs/docfx/docfx.json --serve
 ```
 
 Output is generated to `docs/_site/` (gitignored — rebuild each time).
@@ -31,15 +31,15 @@ Output is generated to `docs/_site/` (gitignored — rebuild each time).
 ## Project Structure
 
 ```
-docfx.json             # DocFX configuration (source paths, templates, metadata)
 docs/docfx/
-├── filterConfig.yml   # API filter rules (exclude private/generated types)
+├── docfx.json          # DocFX configuration (source paths, templates, metadata)
+├── filterConfig.yml    # API filter rules (exclude private/generated types)
 ├── api/
-│   └── index.md       # API reference landing page
-└── README.md          # This file
+│   └── index.md        # API reference landing page
+└── README.md           # This file
 ```
 
-The root `docfx.json` configuration pulls from:
+The `docfx.json` configuration pulls from:
 - **API metadata**: All public `.csproj` files under `src/` — generates API reference from XML doc comments
 - **Conceptual docs**: Markdown files under `docs/` — architecture, guides, operations, etc.
 - **Table of contents**: `docs/toc.yml` — top-level navigation structure
@@ -75,7 +75,7 @@ The root `docfx.json` configuration pulls from:
 
 1. Create a `.md` file in the appropriate `docs/` subdirectory
 2. Add an entry to the relevant `toc.yml` or parent `README.md`
-3. Rebuild: `docfx docfx.json`
+3. Rebuild: `docfx docs/docfx/docfx.json`
 
 ### New API namespace
 
