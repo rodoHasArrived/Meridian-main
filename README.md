@@ -5826,6 +5826,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
+│   │   ├── Serialization
+│   │   │   └── FSharpInteropJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
@@ -7143,6 +7145,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-491 directories, 6513 files
+492 directories, 6514 files
 ```
 <!-- readme-tree end -->
