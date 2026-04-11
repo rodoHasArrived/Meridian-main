@@ -1,0 +1,28 @@
+{
+  "operations": [
+    {
+      "type": "badge",
+      "at": [282, 529],
+      "text": "1",
+      "fill": "#0b6fb8"
+    },
+    {
+      "type": "box",
+      "rect": [239, 500, 1362, 601],
+      "label": "Review connected status, latency, and provider counts first",
+      "color": "#0b6fb8"
+    },
+    {
+      "type": "badge",
+      "at": [281, 771],
+      "text": "2",
+      "fill": "#e07a17"
+    },
+    {
+      "type": "box",
+      "rect": [239, 741, 1361, 853],
+      "label": "Use connection history to confirm recent provider events",
+      "color": "#e07a17"
+    }
+  ]
+}

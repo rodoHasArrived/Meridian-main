@@ -156,6 +156,24 @@ public static class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404);
 
+        group.MapGet("/runs/{runId}/continuity", async (string runId, HttpContext context) =>
+        {
+            var continuityService = context.RequestServices.GetService<StrategyRunContinuityService>();
+            if (continuityService is null)
+            {
+                return Results.Problem("Strategy run continuity service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var detail = await continuityService.GetRunContinuityAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            return detail is null
+                ? Results.NotFound()
+                : Results.Json(detail, jsonOptions);
+        })
+        .WithName("GetRunContinuity")
+        .Produces<StrategyRunContinuityDetail>(200)
+        .Produces(404)
+        .Produces(501);
+
         group.MapGet("/runs/{runId}/equity-curve", async (string runId, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();

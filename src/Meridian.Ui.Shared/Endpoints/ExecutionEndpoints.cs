@@ -263,8 +263,31 @@ public static class ExecutionEndpoints
             if (persistence is null)
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-            var dto = new Meridian.Execution.Services.CreatePaperSessionDto(request.StrategyId, request.StrategyName, request.InitialCash);
+            var actionId = GenerateActionId();
+            var dto = new Meridian.Execution.Services.CreatePaperSessionDto(
+                request.StrategyId,
+                request.StrategyName,
+                request.InitialCash,
+                request.Symbols);
             var session = await persistence.CreateSessionAsync(dto, context.RequestAborted).ConfigureAwait(false);
+
+            await RecordOperatorAuditAsync(
+                context,
+                actionId,
+                action: "CreatePaperSession",
+                outcome: "Completed",
+                message: $"Paper session {session.SessionId} created for strategy {session.StrategyId}.",
+                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["sessionId"] = session.SessionId,
+                    ["strategyId"] = session.StrategyId,
+                    ["initialCash"] = session.InitialCash.ToString("G29"),
+                    ["symbolCount"] = (request.Symbols?.Count ?? 0).ToString(),
+                    ["symbols"] = request.Symbols is { Count: > 0 }
+                        ? string.Join(",", request.Symbols)
+                        : string.Empty
+                }).ConfigureAwait(false);
+
             return Results.Json(session, jsonOptions, statusCode: StatusCodes.Status201Created);
         })
         .WithName("CreateExecutionSession")
@@ -277,11 +300,89 @@ public static class ExecutionEndpoints
             if (persistence is null)
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
+            var actionId = GenerateActionId();
+            var existingSession = persistence.GetSession(sessionId);
             var closed = await persistence.CloseSessionAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
-            return closed ? Results.Ok() : Results.NotFound();
+
+            var auditEntry = await RecordOperatorAuditAsync(
+                context,
+                actionId,
+                action: "ClosePaperSession",
+                outcome: closed ? "Completed" : "Rejected",
+                message: closed
+                    ? $"Paper session {sessionId} closed."
+                    : $"Paper session {sessionId} was not found.",
+                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["sessionId"] = sessionId,
+                    ["strategyId"] = existingSession?.Summary.StrategyId ?? string.Empty,
+                    ["symbolCount"] = existingSession?.Symbols.Count.ToString() ?? "0"
+                }).ConfigureAwait(false);
+
+            if (!closed)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(
+                new TradingActionResult(
+                    ActionId: actionId,
+                    Status: "Completed",
+                    Message: $"Paper session {sessionId} closed.",
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    AuditId: auditEntry?.AuditId),
+                jsonOptions);
         })
         .WithName("CloseExecutionSession")
-        .Produces(200)
+        .Produces<TradingActionResult>(200)
+        .Produces(404)
+        .Produces(503);
+
+        group.MapGet("/sessions/{sessionId}/replay", async (string sessionId, HttpContext context) =>
+        {
+            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+            if (persistence is null)
+                return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+
+            var actionId = GenerateActionId();
+            var verification = await persistence.VerifyReplayAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
+            if (verification is null)
+            {
+                await RecordOperatorAuditAsync(
+                    context,
+                    actionId,
+                    action: "ReplayPaperSession",
+                    outcome: "Rejected",
+                    message: $"Paper session {sessionId} was not found for replay verification.",
+                    metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["sessionId"] = sessionId
+                    }).ConfigureAwait(false);
+
+                return Results.NotFound();
+            }
+
+            await RecordOperatorAuditAsync(
+                context,
+                actionId,
+                action: "ReplayPaperSession",
+                outcome: verification.IsConsistent ? "Completed" : "AttentionRequired",
+                message: verification.IsConsistent
+                    ? $"Replay matched current state for paper session {sessionId}."
+                    : $"Replay mismatch detected for paper session {sessionId}.",
+                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["sessionId"] = sessionId,
+                    ["strategyId"] = verification.Summary.StrategyId,
+                    ["isConsistent"] = verification.IsConsistent.ToString(),
+                    ["replaySource"] = verification.ReplaySource,
+                    ["mismatchCount"] = verification.MismatchReasons.Count.ToString()
+                }).ConfigureAwait(false);
+
+            return Results.Json(verification, jsonOptions);
+        })
+        .WithName("ReplayExecutionSession")
+        .Produces<PaperSessionReplayVerificationDto>(200)
         .Produces(404)
         .Produces(503);
 

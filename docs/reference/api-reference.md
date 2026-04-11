@@ -229,7 +229,7 @@ All endpoints return errors in a consistent format:
 | Maintenance | 18 | Archive maintenance schedules, executions, status, presets |
 | Providers | 8 | Provider status, metrics, catalog, comparison, latency |
 | Options | 7 | Options chains, expirations, strikes, quotes, refresh, provider status |
-| Execution | 16 | Execution blotter, keyed position actions, orders, health, audit, controls |
+| Execution | 21 | Execution blotter, keyed position actions, session continuity, orders, health, audit, controls |
 | Failover | 7 | Failover rules, health, force failover |
 | Interactive Brokers | 3 | IB-specific status, error codes, API limits |
 | Symbol Mapping | 5 | Cross-provider symbol mappings, CSV import |
@@ -393,8 +393,15 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/execution/audit` | Operator audit trail |
 | GET | `/api/execution/controls` | Execution operator controls snapshot |
 | POST | `/api/execution/controls/circuit-breaker` | Open or close the execution circuit breaker |
+| GET | `/api/execution/sessions` | Paper-session summaries for the trading cockpit |
+| GET | `/api/execution/sessions/{sessionId}` | Paper-session detail including tracked symbols, portfolio, and order history |
+| POST | `/api/execution/sessions/create` | Create a paper session and persist the requested symbol universe |
+| POST | `/api/execution/sessions/{sessionId}/close` | Close a paper session and return an audited operator action result |
+| GET | `/api/execution/sessions/{sessionId}/replay` | Replay persisted fills and report whether the replay matches the current session state |
 
 `/api/execution/positions/blotter` is the preferred position endpoint for desktop execution surfaces because it returns broker-backed/live state, a source label, a status message, and keyed position metadata needed for broker option actions.
+
+`/api/execution/sessions/{sessionId}/replay` is the Wave 2 operator continuity check for paper trading: it replays the durable fill log, compares the replayed portfolio to the current session snapshot, and records the verification step in the execution audit trail.
 
 ### Failover (`/api/failover/*`)
 

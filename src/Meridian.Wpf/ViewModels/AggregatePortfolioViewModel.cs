@@ -102,8 +102,13 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
 
         await Task.WhenAll(positionsTask, exposureTask);
 
+<<<<<<< ours
         var positions = await positionsTask;
         var exposure = await exposureTask;
+=======
+        var positions = await positionsTask.ConfigureAwait(false);
+        var exposure = await exposureTask.ConfigureAwait(false);
+>>>>>>> theirs
 
         if (positions is null)
         {

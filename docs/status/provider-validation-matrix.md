@@ -28,6 +28,7 @@ This matrix is Meridian's Wave 1 evidence gate. Every row must point to either e
 | NYSE shared lifecycle and auth/rate-limit bounds | `NyseSharedLifecycleTests`, `NyseMarketDataClientTests`, `NYSECredentialAndRateLimitTests`, `NYSEMessageParsingTests`, `NyseTaqCollectorIntegrationTests` | `artifacts/provider-validation/nyse/2026-04-09/` with `auth-connectivity`, `l1-streaming-reconnect`, `rate-limit`, and `premium-depth` scenario folders | ⚠️ | Real credentials plus Premium/Professional entitlement for depth beyond the L1/shared-lifecycle gate |
 | StockSharp Wave 1 validated adapter set | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests`, `StockSharpConnectorCapabilities.GetWave1ValidatedConnectors()` | `artifacts/provider-validation/stocksharp/2026-04-09/` with per-adapter `bootstrap`, `streaming`, and `historical` scenario folders for `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers` | ⚠️ | Package surfaces, locally running vendor software, and adapter-specific credentials remain manual runtime conditions |
 | Checkpoint reliability | `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
+<<<<<<< Updated upstream
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 =======
 | Provider | Replay Scenarios | Reconnect Behavior | Cancellation | Auth Failure | Rate-Limit Handling | Evidence |
@@ -37,6 +38,9 @@ This matrix is Meridian's Wave 1 evidence gate. Every row must point to either e
 | StockSharp | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
 | NYSE | ⚠️ | ✅ | ⚠️ | ⚠️ | ❌ | `NyseMarketDataClientTests`, `NYSEMessageParsingTests`, `NyseTaqCollectorIntegrationTests` |
 >>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+=======
+| Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` (including failed/cancelled L2 flush retry retention) | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
+>>>>>>> Stashed changes
 
 ## Primary Validation Command
 

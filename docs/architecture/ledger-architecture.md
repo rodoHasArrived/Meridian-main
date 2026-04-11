@@ -161,6 +161,7 @@ Ledger data is exposed through the workstation endpoints under `/api/workstation
 | Route | Description |
 |-------|-------------|
 | `GET /api/workstation/runs/{runId}/ledger` | Full `LedgerSummary` (trial balance + journal) |
+| `GET /api/workstation/runs/{runId}/continuity` | Shared run-centered continuity drill-in that bundles portfolio, ledger, cash-flow, reconciliation, and lineage context |
 | `GET /api/workstation/runs/{runId}/ledger/trial-balance` | Trial balance lines, optionally filtered by `?accountType=Asset` |
 | `GET /api/workstation/runs/{runId}/ledger/journal` | Journal entries, optionally filtered by `?from=…&to=…` |
 

@@ -158,7 +158,7 @@ Use this with:
 These are not provider-runtime artifacts, but they are part of the same trust gate:
 
 - Checkpoint reliability: `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests`
-- Parquet L2 flush behavior: `ParquetStorageSinkTests`, `ParquetConversionServiceTests`
+- Parquet L2 flush behavior: `ParquetStorageSinkTests`, `ParquetConversionServiceTests` (including retry-safe L2 flush retention after failure or cancellation)
 
 ## Primary Command
 

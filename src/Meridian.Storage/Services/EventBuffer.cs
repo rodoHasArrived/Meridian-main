@@ -141,6 +141,25 @@ public class EventBuffer<T> : IDisposable where T : class
     }
 
     /// <summary>
+    /// Restores a drained batch to the front of the active buffer so a failed flush can be retried
+    /// without reordering older events behind newer arrivals.
+    /// </summary>
+    internal void RestoreToFront(IReadOnlyList<T> events)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(events);
+
+        if (events.Count == 0)
+            return;
+
+        lock (_lock)
+        {
+            _active.InsertRange(0, events);
+            _count = _active.Count;
+        }
+    }
+
+    /// <summary>
     /// Drain up to <paramref name="maxCount"/> events from the front of the buffer.
     /// </summary>
     /// <remarks>

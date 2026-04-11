@@ -30,6 +30,7 @@ public sealed class ParquetStorageSink : IStorageSink
     private readonly ILogger _log = LoggingSetup.ForContext<ParquetStorageSink>();
     private readonly StorageOptions _options;
     private readonly ParquetStorageOptions _parquetOptions;
+    private readonly Func<string, Func<Stream, Task>, CancellationToken, Task> _writeAtomicallyAsync;
     private readonly ConcurrentDictionary<string, MarketEventBuffer> _buffers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Task _flushLoopTask;
     private readonly CancellationTokenSource _disposalCts = new();
@@ -92,9 +93,18 @@ public sealed class ParquetStorageSink : IStorageSink
     );
 
     public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null)
+        : this(options, parquetOptions, WriteAtomicallyAsync)
+    {
+    }
+
+    internal ParquetStorageSink(
+        StorageOptions options,
+        ParquetStorageOptions? parquetOptions,
+        Func<string, Func<Stream, Task>, CancellationToken, Task> writeAtomicallyAsync)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _parquetOptions = parquetOptions ?? ParquetStorageOptions.Default;
+        _writeAtomicallyAsync = writeAtomicallyAsync ?? throw new ArgumentNullException(nameof(writeAtomicallyAsync));
 
         _flushLoopTask = RunPeriodicFlushLoopAsync(_disposalCts.Token);
 
@@ -117,7 +127,7 @@ public sealed class ParquetStorageSink : IStorageSink
         // Flush if buffer is full
         if (buffer.ShouldFlush(_parquetOptions.BufferSize))
         {
-            await FlushBufferAsync(bufferKey, buffer, ct);
+            await FlushSingleBufferAsync(bufferKey, buffer, ct).ConfigureAwait(false);
         }
     }
 
@@ -168,7 +178,7 @@ public sealed class ParquetStorageSink : IStorageSink
             {
                 if (kvp.Value.Count > 0)
                 {
-                    await FlushBufferAsync(kvp.Key, kvp.Value, ct);
+                    await FlushBufferCoreAsync(kvp.Key, kvp.Value, ct).ConfigureAwait(false);
                 }
             }
         }
@@ -178,7 +188,20 @@ public sealed class ParquetStorageSink : IStorageSink
         }
     }
 
-    private async Task FlushBufferAsync(string bufferKey, MarketEventBuffer buffer, CancellationToken ct)
+    private async Task FlushSingleBufferAsync(string bufferKey, MarketEventBuffer buffer, CancellationToken ct)
+    {
+        await _flushGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await FlushBufferCoreAsync(bufferKey, buffer, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _flushGate.Release();
+        }
+    }
+
+    private async Task FlushBufferCoreAsync(string bufferKey, MarketEventBuffer buffer, CancellationToken ct)
     {
         // DrainAll() uses a swap-buffer strategy — no copy allocation.
         // Flushes are serialised by _flushGate so the returned list is not cleared
@@ -218,7 +241,8 @@ public sealed class ParquetStorageSink : IStorageSink
         }
         catch (Exception ex)
         {
-            _log.Error(ex, "Failed to flush {Count} events to Parquet", events.Count);
+            buffer.RestoreToFront(events);
+            _log.Error(ex, "Failed to flush {Count} events to Parquet for {BufferKey}; buffered events were restored for retry", events.Count, bufferKey);
             throw;
         }
     }
@@ -263,7 +287,7 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        await WriteAtomicallyAsync(path, async tempStream =>
+        await _writeAtomicallyAsync(path, async tempStream =>
         {
             using var groupWriter = await ParquetWriter.CreateAsync(TradeSchema, tempStream);
             using var rowGroupWriter = groupWriter.CreateRowGroup();
@@ -319,7 +343,7 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        await WriteAtomicallyAsync(path, async tempStream =>
+        await _writeAtomicallyAsync(path, async tempStream =>
         {
             using var groupWriter = await ParquetWriter.CreateAsync(QuoteSchema, tempStream);
             using var rowGroupWriter = groupWriter.CreateRowGroup();
@@ -347,7 +371,7 @@ public sealed class ParquetStorageSink : IStorageSink
         if (snapshots.Count is 0)
             return;
 
-        await WriteAtomicallyAsync(path, async tempStream =>
+        await _writeAtomicallyAsync(path, async tempStream =>
         {
             using var groupWriter = await ParquetWriter.CreateAsync(L2Schema, tempStream);
             using var rowGroupWriter = groupWriter.CreateRowGroup();
@@ -449,7 +473,7 @@ public sealed class ParquetStorageSink : IStorageSink
             idx++;
         }
 
-        await WriteAtomicallyAsync(path, async tempStream =>
+        await _writeAtomicallyAsync(path, async tempStream =>
         {
             using var groupWriter = await ParquetWriter.CreateAsync(BarSchema, tempStream);
             using var rowGroupWriter = groupWriter.CreateRowGroup();
@@ -497,7 +521,7 @@ public sealed class ParquetStorageSink : IStorageSink
             sources[i] = e.Source;
         }
 
-        await WriteAtomicallyAsync(path, async tempStream =>
+        await _writeAtomicallyAsync(path, async tempStream =>
         {
             using var groupWriter = await ParquetWriter.CreateAsync(genericSchema, tempStream);
             using var rowGroupWriter = groupWriter.CreateRowGroup();
@@ -603,7 +627,7 @@ public sealed class ParquetStorageSink : IStorageSink
                 {
                     if (kvp.Value.Count > 0)
                     {
-                        await FlushBufferAsync(kvp.Key, kvp.Value, CancellationToken.None);
+                        await FlushBufferCoreAsync(kvp.Key, kvp.Value, CancellationToken.None).ConfigureAwait(false);
                     }
                 }
             }

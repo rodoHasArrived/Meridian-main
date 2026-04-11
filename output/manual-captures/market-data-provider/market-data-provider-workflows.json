@@ -1,0 +1,83 @@
+{
+  "defaults": {
+    "projectPath": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+    "configuration": "Release",
+    "framework": "net9.0-windows10.0.19041.0",
+    "exeName": "Meridian.Desktop.exe",
+    "outputRoot": "output/manual-captures/market-data-provider/runs",
+    "fixtureMode": true,
+    "settleMs": 2200
+  },
+  "workflows": [
+    {
+      "name": "mdp-data-operations-shell",
+      "title": "Market Data Provider Manual - Data Operations Workspace",
+      "description": "Capture the operator entry point for provider workflows.",
+      "purpose": "manual",
+      "steps": [
+        {
+          "title": "Data Operations Workspace",
+          "pageTag": "DataOperationsShell",
+          "captureName": "01-data-operations-workspace",
+          "notes": "Open the Data Operations workspace to access provider, routing, and health tools."
+        }
+      ]
+    },
+    {
+      "name": "mdp-providers",
+      "title": "Market Data Provider Manual - Providers",
+      "description": "Capture the provider management page.",
+      "purpose": "manual",
+      "steps": [
+        {
+          "title": "Providers",
+          "pageTag": "Provider",
+          "captureName": "02-providers",
+          "notes": "Review backfill provider settings, fallback order, dry-run planning, and audit history."
+        }
+      ]
+    },
+    {
+      "name": "mdp-add-provider-wizard",
+      "title": "Market Data Provider Manual - Add Provider Wizard",
+      "description": "Capture the relationship-first provider onboarding wizard.",
+      "purpose": "manual",
+      "steps": [
+        {
+          "title": "Add Provider Wizard",
+          "pageTag": "AddProviderWizard",
+          "captureName": "03-add-provider-wizard",
+          "notes": "Choose the provider family, enter credentials and scope, then validate and save the relationship."
+        }
+      ]
+    },
+    {
+      "name": "mdp-data-sources",
+      "title": "Market Data Provider Manual - Data Sources",
+      "description": "Capture data source routing and failover settings.",
+      "purpose": "manual",
+      "steps": [
+        {
+          "title": "Data Sources",
+          "pageTag": "DataSources",
+          "captureName": "04-data-sources",
+          "notes": "Set default real-time and historical sources, review failover behavior, and add feed-specific source definitions."
+        }
+      ]
+    },
+    {
+      "name": "mdp-provider-health",
+      "title": "Market Data Provider Manual - Provider Health",
+      "description": "Capture provider monitoring and connection history.",
+      "purpose": "manual",
+      "steps": [
+        {
+          "title": "Provider Health",
+          "pageTag": "ProviderHealth",
+          "captureName": "05-provider-health",
+          "notes": "Confirm connection posture, latency, and recent health events after configuration changes."
+        }
+      ]
+    }
+  ]
+}

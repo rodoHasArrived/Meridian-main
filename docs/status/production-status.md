@@ -98,7 +98,7 @@ The active plan now has two connected delivery tracks:
 ### Wave 1: Provider confidence and checkpoint evidence
 
 - Polygon, Robinhood, Interactive Brokers, StockSharp, and NYSE still have at least one runtime-bounded scenario that depends on credentials, entitlements, packages, or vendor sessions
-- backfill checkpoint reliability and Parquet L2 flush behavior now have repo-backed proof and should be treated as closed Wave 1 sub-gates unless those tests regress
+- backfill checkpoint reliability and Parquet L2 flush behavior now have repo-backed proof, including retry-safe L2 flush retention on failed/cancelled writes, and should be treated as closed Wave 1 sub-gates unless those tests regress
 - provider-confidence language must stay tied to `provider-validation-matrix.md`, `artifacts/provider-validation/`, and `run-wave1-provider-validation.ps1` instead of architecture intent
 
 <<<<<<< HEAD

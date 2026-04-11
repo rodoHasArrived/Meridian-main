@@ -107,6 +107,7 @@ public static class UiEndpoints
         services.TryAddSingleton<LedgerReadService>();
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
+        services.TryAddSingleton<StrategyRunContinuityService>();
 
         // Reconciliation services — required by /api/workstation/reconciliation/* endpoints.
         // InMemoryReconciliationRunRepository is the default; a persistent implementation can

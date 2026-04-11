@@ -428,10 +428,12 @@ public static class UiApiRoutes
     public const string ExecutionPortfolio = "/api/execution/portfolio";
     public const string ExecutionHealth = "/api/execution/health";
     public const string ExecutionCapabilities = "/api/execution/capabilities";
+    public const string ExecutionAudit = "/api/execution/audit";
     public const string ExecutionSessions = "/api/execution/sessions";
     public const string ExecutionSessionById = "/api/execution/sessions/{sessionId}";
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";
     public const string ExecutionSessionClose = "/api/execution/sessions/{sessionId}/close";
+    public const string ExecutionSessionReplay = "/api/execution/sessions/{sessionId}/replay";
 
     // Multi-account execution endpoints
     public const string ExecutionAccounts = "/api/execution/accounts";
@@ -456,6 +458,7 @@ public static class UiApiRoutes
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
+    public const string RunsContinuity = "/api/workstation/runs/{runId}/continuity";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";

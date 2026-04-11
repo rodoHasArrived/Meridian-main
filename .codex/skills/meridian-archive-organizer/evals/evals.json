@@ -1,6 +1,6 @@
 {
   "skill_name": "meridian-archive-organizer",
-  "last_updated": "2026-04-07",
+  "last_updated": "2026-04-09",
   "evals": [
     {
       "id": 1,
@@ -41,8 +41,9 @@
     },
     {
       "id": 6,
-      "description": "Superseded ADR remains a live archive-doc candidate once only historical and inventory references remain",
+      "description": "Superseded ADR fixture remains an archive-doc candidate once only historical and inventory references remain",
       "path": "docs/adr/ADR-015-platform-restructuring.md",
+      "repo_root": ".codex/skills/meridian-archive-organizer/fixtures/superseded-adr",
       "expected_recommendation": "archive-doc",
       "max_strong_refs": 0,
       "must_exist": true

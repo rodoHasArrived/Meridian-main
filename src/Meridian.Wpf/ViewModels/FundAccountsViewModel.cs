@@ -282,6 +282,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
 
             await Task.WhenAll(connectionsTask, bindingsTask, trustTask).ConfigureAwait(false);
 
+<<<<<<< ours
             var connectionsResult = await connectionsTask;
             var bindingsResult = await bindingsTask;
             var trustResult = await trustTask;
@@ -291,6 +292,17 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 ProviderRoutingStatus = connectionsResult.Error
                     ?? bindingsResult.Error
                     ?? trustResult.Error
+=======
+            var connectionsResponse = await connectionsTask.ConfigureAwait(false);
+            var bindingsResponse = await bindingsTask.ConfigureAwait(false);
+            var trustResponse = await trustTask.ConfigureAwait(false);
+
+            if (!connectionsResponse.Success || !bindingsResponse.Success || !trustResponse.Success)
+            {
+                ProviderRoutingStatus = connectionsResponse.Error
+                    ?? bindingsResponse.Error
+                    ?? trustResponse.Error
+>>>>>>> theirs
                     ?? "Provider routing data is unavailable.";
                 return;
             }
@@ -307,6 +319,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
                     RequireProductionReady: capability == ProviderCapabilityKind.OrderExecution.ToString())))
                 .ToArray();
 
+<<<<<<< ours
             var previewResults = await Task.WhenAll(previewTasks).ConfigureAwait(false);
 
             ApplyProviderInsights(
@@ -319,6 +332,20 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 previewResults
                     .Where(result => result.Success && result.Preview is not null)
                     .Select(result => result.Preview!)
+=======
+            var previewResponses = await Task.WhenAll(previewTasks).ConfigureAwait(false);
+
+            ApplyProviderInsights(
+                SelectedAccount,
+                connectionsResponse.Connections,
+                bindingsResponse.Bindings,
+                trustResponse.Snapshots,
+                _fundProfileCatalog.CurrentFundProfile?.DefaultWorkspaceId,
+                SelectedFundProfileId,
+                previewResponses
+                    .Where(response => response.Success && response.Preview is not null)
+                    .Select(response => response.Preview!)
+>>>>>>> theirs
                     .ToArray());
         }
         catch (Exception ex)

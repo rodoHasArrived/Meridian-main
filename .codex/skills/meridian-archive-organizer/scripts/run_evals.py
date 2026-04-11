@@ -7,6 +7,7 @@ import argparse
 import json
 import subprocess
 import sys
+from collections import OrderedDict
 from pathlib import Path
 
 
@@ -38,6 +39,17 @@ def select_cases(payload: dict[str, object], eval_id: int | None) -> list[dict[s
     if not selected:
         raise ValueError(f"Eval id {eval_id} was not found in {EVALS_PATH}.")
     return selected
+
+
+def resolve_repo_root(case: dict[str, object]) -> Path:
+    repo_root = case.get("repo_root")
+    if repo_root is None:
+        return ROOT_DIR
+
+    resolved = Path(repo_root)
+    if not resolved.is_absolute():
+        resolved = (ROOT_DIR / resolved).resolve()
+    return resolved
 
 
 def evaluate_case(case: dict[str, object], command: list[str], result: dict[str, object]) -> dict[str, object]:
@@ -98,34 +110,43 @@ def evaluate_case(case: dict[str, object], command: list[str], result: dict[str,
 
 
 def run_cases(cases: list[dict[str, object]]) -> list[dict[str, object]]:
-    command = [
-        sys.executable,
-        str(TRACE_SCRIPT),
-        "--repo-root",
-        str(ROOT_DIR),
-    ]
+    cases_by_root: OrderedDict[str, list[dict[str, object]]] = OrderedDict()
     for case in cases:
-        command.extend(["--path", case["path"]])
-    command.append("--json")
+        repo_root = str(resolve_repo_root(case))
+        cases_by_root.setdefault(repo_root, []).append(case)
 
-    completed = subprocess.run(command, capture_output=True, text=True, check=False)
-    if completed.returncode != 0:
-        return [
-            {
-                "id": case["id"],
-                "description": case["description"],
-                "path": case["path"],
-                "command": command,
-                "status": "fail",
-                "checks": [f"trace script failed with exit code {completed.returncode}"],
-                "stderr": completed.stderr.strip(),
-            }
-            for case in cases
+    evaluated: dict[tuple[str, str], dict[str, object]] = {}
+    for repo_root, grouped_cases in cases_by_root.items():
+        command = [
+            sys.executable,
+            str(TRACE_SCRIPT),
+            "--repo-root",
+            repo_root,
         ]
+        for case in grouped_cases:
+            command.extend(["--path", case["path"]])
+        command.append("--json")
 
-    payload = json.loads(completed.stdout)
-    results_by_path = {result["path"]: result for result in payload["results"]}
-    return [evaluate_case(case, command, results_by_path[case["path"]]) for case in cases]
+        completed = subprocess.run(command, capture_output=True, text=True, check=False)
+        if completed.returncode != 0:
+            for case in grouped_cases:
+                evaluated[(repo_root, case["path"])] = {
+                    "id": case["id"],
+                    "description": case["description"],
+                    "path": case["path"],
+                    "command": command,
+                    "status": "fail",
+                    "checks": [f"trace script failed with exit code {completed.returncode}"],
+                    "stderr": completed.stderr.strip(),
+                }
+            continue
+
+        payload = json.loads(completed.stdout)
+        results_by_path = {result["path"]: result for result in payload["results"]}
+        for case in grouped_cases:
+            evaluated[(repo_root, case["path"])] = evaluate_case(case, command, results_by_path[case["path"]])
+
+    return [evaluated[(str(resolve_repo_root(case)), case["path"])] for case in cases]
 
 
 def print_markdown(results: list[dict[str, object]]) -> None:

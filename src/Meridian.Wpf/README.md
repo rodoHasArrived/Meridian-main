@@ -127,6 +127,7 @@ Examples:
 - Keep business logic in services or view models instead of code-behind where practical.
 - Prefer extending shared run, portfolio, ledger, and workstation services before introducing parallel desktop-only models.
 - Treat the workstation categories as the user-facing source of truth even when legacy pages still exist underneath.
+- Avoid `.Result` / `.Wait()` in UI-facing async paths; use `await` + cancellation tokens to prevent desktop deadlocks.
 
 ## Deployment
 

@@ -438,6 +438,72 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnSharedContinuityPayload()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun("run-continuity"));
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-continuity-paper",
+            strategyId: "recon-strategy",
+            strategyName: "Reconciliation Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero)) with
+        {
+            ParentRunId = "run-continuity",
+            FundProfileId = "alpha-credit",
+            FundDisplayName = "Alpha Credit"
+        });
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-continuity"));
+
+        var client = app.GetTestClient();
+        using var continuity = await ReadJsonAsync(client, "/api/workstation/runs/run-continuity/continuity");
+
+        continuity.RootElement.GetProperty("run").GetProperty("summary").GetProperty("runId").GetString().Should().Be("run-continuity");
+        continuity.RootElement.GetProperty("run").GetProperty("summary").GetProperty("fundProfileId").GetString().Should().Be("alpha-credit");
+        continuity.RootElement.GetProperty("lineage").GetProperty("childRuns").GetArrayLength().Should().Be(1);
+        continuity.RootElement.GetProperty("lineage").GetProperty("childRuns")[0].GetProperty("runId").GetString().Should().Be("run-continuity-paper");
+        continuity.RootElement.GetProperty("cashFlow").GetProperty("totalEntries").GetInt32().Should().Be(3);
+        continuity.RootElement.GetProperty("cashFlow").GetProperty("projectedNetPosition").GetDecimal().Should().Be(-376m);
+        continuity.RootElement.GetProperty("reconciliation").GetProperty("runId").GetString().Should().Be("run-continuity");
+        continuity.RootElement.GetProperty("continuityStatus").GetProperty("hasCashFlow").GetBoolean().Should().BeTrue();
+        continuity.RootElement.GetProperty("continuityStatus").GetProperty("hasReconciliation").GetBoolean().Should().BeTrue();
+        continuity.RootElement
+            .GetProperty("continuityStatus")
+            .GetProperty("warnings")
+            .EnumerateArray()
+            .Select(static warning => warning.GetProperty("code").GetString())
+            .Should()
+            .Contain("security-coverage");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnNotFoundForMissingRun()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/runs/no-such-run/continuity");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_SecurityMasterRoutes_ShouldReturnSearchAndDetailPayloads()
     {
         var securityId = Guid.Parse("44444444-4444-4444-4444-444444444444");
@@ -767,6 +833,11 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<ReconciliationProjectionService>();
+        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.AddSingleton<CashFlowProjectionService>();
+        services.AddSingleton<StrategyRunContinuityService>();
     }
 
     private static string CamelCase(string propertyName) => JsonNamingPolicy.CamelCase.ConvertName(propertyName);
@@ -982,6 +1053,27 @@ public sealed class WorkstationEndpointsTests
             PortfolioId = "recon-break-portfolio",
             LedgerReference = "recon-break-ledger",
             AuditReference = $"audit-{runId}"
+        };
+    }
+
+    private static StrategyRunEntry BuildContinuityRun(string runId)
+    {
+        var run = BuildReconciliationReadyRun(runId);
+        var cashFlows = new CashFlowEntry[]
+        {
+            new TradeCashFlow(run.StartedAt.AddMinutes(10), -400m, "AAPL", 10L, 40m),
+            new CommissionCashFlow(run.StartedAt.AddMinutes(10), -1m, "AAPL", Guid.NewGuid()),
+            new DividendCashFlow(run.StartedAt.AddDays(3), 25m, "AAPL", 10L, 2.5m)
+        };
+
+        return run with
+        {
+            Metrics = run.Metrics! with
+            {
+                CashFlows = cashFlows
+            },
+            FundProfileId = "alpha-credit",
+            FundDisplayName = "Alpha Credit"
         };
     }
 

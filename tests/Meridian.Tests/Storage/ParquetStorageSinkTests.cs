@@ -120,6 +120,66 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
     }
 
     [Fact]
+    public async Task FlushAsync_WhenL2WriteFails_PreservesBufferedSnapshotsForRetry()
+    {
+        var writeAttempts = 0;
+        _sink = CreateSink(
+            bufferSize: 10000,
+            writeAtomicallyAsync: async (path, writeAsync, ct) =>
+            {
+                writeAttempts++;
+                if (writeAttempts == 1)
+                    throw new IOException("simulated flush failure");
+
+                await InvokeWriteAtomicallyAsync(path, writeAsync, ct);
+            });
+
+        await _sink.AppendAsync(CreateL2SnapshotEvent("DIA"));
+
+        var failedFlush = () => _sink.FlushAsync();
+        await failedFlush.Should().ThrowAsync<IOException>();
+
+        Directory.GetFiles(_testRoot, "*.parquet", SearchOption.AllDirectories)
+            .Should().BeEmpty("a failed L2 flush must not commit a partial file");
+
+        await _sink.FlushAsync();
+
+        writeAttempts.Should().Be(2, "the retry should perform a second atomic-write attempt");
+        Directory.GetFiles(_testRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+            .Should().ContainSingle("the buffered L2 snapshot should still be available for retry after a failed flush");
+    }
+
+    [Fact]
+    public async Task FlushAsync_WhenL2WriteIsCancelled_PreservesBufferedSnapshotsForRetry()
+    {
+        var writeAttempts = 0;
+        _sink = CreateSink(
+            bufferSize: 10000,
+            writeAtomicallyAsync: async (path, writeAsync, ct) =>
+            {
+                writeAttempts++;
+                if (writeAttempts == 1)
+                    throw new OperationCanceledException("simulated cancellation");
+
+                await InvokeWriteAtomicallyAsync(path, writeAsync, ct);
+            });
+
+        await _sink.AppendAsync(CreateL2SnapshotEvent("TLT"));
+
+        var cancelledFlush = () => _sink.FlushAsync();
+        await cancelledFlush.Should().ThrowAsync<OperationCanceledException>();
+
+        Directory.GetFiles(_testRoot, "*.parquet", SearchOption.AllDirectories)
+            .Should().BeEmpty("a cancelled L2 flush must not commit a file before retry");
+
+        await _sink.FlushAsync();
+
+        writeAttempts.Should().Be(2, "retry should still be possible after cancellation");
+        Directory.GetFiles(_testRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+            .Should().ContainSingle("cancelled L2 snapshots should remain buffered for a later retry");
+    }
+
+    [Fact]
     public async Task AppendAsync_AfterDispose_ThrowsObjectDisposedException()
     {
         // Arrange
@@ -182,15 +242,27 @@ public sealed class ParquetStorageSinkTests : IAsyncDisposable
 
     // ── Helpers ─────────────────────────────────────────────────────────────────
 
-    private ParquetStorageSink CreateSink(int bufferSize = 10000) =>
-        new ParquetStorageSink(
-            new StorageOptions { RootPath = _testRoot },
-            new ParquetStorageOptions
-            {
-                BufferSize = bufferSize,
-                CompressionMethod = CompressionMethod.None,
-                FlushInterval = TimeSpan.FromHours(1) // disable periodic flush in tests
-            });
+    private ParquetStorageSink CreateSink(
+        int bufferSize = 10000,
+        Func<string, Func<Stream, Task>, CancellationToken, Task>? writeAtomicallyAsync = null) =>
+        writeAtomicallyAsync is null
+            ? new ParquetStorageSink(
+                new StorageOptions { RootPath = _testRoot },
+                new ParquetStorageOptions
+                {
+                    BufferSize = bufferSize,
+                    CompressionMethod = CompressionMethod.None,
+                    FlushInterval = TimeSpan.FromHours(1) // disable periodic flush in tests
+                })
+            : new ParquetStorageSink(
+                new StorageOptions { RootPath = _testRoot },
+                new ParquetStorageOptions
+                {
+                    BufferSize = bufferSize,
+                    CompressionMethod = CompressionMethod.None,
+                    FlushInterval = TimeSpan.FromHours(1) // disable periodic flush in tests
+                },
+                writeAtomicallyAsync);
 
     private static MarketEvent CreateTradeEvent(string symbol) =>
         MarketEvent.Trade(

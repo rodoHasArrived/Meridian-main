@@ -28,8 +28,14 @@ public sealed class CashFinancingReadService
 
         await Task.WhenAll(accountsTask, runsTask).ConfigureAwait(false);
 
+<<<<<<< ours
         var accounts = await accountsTask;
         var relevantRuns = (await runsTask)
+=======
+        var accounts = await accountsTask.ConfigureAwait(false);
+        var runs = await runsTask.ConfigureAwait(false);
+        var relevantRuns = runs
+>>>>>>> theirs
             .Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 

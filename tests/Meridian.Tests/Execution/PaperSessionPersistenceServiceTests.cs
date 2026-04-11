@@ -99,13 +99,14 @@ public sealed class PaperSessionPersistenceServiceTests
     public async Task GetSession_WhenSessionExists_ReturnsDetail()
     {
         var service = Build();
-        var dto = new CreatePaperSessionDto("strat-3", "Detail Test", 100_000m);
+        var dto = new CreatePaperSessionDto("strat-3", "Detail Test", 100_000m, ["AAPL", "MSFT"]);
         var summary = await service.CreateSessionAsync(dto);
 
         var detail = service.GetSession(summary.SessionId);
 
         detail.Should().NotBeNull();
         detail!.Summary.SessionId.Should().Be(summary.SessionId);
+        detail.Symbols.Should().Equal("AAPL", "MSFT");
         detail.Portfolio.Should().NotBeNull();
         detail.OrderHistory.Should().BeEmpty();
     }
@@ -668,5 +669,36 @@ public sealed class PaperSessionReplayTests : IDisposable
 
         replay!.Cash.Should().Be(liveDetail!.Portfolio!.Cash);
         replay.RealisedPnl.Should().Be(liveDetail.Portfolio.RealisedPnl);
+    }
+
+    [Fact]
+    public async Task VerifyReplayAsync_WithStore_ReturnsConsistentVerification()
+    {
+        var store = BuildStore();
+        var service = Build(store);
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-F", "Replay Verify", 100_000m, ["AAPL"]));
+
+        await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 12m, 150m));
+
+        var verification = await service.VerifyReplayAsync(summary.SessionId);
+
+        verification.Should().NotBeNull();
+        verification!.Summary.SessionId.Should().Be(summary.SessionId);
+        verification.Symbols.Should().Equal("AAPL");
+        verification.ReplaySource.Should().Be("DurableFillLog");
+        verification.IsConsistent.Should().BeTrue();
+        verification.MismatchReasons.Should().BeEmpty();
+        verification.CurrentPortfolio.Should().NotBeNull();
+        verification.ReplayPortfolio.Cash.Should().Be(100_000m - (12m * 150m));
+    }
+
+    [Fact]
+    public async Task VerifyReplayAsync_UnknownSession_ReturnsNull()
+    {
+        var service = Build(BuildStore());
+
+        var verification = await service.VerifyReplayAsync("missing-session");
+
+        verification.Should().BeNull();
     }
 }

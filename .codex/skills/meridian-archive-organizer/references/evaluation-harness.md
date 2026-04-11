@@ -19,6 +19,10 @@ Prefer the bundled scripts over ad hoc reasoning when the task touches multiple 
 2. Replay the deterministic scenarios in `evals/evals.json` with `scripts/run_evals.py`.
 3. If the pass was manual or exploratory, summarize it with `scripts/score_eval.py`.
 
+If a live-repo scenario has already been cleaned up or archived, prefer a small
+fixture repo under `fixtures/` plus a per-eval `repo_root` in `evals/evals.json`
+instead of pointing the deterministic suite at a path that no longer exists.
+
 The trace should ignore AI metadata and local mirror surfaces such as `.codex/` and `.claude/` so they do not inflate evidence counts.
 
 Recommended command sequence:

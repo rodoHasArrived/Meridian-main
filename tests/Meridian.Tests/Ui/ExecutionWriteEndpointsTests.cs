@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using ExecutionServices = Meridian.Execution.Services;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -248,6 +249,67 @@ public sealed class ExecutionWriteEndpointsTests
         request.Metadata["option_instrument_url"].Should().Be("https://api.robinhood.com/options/instruments/opt-upsize/");
     }
 
+    [Fact]
+    public async Task PaperSessionLifecycleEndpoints_PreserveSymbolsAndExposeReplayContinuityAudit()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(PaperSessionLifecycleEndpoints_PreserveSymbolsAndExposeReplayContinuityAudit));
+        await using var app = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
+
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops-session");
+
+        var createResponse = await client.PostAsync(
+            UiApiRoutes.ExecutionSessionCreate,
+            JsonContent(new CreatePaperSessionRequest(
+                StrategyId: "strat-session",
+                StrategyName: "Session Strategy",
+                InitialCash: 125_000m,
+                Symbols: ["AAPL", "MSFT"])));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var summary = await ReadAsync<ExecutionServices.PaperSessionSummaryDto>(createResponse);
+
+        var persistence = app.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
+        await persistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 5m, 200m));
+
+        var detailResponse = await client.GetAsync(
+            UiApiRoutes.ExecutionSessionById.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
+        detailResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var detail = await ReadAsync<ExecutionServices.PaperSessionDetailDto>(detailResponse);
+        detail.Symbols.Should().Equal("AAPL", "MSFT");
+
+        var closeResponse = await client.PostAsync(
+            UiApiRoutes.ExecutionSessionClose.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal),
+            content: null);
+        closeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var closeResult = await ReadActionResultAsync(closeResponse);
+        closeResult.Status.Should().Be("Completed");
+        closeResult.AuditId.Should().NotBeNullOrWhiteSpace();
+
+        var replayResponse = await client.GetAsync(
+            UiApiRoutes.ExecutionSessionReplay.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
+        replayResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var replayVerification = await ReadAsync<ExecutionServices.PaperSessionReplayVerificationDto>(replayResponse);
+
+        using (new AssertionScope())
+        {
+            replayVerification.Summary.SessionId.Should().Be(summary.SessionId);
+            replayVerification.Symbols.Should().Equal("AAPL", "MSFT");
+            replayVerification.ReplaySource.Should().Be("DurableFillLog");
+            replayVerification.IsConsistent.Should().BeTrue();
+            replayVerification.MismatchReasons.Should().BeEmpty();
+            replayVerification.CurrentPortfolio.Should().NotBeNull();
+            replayVerification.ReplayPortfolio.Cash.Should().Be(124_000m);
+        }
+
+        var auditResponse = await client.GetAsync(UiApiRoutes.ExecutionAudit);
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var audits = await ReadAsync<ExecutionServices.ExecutionAuditEntry[]>(auditResponse);
+        audits.Should().Contain(entry => entry.Action == "CreatePaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
+        audits.Should().Contain(entry => entry.Action == "ClosePaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
+        audits.Should().Contain(entry => entry.Action == "ReplayPaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
+    }
+
     // ------------------------------------------------------------------ //
     //  Helpers                                                            //
     // ------------------------------------------------------------------ //
@@ -273,6 +335,19 @@ public sealed class ExecutionWriteEndpointsTests
             new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(),
                 NullLogger<OrderManagementSystem>.Instance));
+    }
+
+    private static void RegisterSessionServices(IServiceCollection services, string rootPath)
+    {
+        services.AddSingleton(_ => new ExecutionServices.ExecutionAuditTrailService(
+            new ExecutionServices.ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
+            NullLogger<ExecutionServices.ExecutionAuditTrailService>.Instance));
+        services.AddSingleton<ExecutionServices.IPaperSessionStore>(_ => new ExecutionServices.JsonlFilePaperSessionStore(
+            Path.Combine(rootPath, "sessions"),
+            NullLogger<ExecutionServices.JsonlFilePaperSessionStore>.Instance));
+        services.AddSingleton<ExecutionServices.PaperSessionPersistenceService>(sp => new ExecutionServices.PaperSessionPersistenceService(
+            NullLogger<ExecutionServices.PaperSessionPersistenceService>.Instance,
+            sp.GetRequiredService<ExecutionServices.IPaperSessionStore>()));
     }
 
     private static async Task<WebApplication> CreateAppAsync(Action<IServiceCollection>? configureServices = null)
@@ -312,6 +387,19 @@ public sealed class ExecutionWriteEndpointsTests
 
     private static StringContent JsonContent(object payload) =>
         new(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+    private static ExecutionReport CreateFill(string symbol, decimal quantity, decimal fillPrice) => new()
+    {
+        OrderId = $"fill-{Guid.NewGuid():N}",
+        ReportType = ExecutionReportType.Fill,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+        OrderQuantity = quantity,
+        FilledQuantity = quantity,
+        FillPrice = fillPrice,
+        Timestamp = DateTimeOffset.UtcNow
+    };
 
     private static BrokerPosition CreateRobinhoodOptionPosition(
         string positionId,
@@ -453,4 +541,45 @@ sealed class RecordingBrokerageGateway(params BrokerPosition[] positions) : IBro
         Task.FromResult(BrokerHealthStatus.Healthy("ok"));
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+}
+
+file sealed class TestArtifactDirectory : IDisposable
+{
+    private TestArtifactDirectory(string rootPath)
+    {
+        RootPath = rootPath;
+    }
+
+    public string RootPath { get; }
+
+    public static TestArtifactDirectory Create(string scenarioName)
+    {
+        var sanitizedName = new string(scenarioName
+            .Select(ch => char.IsLetterOrDigit(ch) ? ch : '-')
+            .ToArray());
+        var rootPath = Path.Combine(
+            AppContext.BaseDirectory,
+            "test-artifacts",
+            sanitizedName,
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(rootPath);
+        return new TestArtifactDirectory(rootPath);
+    }
+
+    public void Dispose()
+    {
+        if (!Directory.Exists(RootPath))
+        {
+            return;
+        }
+
+        try
+        {
+            Directory.Delete(RootPath, recursive: true);
+        }
+        catch
+        {
+            // Best-effort cleanup for test artifacts.
+        }
+    }
 }

@@ -1,0 +1,43 @@
+{
+  "workflow": {
+    "name": "mdp-add-provider-wizard",
+    "title": "Market Data Provider Manual - Add Provider Wizard",
+    "description": "Capture the relationship-first provider onboarding wizard.",
+    "purpose": "manual"
+  },
+  "run": {
+    "catalogPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\market-data-provider-workflows.json",
+    "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Wpf\\Meridian.Wpf.csproj",
+    "configuration": "Release",
+    "framework": "net9.0-windows10.0.19041.0",
+    "exePath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Wpf\\bin\\Release\\net9.0-windows10.0.19041.0\\Meridian.Desktop.exe",
+    "fixtureMode": true,
+    "runDirectory": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022956-mdp-add-provider-wizard",
+    "screenshotDirectory": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022956-mdp-add-provider-wizard\\screenshots",
+    "stdoutLog": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022956-mdp-add-provider-wizard\\logs\\stdout.log",
+    "stderrLog": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022956-mdp-add-provider-wizard\\logs\\stderr.log",
+    "startedAt": "2026-04-09T02:29:56.3327289-07:00",
+    "launchArguments": [
+      "--fixture"
+    ],
+    "processId": 30128,
+    "status": "ok",
+    "finishedAt": "2026-04-09T02:30:06.6611143-07:00"
+  },
+  "steps": [
+    {
+      "index": 1,
+      "title": "Add Provider Wizard",
+      "pageTag": "AddProviderWizard",
+      "notes": "Choose the provider family, enter credentials and scope, then validate and save the relationship.",
+      "keys": "",
+      "launchArgs": [
+        "--page=AddProviderWizard"
+      ],
+      "capturePath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022956-mdp-add-provider-wizard\\screenshots\\03-add-provider-wizard.png",
+      "status": "ok",
+      "startedAt": "2026-04-09T02:30:01.9266004-07:00",
+      "completedAt": "2026-04-09T02:30:06.6494156-07:00"
+    }
+  ]
+}

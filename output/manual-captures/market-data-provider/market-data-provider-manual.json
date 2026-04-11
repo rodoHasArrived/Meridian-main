@@ -1,0 +1,95 @@
+{
+  "title": "Meridian Market Data Provider User Manual",
+  "subtitle": "Operator guide for provider review, routing, and health monitoring",
+  "author": "Codex",
+  "version": "0.1",
+  "date": "2026-04-09",
+  "intro": [
+    "This manual explains how to review provider posture, tune data source routing, and monitor provider health inside the Meridian desktop workstation.",
+    "Screenshots in this edition were captured from the WPF desktop shell in fixture mode on April 9, 2026. The Add Provider Wizard walkthrough is included as a source-grounded reference because the wizard page did not initialize successfully during automated fixture capture."
+  ],
+  "sections": [
+    {
+      "heading": "Review Existing Providers",
+      "summary": "Use the Providers, Data Sources, and Provider Health pages together when validating or adjusting market data provider posture.",
+      "steps": [
+        {
+          "title": "Open the Providers page",
+          "body": "In the desktop shell, open Data Ops and choose Providers from the left navigation. Start with callout 1 to validate the current configuration, refresh the screen, or run a full connection test. Use callout 2 to follow the operator workflow checklist before changing priority, rate limits, or provider enablement. If you need deeper routing work for a specific streaming source, use a Configure button shown in callout 3.",
+          "notes": [
+            "The Providers page is the fastest place to confirm overall readiness before changing live provider posture.",
+            "Common streaming families surfaced here include Interactive Brokers, Alpaca, Polygon, StockSharp, and NYSE."
+          ],
+          "image": "images/02-providers-annotated.png",
+          "caption": "Providers page with key operator actions highlighted."
+        },
+        {
+          "title": "Tune failover and default data source routing",
+          "body": "From Providers, open Data Sources when you need to control routing behavior. Callout 1 shows the automatic failover policy for source outages. Callout 2 is where you choose the default real-time and historical data sources that Meridian will prefer when no more specific override is in effect.",
+          "notes": [
+            "Use a shorter failover timeout for faster switchover, and a longer timeout when transient provider reconnects are common.",
+            "Changing default sources affects the baseline routing path used by the workstation."
+          ],
+          "image": "images/04-data-sources-annotated.png",
+          "caption": "Data Sources configuration for failover policy and default routing."
+        },
+        {
+          "title": "Confirm health after a routing or credential change",
+          "body": "Open Provider Health after you change provider settings, credentials, or routing. Review callout 1 first to confirm connected counts and latency. Then use callout 2 to inspect recent connection history so you can verify whether the provider recovered cleanly or still needs attention.",
+          "notes": [
+            "Use Refresh if the page has been open for a while or if you have just completed a connectivity test.",
+            "Connection History is the best first stop when a provider appears configured correctly but still is not behaving as expected."
+          ],
+          "image": "images/05-provider-health-annotated.png",
+          "caption": "Provider Health page showing status metrics and connection history."
+        }
+      ]
+    },
+    {
+      "heading": "Add a New Provider Relationship",
+      "summary": "The Add Provider Wizard defines a new relationship to a broker, exchange, bank, custodian, or data vendor and then certifies how Meridian should use it.",
+      "steps": [
+        {
+          "title": "Open Add Provider Wizard",
+          "body": "Open the Command Palette or use the appropriate setup entry point to launch Add Provider Wizard. Meridian uses this workflow to define a provider relationship before routing it into account, workspace, or global operations.",
+          "notes": [
+            "This step is documented from the current WPF implementation because automated fixture capture of the wizard page failed during manual generation.",
+            "The wizard is intended to run inside the Data Operations workspace context."
+          ]
+        },
+        {
+          "title": "Complete Step 1: Choose Relationship",
+          "body": "Choose the Connection Type and optional Preset first. Then enter a Connection Label, Provider Family ID, Institution ID, and External Account ID as needed. Select a provider card from the catalog to load provider-specific guidance and capabilities into the summary panel.",
+          "notes": [
+            "The preset shortcut is useful when you want Meridian to apply a known operating posture up front.",
+            "Provider cards surface display name, description, credential status, and capability summary."
+          ]
+        },
+        {
+          "title": "Complete Step 2: Credentials and Scope",
+          "body": "Set Connection Mode and the reusable Credential Reference, then fill any provider-specific credential fields. After credentials, define the operating scope with Workspace, Fund Profile ID, Entity ID, Sleeve ID, Vehicle ID, Account ID, and any relationship notes that help operators understand intended use.",
+          "notes": [
+            "Some providers expose catalog-defined environment fields, while others only require an external credential reference.",
+            "Scope fields determine where this provider relationship should be considered during routing."
+          ]
+        },
+        {
+          "title": "Complete Step 3: Capabilities and Policy",
+          "body": "Choose the Safety Mode, enter any explicit Failover IDs, and decide whether the relationship should be enabled immediately. If live use should be blocked until validation finishes, keep the certification requirement enabled. Then select the capability checkboxes that describe how this relationship should participate in Meridian routing.",
+          "notes": [
+            "Use stricter safety settings for live or production-sensitive provider relationships.",
+            "Failover IDs should only reference relationships that are valid operational substitutes."
+          ]
+        },
+        {
+          "title": "Complete Step 4: Save, Preview, and Certify",
+          "body": "Use Validate Draft to check the configuration before saving. When the draft is clean, select Save Relationship. Then use Preview Route to verify how Meridian would select the relationship, and Run Certification when you need to record production-readiness evidence.",
+          "notes": [
+            "The wizard summary and progress panel update continuously as you fill the form.",
+            "Certification status becomes part of the relationship summary and helps operators decide whether live use is appropriate."
+          ]
+        }
+      ]
+    }
+  ]
+}

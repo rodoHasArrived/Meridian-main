@@ -292,7 +292,14 @@ public sealed class StrategyRunReadService
             AuditReference: run.AuditReference,
             Execution: BuildExecutionSummary(run),
             Promotion: BuildPromotionSummary(run),
+<<<<<<< Updated upstream
             Governance: BuildGovernanceSummary(run));
+=======
+            Governance: BuildGovernanceSummary(run),
+            FundProfileId: run.FundProfileId,
+            FundDisplayName: run.FundDisplayName,
+            ParentRunId: run.ParentRunId);
+>>>>>>> Stashed changes
     }
 
     private static StrategyRunExecutionSummary BuildExecutionSummary(StrategyRunEntry run)

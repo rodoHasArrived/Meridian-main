@@ -1,0 +1,43 @@
+{
+  "workflow": {
+    "name": "mdp-data-operations-shell",
+    "title": "Market Data Provider Manual - Data Operations Workspace",
+    "description": "Capture the operator entry point for provider workflows.",
+    "purpose": "manual"
+  },
+  "run": {
+    "catalogPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\market-data-provider-workflows.json",
+    "projectPath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Wpf\\Meridian.Wpf.csproj",
+    "configuration": "Release",
+    "framework": "net9.0-windows10.0.19041.0",
+    "exePath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\src\\Meridian.Wpf\\bin\\Release\\net9.0-windows10.0.19041.0\\Meridian.Desktop.exe",
+    "fixtureMode": true,
+    "runDirectory": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022928-mdp-data-operations-shell",
+    "screenshotDirectory": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022928-mdp-data-operations-shell\\screenshots",
+    "stdoutLog": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022928-mdp-data-operations-shell\\logs\\stdout.log",
+    "stderrLog": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022928-mdp-data-operations-shell\\logs\\stderr.log",
+    "startedAt": "2026-04-09T02:29:28.5131565-07:00",
+    "launchArguments": [
+      "--fixture"
+    ],
+    "processId": 24744,
+    "status": "ok",
+    "finishedAt": "2026-04-09T02:29:40.7436874-07:00"
+  },
+  "steps": [
+    {
+      "index": 1,
+      "title": "Data Operations Workspace",
+      "pageTag": "DataOperationsShell",
+      "notes": "Open the Data Operations workspace to access provider, routing, and health tools.",
+      "keys": "",
+      "launchArgs": [
+        "--page=DataOperationsShell"
+      ],
+      "capturePath": "C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\output\\manual-captures\\market-data-provider\\runs\\20260409-022928-mdp-data-operations-shell\\screenshots\\01-data-operations-workspace.png",
+      "status": "ok",
+      "startedAt": "2026-04-09T02:29:35.7603474-07:00",
+      "completedAt": "2026-04-09T02:29:40.7295559-07:00"
+    }
+  ]
+}
