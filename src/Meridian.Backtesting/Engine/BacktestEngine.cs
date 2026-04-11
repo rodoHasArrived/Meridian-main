@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Reflection;
 using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
@@ -19,8 +18,7 @@ public sealed class BacktestEngine(
     ILogger<BacktestEngine> logger,
     StorageCatalogService catalogService,
     Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService? securityMasterQueryService = null,
-    ICorporateActionAdjustmentService? corporateActionAdjustment = null,
-    Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider? optionsProvider = null)
+    ICorporateActionAdjustmentService? corporateActionAdjustment = null)
 {
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -70,7 +68,7 @@ public sealed class BacktestEngine(
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp);
-        var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId, optionsProvider);
+        var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(commissionModel, tickSizes);
         var barFillModel = new BarMidpointFillModel(commissionModel, request.SlippageBasisPoints, spreadAware: true, tickSizes: tickSizes, maxParticipationRate: request.MaxParticipationRate);
         var marketImpactFillModel = new MarketImpactFillModel(commissionModel, request.MarketImpactCoefficient, request.SlippageBasisPoints);
@@ -94,6 +92,7 @@ public sealed class BacktestEngine(
         var currentDay = request.From;
         long eventsProcessed = 0;
         var totalDays = (request.To.ToDateTime(TimeOnly.MinValue) - request.From.ToDateTime(TimeOnly.MinValue)).Days + 1;
+        var rollingState = new RollingMetricsState(portfolio.ComputeCurrentEquity());
 
         await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct))
         {
@@ -104,7 +103,7 @@ public sealed class BacktestEngine(
             // Day boundary — close out the previous day and apply any gap-day asset events.
             if (evtDate > currentDay)
             {
-                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, ct);
+                AdvanceDays(currentDay, evtDate, portfolio, ctx, strategy, pendingOrders, allSnapshots, allCashFlows, assetEventsByDate, progress, request.From, totalDays, eventsProcessed, rollingState, ct);
                 currentDay = evtDate;
             }
 
@@ -123,7 +122,7 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, request.DefaultExecutionModel);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
@@ -150,12 +149,7 @@ public sealed class BacktestEngine(
 
         var tradeTickets = BuildTradeTickets(allCashFlows);
         var tcaReport = PostSimulationTcaReporter.Generate(request, allFills);
-        var allClosedLots = portfolio.GetClosedLots();
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, allClosedLots)
-        {
-            Coverage = BuildNativeArtifactCoverage(),
-            EngineMetadata = BuildNativeEngineMetadata()
-        };
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -308,6 +302,7 @@ public sealed class BacktestEngine(
         DateOnly requestFrom,
         int totalDays,
         long eventsProcessed,
+        RollingMetricsState rollingState,
         CancellationToken ct)
     {
         ProcessDayEnd(fromDay, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
@@ -319,12 +314,23 @@ public sealed class BacktestEngine(
             if (date < toDay)
                 ProcessDayEnd(date, portfolio, pendingOrders, ctx, strategy, snapshots, allCashFlows, ct);
 
+            var equity = portfolio.ComputeCurrentEquity();
             var daysElapsed = (date.ToDateTime(TimeOnly.MinValue) - requestFrom.ToDateTime(TimeOnly.MinValue)).Days;
+
+            // Update rolling metrics state with the daily equity observation.
+            rollingState.RecordDay(equity);
+
+            // Emit intermediate metrics every 20 trading days once at least 60 have elapsed.
+            IntermediateMetrics? liveMetrics = null;
+            if (progress != null && rollingState.TradingDays >= 60 && rollingState.TradingDays % 20 == 0)
+                liveMetrics = rollingState.Snapshot();
+
             progress?.Report(new BacktestProgressEvent(
                 (double)daysElapsed / totalDays,
                 date,
-                portfolio.ComputeCurrentEquity(),
-                eventsProcessed));
+                equity,
+                eventsProcessed,
+                LiveMetrics: liveMetrics));
         }
     }
 
@@ -389,6 +395,7 @@ public sealed class BacktestEngine(
         BacktestContext ctx,
         List<FillEvent> allFills,
         ILogger<BacktestEngine> logger,
+        RollingMetricsState rollingState,
         ExecutionModel requestDefault = ExecutionModel.Auto)
     {
         var filled = new List<Guid>();
@@ -419,6 +426,7 @@ public sealed class BacktestEngine(
 
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
+                rollingState.IncrementFills();
                 strategy.OnOrderFill(fill, ctx);
 
                 foreach (var contingentOrder in ContingentOrderManager.CreateContingentOrders(order, fill))
@@ -472,35 +480,7 @@ public sealed class BacktestEngine(
     private static BacktestResult CreateEmptyResult(BacktestRequest request, IReadOnlySet<string> universe, TimeSpan elapsed)
     {
         var metrics = BacktestMetricsEngine.Compute([], [], [], request);
-        var tcaReport = PostSimulationTcaReporter.Generate(request, []);
-        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, [], tcaReport)
-        {
-            Coverage = BuildNativeArtifactCoverage(),
-            EngineMetadata = BuildNativeEngineMetadata()
-        };
-    }
-
-    private static BacktestArtifactCoverage BuildNativeArtifactCoverage() => new(
-        Snapshots: BacktestArtifactStatus.Complete,
-        CashFlows: BacktestArtifactStatus.Complete,
-        Fills: BacktestArtifactStatus.Complete,
-        TradeTickets: BacktestArtifactStatus.Complete,
-        Ledger: BacktestArtifactStatus.Complete,
-        TcaReport: BacktestArtifactStatus.Complete);
-
-    private static BacktestEngineMetadata BuildNativeEngineMetadata()
-    {
-        var assembly = typeof(BacktestEngine).Assembly;
-        var version =
-            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-            ?? assembly.GetName().Version?.ToString()
-            ?? "unknown";
-
-        return new BacktestEngineMetadata(
-            EngineId: "MeridianNative",
-            EngineVersion: version,
-            SourceFormat: "Meridian.Backtesting.BacktestResult",
-            Diagnostics: new Dictionary<string, string>());
+        return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, []);
     }
 
     private static IFillModel SelectFillModel(
@@ -734,5 +714,67 @@ public sealed class BacktestEngine(
         }
 
         return result;
+    }
+}
+
+/// <summary>
+/// Mutable state bag for computing O(1) rolling Sharpe ratio and drawdown during backtest replay.
+/// Not thread-safe; updated exclusively on the engine thread.
+/// </summary>
+internal sealed class RollingMetricsState
+{
+    private decimal _prevEquity;
+    private decimal _peakEquity;
+    private double _sumExcess;
+    private double _sumSqExcess;
+
+    public int TradingDays { get; private set; }
+    public int FillCount { get; private set; }
+
+    public RollingMetricsState(decimal initialEquity)
+    {
+        _prevEquity = initialEquity;
+        _peakEquity = initialEquity;
+    }
+
+    /// <summary>Records one day's equity observation and updates running statistics.</summary>
+    public void RecordDay(decimal equity)
+    {
+        TradingDays++;
+
+        if (_prevEquity > 0)
+        {
+            var dailyReturn = (double)((equity - _prevEquity) / _prevEquity);
+            // excess return vs risk-free 0
+            _sumExcess += dailyReturn;
+            _sumSqExcess += dailyReturn * dailyReturn;
+        }
+
+        if (equity > _peakEquity)
+            _peakEquity = equity;
+
+        _prevEquity = equity;
+    }
+
+    public void IncrementFills(int count = 1) => FillCount += count;
+
+    /// <summary>Computes a snapshot of current rolling metrics.</summary>
+    public IntermediateMetrics Snapshot()
+    {
+        var n = TradingDays;
+        double sharpe = 0;
+        if (n >= 2)
+        {
+            var mean = _sumExcess / n;
+            var variance = (_sumSqExcess / n) - (mean * mean);
+            var stdDev = variance > 0 ? Math.Sqrt(variance) : 0;
+            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(252) : 0;
+        }
+
+        var drawdownPct = _peakEquity > 0
+            ? (double)((_peakEquity - _prevEquity) / _peakEquity)
+            : 0;
+
+        return new IntermediateMetrics(sharpe, drawdownPct, FillCount, n);
     }
 }

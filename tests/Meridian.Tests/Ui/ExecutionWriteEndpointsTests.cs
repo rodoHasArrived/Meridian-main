@@ -348,12 +348,19 @@ file sealed class StaticPortfolioState(params ExecutionPosition[] positions) : M
 {
     public decimal Cash => 100_000m;
     public decimal PortfolioValue => 100_000m;
+<<<<<<< HEAD
     public decimal UnrealisedPnl { get; } = positions.Sum(position => position.UnrealisedPnl);
     public decimal RealisedPnl { get; } = positions.Sum(position => position.RealisedPnl);
     public IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition> Positions { get; } = positions.ToDictionary(
         position => position.Symbol,
         position => (Meridian.Execution.Sdk.IPosition)position,
         StringComparer.OrdinalIgnoreCase);
+=======
+    public decimal UnrealisedPnl => 0m;
+    public decimal RealisedPnl => 0m;
+    public IReadOnlyDictionary<string, IPosition> Positions =>
+        new Dictionary<string, IPosition>();
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }
 
 sealed class RecordingBrokerageGateway(params BrokerPosition[] positions) : IBrokerageGateway

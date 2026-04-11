@@ -24,17 +24,10 @@ public sealed class CashFlowViewModel : BindableBase
         {
             if (SetProperty(ref _parameter, value))
             {
-                LastLoadTask = LoadFromParameterAsync(value);
-                _ = LastLoadTask;
+                _ = LoadFromParameterAsync(value);
             }
         }
     }
-
-    /// <summary>
-    /// Tracks the most recent async load triggered by <see cref="Parameter"/> assignment.
-    /// Exposed <c>internal</c> for deterministic test awaiting.
-    /// </summary>
-    internal Task LastLoadTask { get; private set; } = Task.CompletedTask;
 
     public ObservableCollection<CashFlowEntryDto> Entries { get; } = [];
     public ObservableCollection<CashLadderBucketDto> LadderBuckets { get; } = [];

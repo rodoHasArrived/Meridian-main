@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Ui.Services.Services;
 
@@ -205,16 +204,15 @@ public sealed class FixtureDataServiceTests
     {
         // Arrange
         var service = FixtureDataService.Instance;
-        var stopwatch = Stopwatch.StartNew();
+        var startTime = DateTimeOffset.UtcNow;
 
         // Act
         await service.SimulateNetworkDelayAsync();
-        stopwatch.Stop();
-        var elapsed = stopwatch.Elapsed;
+        var elapsed = DateTimeOffset.UtcNow - startTime;
 
         // Assert
         elapsed.Should().BeGreaterThan(TimeSpan.FromMilliseconds(40), "should have some delay");
-        elapsed.Should().BeLessThan(TimeSpan.FromSeconds(3), "should complete well before it looks hung even on busy CI runners");
+        elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(700), "should not delay too long even on busy CI runners");
     }
 
     [Fact]
@@ -234,183 +232,5 @@ public sealed class FixtureDataServiceTests
             "drop rate should be a percentage");
         status.Metrics.EventsPerSecond.Should().BeGreaterThan(0);
         status.Metrics.Trades.Should().BeGreaterThan(0);
-    }
-
-    // ── Scenario switching ───────────────────────────────────────────────────
-
-    [Fact]
-    public void SetScenario_ChangesActiveScenario()
-    {
-        // Arrange
-        var service = FixtureDataService.Instance;
-        service.SetScenario(FixtureScenario.Connected); // reset to known state
-
-        // Act
-        service.SetScenario(FixtureScenario.Disconnected);
-
-        // Assert
-        service.ActiveScenario.Should().Be(FixtureScenario.Disconnected);
-
-        // Cleanup
-        service.SetScenario(FixtureScenario.Connected);
-    }
-
-    [Fact]
-    public void SetScenario_FiresScenarioChangedEvent()
-    {
-        // Arrange
-        var service = FixtureDataService.Instance;
-        service.SetScenario(FixtureScenario.Connected);
-        FixtureScenario? capturedScenario = null;
-        service.ScenarioChanged += (_, s) => capturedScenario = s;
-
-        // Act
-        service.SetScenario(FixtureScenario.Error);
-
-        // Assert
-        capturedScenario.Should().Be(FixtureScenario.Error);
-
-        // Cleanup
-        service.SetScenario(FixtureScenario.Connected);
-    }
-
-    [Fact]
-    public void SetScenario_SameScenario_DoesNotFireEvent()
-    {
-        // Arrange
-        var service = FixtureDataService.Instance;
-        service.SetScenario(FixtureScenario.Connected);
-        var eventFired = false;
-        service.ScenarioChanged += (_, _) => eventFired = true;
-
-        // Act – set to the same scenario
-        service.SetScenario(FixtureScenario.Connected);
-
-        // Assert
-        eventFired.Should().BeFalse("no change means no event");
-    }
-
-    [Theory]
-    [InlineData(FixtureScenario.Connected, FixtureScenario.Disconnected)]
-    [InlineData(FixtureScenario.Disconnected, FixtureScenario.Degraded)]
-    [InlineData(FixtureScenario.Degraded, FixtureScenario.Error)]
-    [InlineData(FixtureScenario.Error, FixtureScenario.Loading)]
-    [InlineData(FixtureScenario.Loading, FixtureScenario.Connected)]
-    public void CycleToNextScenario_AdvancesToExpectedNextScenario(
-        FixtureScenario startScenario, FixtureScenario expectedNext)
-    {
-        // Arrange
-        var service = FixtureDataService.Instance;
-        service.SetScenario(startScenario);
-
-        // Act
-        var next = service.CycleToNextScenario();
-
-        // Assert
-        next.Should().Be(expectedNext);
-        service.ActiveScenario.Should().Be(expectedNext);
-
-        // Cleanup
-        service.SetScenario(FixtureScenario.Connected);
-    }
-
-    [Theory]
-    [InlineData(FixtureScenario.Connected)]
-    [InlineData(FixtureScenario.Disconnected)]
-    [InlineData(FixtureScenario.Degraded)]
-    [InlineData(FixtureScenario.Error)]
-    [InlineData(FixtureScenario.Loading)]
-    public void GetStatusForActiveScenario_ReturnsNonNullStatusForAllScenarios(FixtureScenario scenario)
-    {
-        // Arrange
-        var service = FixtureDataService.Instance;
-        service.SetScenario(scenario);
-
-        // Act
-        var status = service.GetStatusForActiveScenario();
-
-        // Assert
-        status.Should().NotBeNull();
-        status.TimestampUtc.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
-
-        // Cleanup
-        service.SetScenario(FixtureScenario.Connected);
-    }
-
-    [Fact]
-    public void GetStatusForActiveScenario_ConnectedScenario_IsConnected()
-    {
-        var service = FixtureDataService.Instance;
-        service.SetScenario(FixtureScenario.Connected);
-        service.GetStatusForActiveScenario().IsConnected.Should().BeTrue();
-        service.SetScenario(FixtureScenario.Connected);
-    }
-
-    [Fact]
-    public void GetStatusForActiveScenario_DisconnectedScenario_IsNotConnected()
-    {
-        var service = FixtureDataService.Instance;
-        service.SetScenario(FixtureScenario.Disconnected);
-        service.GetStatusForActiveScenario().IsConnected.Should().BeFalse();
-        service.SetScenario(FixtureScenario.Connected);
-    }
-
-    [Fact]
-    public void GetMockDegradedStatus_IsConnectedWithHighDropRate()
-    {
-        // Act
-        var status = FixtureDataService.Instance.GetMockDegradedStatus();
-
-        // Assert
-        status.IsConnected.Should().BeTrue("degraded is still connected, just partially");
-        status.Metrics.Should().NotBeNull();
-        status.Metrics!.DropRate.Should().BeGreaterThan(0.02f,
-            "degraded scenario should have a meaningful drop rate");
-        status.Pipeline!.CurrentQueueSize.Should().BeGreaterThan(0,
-            "degraded scenario should show queue pressure");
-    }
-
-    [Fact]
-    public void GetMockErrorStatus_IsNotConnectedWithVeryHighDropRate()
-    {
-        // Act
-        var status = FixtureDataService.Instance.GetMockErrorStatus();
-
-        // Assert
-        status.IsConnected.Should().BeFalse();
-        status.Metrics.Should().NotBeNull();
-        status.Metrics!.DropRate.Should().BeGreaterThan(0.5f,
-            "error scenario should have a catastrophic drop rate");
-        status.Pipeline!.CurrentQueueSize.Should().BeGreaterThan((int)(status.Pipeline.QueueCapacity * 0.9),
-            "error scenario queue should be nearly full");
-    }
-
-    [Fact]
-    public void GetMockLoadingStatus_IsNotConnectedWithNullMetrics()
-    {
-        // Act
-        var status = FixtureDataService.Instance.GetMockLoadingStatus();
-
-        // Assert
-        status.IsConnected.Should().BeFalse();
-        status.Metrics.Should().BeNull("loading state has no metrics yet");
-        status.Pipeline.Should().BeNull("loading state has no pipeline data yet");
-        status.Uptime.Should().Be(TimeSpan.Zero, "loading state has zero uptime");
-    }
-
-    [Theory]
-    [InlineData(FixtureScenario.Connected, "Connected")]
-    [InlineData(FixtureScenario.Disconnected, "Disconnected")]
-    [InlineData(FixtureScenario.Degraded, "Degraded")]
-    [InlineData(FixtureScenario.Error, "Error")]
-    [InlineData(FixtureScenario.Loading, "Loading")]
-    public void GetScenarioLabel_ContainsExpectedKeyword(FixtureScenario scenario, string expectedKeyword)
-    {
-        // Act
-        var label = FixtureDataService.GetScenarioLabel(scenario);
-
-        // Assert
-        label.Should().NotBeNullOrWhiteSpace();
-        label.Should().Contain(expectedKeyword, because: $"label for {scenario} should contain '{expectedKeyword}'");
     }
 }

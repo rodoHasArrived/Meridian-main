@@ -32,6 +32,253 @@ public sealed class WorkstationEndpointsTests
         Converters = { new JsonStringEnumConverter() }
     };
     [Fact]
+<<<<<<< HEAD
+=======
+    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-latest",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx"));
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-prior",
+            strategyId: "meanrev-1",
+            strategyName: "Mean Reversion",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities"));
+
+        var client = app.GetTestClient();
+
+        using var session = await ReadJsonAsync(client, "/api/workstation/session");
+        session.RootElement.GetProperty("displayName").GetString().Should().Be("Carry Pair Desk");
+        session.RootElement.GetProperty("role").GetString().Should().Be("Research Lead");
+        session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
+        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("operations");
+        session.RootElement.GetProperty("latestRun").GetProperty("runId").GetString().Should().Be("run-latest");
+        session.RootElement.GetProperty("workspaceSummary").GetProperty("totalRuns").GetInt32().Should().Be(2);
+        session.RootElement.GetProperty("workspaceSummary").GetProperty("ledgerCoverage").GetInt32().Should().Be(2);
+        session.RootElement.GetProperty("workspaceSummary").GetProperty("portfolioCoverage").GetInt32().Should().Be(2);
+
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+        research.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(2);
+        research.RootElement.GetProperty("workspace").GetProperty("latestRunId").GetString().Should().Be("run-latest");
+        research.RootElement.GetProperty("workspace").GetProperty("promotionCandidates").GetInt32().Should().Be(2);
+
+        var runs = research.RootElement.GetProperty("runs");
+        runs.GetArrayLength().Should().Be(2);
+
+        var latestRun = runs[0];
+        latestRun.GetProperty("id").GetString().Should().Be("run-latest");
+        latestRun.GetProperty("strategyName").GetString().Should().Be("Carry Pair");
+        latestRun.GetProperty("mode").GetString().Should().Be("paper");
+        latestRun.GetProperty("status").GetString().Should().Be("Completed");
+        latestRun.GetProperty("dataset").GetString().Should().Be("dataset/fx/spot");
+        latestRun.GetProperty("notes").GetString().Should().Contain("review");
+        latestRun.GetProperty("drillIn").GetProperty("fills").GetString().Should().Be("/api/workstation/runs/run-latest/fills");
+
+        var comparisons = research.RootElement.GetProperty("comparisons");
+        comparisons.GetArrayLength().Should().BeGreaterThan(0);
+        comparisons[0].GetProperty("modes").EnumerateArray()
+            .Should()
+            .Contain(mode => mode.GetProperty("drillIn").GetProperty("attribution").GetString() != null);
+        research.RootElement.GetProperty("timeline").GetArrayLength().Should().Be(2);
+
+        research.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric => metric.GetProperty("id").GetString() == "active-runs" &&
+                               metric.GetProperty("value").GetString() == "0");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackPayloads()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        using var session = await ReadJsonAsync(client, "/api/workstation/session");
+        session.RootElement.GetProperty("displayName").GetString().Should().Be("Meridian Operator");
+        session.RootElement.GetProperty("role").GetString().Should().Be("Research Lead");
+        session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
+        session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("research");
+        session.RootElement.GetProperty("commandCount").GetInt32().Should().Be(6);
+
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+        research.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric => metric.GetProperty("id").GetString() == "active-runs" &&
+                               metric.GetProperty("value").GetString() == "24");
+
+        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
+        governance.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric => metric.GetProperty("id").GetString() == "open-breaks" &&
+                               metric.GetProperty("value").GetString() == "4");
+        governance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+
+        var runs = research.RootElement.GetProperty("runs");
+        runs.GetArrayLength().Should().Be(1);
+        runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
+        runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithSecurityLookup_ShouldExposeSecurityCoverageInBootstrapPayloads()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            var lookup = new StubSecurityReferenceLookup();
+            lookup.Register("AAPL", new WorkstationSecurityReference(
+                SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                DisplayName: "Apple Inc.",
+                AssetClass: "Equity",
+                Currency: "USD",
+                Status: SecurityStatusDto.Active,
+                PrimaryIdentifier: "AAPL"));
+
+            services.AddSingleton<IStrategyRepository>(new StrategyRunStore());
+            services.AddSingleton<ISecurityReferenceLookup>(lookup);
+            services.AddSingleton<PortfolioReadService>();
+            services.AddSingleton<LedgerReadService>();
+            services.AddSingleton<StrategyRunReadService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-security",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx").Complete(BuildBacktestResultWithSymbol("AAPL")));
+
+        var client = app.GetTestClient();
+
+        using var session = await ReadJsonAsync(client, "/api/workstation/session");
+        var latestCoverage = session.RootElement.GetProperty("latestRun").GetProperty("securityCoverage");
+        latestCoverage.GetProperty("portfolioResolved").GetInt32().Should().Be(1);
+        latestCoverage.GetProperty("portfolioMissing").GetInt32().Should().Be(0);
+        latestCoverage.GetProperty("ledgerResolved").GetInt32().Should().Be(1);
+        latestCoverage.GetProperty("ledgerMissing").GetInt32().Should().Be(0);
+        latestCoverage.GetProperty("hasIssues").GetBoolean().Should().BeFalse();
+        latestCoverage.GetProperty("tone").GetString().Should().Be("success");
+        latestCoverage.GetProperty("resolvedReferences").GetArrayLength().Should().Be(2);
+        latestCoverage.GetProperty("missingReferences").GetArrayLength().Should().Be(0);
+        latestCoverage.GetProperty("summary").GetString().Should().Contain("no unresolved symbols");
+
+        using var research = await ReadJsonAsync(client, "/api/workstation/research");
+        var runCoverage = research.RootElement.GetProperty("runs")[0].GetProperty("securityCoverage");
+        runCoverage.GetProperty("portfolioResolved").GetInt32().Should().Be(1);
+        runCoverage.GetProperty("ledgerResolved").GetInt32().Should().Be(1);
+        runCoverage.GetProperty("hasIssues").GetBoolean().Should().BeFalse();
+        runCoverage.GetProperty("resolvedReferences").EnumerateArray()
+            .Should()
+            .Contain(item =>
+                item.GetProperty("source").GetString() == "portfolio" &&
+                item.GetProperty("symbol").GetString() == "AAPL" &&
+                item.GetProperty("displayName").GetString() == "Apple Inc.");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithGovernanceServices_ShouldExposeGovernanceWorkspacePayload()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            var lookup = new StubSecurityReferenceLookup();
+            lookup.Register("AAPL", new WorkstationSecurityReference(
+                SecurityId: Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                DisplayName: "Apple Inc.",
+                AssetClass: "Equity",
+                Currency: "USD",
+                Status: SecurityStatusDto.Active,
+                PrimaryIdentifier: "AAPL"));
+
+            services.AddSingleton<IStrategyRepository>(new StrategyRunStore());
+            services.AddSingleton<ISecurityReferenceLookup>(lookup);
+            services.AddSingleton<PortfolioReadService>();
+            services.AddSingleton<LedgerReadService>();
+            services.AddSingleton<StrategyRunReadService>();
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationReadyRun("run-governance-balanced"));
+        await store.RecordRunAsync(BuildReconciliationMismatchRun("run-governance-breaks"));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-governance-balanced"));
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-governance-breaks"));
+
+        var client = app.GetTestClient();
+        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
+
+        var workspace = governance.RootElement.GetProperty("workspace");
+        workspace.GetProperty("totalRuns").GetInt32().Should().Be(2);
+        workspace.GetProperty("ledgerReadyRuns").GetInt32().Should().Be(2);
+        workspace.GetProperty("reconciledRuns").GetInt32().Should().Be(2);
+        workspace.GetProperty("openBreaks").GetInt32().Should().BeGreaterThan(0);
+        workspace.GetProperty("securityIssues").GetInt32().Should().BeGreaterThan(0);
+
+        var cashFlow = governance.RootElement.GetProperty("cashFlow");
+        cashFlow.GetProperty("runsWithCashSignals").GetInt32().Should().Be(2);
+        cashFlow.GetProperty("runsWithCashVariance").GetInt32().Should().Be(1);
+        cashFlow.GetProperty("netVariance").GetDecimal().Should().Be(-100m);
+
+        var reporting = governance.RootElement.GetProperty("reporting");
+        reporting.GetProperty("profileCount").GetInt32().Should().BeGreaterThan(0);
+        reporting.GetProperty("profiles").EnumerateArray()
+            .Should()
+            .Contain(profile => profile.GetProperty("id").GetString() == "excel");
+        reporting.GetProperty("recommendedProfiles").EnumerateArray()
+            .Select(profile => profile.GetString())
+            .Should()
+            .Contain("excel");
+
+        governance.RootElement.GetProperty("metrics").EnumerateArray()
+            .Should()
+            .Contain(metric => metric.GetProperty("id").GetString() == "open-breaks" &&
+                               metric.GetProperty("value").GetString() != "0");
+
+        var queue = governance.RootElement.GetProperty("reconciliationQueue");
+        queue.GetArrayLength().Should().Be(2);
+
+        var breakRun = queue.EnumerateArray()
+            .Single(item => item.GetProperty("runId").GetString() == "run-governance-breaks");
+        breakRun.GetProperty("reconciliationStatus").GetString().Should().Be("BreaksOpen");
+        breakRun.GetProperty("openBreakCount").GetInt32().Should().BeGreaterThan(0);
+        breakRun.GetProperty("securityCoverage").GetProperty("hasIssues").GetBoolean().Should().BeTrue();
+        breakRun.GetProperty("securityCoverage").GetProperty("missingReferences").GetArrayLength().Should().BeGreaterThan(0);
+        breakRun.GetProperty("cashFlow").GetProperty("cashVariance").GetDecimal().Should().Be(-100m);
+        breakRun.GetProperty("latestReconciliation").GetProperty("hasSecurityCoverageIssues").GetBoolean().Should().BeTrue();
+        breakRun.GetProperty("latestReconciliation").GetProperty("securityIssueCount").GetInt32().Should().BeGreaterThan(0);
+
+        var balancedRun = queue.EnumerateArray()
+            .Single(item => item.GetProperty("runId").GetString() == "run-governance-balanced");
+        balancedRun.GetProperty("reconciliationStatus").GetString().Should().Be("SecurityCoverageOpen");
+        balancedRun.GetProperty("breakCount").GetInt32().Should().Be(0);
+        balancedRun.GetProperty("cashFlow").GetProperty("cashVariance").GetDecimal().Should().Be(0m);
+        balancedRun.GetProperty("latestReconciliation").GetProperty("hasSecurityCoverageIssues").GetBoolean().Should().BeTrue();
+        balancedRun.GetProperty("securityCoverage").GetProperty("missingReferences").EnumerateArray()
+            .Should()
+            .Contain(item => item.GetProperty("symbol").GetString() == "TSLA");
+    }
+
+    [Fact]
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     public async Task MapWorkstationEndpoints_ReconciliationRoutes_ShouldCreateAndFetchRun()
     {
         await using var app = await CreateAppAsync(services =>
@@ -1333,5 +1580,10 @@ public sealed class WorkstationEndpointsTests
 
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 }

@@ -1,6 +1,4 @@
 using Meridian.Backtesting.Portfolio;
-using Meridian.Contracts.Domain.Models;
-using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.Backtesting.Engine;
 
@@ -12,8 +10,7 @@ internal sealed class BacktestContext(
     SimulatedPortfolio portfolio,
     IReadOnlySet<string> universe,
     BacktestLedger ledger,
-    string defaultBrokerageAccountId,
-    IOptionsChainProvider? optionsProvider = null) : IBacktestContext
+    string defaultBrokerageAccountId) : IBacktestContext
 {
     private readonly List<Order> _pendingOrders = [];
 
@@ -135,40 +132,6 @@ internal sealed class BacktestContext(
 
     public void CancelContingentOrders(Guid parentOrderId) =>
         _pendingOrders.RemoveAll(o => o.ParentOrderId == parentOrderId);
-
-    // --------------------------------------------------------------------- //
-    //  Options chain access                                                   //
-    // --------------------------------------------------------------------- //
-
-    /// <inheritdoc/>
-    public Task<OptionChainSnapshot?> GetOptionChainAsync(
-        string underlyingSymbol,
-        DateOnly expiration,
-        int? strikeRange = null,
-        CancellationToken ct = default)
-    {
-        if (optionsProvider is null)
-            return Task.FromResult<OptionChainSnapshot?>(null);
-
-        return optionsProvider.GetChainSnapshotAsync(underlyingSymbol, expiration, strikeRange, ct);
-    }
-
-    /// <inheritdoc/>
-    public async Task<DateOnly?> GetNearestExpirationAsync(
-        string underlyingSymbol,
-        int minDte = 0,
-        CancellationToken ct = default)
-    {
-        if (optionsProvider is null)
-            return null;
-
-        var expirations = await optionsProvider.GetExpirationsAsync(underlyingSymbol, ct).ConfigureAwait(false);
-        var minDate = CurrentDate.AddDays(minDte);
-        return expirations
-            .Where(e => e >= minDate)
-            .Select(static e => (DateOnly?)e)
-            .FirstOrDefault();
-    }
 
     internal IReadOnlyList<Order> DrainPendingOrders()
     {

@@ -1,6 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
-using Meridian.Application.Serialization;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
@@ -132,12 +130,27 @@ public static class UiEndpoints
     }
 
     /// <summary>
+    /// Creates the standard <see cref="JsonSerializerOptions"/> used by UI API endpoints.
+    /// Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the
+    /// type-info chain without reflection falling back to a null resolver.
+    /// </summary>
+    /// <param name="writeIndented">When <c>true</c> the output is pretty-printed.</param>
+    public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =>
+        new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = writeIndented,
+            TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()
+        };
+
+    /// <summary>
     /// Maps all UI API endpoints with custom JSON serializer options.
     /// </summary>
     public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null)
     {
-        jsonOptionsIndented ??= new JsonSerializerOptions(jsonOptions)
+        jsonOptionsIndented ??= new JsonSerializerOptions
         {
+            PropertyNamingPolicy = jsonOptions.PropertyNamingPolicy,
             WriteIndented = true
         };
 
@@ -190,12 +203,15 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
+<<<<<<< HEAD
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
 
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -247,8 +263,12 @@ public static class UiEndpoints
     /// </summary>
     public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, StatusEndpointHandlers statusHandlers)
     {
-        var jsonOptions = CreateEndpointJsonOptions();
-        var jsonOptionsIndented = CreateEndpointJsonOptions(writeIndented: true);
+        var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var jsonOptionsIndented = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true
+        };
 
         // Map status endpoints using shared handlers
         app.MapStatusEndpoints(statusHandlers, jsonOptions);
@@ -302,12 +322,15 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
+<<<<<<< HEAD
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
 
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -353,6 +376,7 @@ public static class UiEndpoints
         return app;
     }
 
+<<<<<<< HEAD
     internal static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false)
     {
         return new JsonSerializerOptions
@@ -364,6 +388,8 @@ public static class UiEndpoints
                 new DefaultJsonTypeInfoResolver())
         };
     }
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     /// <summary>
      /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
      /// </summary>

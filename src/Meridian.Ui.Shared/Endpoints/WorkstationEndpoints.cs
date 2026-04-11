@@ -10,6 +10,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -225,48 +226,6 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet("/runs/{runId}/lots/open", async (string runId, string? symbol, HttpContext context) =>
-        {
-            var readService = context.RequestServices.GetService<StrategyRunReadService>();
-            if (readService is null)
-            {
-                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var summary = await readService.GetLotSummaryAsync(runId, symbol, context.RequestAborted).ConfigureAwait(false);
-            if (summary is null)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.Json(summary.OpenLots, jsonOptions);
-        })
-        .WithName("GetRunOpenLots")
-        .Produces<IReadOnlyList<OpenLotSummary>>(200)
-        .Produces(404)
-        .Produces(501);
-
-        group.MapGet("/runs/{runId}/lots/closed", async (string runId, string? symbol, HttpContext context) =>
-        {
-            var readService = context.RequestServices.GetService<StrategyRunReadService>();
-            if (readService is null)
-            {
-                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var summary = await readService.GetLotSummaryAsync(runId, symbol, context.RequestAborted).ConfigureAwait(false);
-            if (summary is null)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.Json(summary.ClosedLots, jsonOptions);
-        })
-        .WithName("GetRunClosedLots")
-        .Produces<IReadOnlyList<ClosedLotSummary>>(200)
-        .Produces(404)
-        .Produces(501);
-
         group.MapGet("/runs/{runId}/ledger/trial-balance", async (string runId, string? accountType, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
@@ -331,14 +290,9 @@ public static class WorkstationEndpoints
             string? query,
             int? take,
             bool activeOnly,
-            HttpContext context) =>
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
             if (string.IsNullOrWhiteSpace(query))
             {
                 return Results.BadRequest(new { error = "Query is required." });
@@ -348,48 +302,38 @@ public static class WorkstationEndpoints
                 Query: query.Trim(),
                 Take: Math.Clamp(take ?? 25, 1, 100),
                 ActiveOnly: activeOnly);
-            var results = await queryService.SearchAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
             return Results.Json(results.Select(MapToWorkstationSecurity).ToArray(), jsonOptions);
         })
         .WithName("SearchSecurityMasterWorkstation")
         .Produces<IReadOnlyList<SecurityMasterWorkstationDto>>(200)
-        .Produces(400)
-        .Produces(501);
+        .Produces(400);
 
-        group.MapGet("/security-master/securities/{securityId:guid}", async (Guid securityId, HttpContext context) =>
+        group.MapGet("/security-master/securities/{securityId:guid}", async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var detail = await queryService.GetByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(MapToWorkstationSecurity(detail), jsonOptions);
         })
         .WithName("GetSecurityMasterWorkstationSecurity")
         .Produces<SecurityMasterWorkstationDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
         group.MapGet("/security-master/securities/{securityId:guid}/history", async (
             Guid securityId,
             int? take,
-            HttpContext context) =>
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
             var history = await queryService.GetHistoryAsync(
                     new SecurityHistoryRequest(
                         SecurityId: securityId,
                         Take: Math.Clamp(take ?? 50, 1, 500)),
-                    context.RequestAborted)
+                    ct)
                 .ConfigureAwait(false);
 
             return history.Count == 0
@@ -398,44 +342,35 @@ public static class WorkstationEndpoints
         })
         .WithName("GetSecurityMasterWorkstationSecurityHistory")
         .Produces<IReadOnlyList<SecurityMasterEventEnvelope>>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (Guid securityId, HttpContext context) =>
+        group.MapGet("/security-master/securities/{securityId:guid}/identity", async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var detail = await queryService.GetByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(MapToIdentityDrillIn(detail), jsonOptions);
         })
         .WithName("GetSecurityMasterWorkstationIdentityDrillIn")
         .Produces<SecurityIdentityDrillInDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
-        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (Guid securityId, HttpContext context) =>
+        group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
         {
-            var queryService = context.RequestServices.GetService<ISecurityMasterQueryService>();
-            if (queryService is null)
-            {
-                return Results.Problem("Security Master query service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
-            }
-
-            var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, context.RequestAborted).ConfigureAwait(false);
+            var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, ct).ConfigureAwait(false);
             return record is null
                 ? Results.NotFound()
                 : Results.Json(MapToEconomicDefinitionSummary(record), jsonOptions);
         })
         .WithName("GetSecurityMasterWorkstationEconomicDefinition")
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
-        .Produces(404)
-        .Produces(501);
+        .Produces(404);
 
         // --- Multi-run comparison and diff ---
 
@@ -676,6 +611,40 @@ public static class WorkstationEndpoints
         .WithName("GetPortfolioSymbolExposure")
         .Produces<NetSymbolPosition>(200)
         .Produces(503);
+<<<<<<< HEAD
+=======
+
+        app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
+            .ExcludeFromDescription();
+
+        app.MapGet("/workstation/{*path}", (string? path, IWebHostEnvironment environment) =>
+        {
+            if (string.IsNullOrWhiteSpace(path) || !Path.HasExtension(path))
+                return ServeWorkstationIndex(environment);
+
+            // Serve static assets (JS, CSS, etc.) directly from wwwroot/workstation/.
+            // UseStaticFiles() middleware runs after routing in WebApplication, so the
+            // catch-all route must serve these files explicitly.
+            var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+            var filePath = Path.Combine(root, "workstation", path.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(filePath))
+                return Results.NotFound();
+
+            var ext = Path.GetExtension(filePath).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".js"   => "application/javascript",
+                ".css"  => "text/css",
+                ".png"  => "image/png",
+                ".svg"  => "image/svg+xml",
+                ".ico"  => "image/x-icon",
+                ".woff" => "font/woff",
+                ".woff2" => "font/woff2",
+                _       => "application/octet-stream"
+            };
+            return Results.File(filePath, contentType);
+        }).ExcludeFromDescription();
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
@@ -894,16 +863,13 @@ public static class WorkstationEndpoints
                     {
                         portfolioResolved = 0,
                         portfolioMissing = 0,
-                        portfolioPartial = 0,
                         ledgerResolved = 0,
                         ledgerMissing = 0,
-                        ledgerPartial = 0,
                         hasIssues = false,
                         tone = "default",
                         summary = "Security Master coverage not yet evaluated.",
                         resolvedReferences = Array.Empty<SecurityCoverageReferencePayload>(),
-                        reviewReferences = Array.Empty<SecurityCoverageReferencePayload>(),
-                        missingReferences = Array.Empty<SecurityCoverageReferencePayload>()
+                        missingReferences = Array.Empty<SecurityCoverageGapPayload>()
                     }
                 }
             }
@@ -924,15 +890,10 @@ public static class WorkstationEndpoints
 
         // Resolve the most relevant paper run (for run-level metadata)
         StrategyRunSummary? run = null;
-        StrategyRunDetail? runDetail = null;
         if (readService is not null)
         {
             var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
             run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
-            if (run is not null)
-            {
-                runDetail = await readService.GetRunDetailAsync(run.RunId, context.RequestAborted).ConfigureAwait(false);
-            }
         }
 
         // --- Metrics (prefer live data, fall back to run-level metrics) ---
@@ -943,53 +904,27 @@ public static class WorkstationEndpoints
         var pnlTone = totalPnl >= 0m ? "success" : "warning";
 
         // --- Positions (live execution layer when available) ---
-        var securityLookup = BuildPositionSecurityLookup(runDetail);
         object[] positions;
         if (portfolio is not null && portfolio.Positions.Count > 0)
         {
-            positions = portfolio.Positions.Values
-                .Select(pos => (object)BuildTradingPositionPayload(
-                    symbol: pos.Symbol,
-                    side: pos.Quantity >= 0 ? "Long" : "Short",
-                    quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
-                    averagePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
-                    markPrice: "—",
-                    dayPnl: "—",
-                    unrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
-                    exposure: "—",
-                    security: securityLookup.GetValueOrDefault(pos.Symbol)))
-                .ToArray();
-        }
-        else if (runDetail?.Portfolio?.Positions.Count > 0)
-        {
-            positions = runDetail.Portfolio.Positions
-                .Select(pos => (object)BuildTradingPositionPayload(
-                    symbol: pos.Symbol,
-                    side: pos.IsShort ? "Short" : "Long",
-                    quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
-                    averagePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
-                    markPrice: "—",
-                    dayPnl: "—",
-                    unrealizedPnl: FormatCurrency(pos.UnrealizedPnl),
-                    exposure: FormatCurrency(Math.Abs(pos.AverageCostBasis * pos.Quantity)),
-                    security: pos.Security))
-                .ToArray();
+            positions = portfolio.Positions.Values.Select(pos => (object)new
+            {
+                symbol = pos.Symbol,
+                side = pos.Quantity >= 0 ? "Long" : "Short",
+                quantity = Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                averagePrice = pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
+                markPrice = "—",
+                dayPnl = "—",
+                unrealizedPnl = FormatCurrency(pos.UnrealizedPnl),
+                exposure = "—"
+            }).ToArray();
         }
         else
         {
             // No live positions yet — show an informational placeholder row
             positions =
             [
-                BuildTradingPositionPayload(
-                    symbol: "—",
-                    side: "—",
-                    quantity: "—",
-                    averagePrice: "—",
-                    markPrice: "—",
-                    dayPnl: "—",
-                    unrealizedPnl: "—",
-                    exposure: "No open positions",
-                    security: null)
+                new { symbol = "—", side = "—", quantity = "—", averagePrice = "—", markPrice = "—", dayPnl = "—", unrealizedPnl = "—", exposure = "No open positions" }
             ];
         }
 
@@ -1403,10 +1338,8 @@ public static class WorkstationEndpoints
                     {
                         portfolioResolved = 14,
                         portfolioMissing = 1,
-                        portfolioPartial = 0,
                         ledgerResolved = 12,
                         ledgerMissing = 1,
-                        ledgerPartial = 0,
                         hasIssues = true,
                         tone = "warning",
                         summary = "26 references mapped, 2 unresolved.",
@@ -1419,9 +1352,9 @@ public static class WorkstationEndpoints
                                 SecurityId: "security-aapl",
                                 DisplayName: "Apple Inc.",
                                 AssetClass: "Equity",
-                                SubType: null,
                                 Currency: "USD",
                                 Status: "Active",
+<<<<<<< HEAD
                                 PrimaryIdentifier: "AAPL",
                                 CoverageStatus: "Resolved",
                                 CoverageReason: null,
@@ -1463,13 +1396,17 @@ public static class WorkstationEndpoints
                                 MatchedIdentifierKind: null,
                                 MatchedIdentifierValue: null,
                                 MatchedProvider: null)
+=======
+                                PrimaryIdentifier: "AAPL")
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                         },
                         missingReferences = new[]
                         {
-                            new SecurityCoverageReferencePayload(
+                            new SecurityCoverageGapPayload(
                                 Source: "portfolio",
                                 Symbol: "XYZ",
                                 AccountName: null,
+<<<<<<< HEAD
                                 SecurityId: null,
                                 DisplayName: "XYZ",
                                 AssetClass: null,
@@ -1498,6 +1435,14 @@ public static class WorkstationEndpoints
                                 MatchedIdentifierKind: null,
                                 MatchedIdentifierValue: null,
                                 MatchedProvider: null)
+=======
+                                Reason: "Portfolio position is missing a Security Master match."),
+                            new SecurityCoverageGapPayload(
+                                Source: "ledger",
+                                Symbol: "XYZ",
+                                AccountName: "Securities",
+                                Reason: "Ledger coverage is missing a Security Master match.")
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                         }
                     },
                     cashFlow = new
@@ -1730,7 +1675,6 @@ public static class WorkstationEndpoints
                     hasTimingDrift = reconciliation.Summary.HasTimingDrift,
                     securityIssueCount = reconciliation.Summary.SecurityIssueCount,
                     hasSecurityCoverageIssues = reconciliation.Summary.HasSecurityCoverageIssues,
-                    securityCoverageIssues = reconciliation.SecurityCoverageIssues,
                     lastUpdated = FormatRelativeTime(reconciliation.Summary.CreatedAt),
                     tone = reconciliation.Summary.BreakCount == 0 && !reconciliation.Summary.HasSecurityCoverageIssues ? "success" : "warning"
                 }
@@ -1768,38 +1712,28 @@ public static class WorkstationEndpoints
         var ledger = detail?.Ledger;
         var portfolioResolved = portfolio?.SecurityResolvedCount ?? 0;
         var portfolioMissing = portfolio?.SecurityMissingCount ?? 0;
-        var portfolioPartial = portfolio?.Positions.Count(static position => position.Security?.CoverageStatus == WorkstationSecurityCoverageStatus.Partial) ?? 0;
         var ledgerResolved = ledger?.SecurityResolvedCount ?? 0;
         var ledgerMissing = ledger?.SecurityMissingCount ?? 0;
-        var ledgerPartial = ledger?.TrialBalance.Count(static line => line.Security?.CoverageStatus == WorkstationSecurityCoverageStatus.Partial) ?? 0;
-        var hasIssues = portfolioPartial > 0 || portfolioMissing > 0 || ledgerPartial > 0 || ledgerMissing > 0;
+        var hasIssues = portfolioMissing > 0 || ledgerMissing > 0;
         var resolvedReferences = BuildResolvedSecurityReferences(detail);
-        var reviewReferences = BuildSecurityReviewReferences(detail);
-        var missingReferences = reviewReferences
-            .Where(static reference => string.Equals(reference.CoverageStatus, WorkstationSecurityCoverageStatus.Missing.ToString(), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(reference.CoverageStatus, WorkstationSecurityCoverageStatus.Unavailable.ToString(), StringComparison.OrdinalIgnoreCase))
-            .ToArray();
+        var missingReferences = BuildMissingSecurityReferences(detail);
         var resolvedCount = portfolioResolved + ledgerResolved;
         var missingCount = portfolioMissing + ledgerMissing;
-        var partialCount = portfolioPartial + ledgerPartial;
 
         return new
         {
             portfolioResolved,
             portfolioMissing,
-            portfolioPartial,
             ledgerResolved,
             ledgerMissing,
-            ledgerPartial,
             hasIssues,
             tone = hasIssues ? "warning" : resolvedCount > 0 ? "success" : "default",
-            summary = missingCount > 0 || partialCount > 0
-                ? $"{resolvedCount} references linked, {partialCount} partial, {missingCount} unresolved."
+            summary = missingCount > 0
+                ? $"{resolvedCount} references mapped, {missingCount} unresolved."
                 : resolvedCount > 0
                     ? $"{resolvedCount} references mapped with no unresolved symbols."
                     : "Security Master coverage not yet evaluated.",
             resolvedReferences,
-            reviewReferences,
             missingReferences
         };
     }
@@ -1817,71 +1751,82 @@ public static class WorkstationEndpoints
         {
             results.AddRange(
                 detail.Portfolio.Positions
-                    .Where(static position => HasAuthoritativeSecurityMatch(position.Security))
-                    .Select(static position => BuildSecurityCoverageReference(
+                    .Where(static position => position.Security is not null)
+                    .Select(static position => new SecurityCoverageReferencePayload(
                         Source: "portfolio",
                         Symbol: position.Symbol,
                         AccountName: null,
-                        Security: position.Security)));
+                        SecurityId: position.Security!.SecurityId.ToString("N"),
+                        DisplayName: position.Security.DisplayName,
+                        AssetClass: position.Security.AssetClass,
+                        Currency: position.Security.Currency,
+                        Status: position.Security.Status.ToString(),
+                        PrimaryIdentifier: position.Security.PrimaryIdentifier)));
         }
 
         if (detail.Ledger is not null)
         {
             results.AddRange(
                 detail.Ledger.TrialBalance
-                    .Where(static line => HasAuthoritativeSecurityMatch(line.Security) && !string.IsNullOrWhiteSpace(line.Symbol))
-                    .Select(static line => BuildSecurityCoverageReference(
+                    .Where(static line => line.Security is not null && !string.IsNullOrWhiteSpace(line.Symbol))
+                    .Select(static line => new SecurityCoverageReferencePayload(
                         Source: "ledger",
                         Symbol: line.Symbol!,
                         AccountName: line.AccountName,
-                        Security: line.Security)));
+                        SecurityId: line.Security!.SecurityId.ToString("N"),
+                        DisplayName: line.Security.DisplayName,
+                        AssetClass: line.Security.AssetClass,
+                        Currency: line.Security.Currency,
+                        Status: line.Security.Status.ToString(),
+                        PrimaryIdentifier: line.Security.PrimaryIdentifier)));
         }
 
         return results
-            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}|{item.SecurityId}|{item.CoverageStatus}", StringComparer.OrdinalIgnoreCase)
+            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}|{item.SecurityId}", StringComparer.OrdinalIgnoreCase)
             .Take(SecurityCoveragePreviewLimit)
             .ToArray();
     }
 
-    private static SecurityCoverageReferencePayload[] BuildSecurityReviewReferences(StrategyRunDetail? detail)
+    private static SecurityCoverageGapPayload[] BuildMissingSecurityReferences(StrategyRunDetail? detail)
     {
         if (detail is null)
         {
             return [];
         }
 
-        var results = new List<SecurityCoverageReferencePayload>();
+        var results = new List<SecurityCoverageGapPayload>();
 
         if (detail.Portfolio is not null)
         {
             results.AddRange(
                 detail.Portfolio.Positions
-                    .Where(static position => NeedsSecurityReview(position.Security) && !string.IsNullOrWhiteSpace(position.Symbol))
-                    .Select(static position => BuildSecurityCoverageReference(
+                    .Where(static position => position.Security is null && !string.IsNullOrWhiteSpace(position.Symbol))
+                    .Select(static position => new SecurityCoverageGapPayload(
                         Source: "portfolio",
                         Symbol: position.Symbol,
                         AccountName: null,
-                        Security: position.Security)));
+                        Reason: "Portfolio position is missing a Security Master match.")));
         }
 
         if (detail.Ledger is not null)
         {
             results.AddRange(
                 detail.Ledger.TrialBalance
-                    .Where(static line => NeedsSecurityReview(line.Security) && !string.IsNullOrWhiteSpace(line.Symbol))
-                    .Select(static line => BuildSecurityCoverageReference(
+                    .Where(static line => line.Security is null && !string.IsNullOrWhiteSpace(line.Symbol))
+                    .Select(static line => new SecurityCoverageGapPayload(
                         Source: "ledger",
                         Symbol: line.Symbol!,
                         AccountName: line.AccountName,
-                        Security: line.Security)));
+                        Reason: "Ledger coverage is missing a Security Master match.")));
         }
 
         return results
-            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}|{item.CoverageStatus}", StringComparer.OrdinalIgnoreCase)
+            .DistinctBy(static item => $"{item.Source}|{item.Symbol}|{item.AccountName}", StringComparer.OrdinalIgnoreCase)
             .Take(SecurityCoveragePreviewLimit)
             .ToArray();
     }
 
+<<<<<<< HEAD
     private static Dictionary<string, WorkstationSecurityReference?> BuildPositionSecurityLookup(StrategyRunDetail? detail)
         => detail?.Portfolio?.Positions
             .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
@@ -1993,6 +1938,8 @@ public static class WorkstationEndpoints
                or WorkstationSecurityCoverageStatus.Missing
                or WorkstationSecurityCoverageStatus.Unavailable;
 
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     private static object BuildGovernanceWorkspaceCashFlowSummary(IReadOnlyList<StrategyRunDetail?> details)
     {
         var totalCash = details.Sum(static detail => detail?.Portfolio?.Cash ?? 0m);
@@ -2442,12 +2389,30 @@ public static class WorkstationEndpoints
         }
     }
 
+<<<<<<< HEAD
+=======
+    private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
+    {
+        var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
+        var indexPath = Path.Combine(root, "workstation", "index.html");
+
+        return File.Exists(indexPath)
+            ? Results.File(indexPath, "text/html")
+            : Results.NotFound(new
+            {
+                error = "Workstation bundle not found.",
+                message = "Build src/Meridian.Ui/dashboard before opening /workstation."
+            });
+    }
+
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     private sealed record SecurityCoverageReferencePayload(
         string Source,
         string Symbol,
         string? AccountName,
-        string? SecurityId,
+        string SecurityId,
         string DisplayName,
+<<<<<<< HEAD
         string? AssetClass,
         string? SubType,
         string? Currency,
@@ -2458,6 +2423,18 @@ public static class WorkstationEndpoints
         string? MatchedIdentifierKind,
         string? MatchedIdentifierValue,
         string? MatchedProvider);
+=======
+        string AssetClass,
+        string Currency,
+        string Status,
+        string? PrimaryIdentifier);
+
+    private sealed record SecurityCoverageGapPayload(
+        string Source,
+        string Symbol,
+        string? AccountName,
+        string Reason);
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     private sealed record GovernanceReportingProfilePayload(
         string Id,

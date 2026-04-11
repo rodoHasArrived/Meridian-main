@@ -5,97 +5,34 @@ namespace Meridian.Ui.Services.Services;
 /// <summary>
 /// Provides canned fixture data for UI development without backend dependency.
 /// Enables offline development and deterministic testing scenarios.
-/// Supports runtime scenario switching via <see cref="SetScenario"/> so developers can
-/// cycle through all visual states in a single session without restarting.
 /// </summary>
 public sealed class FixtureDataService
 {
     private static readonly Lazy<FixtureDataService> _instance = new(() => new());
     public static FixtureDataService Instance => _instance.Value;
 
-    private static readonly FixtureScenario[] _allScenarios =
-        (FixtureScenario[])Enum.GetValues(typeof(FixtureScenario));
-
-    private readonly object _scenarioLock = new();
-    private FixtureScenario _activeScenario = FixtureScenario.Connected;
+    private volatile FixtureScenario _activeScenario = FixtureScenario.Connected;
 
     private FixtureDataService() { }
 
-    /// <summary>
-    /// Gets the currently active fixture scenario.
-    /// </summary>
-    public FixtureScenario ActiveScenario
-    {
-        get { lock (_scenarioLock) { return _activeScenario; } }
-    }
+    /// <summary>Gets the currently active fixture scenario.</summary>
+    public FixtureScenario ActiveScenario => _activeScenario;
 
-    /// <summary>
-    /// Event raised whenever the active scenario is changed via <see cref="SetScenario"/>.
-    /// Subscribers (e.g., ViewModels) should refresh their displayed data when this fires.
-    /// </summary>
-    public event EventHandler<FixtureScenario>? ScenarioChanged;
-
-    /// <summary>
-    /// Switches to the specified fixture scenario and raises <see cref="ScenarioChanged"/>.
-    /// </summary>
+    /// <summary>Sets the active fixture scenario.</summary>
     public void SetScenario(FixtureScenario scenario)
     {
-        EventHandler<FixtureScenario>? handler;
-        lock (_scenarioLock)
-        {
-            if (_activeScenario == scenario)
-            {
-                return;
-            }
-
-            _activeScenario = scenario;
-            handler = ScenarioChanged;
-        }
-
-        handler?.Invoke(this, scenario);
+        _activeScenario = scenario;
     }
 
-    /// <summary>
-    /// Advances to the next scenario in the cycle and returns the new active scenario.
-    /// Order: Connected → Disconnected → Degraded → Error → Loading → Connected → …
-    /// </summary>
-    public FixtureScenario CycleToNextScenario()
-    {
-        FixtureScenario next;
-        lock (_scenarioLock)
-        {
-            var nextIndex = ((int)_activeScenario + 1) % _allScenarios.Length;
-            next = _allScenarios[nextIndex];
-        }
-
-        SetScenario(next);
-        return next;
-    }
-
-    /// <summary>
-    /// Returns a human-readable label for the given scenario suitable for UI display.
-    /// </summary>
+    /// <summary>Returns a human-readable label for the given scenario.</summary>
     public static string GetScenarioLabel(FixtureScenario scenario) => scenario switch
     {
-        FixtureScenario.Connected => "Connected (healthy)",
+        FixtureScenario.Connected    => "Connected",
         FixtureScenario.Disconnected => "Disconnected",
-        FixtureScenario.Degraded => "Degraded (partial)",
-        FixtureScenario.Error => "Error state",
-        FixtureScenario.Loading => "Loading / init",
-        _ => scenario.ToString(),
-    };
-
-    /// <summary>
-    /// Returns a status response appropriate for the currently active scenario.
-    /// </summary>
-    public StatusResponse GetStatusForActiveScenario() => _activeScenario switch
-    {
-        FixtureScenario.Connected => GetMockStatusResponse(),
-        FixtureScenario.Disconnected => GetMockDisconnectedStatus(),
-        FixtureScenario.Degraded => GetMockDegradedStatus(),
-        FixtureScenario.Error => GetMockErrorStatus(),
-        FixtureScenario.Loading => GetMockLoadingStatus(),
-        _ => GetMockStatusResponse(),
+        FixtureScenario.Degraded     => "Degraded",
+        FixtureScenario.Error        => "Error",
+        FixtureScenario.Loading      => "Loading",
+        _                            => scenario.ToString()
     };
 
     /// <summary>
@@ -248,82 +185,6 @@ public sealed class FixtureDataService
             Timestamp: DateTimeOffset.UtcNow
         );
     }
-
-    /// <summary>
-    /// Gets a mock status response showing a degraded system (partial provider connectivity).
-    /// </summary>
-    public StatusResponse GetMockDegradedStatus() => new()
-    {
-        IsConnected = true,
-        TimestampUtc = DateTimeOffset.UtcNow,
-        Uptime = TimeSpan.FromMinutes(18),
-        Metrics = new MetricsData
-        {
-            Published = 8200,
-            Dropped = 420,
-            Integrity = 15,
-            HistoricalBars = 4500,
-            EventsPerSecond = 85.0f,
-            DropRate = 0.049f,
-            Trades = 3100,
-            DepthUpdates = 2900,
-            Quotes = 2200
-        },
-        Pipeline = new PipelineData
-        {
-            PublishedCount = 8200,
-            DroppedCount = 420,
-            ConsumedCount = 7780,
-            CurrentQueueSize = 1850,
-            PeakQueueSize = 4096,
-            QueueCapacity = 10000
-        }
-    };
-
-    /// <summary>
-    /// Gets a mock status response showing a system in an error state.
-    /// Useful for testing alert banners, error UI, and recovery flows.
-    /// </summary>
-    public StatusResponse GetMockErrorStatus() => new()
-    {
-        IsConnected = false,
-        TimestampUtc = DateTimeOffset.UtcNow,
-        Uptime = TimeSpan.FromSeconds(45),
-        Metrics = new MetricsData
-        {
-            Published = 320,
-            Dropped = 280,
-            Integrity = 95,
-            HistoricalBars = 0,
-            EventsPerSecond = 2.1f,
-            DropRate = 0.875f,
-            Trades = 90,
-            DepthUpdates = 50,
-            Quotes = 180
-        },
-        Pipeline = new PipelineData
-        {
-            PublishedCount = 320,
-            DroppedCount = 280,
-            ConsumedCount = 40,
-            CurrentQueueSize = 9800,
-            PeakQueueSize = 10000,
-            QueueCapacity = 10000
-        }
-    };
-
-    /// <summary>
-    /// Gets a mock status response showing a system that is still initializing.
-    /// Useful for testing skeleton/loading states and progress indicators.
-    /// </summary>
-    public StatusResponse GetMockLoadingStatus() => new()
-    {
-        IsConnected = false,
-        TimestampUtc = DateTimeOffset.UtcNow,
-        Uptime = TimeSpan.Zero,
-        Metrics = null,
-        Pipeline = null
-    };
 
     /// <summary>
     /// Simulates network delay for realistic fixture behavior.

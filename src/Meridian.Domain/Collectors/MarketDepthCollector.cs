@@ -44,13 +44,7 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
     public IReadOnlyList<DepthIntegrityEvent> GetRecentIntegrityEvents(int max = 20)
     {
         var snapshot = _recentIntegrity.ToArray();
-        if (snapshot.Length == 0)
-            return Array.Empty<DepthIntegrityEvent>();
-        var count = Math.Min(max, snapshot.Length);
-        var result = new DepthIntegrityEvent[count];
-        for (var i = 0; i < count; i++)
-            result[i] = snapshot[snapshot.Length - 1 - i];
-        return result;
+        return snapshot.Reverse().Take(max).ToArray();
     }
 
     /// <summary>
@@ -71,12 +65,7 @@ public sealed class MarketDepthCollector : SymbolSubscriptionTracker
     /// Returns all symbols that currently have order book data.
     /// </summary>
     public IReadOnlyList<string> GetTrackedSymbols()
-    {
-        var result = new List<string>(_books.Count);
-        foreach (var key in _books.Keys)
-            result.Add(key.Value);
-        return result;
-    }
+        => _books.Keys.Select(k => k.Value).ToList();
 
     /// <summary>
     /// Apply a single depth delta update.

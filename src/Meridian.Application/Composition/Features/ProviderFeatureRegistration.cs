@@ -9,10 +9,12 @@ using Meridian.Contracts.Api;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure;
-using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+<<<<<<< HEAD
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -78,12 +80,15 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             return registry;
         });
 
+<<<<<<< HEAD
         // Options chain providers — register the default providers first.
         // CollectorFeatureRegistration resolves a single IOptionsChainProvider, and Microsoft DI
         // returns the last registration for single-service resolution.
         RegisterOptionsChainProviders(services);
         RegisterOptionsChainProviders(services, options);
 
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         // Keep ProviderFactory for backward compatibility
         services.AddSingleton<ProviderFactory>(sp =>
         {
@@ -253,6 +258,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             registry.Register(provider);
         }
     }
+<<<<<<< HEAD
 
     private static IReadOnlyList<Meridian.Contracts.Api.ProviderCatalogEntry> BuildMergedProviderCatalog(
         ProviderRegistry registry,
@@ -417,4 +423,6 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             return sp.GetRequiredService<SyntheticOptionsChainProvider>();
         });
     }
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }

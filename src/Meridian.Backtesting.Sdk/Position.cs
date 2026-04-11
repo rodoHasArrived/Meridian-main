@@ -1,5 +1,3 @@
-using Meridian.Execution.Sdk;
-
 namespace Meridian.Backtesting.Sdk;
 
 /// <summary>Per-symbol position held in the simulated portfolio.</summary>
@@ -15,7 +13,7 @@ public sealed record Position(
     decimal AverageCostBasis,
     decimal UnrealizedPnl,
     decimal RealizedPnl,
-    IReadOnlyList<OpenLot>? OpenLots = null) : IPosition
+    IReadOnlyList<OpenLot>? OpenLots = null)
 {
     /// <summary>True when this is a short position.</summary>
     public bool IsShort => Quantity < 0;

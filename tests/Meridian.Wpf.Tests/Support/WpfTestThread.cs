@@ -39,31 +39,22 @@ internal static class WpfTestThread
 
     private static void EnsureStarted()
     {
-        if (_dispatcher is not null &&
-            !_dispatcher.HasShutdownStarted &&
-            !_dispatcher.HasShutdownFinished)
+        if (_dispatcher is not null)
         {
             return;
         }
 
         lock (Sync)
         {
-            if (_dispatcher is not null &&
-                !_dispatcher.HasShutdownStarted &&
-                !_dispatcher.HasShutdownFinished)
+            if (_dispatcher is not null)
             {
                 return;
             }
 
-            Ready.Reset();
             _thread = new Thread(() =>
             {
-                var application = new System.Windows.Application
-                {
-                    ShutdownMode = ShutdownMode.OnExplicitShutdown
-                };
-
-                _dispatcher = application.Dispatcher;
+                _ = new System.Windows.Application();
+                _dispatcher = Dispatcher.CurrentDispatcher;
                 Ready.Set();
                 Dispatcher.Run();
             });

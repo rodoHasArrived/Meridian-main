@@ -15,12 +15,6 @@ make build-wpf                    # Build WPF desktop app
 make test-desktop-services        # Run all desktop-focused tests
 dotnet test tests/Meridian.Wpf.Tests        # WPF service tests (Windows only)
 dotnet test tests/Meridian.Ui.Tests         # Shared UI service tests (Windows only)
-
-# Walk the default desktop debug workflow
-make desktop-workflow
-
-# Generate the desktop user manual from live fixture-mode captures
-make desktop-manual
 ```
 
 ## Quick Start
@@ -263,22 +257,6 @@ The `FixtureDataService` has 13 dedicated tests validating:
 - Edge cases (empty states, error conditions)
 
 See [UI Fixture Mode Guide](./ui-fixture-mode-guide.md) for complete documentation.
-
-## Workflow Automation and Manual Generation
-
-Meridian now includes scripted desktop workflow automation for repeatable debugging sweeps and manual generation:
-
-```powershell
-# Run the default startup-and-diagnostics workflow
-pwsh -File scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
-
-# Generate a markdown manual plus screenshots under artifacts/
-pwsh -File scripts/dev/generate-desktop-user-manual.ps1
-```
-
-These scripts drive the WPF shell through named workflow definitions in `scripts/dev/desktop-workflows.json`, capture screenshots, and write a manifest for later inspection.
-
-See [Desktop Workflow Automation](./desktop-workflow-automation.md) for the workflow catalog, output locations, and customization guidance.
 
 ## Building Desktop Applications
 

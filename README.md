@@ -582,6 +582,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── prometheus.yml
 │   └── systemd
 │       └── meridian.service
+├── desktop.ini
 ├── docfx.json
 ├── docs
 │   ├── DEPENDENCIES.md
@@ -656,6 +657,7 @@ Use these documents together when planning or implementing new work:
 │   ├── audits
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
+│   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── README.md
 │   │   ├── audit-architecture-results.txt
@@ -4236,6 +4238,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── index.md
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
+│   │   ├── docfx.json
 │   │   ├── filterConfig.yml
 │   │   └── temp-metadata-only.json
 │   ├── evaluations
@@ -4271,6 +4274,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
 │   │   ├── documentation-coverage.md
+│   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
 │   │   ├── provider-registry.md
@@ -4372,25 +4376,34 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 07-backfill.png
 │   │   ├── 08-derivatives.png
 │   │   ├── 09-symbols.png
+│   │   ├── 10-status-section.png
 │   │   ├── 10-status.png
-│   │   ├── 10-workstation-research.png
 │   │   ├── 11-login.png
-│   │   ├── 11-workstation-trading.png
-│   │   ├── 12-workstation-data-operations.png
 │   │   ├── 12-workstation-research.png
-│   │   ├── 13-workstation-governance.png
+│   │   ├── 12-workstation-trading.png
+│   │   ├── 13-workstation-data-operations.png
 │   │   ├── 13-workstation-trading.png
 │   │   ├── 14-workstation-data-operations.png
+│   │   ├── 14-workstation-governance.png
 │   │   ├── 14-workstation-trading-orders.png
 │   │   ├── 15-workstation-governance.png
+│   │   ├── 15-workstation-trading-orders.png
 │   │   ├── 15-workstation-trading-positions.png
+│   │   ├── 16-workstation-trading-positions.png
 │   │   ├── 16-workstation-trading-risk.png
 │   │   ├── 17-workstation-data-operations-providers.png
+│   │   ├── 17-workstation-trading-risk.png
 │   │   ├── 18-workstation-data-operations-backfills.png
+│   │   ├── 18-workstation-data-operations-providers.png
+│   │   ├── 19-workstation-data-operations-backfills.png
 │   │   ├── 19-workstation-data-operations-exports.png
+│   │   ├── 20-workstation-data-operations-exports.png
 │   │   ├── 20-workstation-governance-ledger.png
+│   │   ├── 21-workstation-governance-ledger.png
 │   │   ├── 21-workstation-governance-reconciliation.png
+│   │   ├── 22-workstation-governance-reconciliation.png
 │   │   ├── 22-workstation-governance-security-master.png
+│   │   ├── 23-workstation-governance-security-master.png
 │   │   ├── README.md
 │   │   └── desktop
 │   │       ├── wpf-backfill.png
@@ -4413,6 +4426,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── known-vulnerabilities.md
 │   ├── status
 │   │   ├── CHANGELOG.md
+│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO_2026_03_20.md
@@ -4421,6 +4435,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
+│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── TODO.md
 │   │   ├── api-docs-report.md
@@ -4774,6 +4789,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
+│   │   │   ├── SecurityKindMapping.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterConflictService.cs
@@ -4915,6 +4931,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
+│   │   ├── IntermediateMetrics.cs
 │   │   ├── Ledger
 │   │   │   ├── BacktestLedger.cs
 │   │   │   ├── JournalEntry.cs
@@ -5804,6 +5821,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
+│   │   ├── Serialization
+│   │   │   └── FSharpInteropJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
@@ -5893,6 +5912,8 @@ Use these documents together when planning or implementing new work:
 │   │       └── workstation
 │   │           ├── assets
 │   │           │   ├── index-BUqJ19Wh.css
+│   │           │   ├── index-CnAc-D_d.js
+│   │           │   ├── index-DLXsLZLB.css
 │   │           │   └── index-VxIQhfQW.js
 │   │           └── index.html
 │   ├── Meridian.Ui.Services
@@ -6199,6 +6220,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ArchiveHealthService.cs
 │       │   ├── BackendServiceManager.cs
 │       │   ├── BackgroundTaskSchedulerService.cs
+│       │   ├── BacktestDataAvailabilityService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
 │       │   ├── CashFinancingReadService.cs
@@ -6912,6 +6934,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
+│   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
@@ -7117,6 +7140,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-491 directories, 6494 files
+492 directories, 6516 files
 ```
 <!-- readme-tree end -->

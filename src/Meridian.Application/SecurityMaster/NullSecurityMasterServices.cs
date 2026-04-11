@@ -1,5 +1,4 @@
 using Meridian.Contracts.SecurityMaster;
-using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
@@ -20,14 +19,10 @@ namespace Meridian.Application.SecurityMaster;
 // Query service (read-only) — returns null / empty so endpoint callers see 404
 // ──────────────────────────────────────────────────────────────────────────────
 
-public sealed class NullSecurityMasterQueryService
+internal sealed class NullSecurityMasterQueryService
     : ISecurityMasterQueryService,
-      Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,
-      ISecurityMasterRuntimeStatus
+      Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
 {
-    internal const string NotConfiguredMessage =
-        "Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable this feature.";
-
     private static readonly IReadOnlyList<SecuritySummaryDto> _emptySummaries =
         Array.Empty<SecuritySummaryDto>();
 
@@ -36,11 +31,6 @@ public sealed class NullSecurityMasterQueryService
 
     private static readonly IReadOnlyList<CorporateActionDto> _emptyActions =
         Array.Empty<CorporateActionDto>();
-
-    public bool IsAvailable => false;
-
-    public string AvailabilityDescription =>
-        "Security Master is unavailable because MERIDIAN_SECURITY_MASTER_CONNECTION_STRING is not configured.";
 
     public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
         => Task.FromResult<SecurityDetailDto?>(null);
@@ -93,11 +83,12 @@ public sealed class NullSecurityMasterQueryService
 // Command service — throws when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
-public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService
+public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
 {
     private static Task<T> NotConfigured<T>() =>
         Task.FromException<T>(new InvalidOperationException(
-            NullSecurityMasterQueryService.NotConfiguredMessage));
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
 
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
@@ -108,9 +99,13 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
     public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
 
+    public Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
+
     public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
         => Task.FromException(new InvalidOperationException(
-            NullSecurityMasterQueryService.NotConfiguredMessage));
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityAliasDto>();
@@ -142,7 +137,7 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
 // Import service — returns error result when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
-public sealed class NullSecurityMasterImportService : ISecurityMasterImportService
+internal sealed class NullSecurityMasterImportService : ISecurityMasterImportService
 {
     public Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
@@ -154,18 +149,7 @@ public sealed class NullSecurityMasterImportService : ISecurityMasterImportServi
             Skipped: 0,
             Failed: 1,
             ConflictsDetected: 0,
-            Errors: [NullSecurityMasterQueryService.NotConfiguredMessage]));
-}
-
-/// <summary>
-/// No-op backfill service registered when either Security Master or Polygon credentials are unavailable.
-/// </summary>
-public sealed class NullTradingParametersBackfillService : ITradingParametersBackfillService
-{
-    public Task BackfillAllAsync(CancellationToken ct = default) => Task.CompletedTask;
-
-    public Task BackfillTickerAsync(string ticker, Guid securityId, CancellationToken ct = default)
-        => Task.CompletedTask;
+            Errors: ["Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable."]));
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -182,7 +166,8 @@ internal sealed class NullSecurityMasterEventStore : ISecurityMasterEventStore
 
     private static Task NotConfigured() =>
         Task.FromException(new InvalidOperationException(
-            NullSecurityMasterQueryService.NotConfiguredMessage));
+            "Security Master is not configured. " +
+            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable this feature."));
 
     public Task AppendAsync(
         Guid securityId,

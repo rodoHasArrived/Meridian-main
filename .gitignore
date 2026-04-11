@@ -8,7 +8,6 @@
 bin/
 obj/
 out/
-bin-codex/
 
 # Configuration-specific build outputs
 # Why: Platform/configuration-specific artifacts (Debug/Release, x64/x86)
@@ -124,9 +123,12 @@ credentials.json
 # and logs that are generated during application execution. They can be large
 # and are specific to each deployment environment. They should not be in VCS.
 
+<<<<<<< HEAD
 artifacts/*
 !artifacts/provider-validation/
 !artifacts/provider-validation/**
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 data/
 logs/
 _logs/
@@ -170,7 +172,6 @@ nul
 # These are never meant to be committed and are often cleaned up automatically.
 # Scratch files are used for quick experiments and should not pollute VCS.
 
-temp/
 *.tmp
 *.temp
 *.swp
@@ -179,12 +180,10 @@ temp/
 *-scratch.*
 scratch-*
 test-*.ps1
-.playwright-cli/
 
 # Malformed path artifacts (Windows path corruption)
 # Why: Occasionally Windows path handling errors create odd directories.
 C:*/
-$HOME/
 
 # ============================================
 # Workflow Artifacts
@@ -227,4 +226,3 @@ __pycache__/
 .eggs/
 
 .fakeactionlint
-.claude/worktrees/

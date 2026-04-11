@@ -13,36 +13,6 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
 Desktop screenshots are stored under [`desktop/`](desktop/) and are captured using Windows UI Automation and the built-in Command
 Palette to navigate between pages.
 
-### Local automation script (Windows)
-
-For local/runner use on Windows, run:
-
-```powershell
-pwsh -File scripts/dev/capture-desktop-screenshots.ps1
-```
-
-Optional flags:
-
-```powershell
-# Reuse an existing build
-pwsh -File scripts/dev/capture-desktop-screenshots.ps1 -SkipBuild
-
-# Keep the app open after capture for manual inspection
-pwsh -File scripts/dev/capture-desktop-screenshots.ps1 -KeepAppOpen
-```
-
-The script builds `src/Meridian.Wpf`, launches fixture mode (`MDC_FIXTURE_MODE=1`),
-navigates each page via the shared desktop workflow runner, and writes PNGs to `docs/screenshots/desktop/`.
-
-For other scripted desktop walkthroughs, use:
-
-```powershell
-pwsh -File scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup
-pwsh -File scripts/dev/generate-desktop-user-manual.ps1
-```
-
-`Symbols` is currently excluded from the automated screenshot refresh flow because the page exits the desktop shell in fixture-mode automation; the committed `desktop/wpf-symbols.png` remains as the last known-good capture until that crash is fixed.
-
 ---
 
 ## 01 – Main Dashboard
@@ -117,11 +87,11 @@ The **Subscribed Symbols** table showing the active symbol list with data-type c
 
 ---
 
-## 10 – System Status Panel
+## 10 – Status & Activity Log
 
-The **System Status** section at the top of the dashboard showing the live metrics grid (published events, dropped events, integrity events, historical bars) and the scrolling activity log terminal.
+The **Status & Activity Log** section at the top of the dashboard showing the live metrics grid (published events, dropped events, integrity events, historical bars) and the scrolling activity log terminal.
 
-![System Status Panel](10-status.png)
+![Status & Activity Log](10-status-section.png)
 
 ---
 
@@ -133,108 +103,99 @@ The **Sign In** page served at `/login`, used when Meridian Terminal is running 
 
 ---
 
-## 12 – Workstation: Research
-
-The **Research** workspace of the React workstation shell, covering backtests, strategy run comparisons, QuantScript execution results, and experiment tracking.
-
-![Workstation – Research](12-workstation-research.png)
-
----
-
-## 13 – Workstation: Trading
+## 12 – Workstation: Trading
 
 The **Trading** workspace of the React workstation shell, showing the paper-trading cockpit, live positions blotter, open orders, fills history, and risk guardrails.
 
-![Workstation – Trading](13-workstation-trading.png)
+![Workstation – Trading](12-workstation-trading.png)
 
 ---
 
-## 14 – Workstation: Data Operations
+## 13 – Workstation: Data Operations
 
 The **Data Operations** workspace of the React workstation shell, covering provider health, active backfills, storage tiers, exports, and symbol-management workflows.
 
-![Workstation – Data Operations](14-workstation-data-operations.png)
+![Workstation – Data Operations](13-workstation-data-operations.png)
 
 ---
 
-## 15 – Workstation: Governance
+## 14 – Workstation: Governance
 
 The **Governance** workspace of the React workstation shell, showing the fund ledger overview, risk audit history, reconciliation breaks, diagnostics, and operational settings.
 
-![Workstation – Governance](15-workstation-governance.png)
-![Workstation – Governance](13-workstation-governance.png)
+![Workstation – Governance](14-workstation-governance.png)
 
 ---
 
-## 14 – Workstation: Trading – Orders
+## 15 – Workstation: Trading – Orders
 
 The **Orders blotter** deep-link within the Trading workspace, showing working and partially filled trading orders with status, fill quantity, and execution detail.
 
-![Workstation – Trading: Orders](14-workstation-trading-orders.png)
+![Workstation – Trading: Orders](15-workstation-trading-orders.png)
 
 ---
 
-## 15 – Workstation: Trading – Positions
+## 16 – Workstation: Trading – Positions
 
 The **Positions** deep-link within the Trading workspace, showing live positions, exposure, marks, and unrealized P&L.
 
-![Workstation – Trading: Positions](15-workstation-trading-positions.png)
+![Workstation – Trading: Positions](16-workstation-trading-positions.png)
 
 ---
 
-## 16 – Workstation: Trading – Risk
+## 17 – Workstation: Trading – Risk
 
 The **Risk guardrails** deep-link within the Trading workspace, showing the trading risk cockpit, position limits, drawdown stops, and order-rate throttle state.
 
-![Workstation – Trading: Risk](16-workstation-trading-risk.png)
+![Workstation – Trading: Risk](17-workstation-trading-risk.png)
 
 ---
 
-## 17 – Workstation: Data Operations – Providers
+## 18 – Workstation: Data Operations – Providers
 
 The **Provider health** deep-link within the Data Operations workspace, showing feed status, latency metrics, and operational notes for each registered provider.
 
-![Workstation – Data Operations: Providers](17-workstation-data-operations-providers.png)
+![Workstation – Data Operations: Providers](18-workstation-data-operations-providers.png)
 
 ---
 
-## 18 – Workstation: Data Operations – Backfills
+## 19 – Workstation: Data Operations – Backfills
 
 The **Backfill queue** deep-link within the Data Operations workspace, showing active backfill jobs, progress, and review items.
 
-![Workstation – Data Operations: Backfills](18-workstation-data-operations-backfills.png)
+![Workstation – Data Operations: Backfills](19-workstation-data-operations-backfills.png)
 
 ---
 
-## 19 – Workstation: Data Operations – Exports
+## 20 – Workstation: Data Operations – Exports
 
 The **Storage exports** deep-link within the Data Operations workspace, showing export profiles and recent delivery targets.
 
-![Workstation – Data Operations: Exports](19-workstation-data-operations-exports.png)
+![Workstation – Data Operations: Exports](20-workstation-data-operations-exports.png)
 
 ---
 
-## 20 – Workstation: Governance – Ledger
+## 21 – Workstation: Governance – Ledger
 
 The **Ledger overview** deep-link within the Governance workspace, showing cash flow summaries and audit-facing ledger details.
 
-![Workstation – Governance: Ledger](20-workstation-governance-ledger.png)
+![Workstation – Governance: Ledger](21-workstation-governance-ledger.png)
 
 ---
 
-## 21 – Workstation: Governance – Reconciliation
+## 22 – Workstation: Governance – Reconciliation
 
 The **Reconciliation history** deep-link within the Governance workspace, showing open breaks, balanced runs, and reconciliation detail.
 
-![Workstation – Governance: Reconciliation](21-workstation-governance-reconciliation.png)
+![Workstation – Governance: Reconciliation](22-workstation-governance-reconciliation.png)
 
 ---
 
-## 22 – Workstation: Governance – Security Master
+## 23 – Workstation: Governance – Security Master
 
 The **Security master coverage** deep-link within the Governance workspace, showing unresolved references and coverage risk across the instrument universe.
 
-![Workstation – Governance: Security Master](22-workstation-governance-security-master.png)
+![Workstation – Governance: Security Master](23-workstation-governance-security-master.png)
 
 ---
 

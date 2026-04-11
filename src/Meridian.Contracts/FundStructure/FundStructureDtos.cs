@@ -58,86 +58,8 @@ public enum OwnershipRelationshipTypeDto
     Operates,
     ClearsFor,
     CustodiesFor,
-    AllocatesTo,
-    BanksFor
+    AllocatesTo
 }
-
-/// Custody-specific settlement details attached to a Custody-type account.
-public sealed record CustodianAccountDetailsDto(
-    string? SubAccountNumber,
-    string? DtcParticipantCode,
-    string? CrestMemberCode,
-    string? EuroclearAccountNumber,
-    string? ClearstreamAccountNumber,
-    string? PrimebrokerGiveupCode,
-    string? SafekeepingLocation,
-    string? ServiceAgreementReference);
-
-/// Banking-specific settlement details attached to a Bank-type account.
-public sealed record BankAccountDetailsDto(
-    string AccountNumber,
-    string BankName,
-    string? BranchName,
-    string? Iban,
-    string? BicSwift,
-    string? RoutingNumber,
-    string? SortCode,
-    string? IntermediaryBankBic,
-    string? IntermediaryBankName,
-    string? BeneficiaryName,
-    string? BeneficiaryAddress);
-
-/// Balance snapshot captured from an external statement for reconciliation.
-public sealed record AccountBalanceSnapshotDto(
-    Guid SnapshotId,
-    Guid AccountId,
-    Guid? FundId,
-    DateOnly AsOfDate,
-    string Currency,
-    decimal CashBalance,
-    decimal? SecuritiesMarketValue,
-    decimal? AccruedInterest,
-    decimal? PendingSettlement,
-    string Source,
-    DateTimeOffset RecordedAt,
-    string? ExternalReference);
-
-/// Fund-level multi-account view grouping accounts by type.
-public sealed record FundAccountsDto(
-    Guid FundId,
-    IReadOnlyList<AccountSummaryDto> CustodianAccounts,
-    IReadOnlyList<AccountSummaryDto> BankAccounts,
-    IReadOnlyList<AccountSummaryDto> BrokerageAccounts,
-    IReadOnlyList<AccountSummaryDto> OtherAccounts);
-
-/// One position line from a custodian statement batch.
-public sealed record CustodianPositionLineDto(
-    Guid PositionLineId,
-    Guid BatchId,
-    Guid AccountId,
-    DateOnly AsOfDate,
-    string SecurityIdentifier,
-    string IdentifierType,
-    decimal Quantity,
-    decimal MarketValue,
-    string MarketValueCurrency,
-    decimal? CostBasis,
-    decimal? AccruedIncome,
-    bool SettlementPending);
-
-/// One transaction line from a bank account statement batch.
-public sealed record BankStatementLineDto(
-    Guid StatementLineId,
-    Guid BatchId,
-    Guid AccountId,
-    DateOnly StatementDate,
-    DateOnly ValueDate,
-    decimal Amount,
-    string Currency,
-    string TransactionType,
-    string Description,
-    string? ExternalReference,
-    decimal? RunningBalance);
 
 public sealed record FundStructureNodeDto(
     Guid NodeId,

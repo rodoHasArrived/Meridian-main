@@ -8,6 +8,8 @@
       AutomationProperties.Name="Backtest">
 
     <Page.Resources>
+
+        <!-- ── Label / value typography ──────────────────────────────── -->
         <Style x:Key="LabelStyle" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
             <Setter Property="FontSize" Value="11" />
@@ -27,72 +29,280 @@
             <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
             <Setter Property="Margin" Value="0,0,0,12" />
         </Style>
+
+        <!-- ── Toolbar pill wrappers ──────────────────────────────────── -->
+        <Style x:Key="ToolbarPillStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- ── Explorer DataGrid: flat dark table matching reference ──── -->
+        <Style x:Key="ExplorerColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="SeparatorBrush" Value="{StaticResource ConsoleBorderBrush}" />
+        </Style>
+
+        <Style x:Key="ExplorerDataGridStyle" TargetType="DataGrid">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource ConsoleBorderBrush}" />
+            <Setter Property="RowBackground" Value="Transparent" />
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+            <Setter Property="ColumnHeaderStyle" Value="{StaticResource ExplorerColumnHeaderStyle}" />
+            <Setter Property="SelectionMode" Value="Extended" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserSortColumns" Value="True" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Setter Property="RowHeight" Value="40" />
+        </Style>
+
+        <Style x:Key="ExplorerRowStyle" TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ExplorerCellStyle" TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+
+        <!-- ── Symbol cell: cyan/teal accent as in reference ─────────── -->
+        <Style x:Key="SymbolCellStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource InfoColorBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="12,0" />
+        </Style>
+
     </Page.Resources>
 
-    <Grid Margin="24">
+    <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="52" />
+            <!-- toolbar -->
+            <RowDefinition Height="20" />
+            <!-- top margin -->
             <RowDefinition Height="Auto" />
+            <!-- page title -->
             <RowDefinition Height="16" />
+            <!-- spacer -->
             <RowDefinition Height="*" />
+            <!-- content -->
+            <RowDefinition Height="24" />
+            <!-- bottom padding -->
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}">
-            <Grid>
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- ROW 0 ▸ TOP TOOLBAR                                               -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0"
+                Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="16,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Horizontal">
-                    <Border Width="44"
-                            Height="44"
-                            CornerRadius="14"
-                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}"
-                            BorderThickness="1">
-                        <TextBlock Text="&#xE9D2;"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24"
-                                   Foreground="{StaticResource InfoColorBrush}"
+                <!-- Search symbols -->
+                <Border Grid.Column="0" Style="{StaticResource ToolbarPillStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔍"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
                                    VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Backtest Workstation" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Configure strategies, run simulations, and inspect portfolio, ledger, and attribution output in one dense workstation."
-                                   Style="{StaticResource CardDescriptionStyle}" />
+                                   Margin="0,0,6,0" />
+                        <TextBox Text="{Binding SymbolsText, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                 CaretBrush="{StaticResource ConsoleTextPrimaryBrush}"
+                                 FontSize="12"
+                                 VerticalAlignment="Center"
+                                 MinWidth="150"
+                                 FocusVisualStyle="{x:Null}" />
                     </StackPanel>
-                </StackPanel>
+                </Border>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Run Browser"
-                            Command="{Binding OpenRunBrowserCommand}"
-                            Style="{StaticResource GhostButtonStyle}"
-                            Margin="0,0,8,0" />
-                    <Button Content="Latest Detail"
-                            Command="{Binding OpenRunDetailCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Margin="0,0,8,0" />
-                    <Button Content="Latest Portfolio"
-                            Command="{Binding OpenRunPortfolioCommand}"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Margin="0,0,8,0" />
-                    <Button Content="Latest Ledger"
-                            Command="{Binding OpenRunLedgerCommand}"
-                            Style="{StaticResource PrimaryButtonStyle}" />
-                </StackPanel>
+                <!-- Strategy pill (read-only) -->
+                <Border Grid.Column="2" Style="{StaticResource ToolbarPillStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📊"
+                                   FontSize="11"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0" />
+                        <TextBlock Text="Buy &amp; Hold"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text=" ▾"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- From date -->
+                <Border Grid.Column="4" Style="{StaticResource ToolbarPillStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="From "
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" />
+                        <DatePicker SelectedDate="{Binding FromDate}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                    FontSize="12"
+                                    VerticalAlignment="Center"
+                                    Width="100" />
+                    </StackPanel>
+                </Border>
+
+                <!-- To date -->
+                <Border Grid.Column="6" Style="{StaticResource ToolbarPillStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="To "
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" />
+                        <DatePicker SelectedDate="{Binding ToDate}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                    FontSize="12"
+                                    VerticalAlignment="Center"
+                                    Width="100" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Export -->
+                <Button Grid.Column="8"
+                        Style="{StaticResource GhostButtonStyle}"
+                        VerticalAlignment="Center"
+                        Padding="14,7">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="↑ "
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Export"
+                                   FontSize="12"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+
+                <!-- Run Backtest (primary CTA) -->
+                <Button Grid.Column="10"
+                        Command="{Binding RunBacktestCommand}"
+                        IsEnabled="{Binding CanRun}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        VerticalAlignment="Center"
+                        Padding="16,7">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="▶  "
+                                   FontSize="11"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="Run Backtest"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2">
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- ROW 2 ▸ PAGE TITLE WITH BLUE LEFT-BORDER ACCENT                  -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="2" Margin="24,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Accent bar + title/subtitle -->
+            <StackPanel Orientation="Horizontal">
+                <Border Width="4"
+                        CornerRadius="2"
+                        Background="{StaticResource InfoColorBrush}"
+                        Margin="0,4,14,4" />
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Backtest Explorer"
+                               Style="{StaticResource PageTitleStyle}"
+                               Margin="0" />
+                    <TextBlock Text="Configure strategies, run simulations, and inspect portfolio attribution results."
+                               Style="{StaticResource CardDescriptionStyle}"
+                               Margin="0,2,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Workstation navigation pill buttons -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                <Button Content="Run Browser"
+                        Command="{Binding OpenRunBrowserCommand}"
+                        Style="{StaticResource GhostButtonStyle}"
+                        Margin="0,0,8,0" />
+                <Button Content="Latest Detail"
+                        Command="{Binding OpenRunDetailCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,0,8,0" />
+                <Button Content="Latest Portfolio"
+                        Command="{Binding OpenRunPortfolioCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="0,0,8,0" />
+                <Button Content="Latest Ledger"
+                        Command="{Binding OpenRunLedgerCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <!-- ROW 4 ▸ TWO-COLUMN CONTENT                                        -->
+        <!-- ══════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="4" Margin="24,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="280" />
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="16" />
-                <ColumnDefinition Width="320" />
             </Grid.ColumnDefinitions>
 
+            <!-- ─── LEFT ▸ Configuration panel ──────────────────────────── -->
             <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
@@ -127,7 +337,7 @@
                         <Border Background="{StaticResource PremiumPanelBrush}"
                                 BorderBrush="{StaticResource ConsoleBorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="12"
+                                CornerRadius="8"
                                 Padding="12"
                                 Margin="0,0,0,16">
                             <StackPanel>
@@ -146,7 +356,7 @@
                         <Border Background="{StaticResource PremiumPanelBrush}"
                                 BorderBrush="{StaticResource ConsoleBorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="12"
+                                CornerRadius="8"
                                 Padding="12"
                                 Margin="0,0,0,16">
                             <StackPanel>
@@ -158,12 +368,82 @@
                             </StackPanel>
                         </Border>
 
-                        <Button Content="Run Backtest"
-                                Command="{Binding RunBacktestCommand}"
-                                IsEnabled="{Binding CanRun}"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                HorizontalAlignment="Stretch"
-                                Margin="0,0,0,8" />
+                        <!-- Data Availability Calendar ─────────────────── -->
+                        <Border CornerRadius="8"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                Padding="12"
+                                Margin="0,0,0,12">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <TextBlock Text="DATA AVAILABILITY" Style="{StaticResource SectionEyebrowStyle}" VerticalAlignment="Center" />
+                                    <Button HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Content="Fix Gaps"
+                                            Command="{Binding FixGapsCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Padding="8,3"
+                                            FontSize="10">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasCoverageGaps}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding CoverageRows}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,0,0,4">
+                                                <TextBlock Text="{Binding Symbol}"
+                                                           FontSize="10"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           Margin="0,0,0,2" />
+                                                <ItemsControl ItemsSource="{Binding Cells}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel Orientation="Horizontal" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Width="12" Height="10" Margin="1" CornerRadius="2"
+                                                                    ToolTip="{Binding Tooltip}">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <!-- Full coverage: blue/info -->
+                                                                        <Setter Property="Background" Value="{StaticResource InfoColorBrush}" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Level}" Value="Partial">
+                                                                                <!-- Partial: warning orange -->
+                                                                                <Setter Property="Background" Value="{StaticResource WarningColorBrush}" />
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Level}" Value="Major">
+                                                                                <!-- Major gap: error red -->
+                                                                                <Setter Property="Background" Value="{StaticResource ErrorColorBrush}" />
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Level}" Value="None">
+                                                                                <!-- No data: muted border -->
+                                                                                <Setter Property="Background" Value="{StaticResource ConsoleBorderBrush}" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
 
                         <Button Content="Cancel"
                                 Command="{Binding CancelBacktestCommand}"
@@ -178,19 +458,16 @@
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 HorizontalAlignment="Stretch"
                                 Margin="0,0,0,8" />
-
                         <Button Content="Open Latest Run Detail"
                                 Command="{Binding OpenRunDetailCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 HorizontalAlignment="Stretch"
                                 Margin="0,0,0,8" />
-
                         <Button Content="Open Latest Portfolio"
                                 Command="{Binding OpenRunPortfolioCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 HorizontalAlignment="Stretch"
                                 Margin="0,0,0,8" />
-
                         <Button Content="Open Latest Ledger"
                                 Command="{Binding OpenRunLedgerCommand}"
                                 Style="{StaticResource SecondaryButtonStyle}"
@@ -199,156 +476,371 @@
                 </ScrollViewer>
             </Border>
 
-            <Border Grid.Column="2" Style="{StaticResource CardStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+            <!-- ─── RIGHT ▸ Equity curve + Results Explorer ──────────── -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" MinHeight="176" />
+                    <!-- Equity curve card -->
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="*" />
+                    <!-- Results Explorer card -->
+                </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0"
-                               Text="Equity Curve"
-                               Style="{StaticResource CardHeaderStyle}"
-                               Margin="0,0,0,12" />
+                <!-- Equity curve card -->
+                <Border Grid.Row="0" Style="{StaticResource CardStyle}" Padding="16,14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <Border Grid.Row="1"
-                            Background="{StaticResource PremiumPanelBrush}"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="8">
-                        <Canvas x:Name="EquityCanvas" ClipToBounds="True">
-                            <Polyline x:Name="EquityPolyline"
-                                      Stroke="{StaticResource InfoColorBrush}"
-                                      StrokeThickness="1.5"
-                                      StrokeLineJoin="Round" />
-                        </Canvas>
-                    </Border>
+                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                   Text="Equity Curve"
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="0,0,0,8" />
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding StatusText}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center" />
 
-                    <TextBlock Grid.Row="2"
-                               Text="{Binding StatusText}"
-                               Margin="0,10,0,6"
-                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                        <Border Grid.Row="1" Grid.ColumnSpan="2"
+                                Background="{StaticResource PremiumPanelBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="6">
+                            <Canvas x:Name="EquityCanvas" ClipToBounds="True">
+                                <Polyline x:Name="EquityPolyline"
+                                          Stroke="{StaticResource InfoColorBrush}"
+                                          StrokeThickness="1.5"
+                                          StrokeLineJoin="Round" />
+                            </Canvas>
+                        </Border>
 
-                    <ProgressBar Grid.Row="3"
-                                 Value="{Binding ProgressFraction}"
-                                 Maximum="1.0"
-                                 Height="6"
-                                 Margin="0,0,0,0"
-                                 IsIndeterminate="False" />
-                </Grid>
-            </Border>
+                        <ProgressBar Grid.Row="2" Grid.ColumnSpan="2"
+                                     Value="{Binding ProgressFraction}"
+                                     Maximum="1.0"
+                                     Height="4"
+                                     Margin="0,8,0,0"
+                                     IsIndeterminate="False" />
 
-            <Border Grid.Column="4" Style="{StaticResource CardStyle}">
-                <TabControl>
-                    <TabItem Header="Summary">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="12">
-                                <TextBlock Text="PERFORMANCE" Style="{StaticResource SectionEyebrowStyle}" Margin="0,0,0,8" />
-
-                                <TextBlock Text="Total Return" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding TotalReturn}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Annualised Return" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding AnnualisedReturn}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Net P&amp;L" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding NetPnl}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="RISK" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
-
-                                <TextBlock Text="Sharpe Ratio" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding SharpeRatio}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Sortino Ratio" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding SortinoRatio}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Calmar Ratio" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding CalmarRatio}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Max Drawdown" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding MaxDrawdown}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="TRADES" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
-
-                                <TextBlock Text="Win Rate" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding WinRate}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Total Trades" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding TotalTrades}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="COSTS" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
-
-                                <TextBlock Text="Commissions Paid" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding TotalCommissions}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Margin Interest Paid" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding TotalMarginInterest}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="XIRR (Cash-Weighted IRR)" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding Xirr}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="RUN INFO" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
-
-                                <TextBlock Text="Events Processed" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding EventsProcessed}" Style="{StaticResource ValueStyle}" />
-
-                                <TextBlock Text="Elapsed" Style="{StaticResource LabelStyle}" />
-                                <TextBlock Text="{Binding ElapsedTime}" Style="{StaticResource ValueStyle}" />
+                        <!-- Live metrics strip — visible while IsLiveMetricsActive -->
+                        <Border Grid.Row="3" Grid.ColumnSpan="2"
+                                Margin="0,6,0,0"
+                                Padding="8,5"
+                                CornerRadius="5"
+                                Background="{StaticResource ConsoleBackgroundLightBrush}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsLiveMetricsActive}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <!-- Sharpe chip -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <Ellipse Width="6" Height="6" VerticalAlignment="Center" Margin="0,0,5,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="{StaticResource InfoColorBrush}" />
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <TextBlock Text="Sharpe " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveSharpe}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <!-- Drawdown chip -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <TextBlock Text="DD " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveDrawdown}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <!-- Trades chip -->
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Trades " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding LiveTradeCount}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
                             </StackPanel>
-                        </ScrollViewer>
-                    </TabItem>
+                        </Border>
+                    </Grid>
+                </Border>
 
-                    <TabItem Header="Trades">
-                        <DataGrid ItemsSource="{Binding Fills}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  CanUserSortColumns="True"
-                                  FontSize="11">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="130" />
-                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="70" />
-                                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="70" />
-                                <DataGridTextColumn Header="Price" Binding="{Binding Price}" Width="80" />
-                                <DataGridTextColumn Header="Commission" Binding="{Binding Commission}" Width="90" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </TabItem>
+                <!-- Results Explorer card -->
+                <Border Grid.Row="2" Style="{StaticResource CardStyle}" Padding="20,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <!-- Explorer header: title + count + Export Selected -->
+                            <RowDefinition Height="*" />
+                            <!-- Tabs -->
+                        </Grid.RowDefinitions>
 
-                    <TabItem Header="Cash Flows">
-                        <DataGrid ItemsSource="{Binding CashFlows}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  CanUserSortColumns="True"
-                                  FontSize="11">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Date" Binding="{Binding Time}" Width="90" />
-                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110" />
-                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="70" />
-                                <DataGridTextColumn Header="Amount" Binding="{Binding Amount}" Width="90" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </TabItem>
+                        <!-- Explorer header -->
+                        <Grid Grid.Row="0" Margin="0,0,0,14">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Results Explorer"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                <TextBlock Text="{Binding AttributionCountText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
+                            <Button HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Padding="12,7">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⇪  "
+                                               FontSize="11"
+                                               VerticalAlignment="Center"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    <TextBlock Text="Export Selected"
+                                               FontSize="12"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
 
-                    <TabItem Header="Attribution">
-                        <DataGrid ItemsSource="{Binding Attribution}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  CanUserSortColumns="True"
-                                  FontSize="11">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="70" />
-                                <DataGridTextColumn Header="Realised PnL" Binding="{Binding RealizedPnl}" Width="90" />
-                                <DataGridTextColumn Header="Unrealised" Binding="{Binding UnrealizedPnl}" Width="90" />
-                                <DataGridTextColumn Header="Trades" Binding="{Binding Trades}" Width="60" />
-                                <DataGridTextColumn Header="Commission" Binding="{Binding Commissions}" Width="90" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </TabItem>
-                </TabControl>
-            </Border>
+                        <!-- Tabbed results: Attribution (primary), Trades, Cash Flows, Summary -->
+                        <TabControl Grid.Row="1">
+
+                            <!-- ── ATTRIBUTION: colored PnL pill badges ─────── -->
+                            <TabItem Header="Attribution">
+                                <DataGrid ItemsSource="{Binding Attribution}"
+                                          Style="{StaticResource ExplorerDataGridStyle}"
+                                          RowStyle="{StaticResource ExplorerRowStyle}"
+                                          CellStyle="{StaticResource ExplorerCellStyle}">
+                                    <DataGrid.Columns>
+
+                                        <DataGridTemplateColumn Header="Symbol  ↕" Width="90" SortMemberPath="Symbol" CanUserSort="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Symbol}" Style="{StaticResource SymbolCellStyle}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <!-- Realized PnL pill: green=positive, red=negative -->
+                                        <DataGridTemplateColumn Header="Realized PnL  ↕" Width="120" SortMemberPath="RealizedPnl" CanUserSort="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border x:Name="RBadge"
+                                                            Background="{StaticResource ConsoleAccentGreenAlpha20Brush}"
+                                                            CornerRadius="10"
+                                                            Padding="9,3"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Margin="8,0">
+                                                        <TextBlock x:Name="RTxt"
+                                                                   Text="{Binding RealizedPnl}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource ConsoleAccentGreenBrush}"
+                                                                   HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRealizedPnlPositive}" Value="False">
+                                                            <Setter TargetName="RBadge" Property="Background" Value="{StaticResource ConsoleAccentRedAlpha20Brush}" />
+                                                            <Setter TargetName="RTxt" Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <!-- Unrealized PnL pill -->
+                                        <DataGridTemplateColumn Header="Unrealized  ↕" Width="110" SortMemberPath="UnrealizedPnl" CanUserSort="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border x:Name="UBadge"
+                                                            Background="{StaticResource ConsoleAccentGreenAlpha20Brush}"
+                                                            CornerRadius="10"
+                                                            Padding="9,3"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Margin="8,0">
+                                                        <TextBlock x:Name="UTxt"
+                                                                   Text="{Binding UnrealizedPnl}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource ConsoleAccentGreenBrush}"
+                                                                   HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsUnrealizedPnlPositive}" Value="False">
+                                                            <Setter TargetName="UBadge" Property="Background" Value="{StaticResource ConsoleAccentRedAlpha20Brush}" />
+                                                            <Setter TargetName="UTxt" Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <!-- Total PnL pill (realized + unrealized) -->
+                                        <DataGridTemplateColumn Header="Total PnL  ↕" Width="110" SortMemberPath="TotalPnl" CanUserSort="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border x:Name="TBadge"
+                                                            Background="{StaticResource ConsoleAccentGreenAlpha20Brush}"
+                                                            CornerRadius="10"
+                                                            Padding="9,3"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Margin="8,0">
+                                                        <TextBlock x:Name="TTxt"
+                                                                   Text="{Binding TotalPnl}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource ConsoleAccentGreenBrush}"
+                                                                   HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsTotalPnlPositive}" Value="False">
+                                                            <Setter TargetName="TBadge" Property="Background" Value="{StaticResource ConsoleAccentRedAlpha20Brush}" />
+                                                            <Setter TargetName="TTxt" Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTextColumn Header="Trades  ↕" Binding="{Binding Trades}" Width="70" />
+                                        <DataGridTextColumn Header="Commission  ↕" Binding="{Binding Commissions}" Width="*" />
+
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </TabItem>
+
+                            <!-- ── TRADES ────────────────────────────────── -->
+                            <TabItem Header="Trades">
+                                <DataGrid ItemsSource="{Binding Fills}"
+                                          Style="{StaticResource ExplorerDataGridStyle}"
+                                          RowStyle="{StaticResource ExplorerRowStyle}"
+                                          CellStyle="{StaticResource ExplorerCellStyle}">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="Symbol  ↕" Width="80" SortMemberPath="Symbol" CanUserSort="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Symbol}" Style="{StaticResource SymbolCellStyle}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Time  ↕" Binding="{Binding Time}" Width="145" />
+                                        <DataGridTextColumn Header="Qty  ↕" Binding="{Binding Quantity}" Width="70" />
+                                        <DataGridTextColumn Header="Price  ↕" Binding="{Binding Price}" Width="90" />
+                                        <DataGridTextColumn Header="Commission  ↕" Binding="{Binding Commission}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </TabItem>
+
+                            <!-- ── CASH FLOWS ─────────────────────────────── -->
+                            <TabItem Header="Cash Flows">
+                                <DataGrid ItemsSource="{Binding CashFlows}"
+                                          Style="{StaticResource ExplorerDataGridStyle}"
+                                          RowStyle="{StaticResource ExplorerRowStyle}"
+                                          CellStyle="{StaticResource ExplorerCellStyle}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Date  ↕" Binding="{Binding Time}" Width="95" />
+                                        <DataGridTextColumn Header="Type  ↕" Binding="{Binding Type}" Width="120" />
+                                        <DataGridTemplateColumn Header="Symbol  ↕" Width="80" SortMemberPath="Symbol" CanUserSort="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Symbol}" Style="{StaticResource SymbolCellStyle}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <!-- Amount pill: green=inflow, red=outflow -->
+                                        <DataGridTemplateColumn Header="Amount  ↕" Width="*" SortMemberPath="Amount" CanUserSort="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border x:Name="ABadge"
+                                                            Background="{StaticResource ConsoleAccentGreenAlpha20Brush}"
+                                                            CornerRadius="10"
+                                                            Padding="9,3"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Margin="8,0">
+                                                        <TextBlock x:Name="ATxt"
+                                                                   Text="{Binding Amount}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource ConsoleAccentGreenBrush}"
+                                                                   HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <DataTemplate.Triggers>
+                                                        <DataTrigger Binding="{Binding IsAmountPositive}" Value="False">
+                                                            <Setter TargetName="ABadge" Property="Background" Value="{StaticResource ConsoleAccentRedAlpha20Brush}" />
+                                                            <Setter TargetName="ATxt" Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                                        </DataTrigger>
+                                                    </DataTemplate.Triggers>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </TabItem>
+
+                            <!-- ── SUMMARY (performance metrics) ──────────── -->
+                            <TabItem Header="Summary">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Margin="12">
+                                        <TextBlock Text="PERFORMANCE" Style="{StaticResource SectionEyebrowStyle}" Margin="0,0,0,8" />
+                                        <TextBlock Text="Total Return" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding TotalReturn}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Annualised Return" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding AnnualisedReturn}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Net P&amp;L" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding NetPnl}" Style="{StaticResource ValueStyle}" />
+
+                                        <TextBlock Text="RISK" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+                                        <TextBlock Text="Sharpe Ratio" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding SharpeRatio}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Sortino Ratio" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding SortinoRatio}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Calmar Ratio" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding CalmarRatio}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Max Drawdown" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding MaxDrawdown}" Style="{StaticResource ValueStyle}" />
+
+                                        <TextBlock Text="TRADES" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+                                        <TextBlock Text="Win Rate" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding WinRate}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Total Trades" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding TotalTrades}" Style="{StaticResource ValueStyle}" />
+
+                                        <TextBlock Text="COSTS" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+                                        <TextBlock Text="Commissions Paid" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding TotalCommissions}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Margin Interest Paid" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding TotalMarginInterest}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="XIRR (Cash-Weighted IRR)" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding Xirr}" Style="{StaticResource ValueStyle}" />
+
+                                        <TextBlock Text="RUN INFO" Style="{StaticResource SectionEyebrowStyle}" Margin="0,8,0,8" />
+                                        <TextBlock Text="Events Processed" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding EventsProcessed}" Style="{StaticResource ValueStyle}" />
+                                        <TextBlock Text="Elapsed" Style="{StaticResource LabelStyle}" />
+                                        <TextBlock Text="{Binding ElapsedTime}" Style="{StaticResource ValueStyle}" />
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </TabItem>
+
+                        </TabControl>
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
     </Grid>
 </Page>

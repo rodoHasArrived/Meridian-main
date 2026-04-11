@@ -25,8 +25,6 @@ public sealed class WorkspaceTemplate
     public Dictionary<string, string> Context { get; set; } = new();
     public WindowBounds? WindowBounds { get; set; }
     public SessionState? SessionSnapshot { get; set; }
-    public WorkstationLayoutState? WorkstationLayout { get; set; }
-    public List<WorkspaceLayoutPreset> SavedLayouts { get; set; } = new();
 }
 
 /// <summary>
@@ -106,13 +104,12 @@ public sealed class SessionState
     public Dictionary<string, string> ActiveFilters { get; set; } = new();
     public Dictionary<string, string> WorkspaceContext { get; set; } = new();
     public WindowBounds? WindowBounds { get; set; }
-    public WorkstationLayoutState? WorkstationLayout { get; set; }
-    public List<WorkspaceLayoutPreset> SavedLayoutPresets { get; set; } = new();
     public DateTime SavedAt { get; set; }
     public string? ActiveWorkspaceId { get; set; }
 }
 
 /// <summary>
+<<<<<<< HEAD
 /// Persisted docking and pane composition for a workstation workspace.
 /// </summary>
 public sealed class WorkstationLayoutState
@@ -180,6 +177,8 @@ public sealed class WorkspaceLayoutPreset
 }
 
 /// <summary>
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 /// Workspace event args.
 /// </summary>
 public sealed class WorkspaceEventArgs : EventArgs

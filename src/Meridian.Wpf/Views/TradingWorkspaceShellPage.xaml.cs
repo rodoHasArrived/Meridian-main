@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
@@ -10,8 +8,9 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Trading cockpit shell for live and paper execution workflows.
-/// Hosts shared run context, capital posture, and embedded legacy panes.
+/// Trading workspace shell — landing page for the Trading workspace.
+/// Surfaces active paper/live run counts, total equity, open positions, and the risk rail.
+/// Embeds a <see cref="MeridianDockingManager"/> for IDE-style floating panes.
 /// </summary>
 public partial class TradingWorkspaceShellPage : Page
 {
@@ -19,6 +18,7 @@ public partial class TradingWorkspaceShellPage : Page
 
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
+<<<<<<< HEAD
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly CashFinancingReadService _cashFinancingReadService;
@@ -31,18 +31,28 @@ public partial class TradingWorkspaceShellPage : Page
         WorkstationOperatingContextService? operatingContextService,
         CashFinancingReadService cashFinancingReadService,
         WorkspaceShellContextService shellContextService)
+=======
+
+    public TradingWorkspaceShellPage(
+        NavigationService navigationService,
+        StrategyRunWorkspaceService runService)
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     {
         InitializeComponent();
         _navigationService = navigationService;
         _runService = runService;
+<<<<<<< HEAD
         _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
         _cashFinancingReadService = cashFinancingReadService;
         _shellContextService = shellContextService;
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+<<<<<<< HEAD
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged += OnActiveRunContextChanged;
         _shellContextService.SignalsChanged += OnSignalsChanged;
@@ -53,12 +63,15 @@ public partial class TradingWorkspaceShellPage : Page
         }
 
         UpdateActiveFundText();
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         await RefreshAsync();
         await RestoreDockLayoutAsync();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+<<<<<<< HEAD
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged -= OnActiveRunContextChanged;
         _shellContextService.SignalsChanged -= OnSignalsChanged;
@@ -67,10 +80,14 @@ public partial class TradingWorkspaceShellPage : Page
             _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
             _operatingContextService.WindowModeChanged -= OnSignalsChanged;
         }
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         _ = SaveDockLayoutAsync();
     }
 
-    private async Task RefreshAsync()
+    // ── Data ─────────────────────────────────────────────────────────────
+
+    private async System.Threading.Tasks.Task RefreshAsync()
     {
         try
         {
@@ -79,11 +96,10 @@ public partial class TradingWorkspaceShellPage : Page
             PaperRunsText.Text = summary.PaperRunCount.ToString();
             LiveRunsText.Text = summary.LiveRunCount.ToString();
             TotalEquityText.Text = summary.TotalEquityFormatted;
+
             DrawdownText.Text = summary.MaxDrawdownFormatted;
             PositionLimitText.Text = summary.PositionLimitLabel;
             OrderRateText.Text = summary.OrderRateLabel;
-
-            UpdateActiveRun(summary.ActiveRunContext);
 
             if (summary.ActivePositions.Count > 0)
             {
@@ -95,6 +111,7 @@ public partial class TradingWorkspaceShellPage : Page
                 ActivePositionsList.ItemsSource = null;
                 NoPositionsText.Visibility = Visibility.Visible;
             }
+<<<<<<< HEAD
 
             var profile = _fundContextService.CurrentFundProfile;
             if (profile is not null)
@@ -145,6 +162,8 @@ public partial class TradingWorkspaceShellPage : Page
             });
 
             CommandBar.CommandGroup = BuildCommandGroup();
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         }
         catch (Exception ex)
         {
@@ -152,6 +171,7 @@ public partial class TradingWorkspaceShellPage : Page
         }
     }
 
+<<<<<<< HEAD
     private void UpdateActiveRun(ActiveRunContext? activeRun)
     {
         if (activeRun is null)
@@ -199,18 +219,39 @@ public partial class TradingWorkspaceShellPage : Page
         {
             WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to restore dock layout: {ex.Message}");
             await LoadDefaultDockingAsync();
-        }
-    }
+=======
+    // ── AvalonDock layout persistence ─────────────────────────────────────
 
-    private async Task SaveDockLayoutAsync()
+    private async System.Threading.Tasks.Task RestoreDockLayoutAsync()
     {
         try
         {
+            var xml = await WorkspaceService.Instance.GetDockLayoutAsync(WorkspaceId);
+            if (!string.IsNullOrWhiteSpace(xml))
+                TradingDockManager.LoadLayout(xml);
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to restore dock layout: {ex.Message}");
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+        }
+    }
+
+    private async System.Threading.Tasks.Task SaveDockLayoutAsync()
+    {
+        try
+        {
+<<<<<<< HEAD
             var layout = TradingDockManager.CaptureLayoutState("trading-cockpit", "Trading Cockpit");
             layout.OperatingContextKey = GetLayoutScopeKey();
             layout.WindowMode = GetWindowMode();
             layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
             await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
+=======
+            var xml = TradingDockManager.SaveLayout();
+            if (!string.IsNullOrWhiteSpace(xml))
+                await WorkspaceService.Instance.SaveDockLayoutAsync(WorkspaceId, xml);
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         }
         catch (Exception ex)
         {
@@ -218,6 +259,7 @@ public partial class TradingWorkspaceShellPage : Page
         }
     }
 
+<<<<<<< HEAD
     private async Task LoadDefaultDockingAsync()
     {
         OpenWorkspacePage("LiveData", PaneDropAction.Replace);
@@ -236,12 +278,13 @@ public partial class TradingWorkspaceShellPage : Page
             OpenWorkspacePage("OrderBook", PaneDropAction.OpenTab);
         }
     }
+=======
+    // ── Drop handler ──────────────────────────────────────────────────────
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-        => OpenWorkspacePage(e.PageTag, e.Action);
-
-    private void OpenWorkspacePage(string pageTag, PaneDropAction action, object? parameter = null)
     {
+<<<<<<< HEAD
         try
         {
             var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
@@ -335,16 +378,26 @@ public partial class TradingWorkspaceShellPage : Page
         DeskActionStatusText.Text = "Risk acknowledgement captured locally for this workstation session.";
         OpenWorkspacePage("RunRisk", PaneDropAction.SplitRight);
     }
+=======
+        // For now, dropped page tags navigate in the main navigation service.
+        // A future iteration will resolve pages via DI and embed them directly
+        // as LayoutDocument content in the dock manager.
+        _navigationService.NavigateTo(e.PageTag);
+    }
+
+    // ── Quick Action Handlers ─────────────────────────────────────────────
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     private void OpenLiveData_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("LiveData", PaneDropAction.Replace);
+        => _navigationService.NavigateTo("LiveData");
 
     private void OpenPortfolio_Click(object sender, RoutedEventArgs e)
-        => _ = OpenActiveRunPageAsync("RunPortfolio", PaneDropAction.SplitLeft);
+        => _navigationService.NavigateTo("RunPortfolio");
 
-    private void OpenBlotter_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("PositionBlotter", PaneDropAction.SplitRight);
+    private void ImportPositions_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("PortfolioImport");
 
+<<<<<<< HEAD
     private void OpenOrderBook_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage("OrderBook", PaneDropAction.FloatWindow);
 
@@ -494,4 +547,8 @@ public partial class TradingWorkspaceShellPage : Page
         "floating" => PaneDropAction.FloatWindow,
         _ => PaneDropAction.Replace
     };
+=======
+    private void OpenTradingHours_Click(object sender, RoutedEventArgs e)
+        => _navigationService.NavigateTo("TradingHours");
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }

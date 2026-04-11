@@ -72,6 +72,7 @@ public sealed record CreateLegalEntityRequest(
     string CreatedBy,
     string? Description = null);
 
+<<<<<<< HEAD
 public sealed record CreateInvestmentPortfolioRequest(
     Guid InvestmentPortfolioId,
     Guid BusinessId,
@@ -151,6 +152,8 @@ public sealed record ReconcileAccountRequest(
     DateOnly AsOfDate,
     string RequestedBy);
 
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 public sealed record LinkFundStructureNodesRequest(
     Guid OwnershipLinkId,
     Guid ParentNodeId,

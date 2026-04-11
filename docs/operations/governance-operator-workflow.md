@@ -22,30 +22,11 @@ This runbook documents the baseline governance slice in the workstation UI.
 ## 3) Reconciliation break queue workflow
 
 1. Open **Governance → Reconciliation**.
-2. Use the sticky context strip to confirm the active fund, legal entity, base currency, default ledger scope, workspace as-of date, and last refresh timestamp before triaging exceptions.
-3. Review the KPI/filter strip for:
-   - **Open Breaks**
-   - **In Review**
-   - **Runs**
-   - **Security Issues**
-4. Narrow the queue with:
-   - break filters: **Open**, **In Review**, or **All**
-   - scope filter: **All**, **Strategy**, or **Account**
-   - local search (`Ctrl+F` focuses the search box)
-5. Work from the left queue pane:
-   - **Break Queue** shows actionable strategy-run breaks sorted by status priority, then largest variance, then newest detection time
-   - **Runs** shows strategy and account reconciliations sorted exception-first
-6. Inspect row-level detail in the right pane:
-   - **Exceptions** shows the active mismatch set and highlights the break selected from **Break Queue**
-   - **All Checks** shows matched + unmatched checks together
-   - **Security Coverage** shows unresolved Security Master gaps
-   - **Audit** shows freshness and operator-action history
-7. For strategy-run break queue items, move breaks through:
-   - **Open** → **Start Review** (moves to `InReview`, captures reviewer + assignee)
-   - **Open/InReview** → **Resolve** (moves to `Resolved`, requires resolver + note)
-   - **Open/InReview** → **Dismiss** (moves to `Dismissed`, requires resolver + note)
-8. Use **Open Account Workflow** for account-level reconciliations. Account detail is read-only inside Governance in this pass.
-9. Confirm break status, assignment metadata, and last-refresh cues update inline after each action without losing the selected row.
+2. In **Reconciliation break queue**, move breaks through:
+   - **Open** → **Assign** (moves to `InReview`, captures reviewer + assignee)
+   - **InReview** → **Resolve** (moves to `Resolved`, captures resolver + note)
+   - Any active break → **Dismiss** (moves to `Dismissed` with audit metadata)
+3. Confirm break status/assignment metadata updates inline after each action.
 
 ## 4) Governance report/export handoff
 

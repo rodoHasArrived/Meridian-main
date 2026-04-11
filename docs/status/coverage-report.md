@@ -193,9 +193,14 @@
 
 ## Recommendations
 
+<<<<<<< HEAD
 1. **Public Classes / Interfaces**: 1780 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
 2. **API Endpoints**: 103 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 90 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
+=======
+1. **Public Classes / Interfaces**: 1581 undocumented types. Consider generating API docs with DocFX (`docfx docs/docfx/docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 80 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 ---
 

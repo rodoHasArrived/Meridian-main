@@ -178,6 +178,7 @@ dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj
 - `docs/status/FEATURE_INVENTORY.md` - capability inventory
 - `docs/plans/` - active product and technical blueprints
 
+<<<<<<< HEAD
 ## Configuration
 
 Configuration lives in `config/` at the repository root. The primary config file is `config/appsettings.json`. Provider credentials and secrets use the secrets management pattern documented in [ADR-011](adr/011-centralized-configuration-and-credentials.md).
@@ -259,6 +260,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --package --package-format 
 
 See [Portable Data Packager](operations/portable-data-packager.md) for full export options including CSV, Parquet, and ZIP bundle formats.
 
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 ## Notes
 
 - This document is intentionally grounded in the local codebase rather than aspirational feature copy.

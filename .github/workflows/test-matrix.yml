@@ -51,14 +51,9 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
 
 jobs:
-  build-artifact:
-    name: Build Artifact
-    uses: ./.github/workflows/generate-build-artifact.yml
-
   # Ubuntu tests always run (free tier for public repos, essential for PRs)
   test-ubuntu:
     name: Test (Linux)
-    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -66,15 +61,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.build-artifact.outputs.artifact-name }}
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build
+        shell: bash
+        run: |
+          dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
 
       - name: Run C# unit tests
         shell: bash
@@ -125,7 +123,6 @@ jobs:
   test-db:
     name: Test (PostgreSQL)
     if: github.event_name != 'pull_request'
-    needs: [build-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -152,15 +149,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5.2.0
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ needs.build-artifact.outputs.artifact-name }}
+      - name: Restore dependencies
+        run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal
+
+      - name: Build
+        run: dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true --verbosity minimal
 
       - name: Run Security Master PostgreSQL tests
         shell: bash
@@ -290,6 +288,11 @@ jobs:
     steps:
       - name: Generate test summary
         run: |
+          echo "# Test Matrix Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+
           # Linux always runs and has a single definitive result
           LINUX_STATUS="${{ needs.test-ubuntu.result }}"
           case "$LINUX_STATUS" in
@@ -297,6 +300,7 @@ jobs:
             skipped) LINUX_LABEL="⏭️ Skipped" ;;
             *) LINUX_LABEL="❌ Failed" ;;
           esac
+          echo "| Linux | $LINUX_LABEL |" >> $GITHUB_STEP_SUMMARY
 
           # Windows and macOS share a matrix result; on PRs they are skipped
           OTHER_STATUS="${{ needs.test-other-platforms.result }}"
@@ -305,6 +309,8 @@ jobs:
             skipped) WIN_LABEL="⏭️ Skipped (PR)"; MAC_LABEL="⏭️ Skipped (PR)" ;;
             *) WIN_LABEL="❌ Failed"; MAC_LABEL="❌ Failed" ;;
           esac
+          echo "| Windows | $WIN_LABEL |" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS | $MAC_LABEL |" >> $GITHUB_STEP_SUMMARY
 
           # PostgreSQL DB tests only run on push to main; skipped on PRs
           DB_STATUS="${{ needs.test-db.result }}"
@@ -313,6 +319,7 @@ jobs:
             skipped) DB_LABEL="⏭️ Skipped (PR)" ;;
             *) DB_LABEL="❌ Failed" ;;
           esac
+<<<<<<< HEAD
 
           {
             echo "# Test Matrix Summary"
@@ -325,3 +332,6 @@ jobs:
             echo "| PostgreSQL | $DB_LABEL |"
           } >> "$GITHUB_STEP_SUMMARY"
 >>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3
+=======
+          echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe

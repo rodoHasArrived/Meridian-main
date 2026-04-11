@@ -170,10 +170,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             await EnsureAuthenticatedAsync(ct).ConfigureAwait(false);
             return !string.IsNullOrEmpty(_accessToken);
         }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
         catch (Exception ex)
         {
             Log.Error(ex, "NYSE credential validation failed");
@@ -194,10 +190,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             using var httpClient = CreateNyseHttpClient();
             using var response = await httpClient.SendAsync(request, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -256,11 +248,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             // Re-subscribe to any existing subscriptions
             await ResubscribeAllAsync(ct).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
-        {
-            Status = DataSourceStatus.Disconnected;
-            throw;
-        }
         catch (Exception ex)
         {
             Status = DataSourceStatus.Disconnected;
@@ -282,10 +269,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
         try
         {
             await _wsManager.DisconnectAsync(ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -461,7 +444,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize(json, NYSEDataSourceJsonContext.Default.NYSEHistoricalBarsResponse);
+            var data = JsonSerializer.Deserialize<NYSEHistoricalBarsResponse>(json);
 
             if (data?.Bars == null || data.Bars.Count == 0)
             {
@@ -493,10 +476,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                         SplitFactor: bar.SplitFactor,
                         DividendAmount: bar.DividendAmount
                     ));
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -533,7 +512,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize(json, NYSEDataSourceJsonContext.Default.NYSEIntradayBarsResponse);
+            var data = JsonSerializer.Deserialize<NYSEIntradayBarsResponse>(json);
 
             if (data?.Bars == null || data.Bars.Count == 0)
             {
@@ -584,7 +563,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             }
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize(json, NYSEDataSourceJsonContext.Default.NYSEDividendsResponse);
+            var data = JsonSerializer.Deserialize<NYSEDividendsResponse>(json);
 
             if (data?.Dividends == null || data.Dividends.Count == 0)
             {
@@ -632,7 +611,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             }
 
             var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
-            var data = JsonSerializer.Deserialize(json, NYSEDataSourceJsonContext.Default.NYSESplitsResponse);
+            var data = JsonSerializer.Deserialize<NYSESplitsResponse>(json);
 
             if (data?.Splits == null || data.Splits.Count == 0)
             {
@@ -692,7 +671,7 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var tokenResponse = JsonSerializer.Deserialize(json, NYSEDataSourceJsonContext.Default.NYSETokenResponse);
+            var tokenResponse = JsonSerializer.Deserialize<NYSETokenResponse>(json);
 
             _accessToken = tokenResponse?.AccessToken
                 ?? throw new InvalidOperationException("Failed to obtain NYSE access token");
@@ -799,12 +778,10 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
     }
 
     /// <summary>
-    /// Test-only entry point: routes a raw JSON string through the same
-    /// <see cref="ProcessWebSocketMessage"/> path used by the live WebSocket receive loop.
-    /// Allows unit tests to verify end-to-end message routing and collector wiring
-    /// without establishing a real network connection.
+    /// Test entry point: injects a raw WebSocket JSON payload directly into the processing pipeline,
+    /// bypassing the live WebSocket connection. Used by <c>NyseMessagePipelineTests</c>.
     /// </summary>
-    internal void ProcessTestMessage(string message) => ProcessWebSocketMessage(message);
+    public void ProcessTestMessage(string json) => ProcessWebSocketMessage(json);
 
     private void ProcessWebSocketMessage(string message)
     {
@@ -834,10 +811,6 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
                     Log.Error("NYSE WebSocket error: {Error}", errorMsg);
                     break;
             }
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -906,17 +879,16 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             if (!IsConnected)
                 return;
 
-            var message = JsonSerializer.Serialize(
-                new NYSESubscribeMessage { Action = action, Channel = channel, Symbol = symbol },
-                NYSEDataSourceJsonContext.Default.NYSESubscribeMessage);
+            var message = JsonSerializer.Serialize(new
+            {
+                action,
+                channel,
+                symbol
+            });
 
             await _wsManager.SendAsync(message, ct).ConfigureAwait(false);
 
             Log.Debug("NYSE {Action} {Channel} for {Symbol}", action, channel, symbol);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -932,14 +904,8 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
             if (!IsConnected)
                 return;
 
-            var message = JsonSerializer.Serialize(
-                new NYSEUnsubscribeAllMessage(),
-                NYSEDataSourceJsonContext.Default.NYSEUnsubscribeAllMessage);
+            var message = JsonSerializer.Serialize(new { action = "unsubscribe_all" });
             await _wsManager.SendAsync(message, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -1149,32 +1115,3 @@ internal sealed class NYSESplit
     public decimal SplitTo { get; set; }
 }
 
-/// <summary>Outbound WebSocket message for subscribe / unsubscribe on a single channel.</summary>
-internal sealed class NYSESubscribeMessage
-{
-    [JsonPropertyName("action")]
-    public string Action { get; set; } = "";
-
-    [JsonPropertyName("channel")]
-    public string Channel { get; set; } = "";
-
-    [JsonPropertyName("symbol")]
-    public string Symbol { get; set; } = "";
-}
-
-/// <summary>Outbound WebSocket message that removes all active subscriptions.</summary>
-internal sealed class NYSEUnsubscribeAllMessage
-{
-    [JsonPropertyName("action")]
-    public string Action { get; set; } = "unsubscribe_all";
-}
-
-/// <summary>ADR-014 source-generated JSON context for NYSEDataSource.</summary>
-[JsonSerializable(typeof(NYSETokenResponse))]
-[JsonSerializable(typeof(NYSEHistoricalBarsResponse))]
-[JsonSerializable(typeof(NYSEIntradayBarsResponse))]
-[JsonSerializable(typeof(NYSEDividendsResponse))]
-[JsonSerializable(typeof(NYSESplitsResponse))]
-[JsonSerializable(typeof(NYSESubscribeMessage))]
-[JsonSerializable(typeof(NYSEUnsubscribeAllMessage))]
-internal sealed partial class NYSEDataSourceJsonContext : JsonSerializerContext { }

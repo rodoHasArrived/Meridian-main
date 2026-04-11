@@ -35,7 +35,6 @@ public static class ServiceCompositionRoot
         new LedgerFeatureRegistration(),
         new CredentialFeatureRegistration(),
         new ProviderFeatureRegistration(),
-        new ProviderRoutingFeatureRegistration(),
         new SymbolManagementFeatureRegistration(),
         new BackfillFeatureRegistration(),
         new EtlFeatureRegistration(),
@@ -87,9 +86,6 @@ public static class ServiceCompositionRoot
         // Provider services — must come before dependent services (Symbol, Backfill)
         if (options.EnableProviderServices)
             services.RegisterFeature<ProviderFeatureRegistration>(options);
-
-        if (options.EnableProviderServices)
-            services.RegisterFeature<ProviderRoutingFeatureRegistration>(options);
 
         // Symbol management — depends on ProviderFactory/ProviderRegistry
         if (options.EnableSymbolManagement)

@@ -27,17 +27,13 @@ public sealed record AmendSecurityTermsRequest(
     string? SourceRecordId,
     string? Reason);
 
-public sealed record AmendPreferredEquityTermsRequest(
+public sealed record AmendConvertibleEquityTermsRequest(
     long ExpectedVersion,
-    decimal? DividendRate,
-    string DividendType,
-    decimal? RedemptionPrice,
-    DateOnly? RedemptionDate,
-    DateOnly? CallableDate,
-    bool ParticipatesInCommonDividends,
-    decimal? AdditionalDividendThreshold,
-    string LiquidationPreferenceKind,
-    decimal? LiquidationPreferenceMultiple,
+    Guid UnderlyingSecurityId,
+    decimal ConversionRatio,
+    decimal? ConversionPrice,
+    DateOnly? ConversionStartDate,
+    DateOnly? ConversionEndDate,
     DateTimeOffset EffectiveFrom,
     string SourceSystem,
     string UpdatedBy,
@@ -70,4 +66,24 @@ public sealed record UpsertSecurityAliasRequest(
     string CreatedBy,
     DateTimeOffset ValidFrom,
     DateTimeOffset? ValidTo,
+    string? Reason);
+
+/// <summary>
+/// Request to amend the preferred-equity-specific terms for an existing security.
+/// </summary>
+public sealed record AmendPreferredEquityTermsRequest(
+    long ExpectedVersion,
+    decimal? DividendRate,
+    string? DividendType,
+    decimal? RedemptionPrice,
+    DateOnly? RedemptionDate,
+    DateOnly? CallableDate,
+    bool? ParticipatesInCommonDividends,
+    decimal? AdditionalDividendThreshold,
+    string? LiquidationPreferenceKind,
+    decimal? LiquidationPreferenceMultiple,
+    DateTimeOffset EffectiveFrom,
+    string SourceSystem,
+    string UpdatedBy,
+    string? SourceRecordId,
     string? Reason);

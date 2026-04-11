@@ -1,8 +1,13 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
+<<<<<<< HEAD
 **Last Updated:** 2026-04-08
 **Status:** Development / Pilot Ready - structurally strong baseline with Wave 1-4 productization work still active
+=======
+**Last Updated:** 2026-04-03
+**Status:** Development / Pilot Ready (comprehensive fund-management planning active)
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
 
@@ -10,6 +15,7 @@ This document summarizes Meridian's current readiness posture and active deliver
 
 ## Executive Summary
 
+<<<<<<< HEAD
 Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, web and WPF workstation shells, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
@@ -42,6 +48,48 @@ Meridian already has working ingestion, storage, replay, backtesting, provider o
 - direct lending, reconciliation, and governance-facing export/report-adjacent seams already present in the repo
 - existing shared run, portfolio, and ledger read services that give Meridian a real cross-workspace integration seam
 - workflow guide and screenshot-refresh tooling for ongoing operator-facing validation
+=======
+Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, and a web dashboard. The current product gap is not the absence of core building blocks; it is the remaining work required to unify those blocks into a coherent operator-facing fund-management product spanning front, middle, and back office workflows.
+
+The active plan now has two connected delivery tracks:
+
+1. **Front-office workstation delivery** across Research, Trading, Data Operations, and Governance workspaces using shared run, portfolio, and ledger models.
+2. **Middle- and back-office fund-operations delivery** adding Security Master productization, account/entity support, multi-ledger views, trial balance, cash-flow modeling, reconciliation, trade-management support, and investor/report-pack generation.
+
+### Overall Assessment: **DEVELOPMENT / PILOT READY**
+
+| Category | Status | Notes |
+|----------|--------|-------|
+| Core event pipeline | Implemented | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
+| Storage layer | Implemented | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
+| Backfill providers | Implemented | 10+ providers with fallback chain; some require credentials |
+| Backtesting engine | Implemented | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
+| Paper trading gateway | Implemented | Risk rules (position limits, drawdown stops, order rate throttle), position and fill tracking |
+| **Brokerage gateway framework** | **Implemented** | `BaseBrokerageGateway` + Alpaca, IB, StockSharp adapters; live-validated runtime paths pending |
+| Direct lending module | Implemented | PostgreSQL-backed services, workflows, and `/api/loans/*` endpoints |
+| CppTrader integration | Implemented | Host management, order gateway, ITCH ingestion, replay service |
+| WPF desktop shell | Active | Fluent theme, SVG icons, candlestick charting, and zero-API-key startup landed (PRs #512, #513, #522, #524); MVVM extraction and high-traffic page redesign ongoing |
+| Shared run / portfolio / ledger model | In progress | First workstation browser/detail/portfolio/ledger flow is in code; broader paper/live coverage remains |
+| Security Master baseline | Implemented in code, not yet productized | Contracts, application, storage, and F# domain anchors exist |
+| Governance product surfaces | Planned | Trial balance, multi-ledger, cash-flow, reconciliation, investor reporting, and governed reporting are blueprint-backed but not fully implemented |
+| Monitoring and observability | Implemented | Prometheus and OpenTelemetry foundations are in place |
+| Provider confidence | Mixed | Evidence-backed matrix now tracked in `provider-validation-matrix.md` with per-scenario pass/fail status and links |
+| Improvement tracking | Core baseline complete | 35/35 core items are complete; current focus has moved to workstation and governance expansion |
+
+## Current Strengths
+
+- Mature ingestion, replay, storage, and export foundations
+- Shared composition and host startup patterns
+- **Brokerage gateway framework** with Alpaca, IB, and StockSharp adapters ready for cockpit integration
+- Backtesting engine with tick replay, fill models, and QuantConnect Lean integration
+- Direct lending module with PostgreSQL persistence, workflows, and API endpoints
+- Portfolio and ledger concepts already present in the codebase (double-entry accounting, F# ledger, trading state machines)
+- Security Master foundations already present in contracts, storage, application, and F# domain modules
+- Existing export infrastructure that can support future report-pack generation
+- WPF desktop application with modernized shell: native Fluent theme, SVG icon set, LiveCharts2 candlestick charting, and zero-API-key startup via Synthetic provider default
+- Workflow guide (`docs/WORKFLOW_GUIDE.md`) with live screenshots; CI screenshot-refresh workflow for ongoing visual validation
+- Comprehensive test coverage (~4,756 tests across 8 test projects)
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 ---
 
@@ -53,11 +101,24 @@ Meridian already has working ingestion, storage, replay, backtesting, provider o
 - backfill checkpoint reliability and Parquet L2 flush behavior now have repo-backed proof and should be treated as closed Wave 1 sub-gates unless those tests regress
 - provider-confidence language must stay tied to `provider-validation-matrix.md`, `artifacts/provider-validation/`, and `run-wave1-provider-validation.ps1` instead of architecture intent
 
+<<<<<<< HEAD
 ### Wave 2: Paper-trading cockpit hardening
 
 - the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
 - session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
 - live-readiness claims must remain downstream of a trustworthy paper workflow
+=======
+The target governance capability set is now defined, but still mostly pending implementation:
+
+- Security Master product surfaces
+- account, entity, and strategy-structure management
+- multi-ledger tracking
+- consolidated and per-ledger trial balance
+- cash-flow modeling
+- reconciliation engine
+- report generation tools and report packs
+- investor reporting and stakeholder-ready outputs
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 ### Wave 3: Shared run / portfolio / ledger continuity
 
@@ -65,7 +126,14 @@ Meridian already has working ingestion, storage, replay, backtesting, provider o
 - portfolio, ledger, fills, attribution, and reconciliation need to feel like one run-centered system rather than adjacent slices
 - WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration
 
+<<<<<<< HEAD
 ### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
+=======
+- **Polygon**: replay fixture and parser coverage is passing in-repo, but live reconnect/rate-limit runtime proof is still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs), [partial gap evidence](provider-validation-matrix.md)).
+- **Interactive Brokers**: non-`IBAPI` guidance and smoke-build checks pass, but full live runtime path remains partially validated ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs), [prerequisites](../providers/interactive-brokers-setup.md)).
+- **StockSharp**: connector capability and subscription-guidance tests pass, with runtime connector validation still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs), [runbook](../providers/stocksharp-connectors.md)).
+- **NYSE**: reconnect and parser lifecycle tests pass; auth/rate-limit explicit evidence still pending ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/NyseMarketDataClientTests.cs), [open checks](provider-validation-matrix.md)).
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 - Security Master is a delivered baseline, not an open foundation item
 - governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows
@@ -123,7 +191,23 @@ Waves 5 and 6 deepen the product and widen later claims, but they are not prereq
 - [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
 - [IMPROVEMENTS.md](IMPROVEMENTS.md)
 - [Provider Validation Matrix](provider-validation-matrix.md)
-- [Provider Reliability and Data Confidence Wave 1 Blueprint](../plans/provider-reliability-data-confidence-wave-1-blueprint.md)
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
+<<<<<<< HEAD
 - [Meridian 6-Week Roadmap](../plans/meridian-6-week-roadmap.md)
+=======
+
+## Pre-Production Checklist
+
+- [ ] Configure real provider credentials and validate operator startup paths
+- [ ] Complete remaining provider-confidence hardening for Polygon, StockSharp, IB, and optional NYSE
+- [ ] Validate brokerage gateway adapters (Alpaca, IB, StockSharp) against live vendor surfaces
+- [ ] Build paper-trading cockpit in web dashboard wired to brokerage gateways
+- [ ] Finish workspace-first trading workstation flows beyond the first shared run baseline
+- [ ] Productize Security Master for workstation use
+- [ ] Implement multi-ledger, trial-balance, and cash-flow governance views
+- [ ] Implement reconciliation workflows and break-review UX
+- [ ] Implement report generation and governed export/report-pack flows
+- [ ] Validate end-to-end observability and operator diagnostics against the final product surfaces
+- [ ] Implement Phase 1.5 preferred/convertible equity domain types (F# — `EquityClassification`, `PreferredTerms`, `ConvertibleTerms` in `SecurityMaster.fs`)
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe

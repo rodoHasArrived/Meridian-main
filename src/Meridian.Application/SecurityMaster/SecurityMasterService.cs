@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterService : ISecurityMasterService
+public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterSnapshotStore _snapshotStore;
@@ -59,7 +59,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            GetPrimaryEventType(result, "TermsAmended"),
+            "TermsAmended",
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -120,6 +120,27 @@ public sealed class SecurityMasterService : ISecurityMasterService
         return await AmendTermsAsync(amendRequest, ct).ConfigureAwait(false);
     }
 
+    public async Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
+    {
+        var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+
+        var amendRequest = new AmendSecurityTermsRequest(
+            SecurityId: securityId,
+            ExpectedVersion: request.ExpectedVersion,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: SecurityMasterMapping.BuildConvertibleEquityTermsPatch(currentProjection, request),
+            IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: request.EffectiveFrom,
+            SourceSystem: request.SourceSystem,
+            UpdatedBy: request.UpdatedBy,
+            SourceRecordId: request.SourceRecordId,
+            Reason: request.Reason);
+
+        return await AmendTermsAsync(amendRequest, ct).ConfigureAwait(false);
+    }
+
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
     {
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
@@ -133,7 +154,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            GetPrimaryEventType(result, "SecurityDeactivated"),
+            "SecurityDeactivated",
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -170,7 +191,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            GetPrimaryEventType(result, "SecurityCreated"),
+            "SecurityCreated",
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -266,11 +287,6 @@ public sealed class SecurityMasterService : ISecurityMasterService
 
         return SecurityMasterMapping.ToProjection(result.Snapshot, aliases);
     }
-
-    private static string GetPrimaryEventType(SecurityMasterCommandResultWrapper result, string fallbackEventType)
-        => string.IsNullOrWhiteSpace(result.PrimaryEventType)
-            ? fallbackEventType
-            : result.PrimaryEventType;
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {

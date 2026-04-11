@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-08 03:35:15 UTC. Do not edit manually.
+> Auto-generated on 2026-04-10 21:09:48 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|

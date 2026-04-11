@@ -97,7 +97,7 @@ jobs:
         run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
 
       - name: Build
-        run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore --verbosity minimal
+        run: dotnet build ${{ env.WPF_PROJECT }} -c ${{ env.BUILD_CONFIG }} --no-restore -p:TargetFramework=net9.0-windows --verbosity minimal
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -144,7 +144,7 @@ jobs:
             -r ${{ matrix.rid }} `
             -o ./publish/${{ matrix.rid }} `
             --self-contained true `
-            -p:TargetFramework=net9.0-windows10.0.19041.0 `
+            -p:TargetFramework=net9.0-windows `
             -p:PublishSingleFile=true `
             -p:PublishReadyToRun=true `
             -p:EnableCompressionInSingleFile=true `
@@ -157,7 +157,7 @@ jobs:
             -r ${{ matrix.rid }} `
             -o ./publish/${{ matrix.rid }}-fdd `
             --self-contained false `
-            -p:TargetFramework=net9.0-windows10.0.19041.0 `
+            -p:TargetFramework=net9.0-windows `
             -p:PublishSingleFile=true `
             -p:PublishReadyToRun=true
 

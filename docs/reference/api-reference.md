@@ -14,13 +14,13 @@ API pages are generated from XML documentation comments in the .NET projects and
 ### Build API docs
 
 ```bash
-docfx docfx.json
+docfx docs/docfx/docfx.json
 ```
 
 ### Serve locally for preview
 
 ```bash
-docfx docfx.json --serve
+docfx docs/docfx/docfx.json --serve
 ```
 
 ## API map

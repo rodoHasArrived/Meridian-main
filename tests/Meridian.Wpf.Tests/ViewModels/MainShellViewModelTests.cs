@@ -1,10 +1,7 @@
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
-using Meridian.Contracts.Workstation;
-using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -13,26 +10,34 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class MainShellViewModelTests
 {
+<<<<<<< HEAD
     private static MainPageViewModel CreateMainPageViewModel(
         FundContextService? fundContextService = null,
         WorkstationOperatingContextService? operatingContextService = null)
+=======
+    private static MainPageViewModel CreateMainPageViewModel()
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     {
         var navigationService = NavigationService.Instance;
-        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        navigationService.ClearHistory();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
+<<<<<<< HEAD
         return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService, operatingContextService);
+=======
+        return new MainPageViewModel(navigationService, fixtureModeDetector);
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     private static MainWindowViewModel CreateMainWindowViewModel()
     {
         var navigationService = NavigationService.Instance;
-        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        navigationService.ClearHistory();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
@@ -50,7 +55,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToResearchShell()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToDashboard()
     {
         WpfTestThread.Run(() =>
         {
@@ -58,8 +63,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("ResearchShell");
-            vm.CurrentPageTitle.Should().Be("Research Workspace");
+            vm.CurrentPageTag.Should().Be("Dashboard");
+            vm.CurrentPageTitle.Should().Be("Dashboard");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -81,25 +86,6 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void CommandPaletteQuery_FindsFundOperationsRoutes()
-    {
-        WpfTestThread.Run(() =>
-        {
-            using var vm = CreateMainPageViewModel();
-
-            vm.CommandPaletteQuery = "fund";
-
-            vm.CommandPalettePages.Should().Contain("FundAccounts");
-            vm.CommandPalettePages.Should().Contain("FundBanking");
-            vm.CommandPalettePages.Should().Contain("FundPortfolio");
-            vm.CommandPalettePages.Should().Contain("FundCashFinancing");
-            vm.CommandPalettePages.Should().Contain("FundTrialBalance");
-            vm.CommandPalettePages.Should().Contain("FundReconciliation");
-            vm.CommandPalettePages.Should().Contain("FundAuditTrail");
-        });
-    }
-
-    [Fact]
     public void NavigateToPageCommand_UpdatesCurrentPage()
     {
         WpfTestThread.Run(() =>
@@ -116,6 +102,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+<<<<<<< HEAD
     public void NavigateToEventReplay_KeepsResearchWorkspaceActive()
     {
         WpfTestThread.Run(() =>
@@ -162,12 +149,13 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     public void FixtureModeChange_UpdatesBannerVisibilityAndText()
     {
         WpfTestThread.Run(() =>
         {
             var detector = FixtureModeDetector.Instance;
-            NavigationService.Instance.ResetForTests();
             detector.SetFixtureMode(false);
             detector.UpdateBackendReachability(true);
 
@@ -201,6 +189,7 @@ public sealed class MainShellViewModelTests
             vm.AddClipboardSymbolsCommand.CanExecute(null).Should().BeFalse();
         });
     }
+<<<<<<< HEAD
 
     [Fact]
     public void ActiveFundDisplay_WhenFundSelected_ShowsFundBadgeAndMetadata()
@@ -301,4 +290,6 @@ public sealed class MainShellViewModelTests
         await service.SelectContextAsync(service.Contexts[0].ContextKey);
         return service;
     }
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }

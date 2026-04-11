@@ -112,17 +112,7 @@ public sealed record ReconciliationSecurityCoverageIssueDto(
     string Source,
     string Symbol,
     string? AccountName,
-    string Reason,
-    string? SecurityId = null,
-    string? DisplayName = null,
-    string? AssetClass = null,
-    string? SubType = null,
-    WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Missing,
-    string? CoverageReason = null,
-    string? Currency = null,
-    string? MatchedIdentifierKind = null,
-    string? MatchedIdentifierValue = null,
-    string? MatchedProvider = null);
+    string Reason);
 
 /// <summary>
 /// Full detail payload for a single reconciliation run.

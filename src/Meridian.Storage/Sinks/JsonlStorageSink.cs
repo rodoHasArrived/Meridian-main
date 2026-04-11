@@ -107,12 +107,6 @@ public sealed class JsonlStorageSink : IStorageSink
     private readonly ConcurrentDictionary<string, Lazy<WriterState>> _writers = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, MarketEventBuffer> _buffers = new(StringComparer.OrdinalIgnoreCase);
 
-    // Pre-allocated task list reused across flush cycles to avoid per-flush heap allocation.
-    // All access is serialized by _flushGate (SemaphoreSlim(1,1)): the timer-triggered flush,
-    // the public FlushAsync, and the disposal path each acquire the gate before touching this
-    // list, so no concurrent modification is possible even during disposal.
-    private readonly List<Task> _flushTasks = new();
-
     // Cached factory delegate — the Lazy<> wrapper ensures WriterState.Create is called at most once
     // per unique path even under concurrent access, while the cached delegate avoids closure allocation.
     private readonly Func<string, Lazy<WriterState>> _writerFactory;
@@ -268,18 +262,18 @@ public sealed class JsonlStorageSink : IStorageSink
         await _flushGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            _flushTasks.Clear();
+            var tasks = new List<Task>();
             foreach (var kvp in _buffers)
             {
                 if (kvp.Value.Count > 0)
                 {
-                    _flushTasks.Add(FlushBufferAsync(kvp.Key, kvp.Value, ct));
+                    tasks.Add(FlushBufferAsync(kvp.Key, kvp.Value, ct));
                 }
             }
 
-            if (_flushTasks.Count > 0)
+            if (tasks.Count > 0)
             {
-                await Task.WhenAll(_flushTasks).ConfigureAwait(false);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
         }
         finally
@@ -359,17 +353,17 @@ public sealed class JsonlStorageSink : IStorageSink
                 await _flushGate.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 try
                 {
-                    _flushTasks.Clear();
+                    var tasks = new List<Task>();
                     foreach (var kvp in _buffers)
                     {
                         if (kvp.Value.Count > 0)
                         {
-                            _flushTasks.Add(FlushBufferAsync(kvp.Key, kvp.Value, CancellationToken.None));
+                            tasks.Add(FlushBufferAsync(kvp.Key, kvp.Value, CancellationToken.None));
                         }
                     }
-                    if (_flushTasks.Count > 0)
+                    if (tasks.Count > 0)
                     {
-                        await Task.WhenAll(_flushTasks).ConfigureAwait(false);
+                        await Task.WhenAll(tasks).ConfigureAwait(false);
                     }
                 }
                 finally
@@ -404,10 +398,6 @@ public sealed class JsonlStorageSink : IStorageSink
         private readonly string _path;
         private readonly SemaphoreSlim _gate = new(1, 1);
         private readonly bool _compressed;
-
-        // Reuse a single shared UTF-8 encoding instance — new UTF8Encoding() allocates a
-        // Encoder/Decoder state object each time; sharing the static instance avoids this.
-        private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
 
         private WriterState(string path, bool compressed)
         {
@@ -449,7 +439,7 @@ public sealed class JsonlStorageSink : IStorageSink
 
                         await using var writer = new StreamWriter(
                             writeStream,
-                            Utf8NoBom,
+                            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                             1 << 16,
                             leaveOpen: true);
 

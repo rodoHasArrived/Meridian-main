@@ -1,5 +1,6 @@
 # Plans
 
+<<<<<<< HEAD
 **Last Reviewed:** 2026-04-08
 
 This directory contains active blueprints, roadmaps, sprint backlogs, and target-state packages that support Meridian delivery. The canonical wave model lives in [../status/ROADMAP.md](../status/ROADMAP.md); treat the documents here as subordinate execution plans, blueprints, or optional-track follow-ons rather than parallel strategy documents.
@@ -26,9 +27,17 @@ These docs matter, but they normally follow the Wave 1-4 operator-readiness path
 
 | Document | Purpose |
 |----------|---------|
+<<<<<<< ours
 | [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | Wave 5 blueprint for unifying native and Lean backtesting into one product |
 | [backtest-studio-unification-pr-sequenced-roadmap.md](backtest-studio-unification-pr-sequenced-roadmap.md) | PR-sized Wave 5 execution path for Backtest Studio unification |
 | [fund-management-product-vision-and-capability-matrix.md](fund-management-product-vision-and-capability-matrix.md) | Product vision and phased capability view for broader fund-management depth |
+=======
+| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | WPF and workstation productization blueprint |
+| [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance, Security Master, reconciliation, and reporting blueprint |
+| [backtest-studio-unification-blueprint.md](backtest-studio-unification-blueprint.md) | Unified backtesting studio target architecture |
+| [portfolio-level-backtesting-composer-blueprint.md](portfolio-level-backtesting-composer-blueprint.md) | Portfolio-level composition, capital contention, and risk analytics blueprint |
+| [fund-management-product-vision-and-capability-matrix.md](fund-management-product-vision-and-capability-matrix.md) | Product vision and phased capability view |
+>>>>>>> theirs
 | [fund-management-module-implementation-backlog.md](fund-management-module-implementation-backlog.md) | Project-by-project backlog for fund-management modules |
 | [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture blueprint supporting the broader platform |
 
@@ -42,17 +51,43 @@ These plans can deepen Meridian's research and performance story, but they are n
 | [quant-script-page-implementation-guide.md](quant-script-page-implementation-guide.md) | Page-level implementation guidance for the QuantScript surface |
 | [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | L3 inference implementation design and rollout plan |
 | [quantscript-l3-multiinstance-round2-roadmap.md](quantscript-l3-multiinstance-round2-roadmap.md) | Multi-instance and L3-focused optional follow-on roadmap |
+=======
+This directory contains implementation roadmaps, sprint backlogs, and blueprint documents that drive active delivery work in Meridian.
 
-## Unified Financial Ledger Target States
-
-The `ufl-*` documents define target-state designs for instrument and asset-package coverage in Meridian's Unified Financial Ledger.
-
-Start with [ufl-supported-assets-index.md](ufl-supported-assets-index.md), then use the package-specific files for detail.
-
-### Core UFL Index And High-Signal Packages
+## Active Delivery Plans
 
 | Document | Purpose |
 |----------|---------|
+| [meridian-6-week-roadmap.md](meridian-6-week-roadmap.md) | Current sprint roadmap |
+| [trading-workstation-migration-blueprint.md](trading-workstation-migration-blueprint.md) | WPF workstation productization blueprint |
+| [governance-fund-ops-blueprint.md](governance-fund-ops-blueprint.md) | Governance and fund operations product blueprint |
+| [workstation-release-readiness-blueprint.md](workstation-release-readiness-blueprint.md) | Workstation release readiness checklist |
+| [workstation-sprint-1-implementation-backlog.md](workstation-sprint-1-implementation-backlog.md) | Sprint 1 implementation backlog |
+
+## Fund Management
+
+| Document | Purpose |
+|----------|---------|
+| [fund-management-module-implementation-backlog.md](fund-management-module-implementation-backlog.md) | Fund management module backlog |
+| [fund-management-pr-sequenced-roadmap.md](fund-management-pr-sequenced-roadmap.md) | PR-sequenced fund management delivery |
+| [fund-management-product-vision-and-capability-matrix.md](fund-management-product-vision-and-capability-matrix.md) | Product vision and capability matrix |
+
+## Security Master
+
+| Document | Purpose |
+|----------|---------|
+| [security-master-productization-roadmap.md](security-master-productization-roadmap.md) | Security Master productization plan |
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+
+## Unified Financial Ledger (UFL) Target States
+
+The `ufl-*` documents define target-state designs for each instrument type supported by Meridian's Unified Financial Ledger. See [ufl-supported-assets-index.md](ufl-supported-assets-index.md) for the full index.
+
+## Technical Refactors
+
+| Document | Purpose |
+|----------|---------|
+<<<<<<< HEAD
 | [ufl-supported-assets-index.md](ufl-supported-assets-index.md) | Master index of supported UFL asset packages |
 | [ufl-direct-lending-target-state-v2.md](ufl-direct-lending-target-state-v2.md) | Direct-lending specialization of the UFL model |
 | [ufl-equity-target-state-v2.md](ufl-equity-target-state-v2.md) | Equity package target state |
@@ -74,9 +109,23 @@ Additional package docs in this folder cover FX spot, deposits, certificates of 
 | [readability-refactor-technical-design-pack.md](readability-refactor-technical-design-pack.md) | Technical design pack for readability refactoring |
 | [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) | Cleanup and simplification roadmap informed by audits |
 | [assembly-performance-roadmap.md](assembly-performance-roadmap.md) | Optional advanced-performance track that normally follows the core operator-ready path |
+=======
+| [readability-refactor-roadmap.md](readability-refactor-roadmap.md) | Readability refactor plan |
+| [readability-refactor-baseline.md](readability-refactor-baseline.md) | Pre-refactor baseline measurements |
+| [readability-refactor-technical-design-pack.md](readability-refactor-technical-design-pack.md) | Technical design for readability changes |
+| [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) | Codebase audit and cleanup schedule |
+| [assembly-performance-roadmap.md](assembly-performance-roadmap.md) | Assembly-level performance improvement plan |
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
-## Related
+## Other Plans
 
-- [Combined Roadmap](../status/ROADMAP_COMBINED.md)
-- [Project Roadmap](../status/ROADMAP.md)
-- [Status Docs Index](../status/README.md)
+| Document | Purpose |
+|----------|---------|
+| [meridian-database-blueprint.md](meridian-database-blueprint.md) | Database architecture blueprint |
+| [quant-script-environment-blueprint.md](quant-script-environment-blueprint.md) | Quant scripting environment blueprint |
+| [l3-inference-implementation-plan.md](l3-inference-implementation-plan.md) | L3 inference engine implementation plan |
+| [ufl-direct-lending-implementation-roadmap.md](ufl-direct-lending-implementation-roadmap.md) | Direct lending implementation roadmap |
+
+---
+
+For high-level project status and roadmap, see [docs/status/ROADMAP.md](../status/ROADMAP.md).

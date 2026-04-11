@@ -176,6 +176,7 @@ public sealed class StatusEndpointTests
 
     #endregion
 
+<<<<<<< HEAD
     #region Event Stream Endpoint
 
     [Fact]
@@ -204,6 +205,9 @@ public sealed class StatusEndpointTests
     #endregion
 
     #region Root Endpoint
+=======
+    #region Dashboard Endpoint
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     [Fact]
     public async Task Root_ReturnsNotFound()
@@ -219,21 +223,5 @@ public sealed class StatusEndpointTests
     {
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content)!;
-    }
-
-    private static async Task<string> ReadFirstDataLineAsync(StreamReader reader, CancellationToken ct)
-    {
-        while (!ct.IsCancellationRequested)
-        {
-            var line = await reader.ReadLineAsync(ct);
-            line.Should().NotBeNull("the SSE endpoint should emit a data frame before the stream closes");
-
-            if (!string.IsNullOrWhiteSpace(line) && line.StartsWith("data: ", StringComparison.Ordinal))
-            {
-                return line;
-            }
-        }
-
-        throw new TimeoutException("Timed out waiting for the first SSE data frame.");
     }
 }

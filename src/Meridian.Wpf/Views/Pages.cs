@@ -47,7 +47,6 @@ public partial class TradingHoursPage : Page { }
 // Analytics & Visualization pages
 public partial class AdvancedAnalyticsPage : Page { }
 public partial class ChartingPage : Page { }
-public partial class ScatterAnalysisPage : Page { }
 public partial class OrderBookPage : Page { }
 public partial class DataCalendarPage : Page { }
 public partial class RunMatPage : Page { }
@@ -70,7 +69,6 @@ public partial class StrategyRunsPage : Page { }
 public partial class RunDetailPage : Page { }
 public partial class RunPortfolioPage : Page { }
 public partial class RunLedgerPage : Page { }
-public partial class FundLedgerPage : Page { }
 public partial class RunCashFlowPage : Page { }
 public partial class RunRiskPage : Page { }
 

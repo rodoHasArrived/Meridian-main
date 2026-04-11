@@ -1,7 +1,12 @@
 # Security Master Productization Roadmap
 
+<<<<<<< HEAD
 **Last Updated:** 2026-04-08
 **Status:** Delivered baseline with active Wave 4 governance and fund-operations follow-ons
+=======
+**Last Updated:** 2026-03-30
+**Status:** In Progress — Wave 6 delivery
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 **Owner:** Platform team
 **Audience:** Architecture, API, UI, and data contributors
 
@@ -30,7 +35,11 @@ All new F# types and C# DTOs introduced by this roadmap must follow the
 
 ## Summary
 
+<<<<<<< HEAD
 Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap captured the mechanics that established Security Master as a platform layer, and now records the delivered workstation/read-model productization plus the remaining Wave 4 governance and fund-operations follow-on work that builds on that shipped baseline.
+=======
+Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap captures six prioritized ideas that together move Security Master from a backend capability to a first-class platform layer.
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 Security Master is no longer a future roadmap wave. In the canonical roadmap it is a delivered baseline feeding the active governance productization path.
 
@@ -38,32 +47,12 @@ Security Master is no longer a future roadmap wave. In the canonical roadmap it 
 
 | # | Idea | Status |
 |---|------|--------|
-| 1 | Corporate Action Events | ✅ Delivered |
+| 1 | Corporate Action Events | 🔶 Partial |
 | 2 | Bond Term Richness | ✅ Delivered |
 | 3 | Trading Parameters | ✅ Delivered |
-| 4 | Exchange Bulk Ingest | ✅ Delivered |
-| 5 | Golden Record Conflict Resolution | ✅ Delivered |
+| 4 | Exchange Bulk Ingest | 🔶 Partial |
+| 5 | Golden Record Conflict Resolution | 🔶 Partial |
 | 6 | WPF Security Master Browser | ✅ Delivered |
-
----
-
-## Productization Completion (2026-04-07)
-
-Security Master is now productized as the authoritative instrument-definition seam across the workstation shell rather than remaining a backend-only subsystem.
-
-### Delivered in this completion pass
-
-- **Desktop hardening** — `SecurityMasterPage` now resolves in all desktop environments. WPF composition registers real-or-null `ISecurityMasterImportService` and `ITradingParametersBackfillService` implementations, and the page falls back to degraded status text plus disabled unsupported actions when Security Master storage or Polygon credentials are absent.
-- **Canonical enrichment contract** — `WorkstationSecurityReference` is now the single cross-workspace enrichment contract with explicit coverage/provenance fields: coverage status, matched identifier kind/value, matched provider, and optional resolution reason.
-- **Shared read-model propagation** — portfolio, ledger, reconciliation, and governance payloads now carry structured Security Master references instead of count-only or narrative-only signals, so positions, journal rows, and reconciliation issues all point back to the same authoritative security identity.
-- **Cross-workspace delivery** — Research, Trading, and Governance workstation surfaces now expose Security Master identity, classification, subtype, currency, coverage state, and detail deep links from the shared workstation payloads.
-- **Operator surface split** — WPF remains the primary maintenance surface for create/amend/deactivate/import/backfill workflows, while the React governance flow now consumes detail/history/economic-definition routes for drill-ins, unresolved-coverage deep links, and conflict refresh.
-
-### Remaining follow-on work
-
-- Expand Security Master-backed governance/report-pack workflows beyond the current coverage, reconciliation, and drill-in surfaces.
-- Add richer task/assignment and remediation workflows for unresolved mappings once operator workflow ownership is finalized.
-- Keep operability work focused on provider-native ingest automation and platform reliability rather than redefining the Security Master domain model.
 
 ---
 
@@ -76,46 +65,15 @@ The following capabilities were implemented as foundational work for this wave a
 - **`SecurityMasterRebuildOrchestrator`** — differential event-replay that picks up only new events since the last checkpoint, avoiding full re-projection on every restart. (`src/Meridian.Application/SecurityMaster/SecurityMasterRebuildOrchestrator.cs`)
 - **Full-text search migration** — Postgres `tsvector` column backed by a `gin` index and an `AFTER INSERT OR UPDATE` trigger, fed from `display_name`, `primary_identifier_value`, `asset_class`, `issuer_name`, `exchange_code`, and `currency`. (`src/Meridian.Storage/SecurityMaster/Migrations/002_security_master_fts.sql`)
 - **`ISecurityMasterQueryService.GetEconomicDefinitionByIdAsync`** — full aggregate rebuild on demand for governance drill-in surfaces.
-- **`SecurityMasterSecurityReferenceLookup`** (`ISecurityReferenceLookup`) — adapts the Security Master query service to portfolio/ledger workstation enrichment; resolves by exact identifiers (`ISIN`, `CUSIP`, `SEDOL`, `FIGI`), provider-symbol syntaxes, normalized tickers, and venue/decorator-stripped workstation symbols before deriving sub-type from asset class. (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs`)
+- **`SecurityMasterSecurityReferenceLookup`** (`ISecurityReferenceLookup`) — adapts the Security Master query service to portfolio/ledger workstation enrichment; resolves by `Ticker` identifier and derives sub-type from asset class. (`src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs`)
 - **Workstation DTOs** — `SecurityMasterWorkstationDto`, `SecurityClassificationSummaryDto`, `SecurityEconomicDefinitionSummaryDto`, `SecurityIdentityDrillInDto` in `Meridian.Contracts.Workstation`. (`src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs`)
 - **Security enrichment tests** — `SecurityEnrichmentTests` (portfolio/ledger resolution paths) and `SecurityMasterReferenceLookupTests` (unresolved identity, degraded metadata, sub-type derivation). (`tests/Meridian.Tests/SecurityMaster/`)
 
 ---
 
-## Operator Fund Operations Delivery
-
-Security Master is now wired into the governance-first fund-operations workflow rather than stopping at backend enrichment.
-
-### What Was Delivered
-
-- **Fund-operations DTO expansion** — `FundWorkspaceSummary`, `FundAccountSummary`, `FundPortfolioPosition`, `FundReconciliationItem`, and `ReconciliationSummary` now carry Security Master coverage, entity/sleeve/vehicle structure, strategy/run linkage, and reconciliation security-issue counts. (`src/Meridian.Contracts/Workstation/FundOperationsDtos.cs`)
-- **Account and structure workflows** — governance account projections now expose `EntityId`, `SleeveId`, `VehicleId`, `StrategyId`, `RunId`, plus operator-readable `StructureLabel` and `WorkflowLabel` values so teams can work from legal-entity and strategy context instead of raw account rows. (`src/Meridian.Wpf/Services/FundAccountReadService.cs`)
-- **Fund portfolio operator drill-in** — aggregated fund positions now preserve Security Master identity metadata, show mapped/partial/unresolved coverage state, and support opening the selected position directly into the Security Master browser. (`src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `src/Meridian.Wpf/Views/FundLedgerPage.xaml`)
-- **Strategy-run reconciliation integration** — governance reconciliation now loads strategy-run reconciliation results alongside account-level runs, surfaces `SecurityIssueCount`, distinguishes `ScopeLabel` (`Account` vs `Strategy Run`), and raises Security Master coverage breaks into the same operator queue. (`src/Meridian.Wpf/Services/ReconciliationReadService.cs`)
-- **Operator-facing WPF delivery** — the fund ledger page now shows structure/workflow context on accounts, Security Master coverage on portfolio rows, reconciliation coverage columns, and top-level overview text that calls out unresolved mappings and open reconciliation security coverage issues. (`src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs`, `src/Meridian.Wpf/Views/FundLedgerPage.xaml`)
-- **Desktop service registration** — reconciliation projection/run services are registered in the desktop composition root so strategy-run coverage and reconciliation drill-ins work in the WPF operator shell, not only in tests. (`src/Meridian.Wpf/App.xaml.cs`)
-- **Coverage-closing regression tests** — focused WPF and workstation tests now cover identifier heuristics, fund-ops Security Master carry-through, and strategy-level reconciliation security coverage. (`tests/Meridian.Tests/SecurityMaster/SecurityMasterReferenceLookupTests.cs`, `tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs`)
-
-### Operator Outcome
-
-Operators can now answer all of the following from the fund-operations shell without dropping into backend diagnostics:
-
-- Which aggregated positions are still missing Security Master coverage.
-- Which accounts belong to which entity/sleeve/vehicle structure.
-- Which accounts are tied to strategy/run-driven workflows versus manual/external workflows.
-- Which reconciliation runs have open security-coverage issues, including strategy-run driven breaks.
-- Which unresolved position should be opened directly in Security Master for remediation.
-
-### Remaining Follow-on Work
-
-- Extend the same operator-first Security Master posture into additional governance surfaces that are still run-centric outside the fund-operations shell.
-- Add explicit remediation actions for unresolved mappings and reconciliation coverage breaks once the task/assignment workflow is finalized.
-
----
-
 ## Idea 1 — Corporate Action Events
 
-**Status: ✅ Delivered**
+**Status: 🔶 Partial**
 
 ### What Was Delivered
 
@@ -128,14 +86,20 @@ Operators can now answer all of the following from the fund-operations shell wit
 - **WPF recording UI** — `SecurityMasterViewModel` includes `CorporateActions` (`ObservableCollection<CorporateActionDto>`) and commands for recording Dividend and StockSplit events.
 - **Backtest integration** — `BacktestEngine` applies corporate action adjustments via `ICorporateActionAdjustmentService` when `request.AdjustForCorporateActions` is `true`.
 
-### Follow-on Productization Work
+### Remaining Work
 
-- Expand operator-facing corporate-action presentation beyond the current WPF/governance drill-ins as broader governance report-pack workflows land.
-- Add more historical/operator reporting views on top of the delivered event, storage, and adjustment infrastructure.
+- **`CorporateActionAdjustmentService` production implementation** — the current `ICorporateActionAdjustmentService` interface exists but needs a concrete implementation that reads from the `ISecurityMasterEventStore` and applies split/dividend price adjustments to `HistoricalBar` slices.
+- **Corporate action timeline visualization** in the WPF detail panel (depends on production service above).
 
 ### Current State
 
-`SecurityMasterEvents.fs` defines `CorpActEvent` with all five cases. `ISecurityMasterEventStore` persists and replays corp-action events. The REST surface, WPF UI, and backtest adjustment path are all live.
+`SecurityMasterEvents.fs` defines `CorpActEvent` with all five cases. `ISecurityMasterEventStore` persists and replays corp-action events. The REST surface and WPF UI are complete. The BacktestEngine hook exists but requires a real `ICorporateActionAdjustmentService` implementation backed by the event store.
+
+### Acceptance Criteria (remaining)
+
+- `CorporateActionAdjustmentService` reads corporate actions from `ISecurityMasterEventStore` and adjusts historical bar OHLCV for splits and dividends.
+- Backtest P&L curves match expected split-adjusted prices when `AdjustForCorporateActions = true`.
+- Backtest engine: integrate adjustment service so fill prices are split-adjusted automatically.
 
 ### What Was Delivered
 
@@ -204,7 +168,7 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 
 ## Idea 4 — Exchange Bulk Ingest
 
-**Status: ✅ Delivered**
+**Status: 🔶 Partial**
 
 ### What Was Delivered
 
@@ -213,16 +177,21 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 - **`SecurityMasterCommands`** — `--security-master-ingest <file.csv|file.json>` CLI command wired through `CommandDispatcher`; prints per-row progress and final summary.
 - **`POST /api/security-master/import`** endpoint — accepts `SecurityMasterImportRequest` (file content + extension) and streams import results.
 
-### Follow-on Operability Work
+### Remaining Work
 
-- Add provider-native exchange ingest automation so operators can trigger vendor-backed listing imports without preparing CSV/JSON payloads first.
-- Add ingest-status polling/telemetry for long-running operational bulk loads.
+- **`PolygonSecurityMasterIngestProvider`** — pages through Polygon `/v3/reference/tickers` and maps responses to `CreateSecurityRequest`; enables `--security-master-ingest --provider polygon --exchange XNAS`.
+- **Ingest status endpoint** — `GET /api/security-master/ingest/status` for dashboard polling.
+
+### Acceptance Criteria (remaining)
+
+- Polygon provider ingests a full exchange listing without manual CSV export.
+- `GET /api/security-master/ingest/status` returns in-progress and last-completed ingest summary.
 
 ---
 
 ## Idea 5 — Golden Record Conflict Resolution
 
-**Status: ✅ Delivered**
+**Status: 🔶 Partial**
 
 ### What Was Delivered
 
@@ -231,10 +200,15 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 - **`ResolveConflictRequest`** DTO — `ConflictId`, `Resolution`, `ResolvedBy`, optional `Reason`.
 - **REST endpoints** — `GET /api/security-master/conflicts` and `POST /api/security-master/conflicts/{id}/resolve` in `SecurityMasterEndpoints.cs`.
 
-### Follow-on Operability Work
+### Remaining Work
 
-- Move conflict creation closer to ingest/projection time so provider disagreements are raised automatically as data lands.
-- Add additional operator notification/badge surfaces on top of the delivered governance conflict-review workflow.
+- **Automatic conflict detection on ingest** — `SecurityMasterProjectionService` should detect and record a `SecurityMasterConflict` when two providers contribute conflicting field values for the same FIGI/ISIN rather than silently overwriting.
+- **Dashboard conflict badge** — surface unresolved conflict count in the web dashboard Security Master panel.
+
+### Acceptance Criteria (remaining)
+
+- Two providers with differing `DisplayName` for the same FIGI trigger an automatic `SecurityMasterConflict` record during ingest.
+- Unresolved conflict count is surfaced in the Security Master dashboard panel.
 
 ---
 
@@ -263,9 +237,9 @@ The corporate action timeline and trading parameters detail panel are fully back
 | 1 | Bond Term Richness | ✅ Done | Data model foundation; enables fixed-income workflows downstream |
 | 2 | WPF Security Master Browser | ✅ Done | UI surface on top of completed backend capabilities |
 | 3 | Trading Parameters | ✅ Done | All six fields exposed; PaperTradingGateway validates lot size and snaps to tick grid |
-| 4 | Corporate Action Events | ✅ Done | Domain model, storage, adjustment service, and operator-facing drill-ins are available |
-| 5 | Exchange Bulk Ingest | ✅ Done | CSV/JSON import, CLI command, API endpoint, and desktop/operator access are available |
-| 6 | Golden Record Conflict Resolution | ✅ Done | Conflict list, resolution workflow, governance refresh, and workstation drill-ins are available |
+| 4 | Corporate Action Events | 🔶 Partial | Domain model + storage + endpoints done; production `ICorporateActionAdjustmentService` implementation remaining |
+| 5 | Exchange Bulk Ingest | 🔶 Partial | CSV/JSON import + CLI command done; Polygon provider ingest remaining |
+| 6 | Golden Record Conflict Resolution | 🔶 Partial | On-demand detection + resolve REST endpoints done; automatic ingest-time detection remaining |
 
 ---
 

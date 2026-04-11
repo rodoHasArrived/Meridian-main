@@ -1,6 +1,6 @@
 # Provider Management Architecture
 
-**Version:** 3.3 | **Last Updated:** 2026-04-04
+**Version:** 3.1 | **Last Updated:** 2026-03-14
 
 This document describes the provider management architecture used by Meridian. It covers provider contracts, discovery, lifecycle management, failover, health monitoring, degradation scoring, and data quality operations.
 
@@ -22,107 +22,6 @@ The provider stack is built on two complementary contract systems:
 2. **`IDataSource`** — Unified base interface for data sources with lifecycle management (`InitializeAsync`, `ValidateCredentialsAsync`, `TestConnectivityAsync`), health tracking, and rate-limit state.
 
 At runtime, provider registration and routing are handled by `DataSourceRegistry`, while resilience is managed by `StreamingFailoverService` (streaming), `CompositeHistoricalDataProvider` (historical), and monitoring services (`ConnectionHealthMonitor`, `ProviderDegradationScorer`, `ProviderLatencyService`).
-
-The platform now also includes a relationship-aware provider-operations layer for account-scoped routing. That layer is additive: it keeps legacy provider contracts and `DataSourcesConfig` working, but overlays provider connections, capability bindings, safety policies, presets, certification state, and route explainability on top.
-
----
-
-## Relationship-Aware Provider Operations
-
-### What was added in v3.2
-
-- `IProviderFamilyAdapter`, `ICapabilityRouter`, `ProviderCapabilityKind`, `ProviderSafetyPolicy`, `ProviderRouteContext`, and route-decision models in `src/Meridian.ProviderSdk/`
-- config-backed provider operations models in `src/Meridian.Core/Config/ProviderConnectionsConfig.cs`
-- DTOs for config and API transport in `src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs` and `src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs`
-- application services in `src/Meridian.Application/ProviderRouting/`
-- shared endpoints under `/api/provider-operations/*`
-
-### Intent
-
-The new layer lets Meridian answer questions like:
-
-- Which broker/bank/data vendor is bound to this specific fund account?
-- Which provider will be used for execution, fills, security master seeding, or streaming?
-- Why was that route selected, and what fallbacks are allowed?
-- Is the chosen connection production ready and recently certified?
-
-### Core concepts
-
-| Concept | Purpose |
-|---------|---------|
-| `ProviderConnectionConfig` | One real-world relationship to a broker, bank, custodian, exchange, or data vendor |
-| `ProviderBindingConfig` | Binds one capability to one connection at global, workspace, fund, entity, sleeve, vehicle, or account scope |
-| `ProviderPolicyConfig` | Applies safety rules such as `NoAutomaticFailover` or `SameInstitutionOnly` |
-| `ProviderPresetConfig` | Reusable operating posture such as `Research Sandbox` or `Multi-Broker Fund Ops` |
-| `ProviderCertificationConfig` | Stores certification results and production-readiness state |
-
-### Capability routing rules
-
-The implemented precedence is:
-
-1. account binding
-2. fund/entity/sleeve/vehicle override
-3. workspace override
-4. global default
-5. failover chain
-
-Strict account-bound capabilities currently default to explicit-binding rules:
-
-- `OrderExecution`
-- `ExecutionHistory`
-- `AccountBalances`
-- `AccountPositions`
-- `CashTransactions`
-- `BankStatements`
-
-Flexible shared-data capabilities default to health-aware failover:
-
-- `RealtimeMarketData`
-- `HistoricalBars`
-- `HistoricalTrades`
-- `HistoricalQuotes`
-- `SymbolSearch`
-- `ReferenceData`
-- `SecurityMasterSeed`
-- `CorporateActions`
-- `OptionsChain`
-
-### Routing performance
-
-`ProviderRoutingService` now keeps an in-memory snapshot of the effective routing graph for high-frequency route evaluation. The snapshot precomputes connection lookup, capability bindings, and policy maps, and it invalidates automatically when the provider-operations config file stamp changes.
-
-This removes repeated config loads, JSON deserialization, and effective-routing recomputation from the normal route-preview and route-selection path while still allowing file-backed config edits to take effect without restarting the process.
-
-### Legacy compatibility
-
-`DataSourcesConfig.DefaultRealTimeSourceId` and `DataSourcesConfig.DefaultHistoricalSourceId` are automatically synthesized into provider-operation bindings when no explicit capability binding exists. This preserves existing behavior while allowing newer account-scoped routing to override it.
-
-### New endpoints
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/provider-operations/connections` | GET/POST | List or upsert provider connections |
-| `/api/provider-operations/connections/{connectionId}` | GET/DELETE | Inspect or delete one connection |
-| `/api/provider-operations/bindings` | GET/POST | List or upsert capability bindings |
-| `/api/provider-operations/bindings/{bindingId}` | DELETE | Delete one binding |
-| `/api/provider-operations/policies` | GET | View effective safety policies |
-| `/api/provider-operations/route-preview` | POST | Explain which provider connection would be chosen |
-| `/api/provider-operations/route-history` | GET | View recent route previews |
-| `/api/provider-operations/presets` | GET | List built-in and configured presets |
-| `/api/provider-operations/presets/apply` | POST | Activate a preset |
-| `/api/provider-operations/certifications` | GET | List certification results |
-| `/api/provider-operations/certifications/run` | POST | Run certification for one connection |
-| `/api/provider-operations/trust` | GET | Return trust snapshots for configured connections |
-
-### Current scope
-
-The v3.3 implementation now includes the first relationship-first desktop surfaces on top of the routing layer:
-
-- a relationship-first provider onboarding wizard in `src/Meridian.Wpf/Views/AddProviderWizardPage.xaml`
-- account-level provider binding and effective-route panels in `src/Meridian.Wpf/Views/FundAccountsPage.xaml`
-- desktop service support for `/api/provider-operations/*`
-
-Legacy provider contracts still remain in place, and the platform still treats the provider-operations layer as additive. Full execution/cash adapters and deeper governance workflows continue to build on top of this slice.
 
 ---
 
@@ -710,17 +609,3 @@ export TIINGO__TOKEN=your-token
 - Added `BackfillProgressTracker` – real-time ETA and progress tracking for backfill jobs; available via `/api/backfill/status` endpoint.
 - Added `ProviderSubscriptionRanges` utility for splitting large symbol lists into provider-compatible batches.
 - Updated version and date.
-
-## Migration Notes (v3.1 -> v3.2)
-
-- Added relationship-aware provider operations with `ProviderConnectionConfig`, `ProviderBindingConfig`, `ProviderPolicyConfig`, `ProviderPresetConfig`, and `ProviderCertificationConfig`.
-- Added capability routing primitives in `Meridian.ProviderSdk`, including `IProviderFamilyAdapter`, `ICapabilityRouter`, `ProviderCapabilityKind`, and `ProviderRouteContext`.
-- Added explainable route preview, route history, certification, preset, and trust endpoints under `/api/provider-operations/*`.
-- Added automatic compatibility synthesis from legacy `DefaultRealTimeSourceId` and `DefaultHistoricalSourceId` into capability bindings.
-
-## Migration Notes (v3.2 -> v3.3)
-
-- Added an in-memory routing snapshot cache in `ProviderRoutingService` with config-stamp invalidation to support high-frequency route evaluation.
-- Extended `ProviderManagementService` and `Meridian.Ui.Services` result models so the desktop can manage provider-operation connections, bindings, route preview, presets, certifications, and trust snapshots.
-- Replaced the provider-centric add flow with a relationship-first provider onboarding wizard that captures connection type, scope, capability bindings, route preview, and certification actions.
-- Replaced the `FundAccounts` navigation target stub with a real account workbench that shows scoped provider bindings and effective route previews for the selected account.

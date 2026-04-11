@@ -57,65 +57,9 @@ module SecurityMaster =
         @ requireNotBlank "source_system_required" "SourceSystem" provenance.SourceSystem
         @ requireNotBlank "updated_by_required" "UpdatedBy" provenance.UpdatedBy
 
-    let private validateParticipationTerms (terms: ParticipationTerms) =
-        []
-        @ require (terms.AdditionalDividendThreshold |> Option.forall (fun threshold -> threshold > 0m))
-            (error "equity_participation_threshold_invalid" "ParticipationTerms AdditionalDividendThreshold must be greater than zero when present.")
-
-    let private validateLiquidationPreference preference =
-        match preference with
-        | LiquidationPreference.Pari
-        | LiquidationPreference.Subordinated -> []
-        | LiquidationPreference.Senior multiple ->
-            require (multiple > 0m)
-                (error "equity_liquidation_preference_invalid" "LiquidationPreference Senior multiple must be greater than zero.")
-
-    let private validatePreferredTerms (terms: PreferredTerms) =
-        []
-        @ require (terms.DividendRate |> Option.forall (fun rate -> rate >= 0m))
-            (error "equity_dividend_rate_invalid" "Preferred DividendRate must be zero or greater when present.")
-        @ require (terms.RedemptionPrice |> Option.forall (fun price -> price > 0m))
-            (error "equity_redemption_price_invalid" "Preferred RedemptionPrice must be greater than zero when present.")
-        @ require
-            (match terms.CallableDate, terms.RedemptionDate with
-             | Some callableDate, Some redemptionDate -> callableDate <= redemptionDate
-             | _ -> true)
-            (error "equity_callable_date_invalid" "Preferred CallableDate must be on or before RedemptionDate when both are present.")
-        @ (terms.ParticipationTerms |> Option.map validateParticipationTerms |> Option.defaultValue [])
-        @ validateLiquidationPreference terms.LiquidationPreference
-
-    let private validateConvertibleTerms (terms: ConvertibleTerms) =
-        let (SecurityId underlyingId) = terms.UnderlyingSecurityId
-
-        []
-        @ require (underlyingId <> Guid.Empty)
-            (error "equity_underlying_security_required" "Convertible UnderlyingSecurityId must not be empty.")
-        @ require (terms.ConversionRatio > 0m)
-            (error "equity_conversion_ratio_invalid" "Convertible ConversionRatio must be greater than zero.")
-        @ require (terms.ConversionPrice |> Option.forall (fun price -> price > 0m))
-            (error "equity_conversion_price_invalid" "Convertible ConversionPrice must be greater than zero when present.")
-        @ require
-            (match terms.ConversionStartDate, terms.ConversionEndDate with
-             | Some startDate, Some endDate -> startDate <= endDate
-             | _ -> true)
-            (error "equity_conversion_window_invalid" "Convertible ConversionStartDate must be on or before ConversionEndDate when both are present.")
-
-    let private validateEquityTerms (terms: EquityTerms) =
-        []
-        @ (terms.Classification
-           |> Option.map (function
-               | EquityClassification.Common -> []
-               | EquityClassification.Preferred preferred -> validatePreferredTerms preferred
-               | EquityClassification.Convertible convertible -> validateConvertibleTerms convertible
-               | EquityClassification.ConvertiblePreferred (preferred, convertible) ->
-                   validatePreferredTerms preferred @ validateConvertibleTerms convertible
-               | EquityClassification.Other label ->
-                   requireNotBlank "equity_classification_other_required" "EquityClassification.Other" label)
-           |> Option.defaultValue [])
-
     let private validateKind (kind: SecurityKind) =
         match kind with
-        | SecurityKind.Equity terms -> validateEquityTerms terms
+        | SecurityKind.Equity _ -> []
         | SecurityKind.Option terms ->
             []
             @ requireNotBlank "option_put_call_required" "PutCall" terms.PutCall
@@ -327,58 +271,6 @@ module SecurityMaster =
             else
                 identifier)
 
-    let private preferredTermsFromClassification classification =
-        match classification with
-        | Some (EquityClassification.Preferred preferred)
-        | Some (EquityClassification.ConvertiblePreferred (preferred, _)) -> Some preferred
-        | _ -> None
-
-    let private convertibleTermsFromClassification classification =
-        match classification with
-        | Some (EquityClassification.Convertible convertible)
-        | Some (EquityClassification.ConvertiblePreferred (_, convertible)) -> Some convertible
-        | _ -> None
-
-    let private hasSameClassificationShape currentClassification nextClassification =
-        match currentClassification, nextClassification with
-        | None, None -> true
-        | Some EquityClassification.Common, Some EquityClassification.Common -> true
-        | Some (EquityClassification.Preferred _), Some (EquityClassification.Preferred _) -> true
-        | Some (EquityClassification.Convertible _), Some (EquityClassification.Convertible _) -> true
-        | Some (EquityClassification.ConvertiblePreferred _), Some (EquityClassification.ConvertiblePreferred _) -> true
-        | Some (EquityClassification.Other currentLabel), Some (EquityClassification.Other nextLabel) -> currentLabel = nextLabel
-        | _ -> false
-
-    let private createAmendEvent (current: SecurityMasterRecord) (nextRecord: SecurityMasterRecord) =
-        let createGenericEvent () =
-            SecurityMasterEvent.TermsAmended(current.Version, nextRecord)
-
-        let sharedContextUnchanged =
-            current.Common = nextRecord.Common
-            && current.Identifiers = nextRecord.Identifiers
-
-        match current.Kind, nextRecord.Kind with
-        | SecurityKind.Equity currentTerms, SecurityKind.Equity nextTerms when sharedContextUnchanged ->
-            let equityMetadataUnchanged =
-                currentTerms.ShareClass = nextTerms.ShareClass
-                && currentTerms.VotingRightsCat = nextTerms.VotingRightsCat
-                && hasSameClassificationShape currentTerms.Classification nextTerms.Classification
-
-            if not equityMetadataUnchanged then
-                createGenericEvent ()
-            else
-                let currentPreferred = currentTerms.Classification |> preferredTermsFromClassification
-                let nextPreferred = nextTerms.Classification |> preferredTermsFromClassification
-                let currentConvertible = currentTerms.Classification |> convertibleTermsFromClassification
-                let nextConvertible = nextTerms.Classification |> convertibleTermsFromClassification
-
-                match currentPreferred <> nextPreferred, currentConvertible <> nextConvertible with
-                | true, false -> SecurityMasterEvent.PreferredTermsAmended(current.Version, nextRecord)
-                | false, true -> SecurityMasterEvent.ConversionTermsAmended(current.Version, nextRecord)
-                | _ -> createGenericEvent ()
-        | _ ->
-            createGenericEvent ()
-
     let create (command: CreateSecurity) =
         match validateCreate command with
         | [] ->
@@ -417,7 +309,7 @@ module SecurityMaster =
             }
 
             match validateRecord nextRecord command.EffectiveFrom with
-            | [] -> Ok [ createAmendEvent current nextRecord ]
+            | [] -> Ok [ SecurityMasterEvent.TermsAmended(current.Version, nextRecord) ]
             | errors -> Error errors
         | errors -> Error errors
 

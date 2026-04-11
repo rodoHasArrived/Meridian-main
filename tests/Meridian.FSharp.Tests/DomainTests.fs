@@ -2,14 +2,12 @@
 module Meridian.FSharp.Tests.DomainTests
 
 open System
-open System.Text.Json
 open Xunit
 open FsUnit.Xunit
 open Meridian.FSharp.Domain.Sides
 open Meridian.FSharp.Domain.Integrity
 open Meridian.FSharp.Domain.MarketEvents
 open Meridian.FSharp.Domain
-open Meridian.FSharp.SecurityMasterInterop
 
 [<Fact>]
 let ``Side.ToInt converts Buy to 0`` () =
@@ -152,106 +150,6 @@ let ``QuoteEvent with CLIMutable can be created`` () =
 
 open Meridian.FSharp.Domain
 
-let private createEquityCreateCommand classification =
-    let effectiveFrom = DateTimeOffset(2026, 4, 6, 0, 0, 0, TimeSpan.Zero)
-
-    {
-        SecurityId = SecurityId(Guid.NewGuid())
-        Common = {
-            DisplayName = "Convertible Preferred Test Security"
-            Currency = "USD"
-            CountryOfRisk = None
-            IssuerName = Some "Meridian Test Issuer"
-            Exchange = Some "NYSE"
-            LotSize = Some 100m
-            TickSize = Some 0.01m
-        }
-        Identifiers = [
-            {
-                Kind = IdentifierKind.Ticker
-                Value = "MTEST"
-                IsPrimary = true
-                ValidFrom = effectiveFrom
-                ValidTo = None
-            }
-        ]
-        Kind =
-            SecurityKind.Equity {
-                ShareClass = Some "A"
-                VotingRightsCat = Some VotingRightsCat.LimitedVoting
-                Classification = classification
-            }
-        EffectiveFrom = effectiveFrom
-        Provenance = {
-            SourceSystem = "domain-tests"
-            SourceRecordId = None
-            AsOf = effectiveFrom
-            UpdatedBy = "domain-tests"
-            Reason = Some "phase-1-5"
-        }
-    }
-
-let private createSecurityRecord classification =
-    match SecurityMaster.create (createEquityCreateCommand classification) with
-    | Ok [ SecurityMasterEvent.SecurityCreated record ] -> record
-    | Ok _ -> failwith "Expected a single SecurityCreated event"
-    | Error errors -> failwithf "Expected SecurityCreated record, got: %A" errors
-
-let private getDateOnlyProperty (element: JsonElement) (propertyName: string) =
-    element.GetProperty(propertyName).GetString() |> DateOnly.Parse
-
-let private createConvertiblePreferredClassification () =
-    let preferredTerms = {
-        DividendRate = Some 6.25m
-        DividendType = DividendType.Fixed
-        RedemptionPrice = Some 25.00m
-        RedemptionDate = Some (DateOnly(2032, 1, 15))
-        CallableDate = Some (DateOnly(2030, 1, 15))
-        ParticipationTerms = Some {
-            ParticipatesInCommonDividends = true
-            AdditionalDividendThreshold = Some 1.50m
-        }
-        LiquidationPreference = LiquidationPreference.Senior 1.0m
-    }
-    let convertibleTerms = {
-        UnderlyingSecurityId = SecurityId(Guid.NewGuid())
-        ConversionRatio = 2.50m
-        ConversionPrice = Some 48.00m
-        ConversionStartDate = Some (DateOnly(2027, 1, 15))
-        ConversionEndDate = Some (DateOnly(2031, 12, 31))
-    }
-
-    preferredTerms, convertibleTerms, EquityClassification.ConvertiblePreferred(preferredTerms, convertibleTerms)
-
-let private createEquityAmendCommand
-    (currentRecord: SecurityMasterRecord)
-    (nextClassification: EquityClassification)
-    (commonOverride: CommonTerms option)
-    : AmendTerms =
-    let nextKind =
-        match currentRecord.Kind with
-        | SecurityKind.Equity terms ->
-            SecurityKind.Equity { terms with Classification = Some nextClassification }
-        | _ ->
-            failwith "Expected SecurityKind.Equity"
-
-    {
-        SecurityId = currentRecord.SecurityId
-        ExpectedVersion = currentRecord.Version
-        Common = commonOverride
-        Kind = Some nextKind
-        IdentifiersToAdd = []
-        IdentifiersToExpire = []
-        EffectiveFrom = currentRecord.EffectiveFrom
-        Provenance = {
-            SourceSystem = "domain-tests"
-            SourceRecordId = None
-            AsOf = currentRecord.EffectiveFrom.AddMinutes(5.0)
-            UpdatedBy = "domain-tests"
-            Reason = Some "phase-1-5-amend"
-        }
-    }
-
 [<Fact>]
 let ``BondTerms fixedRate factory sets coupon correctly`` () =
     let maturity = DateOnly(2030, 6, 15)
@@ -304,7 +202,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         CallDate = Some callDate
         IssuerName = Some "Corp A"
         Seniority = Some "Senior"
-        Subclass = Some BondSubclass.Corporate
+        Subclass = BondSubclass.Corporate
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -340,7 +238,7 @@ let ``CorpActEvent.securityId extracts securityId from MergerAbsorption`` () =
 [<Fact>]
 let ``CorpActEvent.securityId extracts securityId from RightsIssue`` () =
     let sid = SecurityId(Guid.NewGuid())
-    let evt = CorpActEvent.RightsIssue(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 6, 1), 15.00m, 2.0m)
+    let evt = CorpActEvent.RightsIssue(sid, CorpActId(Guid.NewGuid()), DateOnly(2024, 6, 1), 15.00m, 2.0m, true, None)
     CorpActEvent.securityId evt |> should equal sid
 
 [<Fact>]
@@ -361,7 +259,7 @@ let ``CorpActEvent.exDate extracts ex-date from all cases`` () =
     let split = CorpActEvent.StockSplit(sid, id, exDate, 3m)
     let spinOff = CorpActEvent.SpinOff(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.25m)
     let merger = CorpActEvent.MergerAbsorption(sid, id, exDate, SecurityId(Guid.NewGuid()), 0.8m)
-    let rights = CorpActEvent.RightsIssue(sid, id, exDate, 10.00m, 1.0m)
+    let rights = CorpActEvent.RightsIssue(sid, id, exDate, 10.00m, 1.0m, true, None)
     CorpActEvent.exDate div |> should equal exDate
     CorpActEvent.exDate split |> should equal exDate
     CorpActEvent.exDate spinOff |> should equal exDate
@@ -377,27 +275,18 @@ let ``CorpActEvent.eventType returns correct string for each case`` () =
     CorpActEvent.eventType (CorpActEvent.StockSplit(sid, id, date, 2m)) |> should equal "StockSplit"
     CorpActEvent.eventType (CorpActEvent.SpinOff(sid, id, date, SecurityId(Guid.NewGuid()), 0.5m)) |> should equal "SpinOff"
     CorpActEvent.eventType (CorpActEvent.MergerAbsorption(sid, id, date, SecurityId(Guid.NewGuid()), 1m)) |> should equal "MergerAbsorption"
-    CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m)) |> should equal "RightsIssue"
-    CorpActEvent.eventType (CorpActEvent.ReturnOfCapital(sid, id, date, None, 2.50m, "USD")) |> should equal "ReturnOfCapital"
+    CorpActEvent.eventType (CorpActEvent.RightsIssue(sid, id, date, 10m, 1m, true, None)) |> should equal "RightsIssue"
 
 // ---------------------------------------------------------------------------
-// New domain additions — VotingRightsCat, BondSubclass, OptionTerms,
-// SwapTerms.CalendarRefs, ReturnOfCapital
+// Structured / factorable bond tests
 // ---------------------------------------------------------------------------
 
 [<Fact>]
-let ``EquityTerms carries VotingRightsCat correctly`` () =
-    let allCases = [
-        VotingRightsCat.FullVoting,    "FullVoting"
-        VotingRightsCat.LimitedVoting, "LimitedVoting"
-        VotingRightsCat.NonVoting,     "NonVoting"
-        VotingRightsCat.DualClass,     "DualClass"
-        VotingRightsCat.SuperVoting,   "SuperVoting"
-    ]
-    for (cat, expected) in allCases do
-        let terms = { ShareClass = None; VotingRightsCat = Some cat; Classification = None }
-        terms.VotingRightsCat |> should equal (Some cat)
-        VotingRightsCat.asString cat |> should equal expected
+let ``BondSubclass MortgageBacked sets correct subclass on BondTerms`` () =
+    let terms = BondTerms.fixedRate (DateOnly(2050, 1, 1)) 4.5m (Some "Act/360") (Some "Freddie Mac")
+    let mbs = { terms with Subclass = BondSubclass.MortgageBacked }
+    mbs.Subclass |> should equal BondSubclass.MortgageBacked
+    mbs.IsCallable |> should equal false
 
 [<Fact>]
 let ``EquityTerms VotingRightsCat OtherVotingRights carries string payload`` () =
@@ -618,7 +507,8 @@ let ``SecurityMasterLegacyUpgrade preserves convertible preferred classification
 
     let equityBehavior = definition.Terms.EquityBehavior |> Option.defaultWith (fun () -> failwith "Expected equity behavior terms")
     equityBehavior.ShareClass |> should equal (Some "A")
-    equityBehavior.DistributionType |> should equal (Some (DividendType.asString preferredTerms.DividendType))
+    equityBehavior.DistributionType
+    |> should equal (Some (DistributionPolicy.OtherDistribution(DividendType.asString preferredTerms.DividendType)))
 
     let redemption = definition.Terms.Redemption |> Option.defaultWith (fun () -> failwith "Expected redemption terms")
     redemption.RedemptionPrice |> should equal preferredTerms.RedemptionPrice
@@ -670,16 +560,40 @@ let ``SwapTerms CalendarRefs is accessible and can hold multiple entries`` () =
         Legs = []
         CalendarRefs = [ "TARGET2"; "FedWire" ]
     }
-    terms.CalendarRefs |> should equal [ "TARGET2"; "FedWire" ]
-    terms.CalendarRefs |> List.length |> should equal 2
+    sp.Factor |> should equal (Some 0.85m)
+    sp.CollateralType |> should equal (Some "ResidentialMortgage")
+    sp.IsInterestOnly |> should equal false
 
 [<Fact>]
-let ``ReturnOfCapital securityId and exDate are extracted correctly`` () =
-    let sid = SecurityId(Guid.NewGuid())
-    let id = CorpActId(Guid.NewGuid())
-    let exDate = DateOnly(2024, 9, 30)
-    let evt = CorpActEvent.ReturnOfCapital(sid, id, exDate, Some (DateOnly(2024, 10, 15)), 1.25m, "USD")
-    CorpActEvent.securityId evt |> should equal sid
-    CorpActEvent.corpActId evt |> should equal id
-    CorpActEvent.exDate evt |> should equal exDate
-    CorpActEvent.eventType evt |> should equal "ReturnOfCapital"
+let ``PrepaymentModel Psa carries correct speed`` () =
+    let model = PrepaymentModel.Psa 200m
+    match model with
+    | PrepaymentModel.Psa speed -> speed |> should equal 200m
+    | _ -> failwith "unexpected case"
+
+[<Fact>]
+let ``PrepaymentModel Cpr carries annual rate`` () =
+    let model = PrepaymentModel.Cpr 0.08m
+    match model with
+    | PrepaymentModel.Cpr rate -> rate |> should equal 0.08m
+    | _ -> failwith "unexpected case"
+
+[<Fact>]
+let ``SecurityTermModules empty has StructuredProduct None`` () =
+    SecurityTermModules.empty.StructuredProduct |> should equal None
+
+[<Fact>]
+let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
+    let sp = {
+        Factor = None; FactorDate = None; WeightedAvgCoupon = None
+        WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None
+        CollateralType = Some "ResidentialMortgage"
+        PoolIdentifier = None; TrancheClass = Some "IO"
+        PrepaymentAssumption = None; AverageLifeYears = None
+        IsInterestOnly = true; IsPrincipalOnly = false
+        NotionalBalance = Some 10_000_000m
+        Originator = None; CreditEnhancementPct = None
+    }
+    sp.IsInterestOnly |> should equal true
+    sp.IsPrincipalOnly |> should equal false
+    sp.NotionalBalance |> should equal (Some 10_000_000m)

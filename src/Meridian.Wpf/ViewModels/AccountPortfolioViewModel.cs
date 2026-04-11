@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -120,21 +119,8 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
         get => _parameter;
         set
         {
-            if (!SetProperty(ref _parameter, value))
-            {
-                return;
-            }
-
-            if (value is string accountId)
-            {
+            if (SetProperty(ref _parameter, value) && value is string accountId)
                 _ = InitializeAsync(accountId);
-                return;
-            }
-
-            if (value is FundOperationsNavigationContext context && context.AccountId is Guid accountGuid)
-            {
-                _ = InitializeAsync(accountGuid.ToString("D"));
-            }
         }
     }
 

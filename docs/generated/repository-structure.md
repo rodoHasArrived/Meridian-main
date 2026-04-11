@@ -1,6 +1,10 @@
 # Repository Structure
 
+<<<<<<< HEAD
 > Auto-generated on 2026-04-09 07:07:09 UTC. Do not edit manually.
+=======
+> Auto-generated on 2026-04-10 21:25:21 UTC. Do not edit manually.
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 ```text
 Meridian-main
@@ -109,6 +113,12 @@ Meridian-main
 │   │   ├── meridian-implementation-assurance
 │   │   │   ├── agents
 │   │   │   ├── evals
+│   │   │   │   ├── artifacts
+│   │   │   │   │   ├── eval-1.jsonl
+│   │   │   │   │   ├── eval-2.jsonl
+│   │   │   │   │   ├── eval-3.jsonl
+│   │   │   │   │   ├── eval-4.jsonl
+│   │   │   │   │   └── eval-5.jsonl
 │   │   │   │   ├── benchmark_baseline.json
 │   │   │   │   ├── evals.json
 │   │   │   │   ├── meridian-implementation-assurance.prompts.csv
@@ -345,6 +355,9 @@ Meridian-main
 │       │   └── install.sh
 │       ├── lib
 │       │   └── BuildNotification.psm1
+│       ├── publish
+│       │   ├── publish.ps1
+│       │   └── publish.sh
 │       ├── run
 │       │   ├── start-collector.ps1
 │       │   ├── start-collector.sh
@@ -463,6 +476,7 @@ Meridian-main
 │   │   ├── audit-results-full.json
 │   │   ├── AUDIT_REPORT.md
 │   │   ├── BACKTEST_ENGINE_CODE_REVIEW_2026_03_25.md
+│   │   ├── CODE_REVIEW_2026-03-16.md
 │   │   ├── FURTHER_SIMPLIFICATION_OPPORTUNITIES.md
 │   │   ├── prompt-generation-results.json
 │   │   └── README.md
@@ -4051,6 +4065,10 @@ Meridian-main
 │   │   │   ├── Meridian.yml
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
+<<<<<<< HEAD
+=======
+│   │   ├── docfx.json
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 │   │   ├── filterConfig.yml
 │   │   ├── README.md
 │   │   └── temp-metadata-only.json
@@ -4086,6 +4104,7 @@ Meridian-main
 │   │   ├── adr-index.md
 │   │   ├── configuration-schema.md
 │   │   ├── documentation-coverage.md
+│   │   ├── interfaces.md
 │   │   ├── project-context.md
 │   │   ├── project-dependencies.md
 │   │   ├── provider-registry.md
@@ -4204,25 +4223,34 @@ Meridian-main
 │   │   ├── 07-backfill.png
 │   │   ├── 08-derivatives.png
 │   │   ├── 09-symbols.png
+│   │   ├── 10-status-section.png
 │   │   ├── 10-status.png
-│   │   ├── 10-workstation-research.png
 │   │   ├── 11-login.png
-│   │   ├── 11-workstation-trading.png
-│   │   ├── 12-workstation-data-operations.png
 │   │   ├── 12-workstation-research.png
-│   │   ├── 13-workstation-governance.png
+│   │   ├── 12-workstation-trading.png
+│   │   ├── 13-workstation-data-operations.png
 │   │   ├── 13-workstation-trading.png
 │   │   ├── 14-workstation-data-operations.png
+│   │   ├── 14-workstation-governance.png
 │   │   ├── 14-workstation-trading-orders.png
 │   │   ├── 15-workstation-governance.png
+│   │   ├── 15-workstation-trading-orders.png
 │   │   ├── 15-workstation-trading-positions.png
+│   │   ├── 16-workstation-trading-positions.png
 │   │   ├── 16-workstation-trading-risk.png
 │   │   ├── 17-workstation-data-operations-providers.png
+│   │   ├── 17-workstation-trading-risk.png
 │   │   ├── 18-workstation-data-operations-backfills.png
+│   │   ├── 18-workstation-data-operations-providers.png
+│   │   ├── 19-workstation-data-operations-backfills.png
 │   │   ├── 19-workstation-data-operations-exports.png
+│   │   ├── 20-workstation-data-operations-exports.png
 │   │   ├── 20-workstation-governance-ledger.png
+│   │   ├── 21-workstation-governance-ledger.png
 │   │   ├── 21-workstation-governance-reconciliation.png
+│   │   ├── 22-workstation-governance-reconciliation.png
 │   │   ├── 22-workstation-governance-security-master.png
+│   │   ├── 23-workstation-governance-security-master.png
 │   │   └── README.md
 │   ├── security
 │   │   ├── known-vulnerabilities.md
@@ -4234,6 +4262,7 @@ Meridian-main
 │   │   ├── coverage-report.md
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
+│   │   ├── DOCUMENTATION_TRIAGE_2026_03_21.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
 │   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
@@ -4248,6 +4277,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_COMBINED.md
+│   │   ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │   │   ├── rules-report.md
 │   │   ├── TARGET_END_PRODUCT.md
 │   │   ├── todo-scan-results.json
@@ -4320,7 +4350,10 @@ Meridian-main
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── install-git-hooks.sh
+<<<<<<< HEAD
 │   │   ├── robinhood-options-smoke.ps1
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 │   │   ├── run-desktop-workflow.ps1
 │   │   └── run-desktop.ps1
 │   ├── lib
@@ -4596,6 +4629,7 @@ Meridian-main
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
+│   │   │   ├── SecurityKindMapping.cs
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterConflictService.cs
@@ -4758,6 +4792,7 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── IBacktestContext.cs
 │   │   ├── IBacktestStrategy.cs
+│   │   ├── IntermediateMetrics.cs
 │   │   ├── LotSelectionMethod.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
 │   │   ├── OpenLot.cs
@@ -5628,6 +5663,8 @@ Meridian-main
 │   │   │   └── StrategyStatus.cs
 │   │   ├── Promotions
 │   │   │   └── BacktestToLivePromoter.cs
+│   │   ├── Serialization
+│   │   │   └── FSharpInteropJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
@@ -5647,6 +5684,84 @@ Meridian-main
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Strategies.csproj
+<<<<<<< HEAD
+=======
+│   ├── Meridian.Ui
+│   │   ├── dashboard
+│   │   │   ├── src
+│   │   │   │   ├── components
+│   │   │   │   │   ├── meridian
+│   │   │   │   │   │   ├── command-palette.test.tsx
+│   │   │   │   │   │   ├── command-palette.tsx
+│   │   │   │   │   │   ├── entity-data-table.test.tsx
+│   │   │   │   │   │   ├── entity-data-table.tsx
+│   │   │   │   │   │   ├── equity-curve-chart.test.tsx
+│   │   │   │   │   │   ├── equity-curve-chart.tsx
+│   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── run-status-badge.tsx
+│   │   │   │   │   │   ├── workspace-header.tsx
+│   │   │   │   │   │   └── workspace-nav.tsx
+│   │   │   │   │   └── ui
+│   │   │   │   │       ├── badge.tsx
+│   │   │   │   │       ├── button.tsx
+│   │   │   │   │       ├── card.tsx
+│   │   │   │   │       ├── command.tsx
+│   │   │   │   │       ├── dialog.tsx
+│   │   │   │   │       └── input.tsx
+│   │   │   │   ├── hooks
+│   │   │   │   │   └── use-workstation-data.ts
+│   │   │   │   ├── lib
+│   │   │   │   │   ├── api.trading.test.ts
+│   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── utils.ts
+│   │   │   │   │   └── workspace.ts
+│   │   │   │   ├── screens
+│   │   │   │   │   ├── data-operations-screen.test.tsx
+│   │   │   │   │   ├── data-operations-screen.tsx
+│   │   │   │   │   ├── governance-screen.test.tsx
+│   │   │   │   │   ├── governance-screen.tsx
+│   │   │   │   │   ├── overview-screen.tsx
+│   │   │   │   │   ├── research-screen.test.tsx
+│   │   │   │   │   ├── research-screen.tsx
+│   │   │   │   │   ├── trading-screen.test.tsx
+│   │   │   │   │   ├── trading-screen.tsx
+│   │   │   │   │   └── workspace-placeholder.tsx
+│   │   │   │   ├── styles
+│   │   │   │   │   └── index.css
+│   │   │   │   ├── test
+│   │   │   │   │   └── setup.ts
+│   │   │   │   ├── app.tsx
+│   │   │   │   ├── main.tsx
+│   │   │   │   └── types.ts
+│   │   │   ├── index.html
+│   │   │   ├── package-lock.json
+│   │   │   ├── package.json
+│   │   │   ├── postcss.config.cjs
+│   │   │   ├── tailwind.config.d.ts
+│   │   │   ├── tailwind.config.js
+│   │   │   ├── tailwind.config.ts
+│   │   │   ├── tsconfig.app.json
+│   │   │   ├── tsconfig.app.tsbuildinfo
+│   │   │   ├── tsconfig.json
+│   │   │   ├── tsconfig.node.json
+│   │   │   ├── tsconfig.node.tsbuildinfo
+│   │   │   ├── vite.config.d.ts
+│   │   │   ├── vite.config.js
+│   │   │   └── vite.config.ts
+│   │   ├── wwwroot
+│   │   │   ├── static
+│   │   │   │   └── dashboard.css
+│   │   │   └── workstation
+│   │   │       ├── assets
+│   │   │       │   ├── index-BUqJ19Wh.css
+│   │   │       │   ├── index-CnAc-D_d.js
+│   │   │       │   ├── index-DLXsLZLB.css
+│   │   │       │   └── index-VxIQhfQW.js
+│   │   │       └── index.html
+│   │   ├── app.manifest
+│   │   ├── Meridian.Ui.csproj
+│   │   └── Program.cs
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
 │   │   │   ├── BoundedObservableCollection.cs
@@ -5944,6 +6059,7 @@ Meridian-main
 │       │   ├── ArchiveHealthService.cs
 │       │   ├── BackendServiceManager.cs
 │       │   ├── BackgroundTaskSchedulerService.cs
+│       │   ├── BacktestDataAvailabilityService.cs
 │       │   ├── BacktestService.cs
 │       │   ├── BrushRegistry.cs
 │       │   ├── CashFinancingReadService.cs
@@ -6672,6 +6788,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
+│   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
@@ -6892,6 +7009,7 @@ Meridian-main
 ├── .markdownlint.json
 ├── .vsconfig
 ├── CLAUDE.md
+├── desktop.ini
 ├── Directory.Build.props
 ├── Directory.Packages.props
 ├── docfx.json

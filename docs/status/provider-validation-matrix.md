@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 # Provider Validation Matrix
 
 **Last Updated:** 2026-04-09  
 **Scope:** Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
+=======
+# Provider Validation Matrix (Polygon, IB, StockSharp, NYSE)
+
+**Last Updated:** 2026-04-01  
+**Scope:** Replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, and rate-limit handling.
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 This matrix is Meridian's Wave 1 evidence gate. Every row must point to either executable repo evidence or a committed artifact folder under `artifacts/provider-validation/`. No row is upgraded by prose alone.
 
@@ -12,6 +19,7 @@ This matrix is Meridian's Wave 1 evidence gate. Every row must point to either e
 
 ## Wave 1 Matrix
 
+<<<<<<< HEAD
 | Scope | Offline / CI evidence | Manual / runtime evidence | Status | Bounded by |
 |---|---|---|---|---|
 | Polygon replay and parser coverage | `PolygonRecordedSessionReplayTests`, `PolygonMessageParsingTests`, `PolygonSubscriptionTests`, `PolygonMarketDataClientTests`, committed fixtures under `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/Polygon/` | Not required for the replay baseline; live reconnect and websocket throttling remain separate runtime follow-on work | ⚠️ | No sanitized live reconnect or websocket throttling transcript is committed yet |
@@ -21,9 +29,18 @@ This matrix is Meridian's Wave 1 evidence gate. Every row must point to either e
 | StockSharp Wave 1 validated adapter set | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests`, `StockSharpConnectorCapabilities.GetWave1ValidatedConnectors()` | `artifacts/provider-validation/stocksharp/2026-04-09/` with per-adapter `bootstrap`, `streaming`, and `historical` scenario folders for `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers` | ⚠️ | Package surfaces, locally running vendor software, and adapter-specific credentials remain manual runtime conditions |
 | Checkpoint reliability | `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
+=======
+| Provider | Replay Scenarios | Reconnect Behavior | Cancellation | Auth Failure | Rate-Limit Handling | Evidence |
+|---|---|---|---|---|---|---|
+| Polygon | ✅ | ⚠️ | ✅ | ✅ | ⚠️ | `PolygonRecordedSessionReplayTests`, `PolygonMarketDataClientTests`, fixtures under `Fixtures/Polygon` |
+| Interactive Brokers (IB) | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `IBRuntimeGuidanceTests`, `IBSimulationClientContractTests`, `build-ibapi-smoke.ps1` |
+| StockSharp | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
+| NYSE | ⚠️ | ✅ | ⚠️ | ⚠️ | ❌ | `NyseMarketDataClientTests`, `NYSEMessageParsingTests`, `NyseTaqCollectorIntegrationTests` |
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 ## Primary Validation Command
 
+<<<<<<< HEAD
 Run the committed Wave 1 command matrix with:
 
 ```powershell
@@ -31,6 +48,9 @@ Run the committed Wave 1 command matrix with:
 ```
 
 The script writes:
+=======
+### Polygon
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`
 - `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`

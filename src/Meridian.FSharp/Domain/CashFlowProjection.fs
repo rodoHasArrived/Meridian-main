@@ -33,6 +33,48 @@ type ProjectedCashEvent = {
     IsIncomeFlow    : bool
 }
 
+/// An observed cash movement posted to the ledger or bank feed.
+[<CLIMutable>]
+type ActualCashEvent = {
+    FlowId      : Guid
+    SecurityId  : SecurityId
+    Amount      : decimal
+    Currency    : string
+    PostedAt    : DateTimeOffset
+    SourceSystem: string
+    Notes       : string option
+}
+
+/// Tolerance parameters for matching projected against actual cash events
+type MatchTolerance = {
+    AmountTolerancePct  : decimal
+    TimingToleranceDays : int
+    RequireCurrencyExact: bool
+}
+
+/// Severity assigned to a reconciliation break
+type BreakSeverity =
+    | Critical
+    | High
+    | Medium
+    | Low
+    | Info
+
+/// Structural classification of how a projected cash event broke
+type BreakClassification =
+    | AmountMismatch    of expected: decimal * actual: decimal * variancePct: decimal
+    | CurrencyMismatch  of expected: string  * actual: string
+    | TimingMismatch    of expectedDate: DateTimeOffset * actualDate: DateTimeOffset * daysLate: int
+    | MissingActual
+    | ClassificationGap of reason: string
+    | OtherBreak        of reason: string
+
+/// State machine for a cash-flow line as it moves from projection to settlement.
+type CashFlowState =
+    | ProjectedOnly of ProjectedCashEvent
+    | Settled of projected: ProjectedCashEvent * actual: ActualCashEvent
+    | Broken of projected: ProjectedCashEvent * reason: BreakClassification
+
 /// One time-bucket within a projected cash ladder
 [<CLIMutable>]
 type CashLadderBucket = {
@@ -124,3 +166,11 @@ module CashLadder =
             TotalProjectedOutflows = totalOut
             NetPosition            = totalIn - totalOut
         }
+
+[<RequireQualifiedAccess>]
+module CashFlowState =
+
+    let label = function
+        | ProjectedOnly _ -> "Projected"
+        | Settled _ -> "Settled"
+        | Broken _ -> "Broken"

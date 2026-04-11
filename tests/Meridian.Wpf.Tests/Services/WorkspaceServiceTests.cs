@@ -1,7 +1,6 @@
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Models;
 using Meridian.Ui.Services;
-using System.IO;
 
 namespace Meridian.Wpf.Tests.Services;
 
@@ -11,6 +10,7 @@ namespace Meridian.Wpf.Tests.Services;
 /// </summary>
 public sealed class WorkspaceServiceTests
 {
+<<<<<<< HEAD
     private static readonly string TestSettingsFilePath = Path.Combine(
         Path.GetTempPath(),
         "Meridian.Wpf.Tests",
@@ -31,6 +31,9 @@ public sealed class WorkspaceServiceTests
         service.LoadWorkspacesAsync().GetAwaiter().GetResult();
         return service;
     }
+=======
+    private static WorkspaceService CreateService() => WorkspaceService.Instance;
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     // ── Singleton ────────────────────────────────────────────────────
 
@@ -243,16 +246,7 @@ public sealed class WorkspaceServiceTests
 
         svc.GetLastSessionState().Should().NotBeNull();
         svc.GetLastSessionState()!.ActiveWorkspaceId.Should().Be(trading.Id);
-        svc.GetLastSessionState()!.ActivePageTag.Should().Be("TradingShell");
-    }
-
-    [Fact]
-    public void BuiltInWorkspaceRoutes_ShouldDefaultToWorkspaceShells()
-    {
-        var svc = CreateService();
-
-        svc.Workspaces.First(w => w.Id == "research").PreferredPageTag.Should().Be("ResearchShell");
-        svc.Workspaces.First(w => w.Id == "trading").PreferredPageTag.Should().Be("TradingShell");
+        svc.GetLastSessionState()!.ActivePageTag.Should().Be(trading.PreferredPageTag);
     }
 
     [Fact]
@@ -614,6 +608,7 @@ public sealed class WorkspaceServiceTests
         restored.ActiveFilters.Should().NotContainKey("governance.filter");
     }
 
+<<<<<<< HEAD
     [Fact]
     public async Task SaveWorkspaceLayoutStateAsync_ShouldPersistLayoutsPerWorkspaceAndFund()
     {
@@ -704,6 +699,8 @@ public sealed class WorkspaceServiceTests
         restored.Panes.Should().ContainSingle(pane => pane.PageTag == "FundTrialBalance" && pane.DockZone == "right");
     }
 
+=======
+>>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     // ── Export/Import ────────────────────────────────────────────────
 
     [Fact]

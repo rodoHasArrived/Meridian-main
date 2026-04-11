@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
@@ -121,27 +120,15 @@ public class LeanIntegrationServiceTests
     }
 
     [Fact]
-    public void LeanBacktestResultsSummary_DefaultValues_AreZero()
+    public void BacktestResults_DefaultValues_AreZero()
     {
-        var results = new LeanBacktestResultsSummaryDto();
+        var results = new BacktestResults();
 
         results.TotalReturn.Should().Be(0);
         results.SharpeRatio.Should().Be(0);
         results.MaxDrawdown.Should().Be(0);
         results.TotalTrades.Should().Be(0);
         results.WinRate.Should().Be(0);
-    }
-
-    [Fact]
-    public void LeanResultsArtifactSummary_DefaultCollections_AreEmpty()
-    {
-        var artifact = new LeanResultsArtifactSummaryDto();
-
-        artifact.Statistics.Should().BeEmpty();
-        artifact.Parameters.Should().BeEmpty();
-        artifact.Artifacts.Should().BeEmpty();
-        artifact.Sections.Should().NotBeNull();
-        artifact.SourceFormat.Should().Be("lean-backtest-json");
     }
 
     [Fact]

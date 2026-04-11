@@ -23,7 +23,7 @@ However, the application host and infrastructure are C# (80% of codebase). A hyb
 
 ## Decision
 
-Implement **F# domain modules with C# interop bridge**, organized across four dedicated F# projects:
+Implement **F# domain modules with C# interop bridge**:
 
 ```fsharp
 // F# domain (Meridian.FSharp)
@@ -53,51 +53,27 @@ type TradeValidator private () =
 
 ### Project Structure
 
-The F# domain is split across four focused projects:
-
-- **Meridian.FSharp** — Core domain models, validation pipeline, calculations, and canonicalization
-  - `Domain/MarketEvents.fs` — Market event types
-  - `Domain/SecurityClassification.fs` — Security classification discriminated unions
-  - `Domain/SecurityMaster.fs` — Security master domain models
-  - `Domain/DirectLending.fs` — Direct lending domain types
-  - `Domain/FundStructure.fs` — Fund structure domain types
-  - `Validation/TradeValidator.fs` — Trade validation
-  - `Validation/QuoteValidator.fs` — Quote validation
-  - `Calculations/Spread.fs` — Spread calculations
-  - `Calculations/Imbalance.fs` — Order flow imbalance
-  - `Calculations/Aggregations.fs` — VWAP, TWAP, volume
-  - `Canonicalization/MappingRules.fs` — Canonicalization mapping
-  - `Interop.fs` — C# interop wrappers
-
-- **Meridian.FSharp.DirectLending.Aggregates** — Direct lending aggregate roots and event sourcing
-  - `ContractAggregate.fs` — Direct lending contract aggregate
-  - `ServicingAggregate.fs` — Servicing aggregate
-  - `AggregateTypes.fs` — Shared aggregate type definitions
-
-- **Meridian.FSharp.Ledger** — Double-entry ledger domain and reconciliation rules
-  - `LedgerTypes.fs` — Account, entry, and journal types
-  - `Posting.fs` — Journal posting logic
-  - `Reconciliation.fs` — Reconciliation engine
-  - `JournalValidation.fs` — Journal entry validation
-
-- **Meridian.FSharp.Trading** — Strategy lifecycle state machine and promotion readiness
-  - `StrategyLifecycleState.fs` — Strategy state discriminated union
-  - `StrategyLifecycleTransitions.fs` — Allowed state transitions
-  - `PromotionReadiness.fs` — Backtest-to-live promotion rules
+- **Meridian.FSharp** - Pure F# domain logic (12 files)
+  - `Domain/MarketEvents.fs` - Event types
+  - `Domain/Sides.fs` - Buy/sell discriminated union
+  - `Domain/Integrity.fs` - Sequence validation
+  - `Validation/ValidationTypes.fs` - Result types
+  - `Validation/TradeValidator.fs` - Trade validation
+  - `Validation/QuoteValidator.fs` - Quote validation
+  - `Calculations/Spread.fs` - Spread calculations
+  - `Calculations/Imbalance.fs` - Order flow imbalance
+  - `Calculations/Aggregations.fs` - VWAP, TWAP, volume
+  - `Interop.fs` - C# interop wrappers
 
 ## Implementation Links
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Core F# Project | `src/Meridian.FSharp/Meridian.FSharp.fsproj` | Core domain, validation, calculations |
+| F# Project | `src/Meridian.FSharp/Meridian.FSharp.fsproj` | F# domain library |
 | Domain Events | `src/Meridian.FSharp/Domain/MarketEvents.fs` | Trade/quote types |
-| Security Classification | `src/Meridian.FSharp/Domain/SecurityClassification.fs` | Security class discriminated unions |
 | Validation Pipeline | `src/Meridian.FSharp/Validation/ValidationPipeline.fs` | Validation composition |
 | Calculations | `src/Meridian.FSharp/Calculations/` | Pure math functions |
-| Core Interop Bridge | `src/Meridian.FSharp/Interop.fs:3` | C# wrappers for core domain |
-| Direct Lending Aggregates | `src/Meridian.FSharp.DirectLending.Aggregates/` | Contract and servicing aggregate roots |
-| Ledger Domain | `src/Meridian.FSharp.Ledger/` | Double-entry ledger, reconciliation |
-| Trading Lifecycle | `src/Meridian.FSharp.Trading/` | Strategy state machine, promotion readiness |
+| Interop Bridge | `src/Meridian.FSharp/Interop.fs:3` | C# wrappers |
 | Generated Interop | `src/Meridian.FSharp/Generated/Meridian.FSharp.Interop.g.cs` | Auto-generated C# |
 | C# Integration | `src/Meridian.Application/Monitoring/DataQuality/` | Consumer code |
 | F# Tests | `tests/Meridian.FSharp.Tests/` | F# unit tests |
@@ -256,15 +232,15 @@ Run F# domain logic as separate microservice.
 
 ### Negative
 
-- **Dual language complexity** - Build tooling, debugging span four F# projects and C# consumers
+- **Dual language complexity** - Build tooling, debugging span both
 - **Interop overhead** - Type conversions add small performance cost
-- **Learning curve** - Developers need F# proficiency for domain contributions
+- **Learning curve** - Developers need F# proficiency
 - **Serialization** - F# types need `[<CLIMutable>]` for JSON
 
 ### Neutral
 
 - F# modules compile to static classes in .NET
-- Each F# project has its own `Interop.fs` for scoped C# bridge types
+- Interop bridge must stay synchronized with F# signatures
 - F# tests run separately from C# tests
 
 ## Compliance
@@ -304,4 +280,4 @@ type TradeValidator =
 
 ---
 
-*Last Updated: 2026-04-03*
+*Last Updated: 2026-02-12*

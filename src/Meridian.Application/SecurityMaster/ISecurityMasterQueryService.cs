@@ -29,16 +29,14 @@ public interface ISecurityMasterQueryService
     Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default);
 
     /// <summary>
-    /// Returns the current preferred-equity term set when the security classification includes preferred terms.
-    /// Returns <c>null</c> for non-equity or non-preferred securities.
+    /// Returns the preferred-equity-specific terms for a security.
+    /// Returns <c>null</c> when the security has no preferred-equity terms recorded.
     /// </summary>
-    Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
-        => Task.FromResult<PreferredEquityTermsDto?>(null);
+    Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default);
 
     /// <summary>
-    /// Returns the current convertible-equity term set when the security classification includes conversion terms.
-    /// Returns <c>null</c> for non-equity or non-convertible securities.
+    /// Returns the convertible-equity-specific terms for a security.
+    /// Returns <c>null</c> when the security has no convertible-equity terms recorded.
     /// </summary>
-    Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
-        => Task.FromResult<ConvertibleEquityTermsDto?>(null);
+    Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default);
 }

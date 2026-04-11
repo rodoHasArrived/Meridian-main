@@ -43,10 +43,6 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 [ImplementsAdr("ADR-001", "Robinhood historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-[RequiresCredential("ROBINHOOD_ACCESS_TOKEN",
-    EnvironmentVariables = new[] { "ROBINHOOD_ACCESS_TOKEN" },
-    DisplayName = "Access Token",
-    Description = "Robinhood personal access token for the unofficial API")]
 public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.robinhood.com/marketdata/historicals/";
@@ -86,14 +82,12 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
     /// <param name="priority">Priority in fallback chain (lower = tried first, default: 35).</param>
     /// <param name="httpClient">Optional HTTP client instance.</param>
     /// <param name="log">Optional logger instance.</param>
-    /// <param name="enableResilience">Whether to enable Polly retry/circuit-breaker pipeline (default: true). Pass false in unit tests to avoid retry delays.</param>
     public RobinhoodHistoricalDataProvider(
         string? accessToken = null,
         int priority = 35,
         HttpClient? httpClient = null,
-        ILogger? log = null,
-        bool enableResilience = true)
-        : base(httpClient, log, enableResilience)
+        ILogger? log = null)
+        : base(httpClient, log)
     {
         _priority = priority;
         _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
@@ -120,10 +114,6 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
             var url = $"{BaseUrl}?symbols=AAPL&interval=day&span=week&bounds=regular";
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
         }
         catch (Exception ex)
         {

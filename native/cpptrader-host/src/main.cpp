@@ -402,16 +402,6 @@ public:
         return json{{"snapshot", snap}};
     }
 
-    double get_tick_size_decimal(const std::string& symbol)
-    {
-        const std::lock_guard lock{_mu};
-        auto it = _symbols.find(symbol);
-        if (it == _symbols.end() || it->second.tick_size_nanos <= 0)
-            return 0.01;
-
-        return static_cast<double>(it->second.tick_size_nanos) / 1e9;
-    }
-
 private:
     std::mutex                                   _mu;
     std::unordered_map<std::string, SymbolSpec>  _symbols;
@@ -437,18 +427,17 @@ static void handle_create_session(const json& envelope)
     const std::string req_id = envelope.value("requestId", "");
     const auto&       payload = envelope["payload"];
 
-    const std::string session_id = new_uuid();
-    const std::string session_kind = payload.value("sessionKind", "Execution");
-    auto [it, inserted] = g_sessions.try_emplace(session_id);
-    auto& session = it->second;
-    session.session_id = session_id;
-    session.session_kind = session_kind;
+    Session s;
+    s.session_id   = new_uuid();
+    s.session_kind = payload.value("sessionKind", "Execution");
 
-    send_response("createSessionResponse", req_id, session_id, {
-        {"sessionId",   session_id},
-        {"sessionKind", session_kind},
+    send_response("createSessionResponse", req_id, s.session_id, {
+        {"sessionId",   s.session_id},
+        {"sessionKind", s.session_kind},
         {"createdAt",   utc_now_iso8601()}
     });
+
+    g_sessions[s.session_id] = std::move(s);
 }
 
 static void handle_register_symbol(const json& envelope)
@@ -544,23 +533,25 @@ static void handle_submit_order(const json& envelope)
         {"timestamp",     utc_now_iso8601()}
     });
 
-    // Emit fills, if any.
-    const double tick_size = it->second.engine.get_tick_size_decimal(entry.symbol);
-    for (const auto& fill : result.fills)
-    {
-        const bool is_full = fill.is_terminal;
-        send_event("execution", sess_id, {
-            {"orderId",                    entry.order_id},
-            {"clientOrderId",              entry.client_order_id},
-            {"symbol",                     entry.symbol},
-            {"filledQuantityNanos",        fill.filled_qty_nanos},
-            {"cumulativeFilledQuantityNanos", fill.cumulative_qty_nanos},
-            // Convert price_nanos back to decimal: price = price_nanos * tick_size
-            {"averageFillPrice",           fill.avg_fill_price_nanos * tick_size},
-            {"isTerminal",                 is_full},
-            {"timestamp",                  utc_now_iso8601()}
-        });
-    }
+        // Emit fills, if any
+        const double tick_size =
+            static_cast<double>(_symbols.count(entry.symbol) && _symbols[entry.symbol].tick_size_nanos > 0
+                ? _symbols[entry.symbol].tick_size_nanos : 10'000'000) / 1e9;
+        for (const auto& fill : result.fills)
+        {
+            const bool is_full = fill.is_terminal;
+            send_event("execution", sess_id, {
+                {"orderId",                    entry.order_id},
+                {"clientOrderId",              entry.client_order_id},
+                {"symbol",                     entry.symbol},
+                {"filledQuantityNanos",        fill.filled_qty_nanos},
+                {"cumulativeFilledQuantityNanos", fill.cumulative_qty_nanos},
+                // Convert price_nanos back to decimal: price = price_nanos * tick_size
+                {"averageFillPrice",           fill.avg_fill_price_nanos * tick_size},
+                {"isTerminal",                 is_full},
+                {"timestamp",                  utc_now_iso8601()}
+            });
+        }
 }
 
 static void handle_cancel_order(const json& envelope)
