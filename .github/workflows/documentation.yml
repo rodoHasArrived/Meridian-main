@@ -459,7 +459,7 @@ jobs:
 
       - name: Markdown lint (full scan on manual dispatch)
         if: github.event_name == 'workflow_dispatch'
-        uses: DavidAnson/markdownlint-cli2-action@v22.0.0
+        uses: DavidAnson/markdownlint-cli2-action@v23.0.0
         with:
           globs: |
             **/*.md
