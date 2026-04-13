@@ -17,6 +17,8 @@ public sealed class QuantScriptPageTests
 {
     private sealed class StubLayoutService : IQuantScriptLayoutService
     {
+        public (double ChartHeight, double EditorHeight) LoadRowHeights() => (300, 400);
+        public void SaveRowHeights(double chartHeight, double editorHeight) { }
         public (double LeftWidth, double RightWidth) LoadColumnWidths() => (300, 400);
         public void SaveColumnWidths(double leftWidth, double rightWidth) { }
         public int LoadLastActiveTab() => 0;
@@ -47,9 +49,6 @@ public sealed class QuantScriptPageTests
             Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
             NullLogger<QuantScriptViewModel>.Instance);
 
-        return new QuantScriptPage
-        {
-            DataContext = vm
-        };
+        return new QuantScriptPage(vm);
     }
 }

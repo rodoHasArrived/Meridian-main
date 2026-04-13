@@ -176,6 +176,7 @@
     <!-- WPF-specific packages -->
     <PackageVersion Include="MaterialDesignThemes" Version="5.2.0" />
     <PackageVersion Include="MaterialDesignColors" Version="5.2.0" />
+    <PackageVersion Include="SkiaSharp.Views.WPF" Version="3.119.2" />
     <!-- Financial candlestick charting alongside ScottPlot -->
     <PackageVersion Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0" />
   </ItemGroup>

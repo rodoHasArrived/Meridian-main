@@ -14,6 +14,7 @@ namespace Meridian.Wpf.Services;
 public sealed class ThemeService : ThemeServiceBase
 {
     private static readonly Lazy<ThemeService> _instance = new(() => new ThemeService());
+    private static readonly string[] ManagedThemeDictionaryUris = [LightThemeUri, DarkThemeUri];
 
     private Window? _mainWindow;
 
@@ -59,11 +60,17 @@ public sealed class ThemeService : ThemeServiceBase
 
         try
         {
-            // Remove existing theme dictionaries
-            var toRemove = new System.Collections.Generic.List<ResourceDictionary>();
-            foreach (var dict in System.Windows.Application.Current.Resources.MergedDictionaries)
+            // Only swap the explicit light/dark override dictionaries. Core theme token
+            // dictionaries stay merged so shell resources like SidebarBackgroundBrush remain available.
+            var newThemeDict = new ResourceDictionary
             {
-                if (dict.Source?.OriginalString.Contains("Theme", StringComparison.OrdinalIgnoreCase) is true)
+                Source = new Uri(themeUri, UriKind.Absolute)
+            };
+            var mergedDictionaries = System.Windows.Application.Current.Resources.MergedDictionaries;
+            var toRemove = new System.Collections.Generic.List<ResourceDictionary>();
+            foreach (var dict in mergedDictionaries)
+            {
+                if (IsManagedThemeDictionary(dict))
                 {
                     toRemove.Add(dict);
                 }
@@ -71,15 +78,10 @@ public sealed class ThemeService : ThemeServiceBase
 
             foreach (var dict in toRemove)
             {
-                System.Windows.Application.Current.Resources.MergedDictionaries.Remove(dict);
+                mergedDictionaries.Remove(dict);
             }
 
-            // Add new theme dictionary
-            var newThemeDict = new ResourceDictionary
-            {
-                Source = new Uri(themeUri, UriKind.Absolute)
-            };
-            System.Windows.Application.Current.Resources.MergedDictionaries.Add(newThemeDict);
+            mergedDictionaries.Add(newThemeDict);
 
             // Update system colors for window chrome
             UpdateWindowChrome(theme);
@@ -89,6 +91,26 @@ public sealed class ThemeService : ThemeServiceBase
             // Fall back to programmatic theming if resource dictionaries aren't available
             ApplyProgrammaticTheme(theme);
         }
+    }
+
+    private static bool IsManagedThemeDictionary(ResourceDictionary dict)
+    {
+        var source = dict.Source?.OriginalString;
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return false;
+        }
+
+        foreach (var managedUri in ManagedThemeDictionaryUris)
+        {
+            if (string.Equals(source, managedUri, StringComparison.OrdinalIgnoreCase) ||
+                source.EndsWith(managedUri, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <inheritdoc />

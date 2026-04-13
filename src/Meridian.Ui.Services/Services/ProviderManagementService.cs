@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Contracts.Api;
 
 namespace Meridian.Ui.Services;
 
@@ -324,6 +325,95 @@ public sealed class ProviderManagementService
             Provider = providerName,
             Error = response.ErrorMessage ?? "Test failed"
         };
+    }
+
+    /// <summary>
+    /// Gets the current provider-routing connection catalog.
+    /// </summary>
+    public async Task<ProviderConnectionsResult> GetProviderConnectionsAsync(CancellationToken ct = default)
+    {
+        var response = await _apiClient.GetWithResponseAsync<List<ProviderConnectionDto>>(
+            "/api/provider-routing/connections",
+            ct);
+
+        return response.Success && response.Data is not null
+            ? new ProviderConnectionsResult
+            {
+                Success = true,
+                Connections = response.Data.ToList()
+            }
+            : new ProviderConnectionsResult
+            {
+                Success = false,
+                Error = response.ErrorMessage ?? "Failed to load provider connections."
+            };
+    }
+
+    /// <summary>
+    /// Gets the active provider-routing bindings.
+    /// </summary>
+    public async Task<ProviderBindingsResult> GetProviderBindingsAsync(CancellationToken ct = default)
+    {
+        var response = await _apiClient.GetWithResponseAsync<List<ProviderBindingDto>>(
+            "/api/provider-routing/bindings",
+            ct);
+
+        return response.Success && response.Data is not null
+            ? new ProviderBindingsResult
+            {
+                Success = true,
+                Bindings = response.Data.ToList()
+            }
+            : new ProviderBindingsResult
+            {
+                Success = false,
+                Error = response.ErrorMessage ?? "Failed to load provider bindings."
+            };
+    }
+
+    /// <summary>
+    /// Gets the latest provider trust snapshots.
+    /// </summary>
+    public async Task<ProviderTrustSnapshotsResult> GetProviderTrustSnapshotsAsync(CancellationToken ct = default)
+    {
+        var response = await _apiClient.GetWithResponseAsync<List<ProviderTrustSnapshotDto>>(
+            "/api/provider-routing/trust-snapshots",
+            ct);
+
+        return response.Success && response.Data is not null
+            ? new ProviderTrustSnapshotsResult
+            {
+                Success = true,
+                Snapshots = response.Data.ToList()
+            }
+            : new ProviderTrustSnapshotsResult
+            {
+                Success = false,
+                Error = response.ErrorMessage ?? "Failed to load provider trust snapshots."
+            };
+    }
+
+    /// <summary>
+    /// Previews the selected route for a provider-routing capability request.
+    /// </summary>
+    public async Task<ProviderRoutePreviewQueryResult> PreviewRouteAsync(RoutePreviewRequest request, CancellationToken ct = default)
+    {
+        var response = await _apiClient.PostWithResponseAsync<RoutePreviewResponse>(
+            "/api/provider-routing/preview",
+            request,
+            ct);
+
+        return response.Success && response.Data is not null
+            ? new ProviderRoutePreviewQueryResult
+            {
+                Success = true,
+                Preview = response.Data
+            }
+            : new ProviderRoutePreviewQueryResult
+            {
+                Success = false,
+                Error = response.ErrorMessage ?? "Failed to preview provider route."
+            };
     }
 
 }

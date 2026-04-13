@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
@@ -55,6 +56,16 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _frame = frame ?? throw new ArgumentNullException(nameof(frame));
     }
 
+    /// <summary>
+    /// Clears frame and DI state so WPF tests can start from a known navigation baseline.
+    /// </summary>
+    public void ResetForTests()
+    {
+        ClearHistory();
+        _frame = null;
+        _serviceProvider = null;
+    }
+
     /// <inheritdoc />
     protected override void RegisterAllPages()
     {
@@ -83,6 +94,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
         // Trading & Backtesting (4 pages)
         RegisterPage("Backtest", typeof(BacktestPage));
+        RegisterPage("BatchBacktest", typeof(BatchBacktestPage));
         RegisterPage("TradingHours", typeof(TradingHoursPage));
         RegisterPage("StrategyRuns", typeof(StrategyRunsPage));
         RegisterPage("RunDetail", typeof(RunDetailPage));
@@ -131,6 +143,8 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         // Workspace shell landing pages
         RegisterPage("ResearchShell", typeof(ResearchWorkspaceShellPage));
         RegisterPage("TradingShell", typeof(TradingWorkspaceShellPage));
+        RegisterPage("DataOperationsShell", typeof(DataOperationsWorkspaceShellPage));
+        RegisterPage("GovernanceShell", typeof(GovernanceWorkspaceShellPage));
 
         // Workspaces & Notifications (2 pages)
         RegisterPage("Workspaces", typeof(WorkspacePage));
@@ -148,11 +162,38 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         // Activity Log (1 page)
         RegisterPage("ActivityLog", typeof(ActivityLogPage));
 
+        // Fund operations workstation aliases
+        RegisterPage("FundAccounts", typeof(FundAccountsPage));
+        RegisterPage("FundBanking", typeof(FundLedgerPage));
+        RegisterPage("FundPortfolio", typeof(FundLedgerPage));
+        RegisterPage("FundCashFinancing", typeof(FundLedgerPage));
+        RegisterPage("FundLedger", typeof(FundLedgerPage));
+        RegisterPage("FundTrialBalance", typeof(FundLedgerPage));
+        RegisterPage("FundReconciliation", typeof(FundLedgerPage));
+        RegisterPage("FundAuditTrail", typeof(FundLedgerPage));
+
         // Security Master workstation (1 page)
         RegisterPage("SecurityMaster", typeof(SecurityMasterPage));
 
         // Direct Lending workstation (1 page)
         RegisterPage("DirectLending", typeof(DirectLendingPage));
+    }
+
+    /// <summary>
+    /// Creates page content without mutating the frame navigation stack.
+    /// Used by workstation shells when embedding pages into dock panes.
+    /// </summary>
+    public FrameworkElement CreatePageContent(string pageTag, object? parameter = null)
+    {
+        var pageType = GetPageType(pageTag)
+            ?? throw new InvalidOperationException($"Unknown page tag '{pageTag}'.");
+
+        var page = CreatePage(pageType);
+        var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
+        ApplyNavigationParameter(page, effectiveParameter);
+
+        return page as FrameworkElement
+            ?? throw new InvalidOperationException($"Page '{pageType.Name}' is not a FrameworkElement.");
     }
 
     /// <inheritdoc />
@@ -163,12 +204,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         try
         {
             var page = CreatePage(pageType);
-
-            if (parameter != null && page is Page wpfPage && wpfPage.DataContext != null)
-            {
-                var parameterProperty = wpfPage.DataContext.GetType().GetProperty("Parameter");
-                parameterProperty?.SetValue(wpfPage.DataContext, parameter);
-            }
+            ApplyNavigationParameter(page, parameter);
 
             var result = _frame.Navigate(page);
 
@@ -248,6 +284,27 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         }
     }
 
+    /// <inheritdoc />
+    protected override object? TransformNavigationParameter(string pageTag, Type pageType, object? parameter)
+    {
+        if (parameter is not null)
+        {
+            return parameter;
+        }
+
+        return pageTag switch
+        {
+            "FundBanking" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Banking),
+            "FundPortfolio" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Portfolio),
+            "FundCashFinancing" => new FundOperationsNavigationContext(Tab: FundOperationsTab.CashFinancing),
+            "FundLedger" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Journal),
+            "FundTrialBalance" => new FundOperationsNavigationContext(Tab: FundOperationsTab.TrialBalance),
+            "FundReconciliation" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Reconciliation),
+            "FundAuditTrail" => new FundOperationsNavigationContext(Tab: FundOperationsTab.AuditTrail),
+            _ => parameter
+        };
+    }
+
     /// <summary>
     /// Creates a page instance using the DI container if available, falling back to Activator.
     /// When no service provider is configured and the page type has no parameterless constructor
@@ -270,6 +327,17 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             // Page requires constructor injection but no DI container is available.
             return new Page();
         }
+    }
+
+    private static void ApplyNavigationParameter(object page, object? parameter)
+    {
+        if (parameter is null || page is not Page wpfPage || wpfPage.DataContext is null)
+        {
+            return;
+        }
+
+        var parameterProperty = wpfPage.DataContext.GetType().GetProperty("Parameter");
+        parameterProperty?.SetValue(wpfPage.DataContext, parameter);
     }
 
     private static Page CreateNavigationErrorPage(string pageName, Exception ex)

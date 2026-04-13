@@ -188,14 +188,6 @@ type EquityBehaviorTerms = {
     DistributionType: DistributionPolicy option
 }
 
-type DepositaryReceiptTerms = {
-    DepositaryBank: string option
-    OrdinaryShareRatio: decimal option
-    UnderlyingCurrency: string option
-    UnderlyingIsin: string option
-    UnderlyingCountry: string option
-}
-
 type FundTerms = {
     FundFamily: string option
     WeightedAverageMaturityDays: int option
@@ -247,6 +239,8 @@ type DepositaryReceiptTerms = {
     /// ISO 10383 MIC of the exchange where the underlying ordinary share trades.
     UnderlyingExchangeMic: string option
     UnderlyingCurrency: string option
+    UnderlyingIsin: string option
+    UnderlyingCountry: string option
     CusipOfOrdinary: string option
 }
 

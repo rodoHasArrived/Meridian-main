@@ -14,6 +14,7 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
     private readonly ApiClientService _apiClient;
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _cts = new();
+    private bool _isDisposed;
 
     // ── Exposure summary ──────────────────────────────────────────────────────
 
@@ -70,7 +71,22 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += (_, _) =>
         {
-            _ = RefreshAsync(_cts.Token).ContinueWith(
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            CancellationToken token;
+            try
+            {
+                token = _cts.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
+            _ = RefreshAsync(token).ContinueWith(
                 static t => { /* exceptions handled inside RefreshAsync */ },
                 TaskContinuationOptions.OnlyOnFaulted);
         };
@@ -86,8 +102,23 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
         _refreshTimer.Stop();
-        _cts.Cancel();
+
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Page unload and DI container disposal can race during navigation tests.
+        }
+
         _cts.Dispose();
     }
 
@@ -102,13 +133,8 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
 
         await Task.WhenAll(positionsTask, exposureTask);
 
-<<<<<<< ours
-        var positions = await positionsTask;
-        var exposure = await exposureTask;
-=======
         var positions = await positionsTask.ConfigureAwait(false);
         var exposure = await exposureTask.ConfigureAwait(false);
->>>>>>> theirs
 
         if (positions is null)
         {

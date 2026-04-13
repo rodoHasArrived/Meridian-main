@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using AvalonDock;
 using AvalonDock.Layout;
 using AvalonDock.Layout.Serialization;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
@@ -27,14 +29,24 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class MeridianDockingManager : UserControl
 {
+    private sealed class DockedPageDescriptor
+    {
+        public required string PageKey { get; init; }
+        public required string PageTag { get; init; }
+        public required string Title { get; init; }
+        public required PaneDropAction Action { get; set; }
+        public required LayoutDocument Document { get; init; }
+    }
+
     /// <summary>
     /// Raised when a page-tag string is dropped onto this host.
     /// The handler should call <see cref="LoadPage"/> with the resolved content.
     /// </summary>
     public event EventHandler<PaneDropEventArgs>? PaneDropRequested;
 
-    // Track open documents by title so we can activate rather than duplicate.
-    private readonly Dictionary<string, LayoutDocument> _openDocuments = new(StringComparer.OrdinalIgnoreCase);
+    // Track open documents by page key so we can activate rather than duplicate and
+    // preserve requested dock zones for layout persistence.
+    private readonly Dictionary<string, DockedPageDescriptor> _openDocuments = new(StringComparer.OrdinalIgnoreCase);
 
     public MeridianDockingManager()
     {
@@ -51,10 +63,25 @@ public partial class MeridianDockingManager : UserControl
     /// <param name="content">The <see cref="FrameworkElement"/> to host (typically a Page).</param>
     public void LoadPage(string title, FrameworkElement content)
     {
-        if (_openDocuments.TryGetValue(title, out var existing))
+        LoadPage(title, title, content, PaneDropAction.OpenTab);
+    }
+
+    /// <summary>
+    /// Adds or activates a workstation page using the richer dock action surface used by
+    /// the workstation shell pages.
+    /// </summary>
+    public void LoadPage(string pageKey, string title, FrameworkElement content, PaneDropAction action)
+    {
+        if (_openDocuments.TryGetValue(pageKey, out var existing))
         {
-            existing.IsActive = true;
+            existing.Document.IsActive = true;
+            existing.Action = action;
             return;
+        }
+
+        if (action == PaneDropAction.Replace)
+        {
+            ClearDocuments();
         }
 
         var document = new LayoutDocument
@@ -65,10 +92,17 @@ public partial class MeridianDockingManager : UserControl
             IsActive = true
         };
 
-        document.Closed += (_, _) => _openDocuments.Remove(title);
+        document.Closed += (_, _) => _openDocuments.Remove(pageKey);
 
         PrimaryDocumentPane.Children.Add(document);
-        _openDocuments[title] = document;
+        _openDocuments[pageKey] = new DockedPageDescriptor
+        {
+            PageKey = pageKey,
+            PageTag = ExtractPageTag(pageKey),
+            Title = title,
+            Action = action,
+            Document = document
+        };
     }
 
     /// <summary>
@@ -111,6 +145,44 @@ public partial class MeridianDockingManager : UserControl
         }
     }
 
+    /// <summary>
+    /// Captures the current workstation docking state into the shared persistence model.
+    /// </summary>
+    public WorkstationLayoutState CaptureLayoutState(string layoutId, string displayName)
+    {
+        var panes = _openDocuments.Values
+            .Select((descriptor, index) => new WorkstationPaneState
+            {
+                PaneId = descriptor.PageKey,
+                PageTag = descriptor.PageTag,
+                Title = descriptor.Title,
+                DockZone = ToDockZone(descriptor.Action),
+                IsActive = descriptor.Document.IsActive,
+                Order = index
+            })
+            .ToList();
+
+        return new WorkstationLayoutState
+        {
+            LayoutId = layoutId,
+            DisplayName = displayName,
+            ActivePaneId = panes.FirstOrDefault(static pane => pane.IsActive)?.PaneId ?? panes.FirstOrDefault()?.PaneId ?? "pane-1",
+            DockLayoutXml = SaveLayout(),
+            Panes = panes,
+            FloatingWindows = _openDocuments.Values
+                .Where(static descriptor => descriptor.Action == PaneDropAction.FloatWindow)
+                .Select(descriptor => new FloatingWorkspaceWindowState
+                {
+                    WindowId = descriptor.PageKey,
+                    PaneId = descriptor.PageKey,
+                    Title = descriptor.Title,
+                    IsOpen = true
+                })
+                .ToList(),
+            SavedAt = DateTime.UtcNow
+        };
+    }
+
     // ── Drag-and-drop ─────────────────────────────────────────────────────────
 
     private void OnDragOver(object sender, DragEventArgs e)
@@ -139,9 +211,30 @@ public partial class MeridianDockingManager : UserControl
 
         if (e.Data.GetData(SplitPaneHostControl.PageTagFormat) is string pageTag)
         {
-            PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, 0));
+            PaneDropRequested?.Invoke(this, new PaneDropEventArgs(pageTag, 0, PaneDropAction.Replace));
         }
 
         e.Handled = true;
     }
+
+    private void ClearDocuments()
+    {
+        PrimaryDocumentPane.Children.Clear();
+        _openDocuments.Clear();
+    }
+
+    private static string ExtractPageTag(string pageKey)
+    {
+        var separatorIndex = pageKey.IndexOf(':');
+        return separatorIndex >= 0 ? pageKey[..separatorIndex] : pageKey;
+    }
+
+    private static string ToDockZone(PaneDropAction action) => action switch
+    {
+        PaneDropAction.SplitLeft => "left",
+        PaneDropAction.SplitRight => "right",
+        PaneDropAction.SplitBelow => "bottom",
+        PaneDropAction.FloatWindow => "floating",
+        _ => "document"
+    };
 }

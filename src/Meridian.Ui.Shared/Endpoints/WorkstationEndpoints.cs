@@ -9,6 +9,7 @@ using Meridian.Storage.Export;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,36 @@ public static class WorkstationEndpoints
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/workstation").WithTags("Workstation");
+
+        group.MapGet("/session", async (HttpContext context) =>
+        {
+            return await BuildSessionPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationSession");
+
+        group.MapGet("/research", async (HttpContext context) =>
+        {
+            return await BuildResearchPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationResearch");
+
+        group.MapGet("/trading", async (HttpContext context) =>
+        {
+            return await BuildTradingPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationTrading");
+
+        group.MapGet("/data-operations", async (HttpContext context) =>
+        {
+            return await BuildDataOperationsPayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationDataOperations");
+
+        group.MapGet("/governance", async (HttpContext context) =>
+        {
+            return await BuildGovernancePayloadAsync(context).ConfigureAwait(false);
+        })
+        .WithName("GetWorkstationGovernance");
 
         group.MapPost("/reconciliation/runs", async (ReconciliationRunRequest request, HttpContext context) =>
         {
@@ -629,9 +660,6 @@ public static class WorkstationEndpoints
         .WithName("GetPortfolioSymbolExposure")
         .Produces<NetSymbolPosition>(200)
         .Produces(503);
-<<<<<<< HEAD
-=======
-
         app.MapGet("/workstation", (IWebHostEnvironment environment) => ServeWorkstationIndex(environment))
             .ExcludeFromDescription();
 
@@ -662,7 +690,6 @@ public static class WorkstationEndpoints
             };
             return Results.File(filePath, contentType);
         }).ExcludeFromDescription();
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     private static StrategyRunDiff BuildRunDiff(StrategyRunDetail baseRun, StrategyRunDetail targetRun)
@@ -1370,9 +1397,9 @@ public static class WorkstationEndpoints
                                 SecurityId: "security-aapl",
                                 DisplayName: "Apple Inc.",
                                 AssetClass: "Equity",
+                                SubType: null,
                                 Currency: "USD",
                                 Status: "Active",
-<<<<<<< HEAD
                                 PrimaryIdentifier: "AAPL",
                                 CoverageStatus: "Resolved",
                                 CoverageReason: null,
@@ -1414,9 +1441,6 @@ public static class WorkstationEndpoints
                                 MatchedIdentifierKind: null,
                                 MatchedIdentifierValue: null,
                                 MatchedProvider: null)
-=======
-                                PrimaryIdentifier: "AAPL")
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                         },
                         missingReferences = new[]
                         {
@@ -1424,43 +1448,12 @@ public static class WorkstationEndpoints
                                 Source: "portfolio",
                                 Symbol: "XYZ",
                                 AccountName: null,
-<<<<<<< HEAD
-                                SecurityId: null,
-                                DisplayName: "XYZ",
-                                AssetClass: null,
-                                SubType: null,
-                                Currency: null,
-                                Status: null,
-                                PrimaryIdentifier: "XYZ",
-                                CoverageStatus: "Missing",
-                                CoverageReason: "Portfolio position is missing a Security Master match.",
-                                MatchedIdentifierKind: null,
-                                MatchedIdentifierValue: null,
-                                MatchedProvider: null),
-                            new SecurityCoverageReferencePayload(
-                                Source: "ledger",
-                                Symbol: "XYZ",
-                                AccountName: "Securities",
-                                SecurityId: null,
-                                DisplayName: "XYZ",
-                                AssetClass: null,
-                                SubType: null,
-                                Currency: null,
-                                Status: null,
-                                PrimaryIdentifier: "XYZ",
-                                CoverageStatus: "Missing",
-                                CoverageReason: "Ledger coverage is missing a Security Master match.",
-                                MatchedIdentifierKind: null,
-                                MatchedIdentifierValue: null,
-                                MatchedProvider: null)
-=======
                                 Reason: "Portfolio position is missing a Security Master match."),
                             new SecurityCoverageGapPayload(
                                 Source: "ledger",
                                 Symbol: "XYZ",
                                 AccountName: "Securities",
                                 Reason: "Ledger coverage is missing a Security Master match.")
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                         }
                     },
                     cashFlow = new
@@ -1777,9 +1770,15 @@ public static class WorkstationEndpoints
                         SecurityId: position.Security!.SecurityId.ToString("N"),
                         DisplayName: position.Security.DisplayName,
                         AssetClass: position.Security.AssetClass,
+                        SubType: position.Security.SubType,
                         Currency: position.Security.Currency,
                         Status: position.Security.Status.ToString(),
-                        PrimaryIdentifier: position.Security.PrimaryIdentifier)));
+                        PrimaryIdentifier: position.Security.PrimaryIdentifier,
+                        CoverageStatus: position.Security.CoverageStatus.ToString(),
+                        CoverageReason: position.Security.ResolutionReason,
+                        MatchedIdentifierKind: position.Security.MatchedIdentifierKind,
+                        MatchedIdentifierValue: position.Security.MatchedIdentifierValue,
+                        MatchedProvider: position.Security.MatchedProvider)));
         }
 
         if (detail.Ledger is not null)
@@ -1794,9 +1793,15 @@ public static class WorkstationEndpoints
                         SecurityId: line.Security!.SecurityId.ToString("N"),
                         DisplayName: line.Security.DisplayName,
                         AssetClass: line.Security.AssetClass,
+                        SubType: line.Security.SubType,
                         Currency: line.Security.Currency,
                         Status: line.Security.Status.ToString(),
-                        PrimaryIdentifier: line.Security.PrimaryIdentifier)));
+                        PrimaryIdentifier: line.Security.PrimaryIdentifier,
+                        CoverageStatus: line.Security.CoverageStatus.ToString(),
+                        CoverageReason: line.Security.ResolutionReason,
+                        MatchedIdentifierKind: line.Security.MatchedIdentifierKind,
+                        MatchedIdentifierValue: line.Security.MatchedIdentifierValue,
+                        MatchedProvider: line.Security.MatchedProvider)));
         }
 
         return results
@@ -1844,7 +1849,6 @@ public static class WorkstationEndpoints
             .ToArray();
     }
 
-<<<<<<< HEAD
     private static Dictionary<string, WorkstationSecurityReference?> BuildPositionSecurityLookup(StrategyRunDetail? detail)
         => detail?.Portfolio?.Positions
             .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
@@ -1953,11 +1957,8 @@ public static class WorkstationEndpoints
     private static bool NeedsSecurityReview(WorkstationSecurityReference? security)
         => security is null ||
            security.CoverageStatus is WorkstationSecurityCoverageStatus.Partial
-               or WorkstationSecurityCoverageStatus.Missing
-               or WorkstationSecurityCoverageStatus.Unavailable;
-
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+                or WorkstationSecurityCoverageStatus.Missing
+                or WorkstationSecurityCoverageStatus.Unavailable;
     private static object BuildGovernanceWorkspaceCashFlowSummary(IReadOnlyList<StrategyRunDetail?> details)
     {
         var totalCash = details.Sum(static detail => detail?.Portfolio?.Cash ?? 0m);
@@ -2407,8 +2408,6 @@ public static class WorkstationEndpoints
         }
     }
 
-<<<<<<< HEAD
-=======
     private static IResult ServeWorkstationIndex(IWebHostEnvironment environment)
     {
         var root = environment.WebRootPath ?? Path.Combine(environment.ContentRootPath, "wwwroot");
@@ -2422,15 +2421,12 @@ public static class WorkstationEndpoints
                 message = "Build src/Meridian.Ui/dashboard before opening /workstation."
             });
     }
-
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     private sealed record SecurityCoverageReferencePayload(
         string Source,
         string Symbol,
         string? AccountName,
-        string SecurityId,
+        string? SecurityId,
         string DisplayName,
-<<<<<<< HEAD
         string? AssetClass,
         string? SubType,
         string? Currency,
@@ -2441,18 +2437,12 @@ public static class WorkstationEndpoints
         string? MatchedIdentifierKind,
         string? MatchedIdentifierValue,
         string? MatchedProvider);
-=======
-        string AssetClass,
-        string Currency,
-        string Status,
-        string? PrimaryIdentifier);
 
     private sealed record SecurityCoverageGapPayload(
         string Source,
         string Symbol,
         string? AccountName,
         string Reason);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     private sealed record GovernanceReportingProfilePayload(
         string Id,

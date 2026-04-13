@@ -42,7 +42,12 @@ public sealed record BankStatementLineDto(
     string TransactionType,
     string Description,
     string? Reference,
-    decimal? ClosingBalance);
+    decimal? ClosingBalance)
+{
+    public DateOnly StatementDate => ValueDate;
+
+    public decimal? RunningBalance => ClosingBalance;
+}
 
 /// <summary>Request to record an account balance snapshot.</summary>
 public sealed record RecordAccountBalanceSnapshotRequest(
@@ -167,6 +172,8 @@ public sealed record CreateAccountRequest(
     string? Institution = null,
     string? PortfolioId = null,
     string? LedgerReference = null,
+    string? StrategyId = null,
+    string? RunId = null,
     CustodianAccountDetailsDto? CustodianDetails = null,
     BankAccountDetailsDto? BankDetails = null);
 

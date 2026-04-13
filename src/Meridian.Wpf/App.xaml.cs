@@ -11,14 +11,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
 using Meridian.Application.SecurityMaster;
-<<<<<<< HEAD
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
@@ -159,6 +157,7 @@ public partial class App : System.Windows.Application
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
         mainWindow.Show();
+        mainWindow.ForceStartupWindowRecovery();
 
         // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
         WpfServices.JumpListService.Instance.Register();
@@ -172,6 +171,8 @@ public partial class App : System.Windows.Application
 
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
+        EnsureMainWindowVisible(mainWindow);
+        _ = RestoreMainWindowVisibilityAsync(mainWindow);
     }
 
     /// <summary>
@@ -251,6 +252,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.NotificationService.Instance);
         services.AddSingleton(_ => WpfServices.KeyboardShortcutService.Instance);
         services.AddSingleton(_ => WpfServices.MessagingService.Instance);
+        services.AddSingleton<WpfServices.ApiStatusService>();
+        services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
         services.AddSingleton(_ => WpfServices.StatusService.Instance);
         services.AddSingleton(_ => WpfServices.FirstRunService.Instance);
 
@@ -258,9 +261,14 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
         services.AddSingleton(_ => WpfServices.WorkspaceService.Instance);
         services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
-<<<<<<< HEAD
         services.AddSingleton(_ => WpfServices.FundContextService.Instance);
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
+        services.AddSingleton(sp => new InMemoryFundAccountService(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "fund-accounts.json")));
+        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
         services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
             sp.GetRequiredService<IFundAccountService>(),
             sharedDataAccessService: null,
@@ -271,8 +279,6 @@ public partial class App : System.Windows.Application
                 "fund-structure.json")));
         services.AddSingleton<WpfServices.WorkstationOperatingContextService>();
         services.AddSingleton<WpfServices.WorkspaceShellContextService>();
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
         // ── Domain / feature services ───────────────────────────────────────
         services.AddSingleton(_ => WpfServices.BackendServiceManager.Instance);
@@ -280,9 +286,16 @@ public partial class App : System.Windows.Application
         services.AddSingleton(_ => WpfServices.ArchiveHealthService.Instance);
         services.AddSingleton(_ => WpfServices.SchemaService.Instance);
         services.AddSingleton(_ => WpfServices.RunMatService.Instance);
+        services.AddSingleton(_ => ProviderManagementService.Instance);
         services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
         services.AddSingleton(_ => SearchService.Instance);
+        services.AddSingleton<WpfServices.FundAccountReadService>();
+        services.AddSingleton<WpfServices.FundLedgerReadService>();
+        services.AddSingleton<WpfServices.ReconciliationReadService>();
+        services.AddSingleton<WpfServices.CashFinancingReadService>();
+        services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
+        services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
 
         // ── AI Agent service (local Ollama) ──────────────────────────────────
         services.AddSingleton<WpfServices.IAgentLoopService, WpfServices.AgentLoopService>();
@@ -310,6 +323,7 @@ public partial class App : System.Windows.Application
         // ── Pages (transient — created per navigation) ──────────────────────
         services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
         services.AddTransient<MainPage>();
+        services.AddTransient<FundProfileSelectionPage>();
         services.AddTransient<DashboardPage>();
         services.AddTransient<WatchlistPage>();
         services.AddTransient<ProviderPage>();
@@ -411,6 +425,9 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
@@ -721,6 +738,54 @@ public partial class App : System.Windows.Application
         }
         catch (Exception)
         {
+        }
+    }
+
+    private static void EnsureMainWindowVisible(Window window)
+    {
+        if (window is MainWindow mainWindow)
+        {
+            mainWindow.ForceStartupWindowRecovery();
+            return;
+        }
+
+        if (window.WindowState == WindowState.Minimized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
+
+        if (!window.ShowInTaskbar)
+        {
+            window.ShowInTaskbar = true;
+        }
+
+        if (!window.IsVisible)
+        {
+            window.Show();
+        }
+
+        window.Activate();
+    }
+
+    private static async Task RestoreMainWindowVisibilityAsync(Window window)
+    {
+        var delays = new[]
+        {
+            TimeSpan.FromMilliseconds(250),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3)
+        };
+
+        foreach (var delay in delays)
+        {
+            await Task.Delay(delay).ConfigureAwait(true);
+
+            if (Current is null || Current.Dispatcher.HasShutdownStarted)
+            {
+                return;
+            }
+
+            await Current.Dispatcher.InvokeAsync(() => EnsureMainWindowVisible(window), DispatcherPriority.ApplicationIdle);
         }
     }
 

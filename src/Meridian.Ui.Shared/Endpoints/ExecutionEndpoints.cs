@@ -203,6 +203,7 @@ public static class ExecutionEndpoints
         group.MapGet("/health", (HttpContext context) =>
         {
             var gateway = context.RequestServices.GetService<IOrderGateway>();
+            var executionGateway = context.RequestServices.GetService<IExecutionGateway>();
             if (gateway is null)
                 return Results.Problem("No execution gateway is configured.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
@@ -210,7 +211,8 @@ public static class ExecutionEndpoints
                 BrokerName: gateway.BrokerName,
                 Mode: gateway.Mode.ToString(),
                 IsAvailable: true,
-                AsOf: DateTimeOffset.UtcNow);
+                AsOf: DateTimeOffset.UtcNow,
+                SelectedGatewayId: executionGateway?.GatewayId);
 
             return Results.Json(health, jsonOptions);
         })
@@ -228,6 +230,54 @@ public static class ExecutionEndpoints
         })
         .WithName("GetExecutionCapabilities")
         .Produces<OrderGatewayCapabilities>(200)
+        .Produces(503);
+
+        group.MapGet("/audit", async (int? take, HttpContext context) =>
+        {
+            var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+            if (auditTrail is null)
+            {
+                return Results.Json(Array.Empty<ExecutionAuditEntry>(), jsonOptions);
+            }
+
+            var entries = await auditTrail
+                .GetRecentAsync(take ?? 100, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(entries, jsonOptions);
+        })
+        .WithName("GetExecutionAudit")
+        .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
+
+        group.MapGet("/controls", (HttpContext context) =>
+        {
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            return Results.Json(controls.GetSnapshot(), jsonOptions);
+        })
+        .WithName("GetExecutionControls")
+        .Produces<ExecutionControlSnapshot>(200)
+        .Produces(503);
+
+        group.MapPost("/controls/circuit-breaker", async (UpdateExecutionCircuitBreakerRequest request, HttpContext context) =>
+        {
+            var controls = context.RequestServices.GetService<ExecutionOperatorControlService>();
+            if (controls is null)
+            {
+                return Results.Problem("Execution operator controls are not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            var actor = ResolveActor(context);
+            var snapshot = await controls
+                .SetCircuitBreakerAsync(request.IsOpen, request.Reason, actor, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(snapshot, jsonOptions);
+        })
+        .WithName("UpdateExecutionCircuitBreaker")
+        .Produces<ExecutionControlSnapshot>(200)
         .Produces(503);
 
         // --- Session management ---
@@ -482,14 +532,8 @@ public static class ExecutionEndpoints
             if (snapshot is null)
                 return Results.Problem("Execution services are not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
-<<<<<<< HEAD
             var position = snapshot.Positions.FirstOrDefault(p =>
                 string.Equals(p.PositionKey, request.PositionKey, StringComparison.OrdinalIgnoreCase));
-=======
-            var logger = GetLogger(context.RequestServices);
-            var actionId = GenerateActionId();
-            var symbolUpper = symbol.ToUpperInvariant();
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
             if (position is null)
             {
@@ -581,7 +625,6 @@ public static class ExecutionEndpoints
 
             if (matches.Length > 1)
             {
-<<<<<<< HEAD
                 var ambiguous = new TradingActionResult(
                     ActionId: GenerateActionId(),
                     Status: "Rejected",
@@ -601,37 +644,6 @@ public static class ExecutionEndpoints
                 successVerb: "Close",
                 jsonOptions: jsonOptions,
                 context: context).ConfigureAwait(false);
-=======
-                Symbol = symbolUpper,
-                Side = closingSide,
-                Type = OrderType.Market,
-                Quantity = (decimal)position.AbsoluteQuantity,
-                ClientOrderId = $"close-{symbolUpper}-{Guid.NewGuid():N}"
-            };
-
-            var result = await oms.PlaceOrderAsync(closeRequest, context.RequestAborted).ConfigureAwait(false);
-
-            if (result.Success)
-            {
-                logger.LogInformation("Trading action {ActionId}: close position {Symbol} qty {Quantity} — order {OrderId} submitted", actionId, symbolUpper, closeRequest.Quantity, result.OrderId);
-            }
-            else
-            {
-                logger.LogWarning("Trading action {ActionId}: close position {Symbol} — order rejected: {Reason}", actionId, symbolUpper, result.ErrorMessage);
-            }
-
-            var actionResult = new TradingActionResult(
-                ActionId: actionId,
-                Status: result.Success ? "Accepted" : "Rejected",
-                Message: result.Success
-                    ? $"Close order for {symbolUpper} submitted (order {result.OrderId})."
-                    : (result.ErrorMessage ?? "Close order rejected."),
-                OccurredAt: DateTimeOffset.UtcNow);
-
-            return result.Success
-                ? Results.Json(actionResult, jsonOptions)
-                : Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         })
         .WithName("ClosePosition")
         .Produces<TradingActionResult>(200)
@@ -864,6 +876,80 @@ public static class ExecutionEndpoints
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
 
+    private static string ResolveActor(HttpContext context)
+    {
+        if (context.Request.Headers.TryGetValue("X-Meridian-Actor", out var actorValues))
+        {
+            var actor = actorValues.ToString().Trim();
+            if (!string.IsNullOrWhiteSpace(actor))
+            {
+                return actor;
+            }
+        }
+
+        if (context.User.Identity?.IsAuthenticated == true &&
+            !string.IsNullOrWhiteSpace(context.User.Identity.Name))
+        {
+            return context.User.Identity.Name!;
+        }
+
+        return "operator";
+    }
+
+    private static Dictionary<string, string> MergeMetadata(
+        IReadOnlyDictionary<string, string>? metadata,
+        params (string Key, string? Value)[] additions)
+    {
+        var merged = metadata is null
+            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (key, value) in additions)
+        {
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            merged[key] = value;
+        }
+
+        return merged;
+    }
+
+    private static async Task<ExecutionAuditEntry?> RecordOperatorAuditAsync(
+        HttpContext context,
+        string correlationId,
+        string action,
+        string outcome,
+        string message,
+        string? orderId = null,
+        string? runId = null,
+        string? symbol = null,
+        IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
+        if (auditTrail is null)
+        {
+            return null;
+        }
+
+        var orderGateway = context.RequestServices.GetService<IOrderGateway>();
+        return await auditTrail.RecordAsync(
+            category: "OperatorAction",
+            action: action,
+            outcome: outcome,
+            actor: ResolveActor(context),
+            brokerName: orderGateway?.BrokerName,
+            orderId: orderId,
+            runId: runId,
+            symbol: symbol,
+            correlationId: correlationId,
+            message: message,
+            metadata: metadata,
+            ct: context.RequestAborted).ConfigureAwait(false);
+    }
+
     private static ExecutionAccountDetailSnapshot BuildLegacySingleAccountSnapshot(IPortfolioState portfolio)
     {
         var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
@@ -911,7 +997,8 @@ public sealed record ExecutionGatewayHealth(
     string BrokerName,
     string Mode,
     bool IsAvailable,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf,
+    string? SelectedGatewayId = null);
 
 /// <summary>Request to create a new paper trading session.</summary>
 public sealed record CreatePaperSessionRequest(
@@ -928,4 +1015,10 @@ public sealed record TradingActionResult(
     string ActionId,
     string Status,
     string Message,
-    DateTimeOffset OccurredAt);
+    DateTimeOffset OccurredAt,
+    string? AuditId = null);
+
+/// <summary>Request to update the global execution circuit breaker.</summary>
+public sealed record UpdateExecutionCircuitBreakerRequest(
+    bool IsOpen,
+    string? Reason = null);

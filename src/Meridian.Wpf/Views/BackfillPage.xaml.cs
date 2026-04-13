@@ -24,11 +24,10 @@ public partial class BackfillPage : Page
         WpfServices.WorkspaceService workspaceService,
         BackfillViewModel viewModel)
     {
-        InitializeComponent();
-
         _workspaceService = workspaceService;
         _viewModel = viewModel;
 
+        InitializeComponent();
         DataContext = _viewModel;
     }
 
@@ -99,11 +98,17 @@ public partial class BackfillPage : Page
 
     private void ProviderPriority_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (PrimaryProviderCombo is null || SecondaryProviderCombo is null || TertiaryProviderCombo is null)
+            return;
+
         UpdateProviderPrioritySummary();
     }
 
     private void GranularityCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (GranularityCombo is null)
+            return;
+
         UpdateGranularityHint();
     }
 

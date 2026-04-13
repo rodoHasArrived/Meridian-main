@@ -396,15 +396,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService
             }
 
             var results = stored.BankLines
-<<<<<<< HEAD
-                .Where(l => (fromDate == null || l.StatementDate >= fromDate)
-                         && (toDate == null || l.StatementDate <= toDate))
-                .OrderByDescending(l => l.StatementDate)
-=======
                 .Where(l => (fromDate == null || l.TransactionDate >= fromDate)
-                         && (toDate   == null || l.TransactionDate <= toDate))
+                         && (toDate == null || l.TransactionDate <= toDate))
                 .OrderByDescending(l => l.TransactionDate)
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                 .ToList();
 
             return Task.FromResult<IReadOnlyList<BankStatementLineDto>>(results);

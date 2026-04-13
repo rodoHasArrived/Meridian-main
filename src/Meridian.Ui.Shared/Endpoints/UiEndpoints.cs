@@ -204,15 +204,11 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
-<<<<<<< HEAD
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
-
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -323,15 +319,11 @@ public static class UiEndpoints
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
 
-<<<<<<< HEAD
         // Fund accounts (custodian and bank) endpoints
         app.MapFundAccountEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
-
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -377,20 +369,6 @@ public static class UiEndpoints
         return app;
     }
 
-<<<<<<< HEAD
-    internal static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false)
-    {
-        return new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = writeIndented,
-            TypeInfoResolver = JsonTypeInfoResolver.Combine(
-                MarketDataJsonContext.Default,
-                new DefaultJsonTypeInfoResolver())
-        };
-    }
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     /// <summary>
      /// Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints.
      /// </summary>

@@ -58,7 +58,6 @@
                                     <Setter Property="BorderThickness" Value="1"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsPrimary}" Value="True">
-<<<<<<< HEAD
                                             <Setter Property="Background"  Value="{DynamicResource ConsoleAccentGreenDimBrush}"/>
                                             <Setter Property="BorderBrush" Value="{DynamicResource ConsoleAccentGreenBrush}"/>
                                             <Setter Property="Foreground"  Value="{DynamicResource ConsoleTextPrimaryBrush}"/>
@@ -70,19 +69,6 @@
                                         <Trigger Property="IsPressed" Value="True">
                                             <Setter Property="Background"  Value="{DynamicResource ConsoleBackgroundActiveBrush}"/>
                                             <Setter Property="BorderBrush" Value="{DynamicResource ConsoleBorderFocusBrush}"/>
-=======
-                                            <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenDimBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentGreenDimBrush}"/>
-                                            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}"/>
-                                        </DataTrigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderHoverBrush}"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}"/>
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
@@ -90,11 +76,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <!-- Icon (if present) -->
                                 <TextBlock Text="{Binding Icon}"
-<<<<<<< HEAD
                                            FontFamily="{DynamicResource SymbolThemeFontFamily}"
-=======
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                                            FontSize="14"
                                            Margin="0,0,6,0"
                                            VerticalAlignment="Center"

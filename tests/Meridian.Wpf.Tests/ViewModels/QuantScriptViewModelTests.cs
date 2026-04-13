@@ -21,6 +21,8 @@ public sealed class QuantScriptViewModelTests
 
     private sealed class StubLayoutService : IQuantScriptLayoutService
     {
+        public (double ChartHeight, double EditorHeight) LoadRowHeights() => (300, 400);
+        public void SaveRowHeights(double chartHeight, double editorHeight) { }
         public (double LeftWidth, double RightWidth) LoadColumnWidths() => (300, 400);
         public void SaveColumnWidths(double l, double r) { }
         public int LoadLastActiveTab() => 0;

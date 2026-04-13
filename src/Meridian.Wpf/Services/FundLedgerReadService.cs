@@ -32,7 +32,7 @@ public sealed class FundLedgerReadService
         }
 
         var fundLedgerBook = new FundLedgerBook(profile.FundProfileId);
-        var runs = await _runWorkspaceService.GetRecordedRunsAsync(ct).ConfigureAwait(false);
+        var runs = await _runWorkspaceService.GetRecordedRunEntriesAsync(ct).ConfigureAwait(false);
 
         foreach (var run in runs.Where(run =>
                      string.Equals(run.FundProfileId, profile.FundProfileId, StringComparison.OrdinalIgnoreCase) &&

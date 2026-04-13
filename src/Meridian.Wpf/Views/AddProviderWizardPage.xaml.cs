@@ -233,69 +233,10 @@ public partial class AddProviderWizardPage : Page
 
     private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)
     {
-<<<<<<< HEAD
-        var providerName = _selectedProvider?.DisplayName
-            ?? ProviderFamilyIdBox.Text.TrimOrNull()
-            ?? "Select a relationship";
-        var providerDescription = _selectedProvider is null
-            ? null
-            : $"{_selectedProvider.Description} Capabilities: {DescribeProviderCapabilities(_selectedProvider)}";
-        providerDescription ??= _selectedProvider?.Description
-            ?? "Manual provider family. Meridian will persist the relationship even if the provider is not in the catalog yet.";
-        var scopeSummary = string.Join(" | ", new[]
-            {
-                WorkspaceBox.Text.TrimOrNull(),
-                FundProfileIdBox.Text.TrimOrNull(),
-                ParseGuid(EntityIdBox.Text)?.ToString("N")[..8],
-                ParseGuid(SleeveIdBox.Text)?.ToString("N")[..8],
-                ParseGuid(VehicleIdBox.Text)?.ToString("N")[..8],
-                ParseGuid(AccountIdBox.Text)?.ToString("N")[..8]
-            }.Where(value => !string.IsNullOrWhiteSpace(value)));
-
-        _viewModel.ApplyRelationshipSummary(
-            providerName,
-            providerDescription,
-            GetSelectedConnectionType().ToString(),
-            GetSelectedConnectionMode().ToString(),
-            string.IsNullOrWhiteSpace(scopeSummary) ? "Global" : scopeSummary,
-            GetSelectedCapabilities().Count == 0 ? "No capabilities selected" : string.Join(", ", GetSelectedCapabilities().Select(ToDisplayLabel)),
-            string.IsNullOrWhiteSpace(CredentialReferenceBox.Text) ? "No credential reference yet" : CredentialReferenceBox.Text.Trim(),
-            _selectedPreset?.Name ?? "No preset applied",
-            _savedConnection?.ProductionReady == true ? "Production ready" : _viewModel.SummaryCertificationText);
-    }
-
-    private static Guid? ParseGuid(string value)
-        => Guid.TryParse(value?.Trim(), out var parsed) ? parsed : null;
-
-    private static string DescribeProviderCapabilities(ProviderCatalogEntry entry)
-    {
-        var capabilities = new List<string>();
-        if (entry.SupportsStreaming)
-            capabilities.Add("Streaming");
-        if (entry.SupportsHistorical)
-            capabilities.Add("Historical");
-        if (entry.SupportsSymbolSearch)
-            capabilities.Add("Symbol Search");
-        if (entry.SupportsOptions)
-            capabilities.Add("Options");
-        if (entry.SupportsBrokerage)
-            capabilities.Add("Brokerage");
-
-        return capabilities.Count == 0
-            ? "Not advertised"
-            : string.Join(", ", capabilities);
-    }
-
-    private static string ToDisplayLabel(string value)
-        => string.Concat(value.Select((character, index) =>
-            index > 0 && char.IsUpper(character) ? $" {character}" : character.ToString()));
-
-=======
         return field.AllEnvironmentVariables
             .Any(envVar => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(envVar)));
     }
 
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     private static string? GetConfiguredEnvironmentValue(CredentialFieldInfo field)
     {
         foreach (var envVar in field.AllEnvironmentVariables)
@@ -319,10 +260,6 @@ internal sealed class ProviderCatalogViewModel
         Id          = entry.Id;
         DisplayName = entry.DisplayName;
         Description = entry.Description;
-<<<<<<< HEAD
-        CapabilitySummary = $"Capabilities: {DescribeProviderCapabilities(entry)}";
-        TierLabel = entry.Tier.ToString().ToUpperInvariant();
-=======
         SupportsStreaming  = entry.SupportsStreaming;
         SupportsHistorical = entry.SupportsHistorical;
 
@@ -334,8 +271,6 @@ internal sealed class ProviderCatalogViewModel
             ProviderTier.Premium         => "PREMIUM",
             _                            => "FREE",
         };
-
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         TierBrush = entry.Tier switch
         {
             ProviderTier.Free or ProviderTier.FreeWithAccount =>
@@ -363,31 +298,6 @@ internal sealed class ProviderCatalogViewModel
     public string Id { get; }
     public string DisplayName { get; }
     public string Description { get; }
-<<<<<<< HEAD
-    public string CapabilitySummary { get; }
-    public string TierLabel { get; }
-    public Brush TierBrush { get; }
-    public Brush CredentialStatusBrush { get; }
-
-    private static string DescribeProviderCapabilities(ProviderCatalogEntry entry)
-    {
-        var capabilities = new List<string>();
-        if (entry.SupportsStreaming)
-            capabilities.Add("Streaming");
-        if (entry.SupportsHistorical)
-            capabilities.Add("Historical");
-        if (entry.SupportsSymbolSearch)
-            capabilities.Add("Symbol Search");
-        if (entry.SupportsOptions)
-            capabilities.Add("Options");
-        if (entry.SupportsBrokerage)
-            capabilities.Add("Brokerage");
-
-        return capabilities.Count == 0
-            ? "Not advertised"
-            : string.Join(", ", capabilities);
-    }
-=======
     public bool SupportsStreaming { get; }
     public bool SupportsHistorical { get; }
     public string TierLabel { get; }
@@ -395,6 +305,5 @@ internal sealed class ProviderCatalogViewModel
     public Brush CredentialStatusBrush { get; }
     public Visibility StreamingVisibility { get; }
     public Visibility HistoricalVisibility { get; }
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }
 

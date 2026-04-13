@@ -42,7 +42,12 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
             Currency: detail.Currency,
             Status: detail.Status,
             PrimaryIdentifier: primaryIdentifier,
-            SubType: DeriveSubType(detail.AssetClass));
+            SubType: DeriveSubType(detail.AssetClass),
+            CoverageStatus: WorkstationSecurityCoverageStatus.Resolved,
+            MatchedIdentifierKind: SecurityIdentifierKind.Ticker.ToString(),
+            MatchedIdentifierValue: symbol,
+            MatchedProvider: null,
+            ResolutionReason: null);
     }
 
     /// <summary>

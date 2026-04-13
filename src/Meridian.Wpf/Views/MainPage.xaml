@@ -235,7 +235,6 @@
                         <Border Background="{StaticResource TopBarBorderBrush}"
                                 CornerRadius="3"
                                 Padding="8,3"
-<<<<<<< HEAD
                                 Margin="0,0,12,0"
                                 Visibility="{Binding ActiveFundVisibility}">
                             <StackPanel Orientation="Horizontal">
@@ -293,8 +292,6 @@
                         <Border Background="{StaticResource TopBarBorderBrush}"
                                 CornerRadius="3"
                                 Padding="8,3"
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                                 Margin="0,0,12,0">
                             <TextBlock Text="{Binding CurrentModeName}"
                                        FontSize="11"

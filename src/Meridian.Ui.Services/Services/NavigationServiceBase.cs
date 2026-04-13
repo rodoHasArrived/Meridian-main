@@ -41,14 +41,15 @@ public abstract class NavigationServiceBase
             return false;
         }
 
-        var result = NavigateToPageCore(pageType, parameter);
+        var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
+        var result = NavigateToPageCore(pageType, effectiveParameter);
 
         if (result)
         {
             var entry = new NavigationEntry
             {
                 PageTag = pageTag,
-                Parameter = parameter,
+                Parameter = effectiveParameter,
                 Timestamp = DateTime.UtcNow
             };
             _navigationHistory.Push(entry);
@@ -56,7 +57,7 @@ public abstract class NavigationServiceBase
             Navigated?.Invoke(this, new NavigationEventArgs
             {
                 PageTag = pageTag,
-                Parameter = parameter
+                Parameter = effectiveParameter
             });
         }
 
@@ -163,6 +164,13 @@ public abstract class NavigationServiceBase
     /// When overridden, clears the platform-specific navigation stack.
     /// </summary>
     protected abstract void ClearHistoryCore();
+
+    /// <summary>
+    /// Allows derived navigation services to normalize or synthesize parameters
+    /// for page-tag aliases before a page is created.
+    /// </summary>
+    protected virtual object? TransformNavigationParameter(string pageTag, Type pageType, object? parameter)
+        => parameter;
 
     /// <summary>
     /// Called when navigation to an unknown page tag is attempted.

@@ -13,6 +13,7 @@ using System.Windows.Threading;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -37,11 +38,16 @@ public partial class MainWindow : Window
     private readonly OnboardingTourService _tourService;
     private readonly AlertService _alertService;
     private readonly WpfServices.WorkspaceService _workspaceService;
-<<<<<<< HEAD
     private readonly WpfServices.FundContextService _fundContextService;
     private readonly WpfServices.WorkstationOperatingContextService _operatingContextService;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+    private readonly DispatcherTimer _startupRecoveryTimer;
+
+    private Rect? _restoredWindowBounds;
+    private int _startupRecoveryAttempts;
+
+    private const double DefaultWindowWidth = 1400;
+    private const double DefaultWindowHeight = 900;
+    private const int StartupRecoveryMaxAttempts = 20;
 
     private static readonly string WindowStateFilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -52,13 +58,9 @@ public partial class MainWindow : Window
         MainWindowViewModel viewModel,
         WpfServices.NavigationService navigationService,
         WpfServices.KeyboardShortcutService keyboardShortcutService,
-<<<<<<< HEAD
         WpfServices.NotificationService notificationService,
         WpfServices.FundContextService fundContextService,
         WpfServices.WorkstationOperatingContextService operatingContextService)
-=======
-        WpfServices.NotificationService notificationService)
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     {
         InitializeComponent();
 
@@ -69,11 +71,8 @@ public partial class MainWindow : Window
         _tourService = OnboardingTourService.Instance;
         _alertService = AlertService.Instance;
         _workspaceService = WpfServices.WorkspaceService.Instance;
-<<<<<<< HEAD
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _operatingContextService = operatingContextService ?? throw new ArgumentNullException(nameof(operatingContextService));
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         DataContext = _viewModel;
 
         // Subscribe to keyboard shortcuts
@@ -88,31 +87,37 @@ public partial class MainWindow : Window
 
         // Subscribe to alert events for guided remediation
         _alertService.AlertRaised += OnAlertRaised;
-<<<<<<< HEAD
         _fundContextService.FundSwitchRequested += OnFundSwitchRequested;
         _operatingContextService.ActiveContextChanging += OnActiveContextChanging;
         _operatingContextService.ActiveContextChanged += OnActiveContextChanged;
         _operatingContextService.ContextSwitchRequested += OnContextSwitchRequested;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
         // Subscribe to launch args forwarded from secondary instances (jump-list re-launches).
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived += OnLaunchArgsReceived;
 
+        _startupRecoveryTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(250)
+        };
+        _startupRecoveryTimer.Tick += OnStartupRecoveryTick;
+
         SourceInitialized += (_, _) =>
         {
             EnsureShellVisibleOnStartup();
-            _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(EnsureShellVisibleOnStartup));
-            _ = RecoverShellVisibilityAsync();
+            StartShellRecoveryLoop();
         };
 
         // Restore window state from previous session
         RestoreWindowState();
     }
 
-    private void OnWindowLoaded(object sender, RoutedEventArgs e)
+    private async void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
         EnsureShellVisibleOnStartup();
+        if (RootFrame.Content is null)
+        {
+            RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
+        }
 
         // Capture the HWND for taskbar progress updates (must run after Loaded).
         WpfServices.TaskbarProgressService.Instance.Initialize(this);
@@ -137,7 +142,6 @@ public partial class MainWindow : Window
         GlobalHotkeyService.Instance.GlobalHotkeyFired += OnGlobalHotkeyFired;
         GlobalHotkeyService.Instance.Initialize(hwnd);
 
-<<<<<<< HEAD
         await _workspaceService.LoadWorkspacesAsync();
         await _fundContextService.LoadAsync();
         await _operatingContextService.LoadAsync();
@@ -149,11 +153,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
-=======
-        // Load the shell first; it owns the inner content frame and restores page state there.
-        RootFrame.Navigate(App.Services.GetRequiredService<MainPage>());
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+        if (RootFrame.Content is not FundProfileSelectionPage)
+        {
+            RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
+        }
 
         // A few services can raise transient state changes during startup.
         // Re-assert the shell as visible once the initial load work has been queued.
@@ -174,14 +177,13 @@ public partial class MainWindow : Window
         _tourService.StepChanged -= OnTourStepChanged;
         _tourService.TourCompleted -= OnTourCompleted;
         _alertService.AlertRaised -= OnAlertRaised;
-<<<<<<< HEAD
         _fundContextService.FundSwitchRequested -= OnFundSwitchRequested;
         _operatingContextService.ActiveContextChanging -= OnActiveContextChanging;
         _operatingContextService.ActiveContextChanged -= OnActiveContextChanged;
         _operatingContextService.ContextSwitchRequested -= OnContextSwitchRequested;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived -= OnLaunchArgsReceived;
+        _startupRecoveryTimer.Stop();
+        _startupRecoveryTimer.Tick -= OnStartupRecoveryTick;
 
         // Clipboard watcher cleanup
         ClipboardWatcherService.Instance.SymbolsDetected -= OnSymbolsDetected;
@@ -452,36 +454,27 @@ public partial class MainWindow : Window
     /// <summary>
      /// Restores the last workspace session state (active workspace, last page, etc.)
      /// </summary>
-<<<<<<< HEAD
     private async Task RestoreWorkspaceSessionForContextAsync(WorkstationOperatingContext context, CancellationToken ct = default)
-=======
-    private async Task RestoreWorkspaceSessionAsync(CancellationToken ct = default)
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     {
         try
         {
             await _workspaceService.LoadWorkspacesAsync();
 
-<<<<<<< HEAD
             var session = _workspaceService.GetLastSessionStateForContext(context.ContextKey);
             var targetWorkspaceId = !string.IsNullOrWhiteSpace(session?.ActiveWorkspaceId)
                 ? session!.ActiveWorkspaceId
                 : context.DefaultWorkspaceId;
 
             if (!string.IsNullOrWhiteSpace(targetWorkspaceId))
-=======
-            var session = _workspaceService.GetLastSessionState();
-            if (session != null)
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
             {
                 // Restore active workspace
-                if (!string.IsNullOrEmpty(session.ActiveWorkspaceId))
+                if (!string.IsNullOrEmpty(session?.ActiveWorkspaceId))
                 {
                     await _workspaceService.ActivateWorkspaceAsync(session.ActiveWorkspaceId);
                 }
 
                 // Restore last active page after MainPage loads
-                if (!string.IsNullOrEmpty(session.ActivePageTag) && session.ActivePageTag != "Dashboard")
+                if (!string.IsNullOrEmpty(session?.ActivePageTag) && session.ActivePageTag != "Dashboard")
                 {
                     // Defer navigation until MainPage is fully loaded
                     _ = Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, () =>
@@ -490,7 +483,6 @@ public partial class MainWindow : Window
                     });
                 }
             }
-<<<<<<< HEAD
 
             var targetPageTag = !string.IsNullOrWhiteSpace(session?.ActivePageTag)
                 ? session!.ActivePageTag
@@ -502,8 +494,6 @@ public partial class MainWindow : Window
             }
 
             _navigationService.NavigateTo(targetPageTag);
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         }
         catch (Exception)
         {
@@ -518,7 +508,6 @@ public partial class MainWindow : Window
     {
         try
         {
-<<<<<<< HEAD
             if (_operatingContextService.CurrentContext is null &&
                 _fundContextService.CurrentFundProfile is null &&
                 RootFrame.Content is not MainPage)
@@ -528,18 +517,12 @@ public partial class MainWindow : Window
 
             var operatingContextKey = _operatingContextService.CurrentContext?.ContextKey
                 ?? _fundContextService.CurrentFundProfile?.FundProfileId;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
             var currentPage = _navigationService.GetCurrentPageTag();
             var activeWorkspace = _workspaceService.ActiveWorkspace;
 
             // Preserve per-page filter state and open-pages list that were accumulated
             // during the session by the individual pages via UpdatePageFilterState().
-<<<<<<< HEAD
             var existing = _workspaceService.GetLastSessionStateForContext(operatingContextKey);
-=======
-            var existing = _workspaceService.GetLastSessionState();
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
             var session = new Ui.Services.SessionState
             {
@@ -558,18 +541,13 @@ public partial class MainWindow : Window
             };
 
             // Fire-and-forget since we're closing
-<<<<<<< HEAD
             _ = _workspaceService.SaveSessionStateAsync(session, operatingContextKey);
-=======
-            _ = _workspaceService.SaveSessionStateAsync(session);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         }
         catch (Exception)
         {
         }
     }
 
-<<<<<<< HEAD
     private async Task SynchronizeLastSelectedFundAsync(CancellationToken ct = default)
     {
         var workspaceContextKey = _workspaceService.LastSelectedOperatingContextKey;
@@ -668,10 +646,14 @@ public partial class MainWindow : Window
 
         EnsureShellVisibleOnStartup();
 
-        _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(async () =>
+        if (RootFrame.Content is MainPage mainPage)
         {
-            await RestoreWorkspaceSessionForContextAsync(context, ct);
-        }));
+            await mainPage.WaitForShellReadyAsync();
+        }
+
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded, ct);
+        await RestoreWorkspaceSessionForContextAsync(context, ct);
+        EnsureShellVisibleOnStartup();
     }
 
     private async Task ShowContextSelectionAsync(bool saveCurrentSession, CancellationToken ct = default)
@@ -697,8 +679,6 @@ public partial class MainWindow : Window
     private static string NormalizeWorkspaceId(string? workspaceId)
         => string.IsNullOrWhiteSpace(workspaceId) ? "research" : workspaceId.Trim();
 
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 
     /// <summary>
@@ -761,6 +741,7 @@ public partial class MainWindow : Window
                 // Keep default CenterScreen position but restore size
                 Width = state.Width;
                 Height = state.Height;
+                _restoredWindowBounds = null;
             }
             else
             {
@@ -769,6 +750,7 @@ public partial class MainWindow : Window
                 Top = state.Top;
                 Width = state.Width;
                 Height = state.Height;
+                _restoredWindowBounds = new Rect(state.Left, state.Top, state.Width, state.Height);
             }
 
             if (state.IsMaximized)
@@ -783,6 +765,38 @@ public partial class MainWindow : Window
 
     private void EnsureShellVisibleOnStartup()
     {
+        var nativeBounds = CaptureNativeBounds();
+        if (!WindowStartupRecovery.NeedsRecovery(
+                IsVisible,
+                ShowInTaskbar,
+                WindowState,
+                nativeBounds.Width,
+                nativeBounds.Height,
+                MinWidth,
+                MinHeight))
+        {
+            if (_startupRecoveryTimer.IsEnabled)
+            {
+                _startupRecoveryTimer.Stop();
+            }
+
+            return;
+        }
+
+        var targetBounds = WindowStartupRecovery.ResolveBounds(
+            _restoredWindowBounds,
+            nativeBounds,
+            MinWidth,
+            MinHeight,
+            DefaultWindowWidth,
+            DefaultWindowHeight);
+
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = targetBounds.Left;
+        Top = targetBounds.Top;
+        Width = targetBounds.Width;
+        Height = targetBounds.Height;
+
         if (WindowState == WindowState.Minimized)
         {
             WindowState = WindowState.Normal;
@@ -793,40 +807,50 @@ public partial class MainWindow : Window
             ShowInTaskbar = true;
         }
 
+        if (Visibility != Visibility.Visible)
+        {
+            Visibility = Visibility.Visible;
+        }
+
         if (!IsVisible)
         {
             Show();
         }
 
+        UpdateLayout();
+
         var hwnd = new WindowInteropHelper(this).Handle;
         if (hwnd != IntPtr.Zero)
         {
-            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
-            NativeMethods.SetForegroundWindow(hwnd);
+            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_SHOWNORMAL);
+            NativeMethods.SetWindowPos(
+                hwnd,
+                IntPtr.Zero,
+                (int)Math.Round(targetBounds.Left),
+                (int)Math.Round(targetBounds.Top),
+                (int)Math.Round(targetBounds.Width),
+                (int)Math.Round(targetBounds.Height),
+                NativeMethods.SWP_NOZORDER | NativeMethods.SWP_SHOWWINDOW);
         }
 
+        var restoreTopmost = Topmost;
+        Topmost = true;
+        Topmost = restoreTopmost;
         Activate();
+        Focus();
     }
 
-    private async Task RecoverShellVisibilityAsync()
+    public void ForceStartupWindowRecovery()
     {
-        var delays = new[]
-        {
-            TimeSpan.FromMilliseconds(250),
-            TimeSpan.FromSeconds(1),
-            TimeSpan.FromSeconds(3)
-        };
-
-        foreach (var delay in delays)
-        {
-            await Task.Delay(delay).ConfigureAwait(true);
-            EnsureShellVisibleOnStartup();
-        }
+        EnsureShellVisibleOnStartup();
+        StartShellRecoveryLoop();
     }
 
     private static class NativeMethods
     {
-        internal const int SW_RESTORE = 9;
+        internal const int SW_SHOWNORMAL = 1;
+        internal const uint SWP_NOZORDER = 0x0004;
+        internal const uint SWP_SHOWWINDOW = 0x0040;
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -834,7 +858,77 @@ public partial class MainWindow : Window
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool SetForegroundWindow(IntPtr hWnd);
+        internal static extern bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr hWndInsertAfter,
+            int X,
+            int Y,
+            int cx,
+            int cy,
+            uint uFlags);
+    }
+
+    private void StartShellRecoveryLoop()
+    {
+        _startupRecoveryAttempts = 0;
+        if (!_startupRecoveryTimer.IsEnabled)
+        {
+            _startupRecoveryTimer.Start();
+        }
+    }
+
+    private void OnStartupRecoveryTick(object? sender, EventArgs e)
+    {
+        _startupRecoveryAttempts++;
+        EnsureShellVisibleOnStartup();
+
+        if (_startupRecoveryAttempts >= StartupRecoveryMaxAttempts)
+        {
+            _startupRecoveryTimer.Stop();
+        }
+    }
+
+    private Rect CaptureNativeBounds()
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero || !NativeBounds.TryGetWindowRect(hwnd, out var rect))
+        {
+            return new Rect(Left, Top, Width, Height);
+        }
+
+        return rect;
+    }
+
+    private static class NativeBounds
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        internal static bool TryGetWindowRect(IntPtr hWnd, out Rect rect)
+        {
+            if (GetWindowRect(hWnd, out var nativeRect))
+            {
+                rect = new Rect(
+                    nativeRect.Left,
+                    nativeRect.Top,
+                    nativeRect.Right - nativeRect.Left,
+                    nativeRect.Bottom - nativeRect.Top);
+                return true;
+            }
+
+            rect = Rect.Empty;
+            return false;
+        }
     }
 
     /// <summary>

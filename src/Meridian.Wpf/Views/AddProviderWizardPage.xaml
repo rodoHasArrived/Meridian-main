@@ -106,11 +106,6 @@
                                                          Margin="0,0,8,0" />
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="13" />
                                             </StackPanel>
-<<<<<<< HEAD
-                                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="{Binding CapabilitySummary}" TextWrapping="Wrap" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" Margin="0,6,0,0" />
-                                        </StackPanel>
-=======
 
                                             <WrapPanel Grid.Row="1" Margin="0,0,0,4">
                                                 <Border CornerRadius="3" Padding="4,1" Margin="0,0,4,2"
@@ -136,7 +131,6 @@
                                                        TextWrapping="Wrap" FontSize="11"
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                         </Grid>
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

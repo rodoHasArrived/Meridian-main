@@ -59,15 +59,11 @@ public sealed class UiServer : IAsyncDisposable
     /// <param name="port">HTTP port to listen on.</param>
     public UiServer(string configPath, int port = 8080)
     {
-<<<<<<< HEAD
         var contentRootPath = Directory.GetCurrentDirectory();
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             ContentRootPath = contentRootPath
         });
-=======
-        var builder = WebApplication.CreateBuilder();
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
@@ -261,19 +257,8 @@ public sealed class UiServer : IAsyncDisposable
         // Archive Maintenance API (not included in MapUiEndpoints)
         _app.MapArchiveMaintenanceEndpoints();
 
-<<<<<<< HEAD
         _app.MapUiEndpointsWithStatus(statusHandlers);
-=======
-        // Canonicalization parity dashboard (not included in MapUiEndpoints)
-        _app.MapCanonicalizationEndpoints(s_jsonOptions);
 
-        // Dashboard root page (maps GET / → HTML, not included in MapUiEndpoints)
-        _app.MapDashboard();
-
-        // ==================== AGGREGATED ENDPOINT MODULES ====================
-        // All remaining API endpoints (config, backfill, storage, providers, etc.)
-        _app.MapUiEndpoints(s_jsonOptions);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     public async Task StartAsync(CancellationToken ct = default)

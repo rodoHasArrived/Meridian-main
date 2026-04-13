@@ -197,62 +197,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             SourceRecordId: null,
             Reason: "Amended via WPF UI");
 
-<<<<<<< HEAD
-        var response = await ApiClientService.Instance
-            .PostWithResponseAsync<SecurityDetailDto>(
-                $"/api/security-master/amend",
-                request,
-                ct)
-            .ConfigureAwait(false);
-
-        if (!response.Success)
-        {
-            HandleError(response);
-            return null;
-        }
-
-        return response.Data;
-    }
-
-    private void HandleError(ApiResponse<SecurityDetailDto> response)
-    {
-        if (response.StatusCode == 422)
-        {
-            // Try to parse validation errors
-            try
-            {
-                var options = DesktopJsonOptions.Api;
-                if (JsonSerializer.Deserialize<ValidationProblemDetails>(
-                    response.ErrorMessage ?? "{}",
-                    options) is { Errors: not null } details)
-                {
-                    foreach (var error in details.Errors.Values.SelectMany(v => v))
-                    {
-                        ValidationErrors.Add(error);
-                    }
-                    RaisePropertyChanged(nameof(HasErrors));
-                    StatusText = $"{ValidationErrors.Count} validation error(s).";
-                    return;
-                }
-            }
-            catch (JsonException ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SecurityMasterEditViewModel] Failed to parse validation errors: {ex.Message}");
-            }
-        }
-
-        if (!string.IsNullOrEmpty(response.ErrorMessage))
-        {
-            ValidationErrors.Add(response.ErrorMessage);
-        }
-        else
-        {
-            ValidationErrors.Add($"HTTP {response.StatusCode}: Request failed.");
-        }
-        RaisePropertyChanged(nameof(HasErrors));
-=======
         return await _service.AmendTermsAsync(request, ct).ConfigureAwait(false);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     private static SecurityIdentifierKind ConvertIdentifierKind(string displayName) => displayName switch

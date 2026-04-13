@@ -11,9 +11,13 @@ public sealed class PaneDropEventArgs : EventArgs
     /// <summary>Zero-based index of the pane onto which the drop occurred.</summary>
     public int TargetPaneIndex { get; }
 
-    public PaneDropEventArgs(string pageTag, int targetPaneIndex)
+    /// <summary>The requested docking action for the dropped page.</summary>
+    public PaneDropAction Action { get; }
+
+    public PaneDropEventArgs(string pageTag, int targetPaneIndex, PaneDropAction action = PaneDropAction.Replace)
     {
         PageTag = pageTag;
         TargetPaneIndex = targetPaneIndex;
+        Action = action;
     }
 }

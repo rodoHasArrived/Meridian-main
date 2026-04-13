@@ -1,10 +1,7 @@
 using Meridian.Application.Config;
 using Meridian.Application.DirectLending;
-<<<<<<< HEAD
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -147,7 +144,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddHostedService<DailyAccrualWorker>();
         }
 
-<<<<<<< HEAD
         // Fund accounts and governance structure: keep the in-memory working set, but
         // persist local-first snapshots under the configured storage root so operator
         // setup survives restarts while the deeper Postgres governance wave remains future work.
@@ -175,9 +171,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 securityMasterQueryService,
                 persistencePath);
         });
-
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         return services;
     }
 

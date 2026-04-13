@@ -5,519 +5,432 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
-      d:DesignHeight="900" d:DesignWidth="1400"
+      d:DesignHeight="900"
+      d:DesignWidth="1400"
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Trading Workspace"
       AutomationProperties.AutomationId="TradingWorkspaceShellPage">
 
-    <Page.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-    </Page.Resources>
-
-    <!-- Top-level Grid: summary scroll on top, docking workspace below -->
-    <Grid>
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" MinHeight="200" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
-        <StackPanel MaxWidth="1400">
+        <views:WorkspaceShellContextStripControl x:Name="ContextStrip" />
 
-            <!-- ── Header ────────────────────────────────────────────────── -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+        <views:WorkspaceCommandBarControl x:Name="CommandBar"
+                                          Grid.Row="1"
+                                          CommandInvoked="OnCommandBarCommandInvoked"
+                                          Margin="0,16,0,0" />
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <Border Width="44" Height="44" CornerRadius="14"
-                                Background="{StaticResource ConsoleAccentGreenAlpha20Brush}"
-                                BorderBrush="{StaticResource SuccessColorBrush}" BorderThickness="1">
-                            <TextBlock Text="&#xE9F5;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="24" Foreground="{StaticResource SuccessColorBrush}"
-                                       VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        </Border>
-                        <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Trading" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Live execution, portfolio management, and position oversight"
-                                       Style="{StaticResource CardDescriptionStyle}" />
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- KPI strip -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="10" Padding="16,10" Margin="0,0,12,0"
-                                ToolTip="Active paper trading runs">
-                            <StackPanel>
-                                <TextBlock x:Name="PaperRunsText" Text="—" FontSize="20" FontWeight="Bold"
-                                           Foreground="{StaticResource InfoColorBrush}"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Text="Paper Runs" FontSize="11"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="10" Padding="16,10" Margin="0,0,12,0"
-                                ToolTip="Active live trading runs">
-                            <StackPanel>
-                                <TextBlock x:Name="LiveRunsText" Text="—" FontSize="20" FontWeight="Bold"
-                                           Foreground="{StaticResource SuccessColorBrush}"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Text="Live Runs" FontSize="11"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                CornerRadius="10" Padding="16,10"
-                                ToolTip="Total equity under management across paper + live runs">
-                            <StackPanel>
-                                <TextBlock x:Name="TotalEquityText" Text="—" FontSize="20" FontWeight="Bold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Text="Total Equity" FontSize="11"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!-- ── Quick Actions ─────────────────────────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
-                    <WrapPanel Orientation="Horizontal">
-                        <Button Content="&#xE9F5;  Live Data"
-                                Click="OpenLiveData_Click"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Margin="0,0,12,8"
-                                AutomationProperties.Name="Open Live Data" />
-                        <Button Content="&#xE8B5;  View Portfolio"
-                                Click="OpenPortfolio_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,12,8"
-                                AutomationProperties.Name="View Portfolio" />
-                        <Button Content="&#xE8B5;  Import Positions"
-                                Click="ImportPositions_Click"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,12,8"
-                                AutomationProperties.Name="Import Positions" />
-                        <Button Content="&#xE823;  Trading Hours"
-                                Click="OpenTradingHours_Click"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Margin="0,0,0,8"
-                                AutomationProperties.Name="Trading Hours" />
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- ── Active Positions ──────────────────────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <Grid Margin="0,0,0,12">
+        <ScrollViewer Grid.Row="2"
+                      Margin="0,16,0,16"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+                <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Active Positions" Style="{StaticResource CardHeaderStyle}" />
-                        <Button Grid.Column="1" Content="Full Portfolio" Click="OpenPortfolio_Click"
-                                Style="{StaticResource LinkButtonStyle}" />
-                    </Grid>
 
-                    <!-- Column headers -->
-                    <Grid Margin="16,0,16,6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="100" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="SYMBOL" FontSize="10" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                        <TextBlock Grid.Column="1" Text="QUANTITY" FontSize="10" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />
-                        <TextBlock Grid.Column="2" Text="UNRL. P&amp;L" FontSize="10" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />
-                        <TextBlock Grid.Column="3" Text="REALIZED P&amp;L" FontSize="10" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Right" />
-                        <TextBlock Grid.Column="4" Text="MODE" FontSize="10" FontWeight="SemiBold"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" HorizontalAlignment="Center" />
-                    </Grid>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Trading Cockpit"
+                                       Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Live execution, active positions, and fund-aware risk posture from a single workstation shell."
+                                       Margin="0,6,0,0"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap" />
 
-                    <ItemsControl x:Name="ActivePositionsList"
-                                  AutomationProperties.AutomationId="ActivePositionsList"
-                                  AutomationProperties.Name="Active Positions">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                        CornerRadius="8" Padding="16,10" Margin="0,0,0,4">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="2*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="100" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="{Binding Symbol}"
-                                                       FontSize="14" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                            <TextBlock Text="{Binding StrategyName}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding QuantityLabel}"
-                                                   FontSize="13" HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Grid.Column="2" Text="{Binding UnrealizedPnlFormatted}"
-                                                   FontSize="13" FontWeight="SemiBold"
-                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                   Foreground="{Binding UnrealizedPnlBrush}" />
-                                        <TextBlock Grid.Column="3" Text="{Binding RealizedPnlFormatted}"
-                                                   FontSize="13"
-                                                   HorizontalAlignment="Right" VerticalAlignment="Center"
-                                                   Foreground="{Binding RealizedPnlBrush}" />
-                                        <Border Grid.Column="4" Background="{Binding ModeBadgeBackground}"
-                                                CornerRadius="6" Padding="8,3" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding ModeLabel}"
-                                                       FontSize="11" FontWeight="SemiBold"
-                                                       Foreground="White" HorizontalAlignment="Center" />
-                                        </Border>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                            <Border Margin="0,16,0,0"
+                                    Padding="14,12"
+                                    CornerRadius="12"
+                                    Background="{StaticResource ConsoleAccentGreenAlpha10Brush}"
+                                    BorderBrush="{StaticResource SuccessColorBrush}"
+                                    BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="Active Fund / Context"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock x:Name="ActiveFundText"
+                                               Margin="0,6,0,0"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               Text="No operating context selected" />
+                                    <TextBlock x:Name="ActiveFundDetailText"
+                                               Margin="0,4,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               Text="Runs, allocations, and accounting posture scope to the active operating context." />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
 
-                    <TextBlock x:Name="NoPositionsText"
-                               Text="No active positions. Start a paper or live run to see positions here."
-                               FontSize="13"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               Visibility="Collapsed"
-                               Margin="0,8,0,0" />
-                </StackPanel>
-            </Border>
-
-            <!-- ── Risk Rail ─────────────────────────────────────────────── -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,0">
-                <StackPanel>
-                    <TextBlock Text="Risk Rail" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
-                    <TextBlock Text="Live risk rule status across all active paper and live runs."
-                               Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,16" />
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="16" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="16" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Max Drawdown -->
-                        <Border Grid.Column="0" Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                CornerRadius="10" Padding="16,14">
+                        <Border Grid.Column="1"
+                                Margin="16,0,0,0"
+                                Padding="16,14"
+                                CornerRadius="12"
+                                Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                VerticalAlignment="Top">
                             <StackPanel>
-                                <TextBlock Text="Max Drawdown" FontSize="11"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           Margin="0,0,0,6" />
-                                <TextBlock x:Name="DrawdownText" Text="—" FontSize="22" FontWeight="Bold"
-                                           Foreground="{StaticResource WarningColorBrush}" />
-                                <TextBlock Text="vs. circuit-breaker limit" FontSize="10"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           Margin="0,4,0,0" />
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Position Limit Utilization -->
-                        <Border Grid.Column="2" Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                CornerRadius="10" Padding="16,14">
-                            <StackPanel>
-                                <TextBlock Text="Position Limit" FontSize="11"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           Margin="0,0,0,6" />
-                                <TextBlock x:Name="PositionLimitText" Text="—" FontSize="22" FontWeight="Bold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="symbols active / limit" FontSize="10"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           Margin="0,4,0,0" />
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Order Rate Throttle -->
-                        <Border Grid.Column="4" Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                CornerRadius="10" Padding="16,14">
-                            <StackPanel>
-                                <TextBlock Text="Order Rate" FontSize="11"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           Margin="0,0,0,6" />
-                                <TextBlock x:Name="OrderRateText" Text="—" FontSize="22" FontWeight="Bold"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="orders / min vs. throttle" FontSize="10"
-                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           Margin="0,4,0,0" />
+                                <TextBlock Text="Active Run"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock x:Name="TradingActiveRunText"
+                                           Margin="0,6,0,0"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Text="No active trading run" />
+                                <TextBlock x:Name="TradingActiveRunMetaText"
+                                           Margin="0,4,0,0"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           Text="Use Research to promote a run, or open a live/paper panel below." />
                             </StackPanel>
                         </Border>
                     </Grid>
-                </StackPanel>
-            </Border>
+                </Border>
 
-        </StackPanel>
-    </ScrollViewer>
+                <UniformGrid Columns="3" Margin="0,0,0,20">
+                    <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock x:Name="PaperRunsText"
+                                       Text="—"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Paper Runs"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
 
-        <!-- ── AvalonDock workspace panel ──────────────────────────────── -->
-        <Border Grid.Row="1" Margin="12,0,12,12">
-            <StackPanel>
-                <TextBlock Text="Workspace Panels"
-                           Style="{StaticResource CardHeaderStyle}"
-                           Margin="4,0,0,6" />
-                <views:MeridianDockingManager x:Name="TradingDockManager"
-                                              Height="360"
-                                              PaneDropRequested="OnPaneDropRequested"
-                                              AutomationProperties.Name="Trading Dock Manager" />
-            </StackPanel>
-        </Border>
+                    <Border Style="{StaticResource WorkspaceKpiTileStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock x:Name="LiveRunsText"
+                                       Text="—"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource SuccessColorBrush}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Live Runs"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
 
-<<<<<<< HEAD
-        <Grid Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.1*" />
-                <ColumnDefinition Width="1.5*" />
-                <ColumnDefinition Width="1.1*" />
-            </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource WorkspaceKpiTileStyle}">
+                        <StackPanel>
+                            <TextBlock x:Name="TotalEquityText"
+                                       Text="—"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="Total Equity"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
 
-            <Border Grid.Column="0" Style="{StaticResource CockpitPanelStyle}">
-                <StackPanel>
-                    <TextBlock Text="Strategies &amp; Watchlists" Style="{StaticResource CockpitPanelTitleStyle}" />
-                    <TextBlock x:Name="WatchlistStatusText"
-                               Margin="0,10,0,0"
-                               Style="{StaticResource CockpitValueStyle}"
-                               Text="Watchlists and active strategies populate once paper or live runs are started." />
-                    <Button Content="Open Portfolio"
-                            Click="OpenPortfolio_Click"
-                            Style="{StaticResource GhostButtonStyle}"
-                            Margin="0,14,0,0"
-                            HorizontalAlignment="Left" />
-                </StackPanel>
-            </Border>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*" />
+                        <ColumnDefinition Width="1.1*" />
+                        <ColumnDefinition Width="1.1*" />
+                    </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="1" Style="{StaticResource CockpitPanelStyle}">
-                <StackPanel>
-                    <TextBlock Text="Market Core &amp; Accounting" Style="{StaticResource CockpitPanelTitleStyle}" />
-                    <TextBlock x:Name="MarketCoreText"
-                               Margin="0,10,0,0"
-                               Style="{StaticResource CockpitValueStyle}"
-                               Text="Live data, order book, and portfolio inspectors are ready to dock below." />
-                    <WrapPanel Margin="0,14,0,0">
-                        <Button Content="Live Data"
-                                Click="OpenLiveData_Click"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Margin="0,0,10,0" />
-                        <Button Content="Order Book"
-                                Click="OpenOrderBook_Click"
-                                Style="{StaticResource GhostButtonStyle}" />
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
+                    <Border Grid.Column="0" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Strategies &amp; Watchlists" Style="{StaticResource StudioPanelTitleStyle}" />
+                            <TextBlock x:Name="WatchlistStatusText"
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource StudioValueStyle}"
+                                       Text="Watchlists and active strategies populate once paper or live runs are started." />
+                            <Button Content="Open Portfolio"
+                                    Click="OpenPortfolio_Click"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,14,0,0"
+                                    HorizontalAlignment="Left" />
+                        </StackPanel>
+                    </Border>
 
-            <Border Grid.Column="2"
-                    Style="{StaticResource CockpitPanelStyle}"
-                    Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="Blotter, Alerts, Risk, Audit" Style="{StaticResource CockpitPanelTitleStyle}" />
-                    <TextBlock x:Name="RiskRailText"
-                               Margin="0,10,0,0"
-                               Style="{StaticResource CockpitValueStyle}"
-                               Text="Risk rail becomes specific once an active run is selected." />
-                    <WrapPanel Margin="0,14,0,0">
-                        <Button Content="Blotter"
-                                Click="OpenBlotter_Click"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Margin="0,0,10,0" />
-                        <Button Content="Risk Rail"
-                                Click="OpenRiskRail_Click"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Margin="0,0,10,0" />
-                        <Button Content="Accounting"
-                                Click="OpenAccountingConsequences_Click"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Margin="0,0,10,0" />
-                        <Button Content="Audit"
-                                Click="OpenAuditTrail_Click"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Margin="0,0,10,0" />
-                        <Button Content="Alerts"
-                                Click="OpenAlerts_Click"
-                                Style="{StaticResource GhostButtonStyle}" />
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
+                    <Border Grid.Column="1" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Market Core &amp; Accounting" Style="{StaticResource StudioPanelTitleStyle}" />
+                            <TextBlock x:Name="MarketCoreText"
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource StudioValueStyle}"
+                                       Text="Live data, order book, portfolio, and accounting consequences are ready to dock below." />
+                            <WrapPanel Margin="0,14,0,0">
+                                <Button Content="Live Data"
+                                        Click="OpenLiveData_Click"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,10,8" />
+                                <Button Content="Order Book"
+                                        Click="OpenOrderBook_Click"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,10,8" />
+                                <Button Content="Import Positions"
+                                        Click="ImportPositions_Click"
+                                        Style="{StaticResource GhostButtonStyle}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
 
-        <Grid Grid.Row="4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+                    <Border Grid.Column="2" Style="{StaticResource StudioPanelStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Risk, Alerts, Audit" Style="{StaticResource StudioPanelTitleStyle}" />
+                            <TextBlock x:Name="RiskRailText"
+                                       Margin="0,10,0,0"
+                                       Style="{StaticResource StudioValueStyle}"
+                                       Text="Risk, reconciliation, and audit surfaces become specific once an active run is selected." />
+                            <WrapPanel Margin="0,14,0,0">
+                                <Button Content="Risk Rail"
+                                        Click="OpenRiskRail_Click"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,10,8" />
+                                <Button Content="Reconciliation"
+                                        Click="OpenReconciliationReview_Click"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,10,8" />
+                                <Button Content="Audit Trail"
+                                        Click="OpenAuditTrail_Click"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,10,8" />
+                                <Button Content="Alerts"
+                                        Click="OpenAlerts_Click"
+                                        Style="{StaticResource GhostButtonStyle}" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.6*" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource CockpitPanelStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Active Positions" Style="{StaticResource CockpitPanelTitleStyle}" />
-                        <ItemsControl x:Name="ActivePositionsList"
-                                      Margin="0,12,0,0">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="2*" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Symbol}"
-                                                           FontSize="13"
-                                                           FontWeight="SemiBold"
+                    <Border Grid.Column="0" Style="{StaticResource WorkspaceWorkbenchCardStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Active Positions" Style="{StaticResource CardHeaderStyle}" />
+                                <Button Grid.Column="1"
+                                        Content="Portfolio"
+                                        Click="OpenPortfolio_Click"
+                                        Style="{StaticResource LinkButtonStyle}" />
+                            </Grid>
+
+                            <ItemsControl x:Name="ActivePositionsList"
+                                          AutomationProperties.AutomationId="ActivePositionsList"
+                                          AutomationProperties.Name="Active Positions">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="2*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="100" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Symbol}"
+                                                               FontSize="13"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                    <TextBlock Text="{Binding StrategyName}"
+                                                               Margin="0,4,0,0"
+                                                               FontSize="11"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding QuantityLabel}"
+                                                           FontSize="12"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
                                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                                <TextBlock Text="{Binding StrategyName}"
-                                                           Margin="0,4,0,0"
-                                                           FontSize="11"
-                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="1"
-                                                       Text="{Binding QuantityLabel}"
-                                                       FontSize="12"
-                                                       HorizontalAlignment="Right"
-                                                       VerticalAlignment="Center"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                            <TextBlock Grid.Column="2"
-                                                       Text="{Binding UnrealizedPnlFormatted}"
-                                                       FontSize="12"
-                                                       HorizontalAlignment="Right"
-                                                       VerticalAlignment="Center"
-                                                       Foreground="{Binding UnrealizedPnlBrush}" />
-                                        </Grid>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="{Binding UnrealizedPnlFormatted}"
+                                                           FontSize="12"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{Binding UnrealizedPnlBrush}" />
+                                                <TextBlock Grid.Column="3"
+                                                           Text="{Binding RealizedPnlFormatted}"
+                                                           FontSize="12"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{Binding RealizedPnlBrush}" />
+                                                <Border Grid.Column="4"
+                                                        Background="{Binding ModeBadgeBackground}"
+                                                        CornerRadius="6"
+                                                        Padding="8,3"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding ModeLabel}"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="White"
+                                                               HorizontalAlignment="Center" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock x:Name="NoPositionsText"
+                                       Margin="0,8,0,0"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Text="No active positions. Start a paper or live run to see positions here."
+                                       Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
+
+                    <StackPanel Grid.Column="1">
+                        <Border Style="{StaticResource WorkspaceInspectorCardStyle}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Capital &amp; Controls" Style="{StaticResource CardHeaderStyle}" />
+                                <UniformGrid Columns="2" Margin="0,12,0,0">
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock x:Name="CapitalCashText"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       Text="—" />
+                                        </StackPanel>
                                     </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Gross" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock x:Name="CapitalGrossExposureText"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       Text="—" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Net" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock x:Name="CapitalNetExposureText"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       Text="—" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Financing" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock x:Name="CapitalFinancingText"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="18"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource WarningColorBrush}"
+                                                       Text="—" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
 
-                        <TextBlock x:Name="NoPositionsText"
-                                   Margin="0,8,0,0"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   Text="No active positions. Start a paper or live run to see positions here."
-                                   Visibility="Collapsed" />
+                                <TextBlock x:Name="CapitalControlsDetailText"
+                                           Margin="0,14,0,0"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Text="Select an operating context to unlock capital, financing, and reconciliation posture." />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Risk Snapshot" Style="{StaticResource CardHeaderStyle}" />
+                                <UniformGrid Columns="3" Margin="0,12,0,0">
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Drawdown" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock x:Name="DrawdownText"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource WarningColorBrush}"
+                                                       Text="—" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Position Limit" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock x:Name="PositionLimitText"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       Text="—" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Order Rate" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock x:Name="OrderRateText"
+                                                       Margin="0,6,0,0"
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                       Text="—" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+
+                                <TextBlock x:Name="DeskActionStatusText"
+                                           Margin="0,14,0,0"
+                                           FontSize="12"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           Text="Desk actions update here after a pause, stop, flatten, or alert acknowledgement." />
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-                </Border>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
 
-                <Border Grid.Column="1"
-                        Style="{StaticResource CockpitPanelStyle}"
-                        Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="Capital &amp; Controls" Style="{StaticResource CockpitPanelTitleStyle}" />
-                        <UniformGrid Columns="2" Margin="0,12,0,0">
-                            <Border Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0,0,10,10">
-                                <StackPanel>
-                                    <TextBlock Text="Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock x:Name="CapitalCashText"
-                                               Margin="0,6,0,0"
-                                               FontSize="18"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0,0,0,10">
-                                <StackPanel>
-                                    <TextBlock Text="Gross" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock x:Name="CapitalGrossExposureText"
-                                               Margin="0,6,0,0"
-                                               FontSize="18"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueItemCardStyle}" Margin="0,0,10,0">
-                                <StackPanel>
-                                    <TextBlock Text="Net" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock x:Name="CapitalNetExposureText"
-                                               Margin="0,6,0,0"
-                                               FontSize="18"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="Financing" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock x:Name="CapitalFinancingText"
-                                               Margin="0,6,0,0"
-                                               FontSize="18"
-                                               FontWeight="Bold"
-                                               Foreground="{StaticResource WarningColorBrush}" />
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
-
-                        <TextBlock x:Name="CapitalControlsDetailText"
-                                   Margin="0,14,0,0"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                   TextWrapping="Wrap"
-                                   Text="Select a fund to unlock capital, financing, and reconciliation posture." />
-
-                        <Rectangle Margin="0,14,0,14"
-                                   Height="1"
-                                   Fill="{StaticResource ConsoleBorderBrush}" />
-
-                        <TextBlock Text="Risk Snapshot" Style="{StaticResource CockpitPanelTitleStyle}" />
-                        <TextBlock x:Name="DrawdownText"
-                                   Margin="0,8,0,0"
-                                   Style="{StaticResource CockpitValueStyle}"
-                                   Text="—" />
-                        <TextBlock x:Name="PositionLimitText"
-                                   Margin="0,8,0,0"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                   Text="—" />
-                        <TextBlock x:Name="OrderRateText"
-                                   Margin="0,8,0,0"
-                                   FontSize="12"
-                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                   Text="—" />
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <Border Grid.Row="1"
-                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                    BorderBrush="{StaticResource ConsoleBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="16"
-                    Padding="12">
-                <views:MeridianDockingManager x:Name="TradingDockManager"
-                                              PaneDropRequested="OnPaneDropRequested"
-                                              AutomationProperties.Name="Trading Dock Manager" />
-            </Border>
-        </Grid>
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+        <Border Grid.Row="3"
+                Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="12">
+            <views:MeridianDockingManager x:Name="TradingDockManager"
+                                          PaneDropRequested="OnPaneDropRequested"
+                                          AutomationProperties.Name="Trading Dock Manager" />
+        </Border>
     </Grid>
 </Page>

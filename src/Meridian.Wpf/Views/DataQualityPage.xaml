@@ -154,7 +154,7 @@
                             <TextBlock Text="Next scheduled check:" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                             <TextBlock x:Name="NextCheckText" Text="{Binding NextCheckText}" FontWeight="SemiBold" />
                         </StackPanel>
-                        <ProgressBar x:Name="CheckProgress" Height="6" Margin="0,12,0,0" Value="{Binding CheckProgressValue}" Maximum="100" />
+                        <ProgressBar x:Name="CheckProgress" Height="6" Margin="0,12,0,0" Value="{Binding CheckProgressValue, Mode=OneWay}" Maximum="100" />
                     </StackPanel>
                 </Border>
             </Grid>

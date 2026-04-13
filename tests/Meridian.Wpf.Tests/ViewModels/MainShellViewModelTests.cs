@@ -1,7 +1,10 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -10,13 +13,9 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class MainShellViewModelTests
 {
-<<<<<<< HEAD
     private static MainPageViewModel CreateMainPageViewModel(
         FundContextService? fundContextService = null,
         WorkstationOperatingContextService? operatingContextService = null)
-=======
-    private static MainPageViewModel CreateMainPageViewModel()
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     {
         var navigationService = NavigationService.Instance;
         navigationService.Initialize(new Frame());
@@ -26,11 +25,7 @@ public sealed class MainShellViewModelTests
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
-<<<<<<< HEAD
         return new MainPageViewModel(navigationService, fixtureModeDetector, fundContextService, operatingContextService);
-=======
-        return new MainPageViewModel(navigationService, fixtureModeDetector);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     private static MainWindowViewModel CreateMainWindowViewModel()
@@ -102,7 +97,6 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-<<<<<<< HEAD
     public void NavigateToEventReplay_KeepsResearchWorkspaceActive()
     {
         WpfTestThread.Run(() =>
@@ -147,10 +141,7 @@ public sealed class MainShellViewModelTests
             vm.CurrentPageTag.Should().Be("AddProviderWizard");
         });
     }
-
     [Fact]
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     public void FixtureModeChange_UpdatesBannerVisibilityAndText()
     {
         WpfTestThread.Run(() =>
@@ -189,7 +180,6 @@ public sealed class MainShellViewModelTests
             vm.AddClipboardSymbolsCommand.CanExecute(null).Should().BeFalse();
         });
     }
-<<<<<<< HEAD
 
     [Fact]
     public void ActiveFundDisplay_WhenFundSelected_ShowsFundBadgeAndMetadata()
@@ -290,6 +280,4 @@ public sealed class MainShellViewModelTests
         await service.SelectContextAsync(service.Contexts[0].ContextKey);
         return service;
     }
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }

@@ -14,6 +14,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     private readonly ApiClientService _apiClient;
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _cts = new();
+    private bool _isDisposed;
 
     // ── Header ────────────────────────────────────────────────────────────────
 
@@ -138,7 +139,22 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += (_, _) =>
         {
-            _ = RefreshAsync(_cts.Token).ContinueWith(
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            CancellationToken token;
+            try
+            {
+                token = _cts.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
+            _ = RefreshAsync(token).ContinueWith(
                 static t => { /* exceptions handled inside RefreshAsync */ },
                 TaskContinuationOptions.OnlyOnFaulted);
         };
@@ -155,8 +171,23 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
         _refreshTimer.Stop();
-        _cts.Cancel();
+
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Some test and window lifetime paths can dispose the CTS before the view model is torn down.
+        }
+
         _cts.Dispose();
     }
 

@@ -32,6 +32,31 @@
         <Setter Property="LineHeight" Value="20" />
     </Style>
 
+    <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Typography.Capitals" Value="AllSmallCaps" />
+    </Style>
+
+    <Style x:Key="StudioPanelTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDisplayFontFamily}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+    </Style>
+
+    <Style x:Key="StudioValueStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
     <Style x:Key="BodyStrongTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
         <Setter Property="FontSize" Value="13" />

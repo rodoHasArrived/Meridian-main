@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Ui.Services.Contracts;
 using DrawingColor = System.Drawing.Color;
@@ -49,6 +50,8 @@ public sealed class SystemTrayService : ISystemTrayService
     private Window? _mainWindow;
     private bool _isDisposed;
     private bool _allowMinimizeToTray;
+    private bool _hasActivatedOnce;
+    private DateTimeOffset _contentRenderedAt = DateTimeOffset.MinValue;
 
     private static readonly Icon GreenIcon = CreateStatusIcon(DrawingColor.Green);
     private static readonly Icon AmberIcon = CreateStatusIcon(DrawingColor.Orange);
@@ -82,6 +85,7 @@ public sealed class SystemTrayService : ISystemTrayService
 
         _mainWindow = mainWindow;
         _allowMinimizeToTray = false;
+        _hasActivatedOnce = false;
 
         _notifyIcon = new NotifyIcon
         {
@@ -101,6 +105,7 @@ public sealed class SystemTrayService : ISystemTrayService
 
         // Wire main window state changes
         _mainWindow.ContentRendered += MainWindow_ContentRendered;
+        _mainWindow.Activated += MainWindow_Activated;
         _mainWindow.StateChanged += MainWindow_StateChanged;
         _mainWindow.Closing += MainWindow_Closing;
     }
@@ -156,6 +161,7 @@ public sealed class SystemTrayService : ISystemTrayService
         if (_mainWindow != null)
         {
             _mainWindow.ContentRendered -= MainWindow_ContentRendered;
+            _mainWindow.Activated -= MainWindow_Activated;
             _mainWindow.StateChanged -= MainWindow_StateChanged;
             _mainWindow.Closing -= MainWindow_Closing;
         }
@@ -177,6 +183,12 @@ public sealed class SystemTrayService : ISystemTrayService
     {
         // Ignore any transient startup state changes until the shell has rendered once.
         _allowMinimizeToTray = true;
+        _contentRenderedAt = DateTimeOffset.UtcNow;
+    }
+
+    private void MainWindow_Activated(object? sender, EventArgs e)
+    {
+        _hasActivatedOnce = true;
     }
 
     private void MainWindow_StateChanged(object? sender, EventArgs e)
@@ -184,12 +196,34 @@ public sealed class SystemTrayService : ISystemTrayService
         if (_mainWindow == null)
             return;
 
-        // Hide from taskbar and show tray icon when minimized
-        if (_allowMinimizeToTray && _mainWindow.WindowState == WindowState.Minimized)
+        if (_mainWindow.WindowState != WindowState.Minimized)
         {
-            _mainWindow.Hide();
-            _mainWindow.ShowInTaskbar = false;
+            return;
         }
+
+        var renderedRecently = _contentRenderedAt != DateTimeOffset.MinValue
+            && (DateTimeOffset.UtcNow - _contentRenderedAt) < TimeSpan.FromSeconds(5);
+
+        if (!_allowMinimizeToTray || !_hasActivatedOnce || renderedRecently)
+        {
+            _ = _mainWindow.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                if (_mainWindow == null || _mainWindow.WindowState != WindowState.Minimized)
+                {
+                    return;
+                }
+
+                _mainWindow.Show();
+                _mainWindow.ShowInTaskbar = true;
+                _mainWindow.WindowState = WindowState.Normal;
+                _mainWindow.Activate();
+            }));
+            return;
+        }
+
+        // Hide from taskbar and show tray icon when minimized
+        _mainWindow.Hide();
+        _mainWindow.ShowInTaskbar = false;
     }
 
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)

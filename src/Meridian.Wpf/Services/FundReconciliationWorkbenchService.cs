@@ -65,13 +65,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
 
         await Task.WhenAll(summaryTask, breakQueueTask, runsTask).ConfigureAwait(false);
 
-<<<<<<< ours
-        var summary = await summaryTask;
-        var runs = await runsTask;
-=======
         var summary = await summaryTask.ConfigureAwait(false);
         var runs = await runsTask.ConfigureAwait(false);
->>>>>>> theirs
         var relevantRuns = runs
             .Where(run => string.Equals(run.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
@@ -80,12 +75,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var runNames = relevantRuns.ToDictionary(run => run.RunId, run => run.StrategyName, StringComparer.OrdinalIgnoreCase);
 
-<<<<<<< ours
-        var breakQueueItems = (await breakQueueTask)
-=======
         var breakQueue = await breakQueueTask.ConfigureAwait(false);
         var breakQueueItems = breakQueue
->>>>>>> theirs
             .Where(item => runIds.Contains(item.RunId))
             .Select(item => MapBreakQueueRow(item, runNames))
             .OrderBy(static item => GetBreakQueuePriority(item.Status))

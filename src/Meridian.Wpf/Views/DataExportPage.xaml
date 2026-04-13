@@ -147,7 +147,7 @@
                             <TextBlock x:Name="ExportProgressLabel" Grid.Column="0" Text="{Binding ExportProgressLabel}" />
                             <TextBlock x:Name="ExportProgressPercent" Grid.Column="1" Text="{Binding ExportProgressPercent}" />
                         </Grid>
-                        <ProgressBar x:Name="ExportProgressBar" Minimum="0" Maximum="100" Value="{Binding ExportProgressValue}" />
+                        <ProgressBar x:Name="ExportProgressBar" Minimum="0" Maximum="100" Value="{Binding ExportProgressValue, Mode=OneWay}" />
                     </StackPanel>
                 </StackPanel>
             </Border>

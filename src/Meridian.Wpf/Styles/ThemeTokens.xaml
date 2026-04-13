@@ -80,20 +80,29 @@
     <SolidColorBrush x:Key="ConsoleBorderHoverBrush"       Color="{StaticResource ConsoleBorderHover}" />
     <SolidColorBrush x:Key="ConsoleBorderFocusBrush"       Color="{StaticResource ConsoleBorderFocus}" />
     <SolidColorBrush x:Key="ConsoleBorderStrongBrush"      Color="{StaticResource ConsoleBorderStrong}" />
+    <SolidColorBrush x:Key="BorderSubtleBrush"             Color="{StaticResource ConsoleBorderColor}" />
     <SolidColorBrush x:Key="ConsoleTextPrimaryBrush"       Color="{StaticResource ConsoleTextPrimary}" />
     <SolidColorBrush x:Key="ConsoleTextSecondaryBrush"     Color="{StaticResource ConsoleTextSecondary}" />
     <SolidColorBrush x:Key="ConsoleTextMutedBrush"         Color="{StaticResource ConsoleTextMuted}" />
     <SolidColorBrush x:Key="ConsoleTextDisabledBrush"      Color="{StaticResource ConsoleTextDisabled}" />
+    <!-- Legacy aliases retained for older page XAML -->
+    <SolidColorBrush x:Key="ConsoleTextBrush"              Color="{StaticResource ConsoleTextPrimary}" />
+    <SolidColorBrush x:Key="ConsoleBackgroundBrush"        Color="{StaticResource ConsoleBackgroundLight}" />
+    <SolidColorBrush x:Key="ConsoleWindowBackgroundBrush"  Color="{StaticResource ConsoleBackgroundDark}" />
+    <SolidColorBrush x:Key="ConsoleWindowBorderBrush"      Color="{StaticResource ConsoleBorderColor}" />
+    <SolidColorBrush x:Key="ConsoleAccentBlueAlpha80Brush" Color="#CC1A6BB5" />
     <SolidColorBrush x:Key="SuccessColorBrush"             Color="{StaticResource ConsoleAccentGreen}" />
     <SolidColorBrush x:Key="WarningColorBrush"             Color="{StaticResource ConsoleAccentOrange}" />
     <SolidColorBrush x:Key="ErrorColorBrush"               Color="{StaticResource ConsoleAccentRed}" />
     <SolidColorBrush x:Key="InfoColorBrush"                Color="{StaticResource ConsoleAccentBlue}" />
+    <SolidColorBrush x:Key="ConsoleAccentBlueBrush"        Color="{StaticResource ConsoleAccentBlue}" />
     <SolidColorBrush x:Key="AccentCyanBrush"               Color="{StaticResource ConsoleAccentCyan}" />
     <SolidColorBrush x:Key="AccentPurpleBrush"             Color="{StaticResource ConsoleAccentPurple}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenDimBrush"    Color="{StaticResource ConsoleAccentGreenDim}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenLightBrush"  Color="{StaticResource ConsoleAccentGreenLight}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenAlpha10Brush"  Color="{StaticResource ConsoleAccentGreenAlpha10}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenAlpha20Brush"  Color="{StaticResource ConsoleAccentGreenAlpha20}" />
+    <SolidColorBrush x:Key="SuccessColorAlpha20Brush"        Color="{StaticResource ConsoleAccentGreenAlpha20}" />
     <SolidColorBrush x:Key="ConsoleAccentBlueAlpha10Brush"   Color="{StaticResource ConsoleAccentBlueAlpha10}" />
     <SolidColorBrush x:Key="ConsoleAccentBlueAlpha20Brush"   Color="{StaticResource ConsoleAccentBlueAlpha20}" />
     <SolidColorBrush x:Key="ConsoleAccentRedAlpha10Brush"    Color="{StaticResource ConsoleAccentRedAlpha10}" />

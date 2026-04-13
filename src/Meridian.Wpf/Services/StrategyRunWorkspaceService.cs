@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows.Media;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
@@ -21,6 +22,7 @@ public sealed class StrategyRunWorkspaceService
 
     private readonly IStrategyRepository _store;
     private readonly StrategyRunReadService _readService;
+    private string? _activeRunId;
 
     public static StrategyRunWorkspaceService Instance => _instance ?? _fallbackInstance.Value;
 
@@ -48,6 +50,14 @@ public sealed class StrategyRunWorkspaceService
         _readService = readService ?? throw new ArgumentNullException(nameof(readService));
     }
 
+    public StrategyRunWorkspaceService(
+        IStrategyRepository store,
+        StrategyRunReadService readService,
+        FundContextService? fundContextService)
+        : this(store, readService)
+    {
+    }
+
     public static void SetInstance(StrategyRunWorkspaceService service)
     {
         _instance = service ?? throw new ArgumentNullException(nameof(service));
@@ -56,9 +66,27 @@ public sealed class StrategyRunWorkspaceService
     public string? LastRecordedRunId { get; private set; }
 
     public event EventHandler<StrategyRunSummary>? RunRecorded;
+    public event EventHandler<ActiveRunContext?>? ActiveRunContextChanged;
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, CancellationToken ct = default) =>
         _readService.GetRunsAsync(strategyId, ct: ct);
+
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRecordedRunsAsync(CancellationToken ct = default) =>
+        GetRunsAsync(null, ct);
+
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRecordedRunsForStrategyAsync(string? strategyId, CancellationToken ct = default) =>
+        GetRunsAsync(strategyId, ct);
+
+    public async Task<IReadOnlyList<StrategyRunEntry>> GetRecordedRunEntriesAsync(CancellationToken ct = default)
+    {
+        var runs = new List<StrategyRunEntry>();
+        await foreach (var run in _store.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            runs.Add(run);
+        }
+
+        return runs;
+    }
 
     public Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default) =>
         _readService.GetRunDetailAsync(runId, ct);
@@ -92,13 +120,34 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<StrategyRunSummary?> GetLatestRunAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService
+            .GetRunsAsync(strategyId: null, runType: null, ct: ct)
+            .ConfigureAwait(false);
         return runs.FirstOrDefault();
+    }
+
+    public async Task<ActiveRunContext?> GetActiveRunContextAsync(CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(_activeRunId))
+        {
+            return null;
+        }
+
+        return await BuildActiveRunContextAsync(_activeRunId, ct).ConfigureAwait(false);
+    }
+
+    public async Task SetActiveRunContextAsync(string? runId, CancellationToken ct = default)
+    {
+        _activeRunId = string.IsNullOrWhiteSpace(runId) ? null : runId;
+        var activeContext = await GetActiveRunContextAsync(ct).ConfigureAwait(false);
+        ActiveRunContextChanged?.Invoke(this, activeContext);
     }
 
     public async Task<TradingWorkspaceSummary> GetTradingSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService
+            .GetRunsAsync(strategyId: null, runType: null, ct: ct)
+            .ConfigureAwait(false);
 
         var paperRuns = runs.Where(r => r.Mode == StrategyRunMode.Paper).ToList();
         var liveRuns = runs.Where(r => r.Mode == StrategyRunMode.Live).ToList();
@@ -146,13 +195,16 @@ public sealed class StrategyRunWorkspaceService
             MaxDrawdownFormatted = "—",
             PositionLimitLabel = "—",
             OrderRateLabel = "—",
+            ActiveRunContext = await GetActiveRunContextAsync(ct).ConfigureAwait(false),
             ActivePositions = positions
         };
     }
 
     public async Task<ResearchWorkspaceSummary> GetResearchSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService
+            .GetRunsAsync(strategyId: null, runType: null, ct: ct)
+            .ConfigureAwait(false);
 
         var promoted = runs.Count(r =>
             r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live);
@@ -255,8 +307,76 @@ public sealed class StrategyRunWorkspaceService
             RunRecorded?.Invoke(this, summary.Summary);
         }
 
+        await SetActiveRunContextAsync(entry.RunId, ct).ConfigureAwait(false);
+
         return entry.RunId;
     }
+
+    private async Task<ActiveRunContext?> BuildActiveRunContextAsync(string runId, CancellationToken ct)
+    {
+        var detail = await _readService.GetRunDetailAsync(runId, ct).ConfigureAwait(false);
+        if (detail is null)
+        {
+            return null;
+        }
+
+        var summary = detail.Summary;
+        var portfolio = detail.Portfolio;
+        var ledger = detail.Ledger;
+
+        var fundScopeLabel = !string.IsNullOrWhiteSpace(summary.FundDisplayName)
+            ? summary.FundDisplayName!
+            : !string.IsNullOrWhiteSpace(summary.FundProfileId)
+                ? $"Fund {summary.FundProfileId}"
+                : "Global scope";
+
+        var portfolioPreview = portfolio is null
+            ? summary.FinalEquity.HasValue
+                ? $"Final equity {summary.FinalEquity.Value.ToString("C0", CultureInfo.InvariantCulture)}."
+                : "Portfolio preview unavailable."
+            : $"{portfolio.Positions.Count} position(s) · equity {portfolio.TotalEquity.ToString("C0", CultureInfo.InvariantCulture)}";
+
+        var ledgerPreview = ledger is null
+            ? !string.IsNullOrWhiteSpace(summary.LedgerReference)
+                ? $"Ledger reference {summary.LedgerReference} is ready for review."
+                : "Ledger preview unavailable."
+            : $"{ledger.JournalEntryCount} journal entr{(ledger.JournalEntryCount == 1 ? "y" : "ies")} · equity {ledger.EquityBalance.ToString("C0", CultureInfo.InvariantCulture)}";
+
+        var riskSummary = summary.NetPnl.HasValue || summary.TotalReturn.HasValue
+            ? $"{FormatCurrency(summary.NetPnl)} net P&L · {FormatPercent(summary.TotalReturn)} total return · {summary.FillCount} fills"
+            : $"{summary.FillCount} fills captured · status {summary.Status}";
+
+        return new ActiveRunContext
+        {
+            RunId = summary.RunId,
+            StrategyName = summary.StrategyName,
+            ModeLabel = summary.Mode.ToString(),
+            StatusLabel = summary.Status.ToString(),
+            FundScopeLabel = fundScopeLabel,
+            PortfolioPreview = portfolioPreview,
+            LedgerPreview = ledgerPreview,
+            RiskSummary = riskSummary,
+            CanPromoteToPaper =
+                summary.Mode == StrategyRunMode.Backtest &&
+                summary.Status == StrategyRunStatus.Completed &&
+                (summary.Promotion is null ||
+                 summary.Promotion.RequiresReview ||
+                 summary.Promotion.SuggestedNextMode is null ||
+                 summary.Promotion.SuggestedNextMode == StrategyRunMode.Paper)
+        };
+    }
+
+    private static string FormatCurrency(decimal? value)
+        => !value.HasValue
+            ? "—"
+            : value.Value >= 0m
+                ? $"+{value.Value.ToString("C0", CultureInfo.InvariantCulture)}"
+                : value.Value.ToString("C0", CultureInfo.InvariantCulture);
+
+    private static string FormatPercent(decimal? value)
+        => value.HasValue
+            ? value.Value.ToString("P2", CultureInfo.InvariantCulture)
+            : "—";
 
     private static string BuildFeedReference(BacktestRequest request)
     {

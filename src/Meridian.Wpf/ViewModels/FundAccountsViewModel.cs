@@ -147,7 +147,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
 
     public async Task LoadFundAccountsAsync()
     {
-        await _fundProfileCatalog.LoadAsync().ConfigureAwait(false);
+        await _fundProfileCatalog.LoadAsync();
         SelectedFundProfileId = _fundProfileCatalog.CurrentFundProfile?.FundProfileId ?? _fundProfileCatalog.LastSelectedFundProfileId;
 
         if (SelectedFundId is null && !string.IsNullOrWhiteSpace(SelectedFundProfileId))
@@ -163,7 +163,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         StatusMessage = null;
         try
         {
-            var dto = await _service.GetFundAccountsAsync(SelectedFundId.Value).ConfigureAwait(false);
+            var dto = await _service.GetFundAccountsAsync(SelectedFundId.Value);
 
             ReplaceCollection(CustodianAccounts, dto.CustodianAccounts);
             ReplaceCollection(BankAccounts, dto.BankAccounts);
@@ -176,7 +176,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 ?? OtherAccounts.FirstOrDefault();
 
             if (SelectedAccount is not null)
-                await RefreshProviderRoutingAsync().ConfigureAwait(false);
+                await RefreshProviderRoutingAsync();
         }
         catch (Exception ex)
         {
@@ -214,7 +214,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         StatusMessage = null;
         try
         {
-            var history = await _service.GetBalanceHistoryAsync(SelectedAccount.AccountId).ConfigureAwait(false);
+            var history = await _service.GetBalanceHistoryAsync(SelectedAccount.AccountId);
             ReplaceCollection(BalanceHistory, history);
         }
         catch (Exception ex)
@@ -244,7 +244,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 AsOfDate: DateOnly.FromDateTime(DateTime.Today),
                 RequestedBy: "desktop-user");
 
-            LastReconciliationRun = await _service.ReconcileAccountAsync(request).ConfigureAwait(false);
+            LastReconciliationRun = await _service.ReconcileAccountAsync(request);
             StatusMessage = $"Reconciliation complete: {LastReconciliationRun.Status} ({LastReconciliationRun.TotalMatched}/{LastReconciliationRun.TotalChecks} checks matched)";
         }
         catch (Exception ex)
@@ -280,29 +280,17 @@ public sealed partial class FundAccountsViewModel : BindableBase
             var bindingsTask = _providerManagementService.GetProviderBindingsAsync();
             var trustTask = _providerManagementService.GetProviderTrustSnapshotsAsync();
 
-            await Task.WhenAll(connectionsTask, bindingsTask, trustTask).ConfigureAwait(false);
+            await Task.WhenAll(connectionsTask, bindingsTask, trustTask);
 
-<<<<<<< ours
-            var connectionsResult = await connectionsTask;
-            var bindingsResult = await bindingsTask;
-            var trustResult = await trustTask;
-
-            if (!connectionsResult.Success || !bindingsResult.Success || !trustResult.Success)
-            {
-                ProviderRoutingStatus = connectionsResult.Error
-                    ?? bindingsResult.Error
-                    ?? trustResult.Error
-=======
-            var connectionsResponse = await connectionsTask.ConfigureAwait(false);
-            var bindingsResponse = await bindingsTask.ConfigureAwait(false);
-            var trustResponse = await trustTask.ConfigureAwait(false);
+            var connectionsResponse = await connectionsTask;
+            var bindingsResponse = await bindingsTask;
+            var trustResponse = await trustTask;
 
             if (!connectionsResponse.Success || !bindingsResponse.Success || !trustResponse.Success)
             {
                 ProviderRoutingStatus = connectionsResponse.Error
                     ?? bindingsResponse.Error
                     ?? trustResponse.Error
->>>>>>> theirs
                     ?? "Provider routing data is unavailable.";
                 return;
             }
@@ -319,21 +307,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
                     RequireProductionReady: capability == ProviderCapabilityKind.OrderExecution.ToString())))
                 .ToArray();
 
-<<<<<<< ours
-            var previewResults = await Task.WhenAll(previewTasks).ConfigureAwait(false);
-
-            ApplyProviderInsights(
-                SelectedAccount,
-                connectionsResult.Connections,
-                bindingsResult.Bindings,
-                trustResult.Snapshots,
-                _fundProfileCatalog.CurrentFundProfile?.DefaultWorkspaceId,
-                SelectedFundProfileId,
-                previewResults
-                    .Where(result => result.Success && result.Preview is not null)
-                    .Select(result => result.Preview!)
-=======
-            var previewResponses = await Task.WhenAll(previewTasks).ConfigureAwait(false);
+            var previewResponses = await Task.WhenAll(previewTasks);
 
             ApplyProviderInsights(
                 SelectedAccount,
@@ -345,7 +319,6 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 previewResponses
                     .Where(response => response.Success && response.Preview is not null)
                     .Select(response => response.Preview!)
->>>>>>> theirs
                     .ToArray());
         }
         catch (Exception ex)

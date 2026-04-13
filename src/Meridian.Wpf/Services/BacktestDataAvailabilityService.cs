@@ -53,7 +53,7 @@ public sealed class BacktestDataAvailabilityService
             string dataRoot,
             CancellationToken cancellationToken)
     {
-        var perSymbol = new Dictionary<string, Dictionary<(int, int), (int, int)>>(StringComparer.OrdinalIgnoreCase);
+        var perSymbol = new Dictionary<string, Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var symbol in symbols)
         {
@@ -85,7 +85,7 @@ public sealed class BacktestDataAvailabilityService
     private static Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>
         BuildMonthMap(DateOnly from, DateOnly to, HashSet<DateOnly> presentDates)
     {
-        var result = new Dictionary<(int, int), (int, int)>();
+        var result = new Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>();
         var current = new DateOnly(from.Year, from.Month, 1);
         var lastMonth = new DateOnly(to.Year, to.Month, 1);
 
@@ -102,8 +102,10 @@ public sealed class BacktestDataAvailabilityService
 
     private static int CountTradingDaysInMonth(int year, int month, DateOnly from, DateOnly to)
     {
-        var start = DateOnly.Max(new DateOnly(year, month, 1), from);
-        var end = DateOnly.Min(new DateOnly(year, month, DateTime.DaysInMonth(year, month)), to);
+        var monthStart = new DateOnly(year, month, 1);
+        var monthEnd = new DateOnly(year, month, DateTime.DaysInMonth(year, month));
+        var start = monthStart > from ? monthStart : from;
+        var end = monthEnd < to ? monthEnd : to;
         var count = 0;
         for (var d = start; d <= end; d = d.AddDays(1))
         {
@@ -115,17 +117,17 @@ public sealed class BacktestDataAvailabilityService
 
     private static Dictionary<string, Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>>
         CollapseToUniverseAverage(
-            Dictionary<string, Dictionary<(int, int), (int, int)>> perSymbol,
+            Dictionary<string, Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>> perSymbol,
             DateOnly from,
             DateOnly to)
     {
         // Collect all months across the range
-        var allMonths = new HashSet<(int, int)>();
+        var allMonths = new HashSet<(int Year, int Month)>();
         foreach (var map in perSymbol.Values)
             foreach (var k in map.Keys)
                 allMonths.Add(k);
 
-        var avgMap = new Dictionary<(int, int), (int, int)>();
+        var avgMap = new Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>();
         foreach (var month in allMonths)
         {
             var totalPresent = 0;
@@ -144,7 +146,7 @@ public sealed class BacktestDataAvailabilityService
             avgMap[month] = (avgPresent, tradingDays);
         }
 
-        return new Dictionary<string, Dictionary<(int, int), (int, int)>>(StringComparer.OrdinalIgnoreCase)
+        return new Dictionary<string, Dictionary<(int Year, int Month), (int DaysPresent, int TradingDaysInMonth)>>(StringComparer.OrdinalIgnoreCase)
         {
             ["Universe Average"] = avgMap
         };

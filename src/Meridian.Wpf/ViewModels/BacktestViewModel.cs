@@ -23,6 +23,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     // ── Coverage debounce ────────────────────────────────────────────────────
     private CancellationTokenSource _coverageCts = new();
+    private bool _isDisposed;
 
     // ── Configuration properties ─────────────────────────────────────────────
 
@@ -369,7 +370,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
         var from = DateOnly.FromDateTime(FromDate);
         var to = DateOnly.FromDateTime(ToDate);
 
-        Application.Current.Dispatcher.Invoke(() =>
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
             IsCoverageLoading = true;
             CoverageRows.Clear();
@@ -408,7 +409,7 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
                 rows.Add(new CoverageRowVm(symbol, cells));
             }
 
-            Application.Current.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 CoverageRows.Clear();
                 foreach (var r in rows) CoverageRows.Add(r);
@@ -429,9 +430,24 @@ public sealed class BacktestViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
         _backtestService.BacktestCompleted -= OnBacktestCompleted;
         _backtestService.BacktestCancelled -= OnBacktestCancelled;
-        _coverageCts.Cancel();
+
+        try
+        {
+            _coverageCts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Coverage refreshes can dispose the CTS before the page teardown finishes.
+        }
+
         _coverageCts.Dispose();
     }
 }

@@ -12,6 +12,7 @@ public partial class MainPage : Page
 {
     private readonly WpfNavigationService _navigationService;
     private readonly MainPageViewModel _viewModel;
+    private readonly TaskCompletionSource _shellReadyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public MainPage(MainPageViewModel viewModel)
     {
@@ -27,6 +28,7 @@ public partial class MainPage : Page
         _navigationService.Initialize(ContentFrame);
 
         _viewModel.ActivateShell();
+        _shellReadyTcs.TrySetResult();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -56,13 +58,28 @@ public partial class MainPage : Page
 
     private void OnOpenCommandPaletteClick(object sender, RoutedEventArgs e)
     {
-        _viewModel.ShowCommandPaletteCommand.Execute(null);
-        CommandPaletteTextBox.Focus();
-        CommandPaletteTextBox.SelectAll();
+        ShowCommandPaletteOverlay();
     }
 
     private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
     {
         _viewModel.SyncNavigationState();
+    }
+
+    public void ShowCommandPaletteOverlay()
+    {
+        _viewModel.ShowCommandPaletteCommand.Execute(null);
+        CommandPaletteTextBox.Focus();
+        CommandPaletteTextBox.SelectAll();
+    }
+
+    public Task WaitForShellReadyAsync()
+    {
+        if (IsLoaded)
+        {
+            _shellReadyTcs.TrySetResult();
+        }
+
+        return _shellReadyTcs.Task;
     }
 }

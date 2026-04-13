@@ -96,11 +96,7 @@ public sealed class FloatingPageService
         }
 
         // Cascade new windows slightly offset from the main window
-<<<<<<< HEAD
-        var mainWindow = System.Windows.Application.Current.MainWindow;
-=======
         var mainWindow = System.Windows.Application.Current?.MainWindow;
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         var offset = _openWindows.Count * 30;
 
         if (mainWindow is not null)

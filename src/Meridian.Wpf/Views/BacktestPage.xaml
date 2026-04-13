@@ -381,7 +381,6 @@
                                             VerticalAlignment="Center"
                                             Content="Fix Gaps"
                                             Command="{Binding FixGapsCommand}"
-                                            Style="{StaticResource SecondaryButtonStyle}"
                                             Padding="8,3"
                                             FontSize="10">
                                         <Button.Style>

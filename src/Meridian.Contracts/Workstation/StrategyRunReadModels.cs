@@ -117,14 +117,10 @@ public sealed record StrategyRunSummary(
     string? AuditReference = null,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
-<<<<<<< Updated upstream
-    StrategyRunGovernanceSummary? Governance = null);
-=======
     StrategyRunGovernanceSummary? Governance = null,
     string? FundProfileId = null,
     string? FundDisplayName = null,
     string? ParentRunId = null);
->>>>>>> Stashed changes
 
 /// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.
@@ -139,6 +135,18 @@ public sealed record StrategyRunDetail(
     StrategyRunGovernanceSummary? Governance = null);
 
 /// <summary>
+/// Security Master coverage state associated with a workstation security reference.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<WorkstationSecurityCoverageStatus>))]
+public enum WorkstationSecurityCoverageStatus : byte
+{
+    Resolved,
+    Partial,
+    Missing,
+    Unavailable
+}
+
+/// <summary>
 /// Lightweight Security Master reference used by workstation portfolio and ledger surfaces.
 /// <para><see cref="SubType"/> is the most specific classification available at query time
 /// (e.g. "CommonShare", "Bond", "OptionContract"). It is derived from the security's asset
@@ -151,7 +159,12 @@ public sealed record WorkstationSecurityReference(
     string Currency,
     SecurityStatusDto Status,
     string? PrimaryIdentifier,
-    string? SubType = null);
+    string? SubType = null,
+    WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved,
+    string? MatchedIdentifierKind = null,
+    string? MatchedIdentifierValue = null,
+    string? MatchedProvider = null,
+    string? ResolutionReason = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
@@ -420,8 +433,6 @@ public sealed record RunCashFlowSummary(
     decimal NetCashFlow,
     IReadOnlyList<CashFlowEntryDto> Entries,
     RunCashLadder Ladder);
-<<<<<<< Updated upstream
-=======
 
 /// <summary>
 /// Lightweight run identity used to connect research, trading, and governance flows.
@@ -535,4 +546,3 @@ public sealed record RunLotSummary(
     decimal TotalRealizedPnl,
     IReadOnlyList<OpenLotSummary> OpenLots,
     IReadOnlyList<ClosedLotSummary> ClosedLots);
->>>>>>> Stashed changes

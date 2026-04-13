@@ -15,14 +15,19 @@ public sealed class WorkspaceShellContextService
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly NotificationService _notificationService;
-    private readonly IStatusService _statusService;
+    private readonly Func<CancellationToken, Task<WorkspaceStatusSnapshot?>> _getStatusAsync;
 
     public WorkspaceShellContextService(
         FundContextService fundContextService,
         FixtureModeDetector fixtureModeDetector,
         NotificationService notificationService,
         IStatusService statusService)
-        : this(fundContextService, fixtureModeDetector, notificationService, statusService, operatingContextService: null)
+        : this(
+            fundContextService,
+            fixtureModeDetector,
+            notificationService,
+            ct => MapStatusAsync(statusService, ct),
+            operatingContextService: null)
     {
     }
 
@@ -32,12 +37,56 @@ public sealed class WorkspaceShellContextService
         NotificationService notificationService,
         IStatusService statusService,
         WorkstationOperatingContextService? operatingContextService)
+        : this(
+            fundContextService,
+            fixtureModeDetector,
+            notificationService,
+            ct => MapStatusAsync(statusService, ct),
+            operatingContextService)
+    {
+    }
+
+    public WorkspaceShellContextService(
+        FundContextService fundContextService,
+        FixtureModeDetector fixtureModeDetector,
+        NotificationService notificationService,
+        StatusService statusService)
+        : this(
+            fundContextService,
+            fixtureModeDetector,
+            notificationService,
+            ct => MapStatusAsync(statusService, ct),
+            operatingContextService: null)
+    {
+    }
+
+    public WorkspaceShellContextService(
+        FundContextService fundContextService,
+        FixtureModeDetector fixtureModeDetector,
+        NotificationService notificationService,
+        StatusService statusService,
+        WorkstationOperatingContextService? operatingContextService)
+        : this(
+            fundContextService,
+            fixtureModeDetector,
+            notificationService,
+            ct => MapStatusAsync(statusService, ct),
+            operatingContextService)
+    {
+    }
+
+    private WorkspaceShellContextService(
+        FundContextService fundContextService,
+        FixtureModeDetector fixtureModeDetector,
+        NotificationService notificationService,
+        Func<CancellationToken, Task<WorkspaceStatusSnapshot?>> getStatusAsync,
+        WorkstationOperatingContextService? operatingContextService)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _operatingContextService = operatingContextService;
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-        _statusService = statusService ?? throw new ArgumentNullException(nameof(statusService));
+        _getStatusAsync = getStatusAsync ?? throw new ArgumentNullException(nameof(getStatusAsync));
 
         _fundContextService.ActiveFundProfileChanged += (_, _) => SignalsChanged?.Invoke(this, EventArgs.Empty);
         if (_operatingContextService is not null)
@@ -65,7 +114,7 @@ public sealed class WorkspaceShellContextService
 
         var profile = _fundContextService.CurrentFundProfile;
         var operatingContext = _operatingContextService?.CurrentContext;
-        var status = await _statusService.GetStatusAsync(ct).ConfigureAwait(false);
+        var status = await _getStatusAsync(ct).ConfigureAwait(false);
         var history = _notificationService.GetHistory();
         var unreadCount = history.Count(item => !item.IsRead);
         var recentCount = history.Count;
@@ -174,7 +223,7 @@ public sealed class WorkspaceShellContextService
     public int GetUnreadAlertCount()
         => _notificationService.GetHistory().Count(item => !item.IsRead);
 
-    private string ResolveEnvironmentValue(StatusResponse? status)
+    private string ResolveEnvironmentValue(WorkspaceStatusSnapshot? status)
     {
         if (_fixtureModeDetector.IsFixtureMode)
         {
@@ -194,7 +243,7 @@ public sealed class WorkspaceShellContextService
         return "Pending";
     }
 
-    private string ResolveEnvironmentTone(StatusResponse? status)
+    private string ResolveEnvironmentTone(WorkspaceStatusSnapshot? status)
     {
         if (_fixtureModeDetector.IsOfflineMode)
         {
@@ -234,19 +283,19 @@ public sealed class WorkspaceShellContextService
     private static string ResolveValue(string value, string fallback)
         => string.IsNullOrWhiteSpace(value) ? fallback : value;
 
-    private static string ResolveFreshnessValue(StatusResponse? status, string requestedValue)
+    private static string ResolveFreshnessValue(WorkspaceStatusSnapshot? status, string requestedValue)
     {
         if (!string.IsNullOrWhiteSpace(requestedValue))
         {
             return requestedValue;
         }
 
-        return status?.IsConnected == true
+        return status?.IsConnected == true && status.IsStale == false
             ? "Backend connected"
             : "Awaiting backend";
     }
 
-    private static string ResolveFreshnessTone(StatusResponse? status, string requestedValue)
+    private static string ResolveFreshnessTone(WorkspaceStatusSnapshot? status, string requestedValue)
     {
         if (!string.IsNullOrWhiteSpace(requestedValue))
         {
@@ -256,8 +305,30 @@ public sealed class WorkspaceShellContextService
                 : WorkspaceTone.Success;
         }
 
-        return status?.IsConnected == true
+        return status?.IsConnected == true && status.IsStale == false
             ? WorkspaceTone.Success
             : WorkspaceTone.Warning;
     }
+
+    private static async Task<WorkspaceStatusSnapshot?> MapStatusAsync(IStatusService statusService, CancellationToken ct)
+    {
+        var status = await statusService.GetStatusAsync(ct).ConfigureAwait(false);
+        return status is null
+            ? null
+            : new WorkspaceStatusSnapshot(
+                status.IsConnected,
+                status.Metrics?.IsStale ?? false);
+    }
+
+    private static async Task<WorkspaceStatusSnapshot?> MapStatusAsync(StatusService statusService, CancellationToken ct)
+    {
+        var status = await statusService.GetStatusAsync(ct).ConfigureAwait(false);
+        return status is null
+            ? null
+            : new WorkspaceStatusSnapshot(
+                status.Provider?.IsConnected == true,
+                status.IsStale);
+    }
+
+    private sealed record WorkspaceStatusSnapshot(bool IsConnected, bool IsStale);
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using UiServices = Meridian.Ui.Services;
 using WorkspaceTemplate = Meridian.Ui.Services.WorkspaceTemplate;
@@ -23,12 +24,15 @@ namespace Meridian.Wpf.Services;
 public sealed class WorkspaceService
 {
     private static readonly Lazy<WorkspaceService> _instance = new(() => new WorkspaceService());
+    private static string? _settingsFilePathOverride;
 
     private const string WorkspacesFileName = "workspace-data.json";
 
     private WorkspaceTemplate? _activeWorkspace;
     private SessionState? _lastSession;
     private readonly List<WorkspaceTemplate> _workspaces = new();
+    private readonly Dictionary<string, SessionState> _sessionsByFundProfileId = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, WorkstationLayoutState> _workspaceLayouts = new(StringComparer.OrdinalIgnoreCase);
     private readonly Task _initialLoadTask;
 
     public static WorkspaceService Instance => _instance.Value;
@@ -41,11 +45,8 @@ public sealed class WorkspaceService
     public WorkspaceTemplate? ActiveWorkspace => _activeWorkspace;
     public SessionState? LastSession => _lastSession;
     public IReadOnlyList<WorkspaceTemplate> Workspaces => _workspaces.AsReadOnly();
-<<<<<<< HEAD
     public string? LastSelectedFundProfileId { get; private set; }
     public string? LastSelectedOperatingContextKey => LastSelectedFundProfileId;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     private Task EnsureInitializedAsync() => _initialLoadTask;
 
@@ -63,6 +64,17 @@ public sealed class WorkspaceService
 
     private static string GetSettingsFilePath()
     {
+        if (!string.IsNullOrWhiteSpace(_settingsFilePathOverride))
+        {
+            var overrideDirectory = Path.GetDirectoryName(_settingsFilePathOverride);
+            if (!string.IsNullOrWhiteSpace(overrideDirectory))
+            {
+                Directory.CreateDirectory(overrideDirectory);
+            }
+
+            return _settingsFilePathOverride;
+        }
+
         var dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Meridian");
@@ -95,6 +107,8 @@ public sealed class WorkspaceService
         public List<WorkspaceTemplate> Workspaces { get; set; } = new();
         public string? ActiveWorkspaceId { get; set; }
         public SessionState? LastSession { get; set; }
+        public Dictionary<string, SessionState> SessionsByFundProfileId { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, WorkstationLayoutState> WorkspaceLayouts { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         /// <summary>
         /// Per-workspace AvalonDock layout XML, keyed by workspace ID (e.g., "trading", "research").
         /// </summary>
@@ -126,12 +140,15 @@ public sealed class WorkspaceService
                     }
 
                     _lastSession = data.LastSession;
+                    if (_lastSession?.WorkstationLayout is not null)
+                    {
+                        _lastSession.WorkstationLayout = CloneWorkstationLayoutState(_lastSession.WorkstationLayout);
+                    }
 
-<<<<<<< HEAD
                     _sessionsByFundProfileId.Clear();
                     foreach (var kvp in data.SessionsByFundProfileId)
                     {
-                        _sessionsByFundProfileId[kvp.Key] = kvp.Value;
+                        _sessionsByFundProfileId[kvp.Key] = NormalizeSessionState(CloneSessionState(kvp.Value), kvp.Value.ActiveWorkspaceId);
                     }
 
                     if (_sessionsByFundProfileId.Count == 0 &&
@@ -145,12 +162,16 @@ public sealed class WorkspaceService
                     }
 
                     _dockLayouts.Clear();
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                     if (data.DockLayouts.Count > 0)
                     {
                         foreach (var kvp in data.DockLayouts)
                             _dockLayouts[kvp.Key] = kvp.Value;
+                    }
+
+                    _workspaceLayouts.Clear();
+                    foreach (var kvp in data.WorkspaceLayouts)
+                    {
+                        _workspaceLayouts[kvp.Key] = CloneWorkstationLayoutState(kvp.Value);
                     }
                 }
             }
@@ -183,7 +204,15 @@ public sealed class WorkspaceService
             {
                 Workspaces = _workspaces.ToList(),
                 ActiveWorkspaceId = _activeWorkspace?.Id,
-                LastSession = _lastSession,
+                LastSession = _lastSession is null ? null : CloneSessionState(_lastSession),
+                SessionsByFundProfileId = _sessionsByFundProfileId.ToDictionary(
+                    static pair => pair.Key,
+                    static pair => CloneSessionState(pair.Value),
+                    StringComparer.OrdinalIgnoreCase),
+                WorkspaceLayouts = _workspaceLayouts.ToDictionary(
+                    static pair => pair.Key,
+                    static pair => CloneWorkstationLayoutState(pair.Value),
+                    StringComparer.OrdinalIgnoreCase),
                 DockLayouts = new Dictionary<string, string>(_dockLayouts, StringComparer.OrdinalIgnoreCase)
             };
 
@@ -296,7 +325,7 @@ public sealed class WorkspaceService
         return workspace;
     }
 
-    public async Task SaveSessionStateAsync(SessionState state, CancellationToken ct = default)
+    public async Task SaveSessionStateAsync(SessionState state, string? fundProfileId = null, CancellationToken ct = default)
     {
         try
         {
@@ -314,7 +343,6 @@ public sealed class WorkspaceService
 
             state.SavedAt = DateTime.UtcNow;
             _lastSession = state;
-<<<<<<< HEAD
             var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
             if (!string.IsNullOrWhiteSpace(normalizedFundProfileId))
             {
@@ -325,8 +353,6 @@ public sealed class WorkspaceService
                 }
             }
 
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
             PersistActiveWorkspaceSnapshot();
             await SaveWorkspacesAsync();
         }
@@ -340,7 +366,6 @@ public sealed class WorkspaceService
         return _lastSession;
     }
 
-<<<<<<< HEAD
     public SessionState? GetLastSessionState(string? fundProfileId)
     {
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
@@ -389,8 +414,6 @@ public sealed class WorkspaceService
     public SessionState? GetLastSessionStateForContext(string? operatingContextKey)
         => GetLastSessionState(operatingContextKey);
 
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     /// <summary>
     /// Saves a single named filter value for a page into the active session's
     /// <see cref="SessionState.ActiveFilters"/> dictionary.
@@ -485,9 +508,8 @@ public sealed class WorkspaceService
                     new WorkspacePage { PageTag = "Charts", Title = "Charts" },
                     new WorkspacePage { PageTag = "AdvancedAnalytics", Title = "Advanced Analytics" },
                     new WorkspacePage { PageTag = "RunMat", Title = "RunMat Lab" },
-                    new WorkspacePage { PageTag = "OrderBook", Title = "Order Book" },
                     new WorkspacePage { PageTag = "Watchlist", Title = "Watchlist" },
-                    new WorkspacePage { PageTag = "ResearchShell", Title = "Research Shell" }
+                    new WorkspacePage { PageTag = "ResearchShell", Title = "Research Workspace" }
                 }
             },
             new WorkspaceTemplate
@@ -504,7 +526,13 @@ public sealed class WorkspaceService
                 {
                     new WorkspacePage { PageTag = "LiveData", Title = "Live Data", IsDefault = true },
                     new WorkspacePage { PageTag = "TradingHours", Title = "Trading Hours" },
-                    new WorkspacePage { PageTag = "TradingShell", Title = "Trading Shell" }
+                    new WorkspacePage { PageTag = "StrategyRuns", Title = "Strategy Runs" },
+                    new WorkspacePage { PageTag = "RunPortfolio", Title = "Run Portfolio" },
+                    new WorkspacePage { PageTag = "RunLedger", Title = "Run Ledger" },
+                    new WorkspacePage { PageTag = "PositionBlotter", Title = "Position Blotter" },
+                    new WorkspacePage { PageTag = "RunRisk", Title = "Run Risk" },
+                    new WorkspacePage { PageTag = "OrderBook", Title = "Order Book" },
+                    new WorkspacePage { PageTag = "TradingShell", Title = "Trading Workspace" }
                 }
             },
             new WorkspaceTemplate
@@ -623,7 +651,6 @@ public sealed class WorkspaceService
         return changed;
     }
 
-<<<<<<< HEAD
     private static IReadOnlyDictionary<string, string> BuildUniquePageWorkspaceOwnership()
     {
         var owners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
@@ -688,8 +715,6 @@ public sealed class WorkspaceService
         return keys;
     }
 
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     private bool MigrateLegacyWorkspaceState()
     {
         var changed = false;
@@ -781,7 +806,6 @@ public sealed class WorkspaceService
         return false;
     }
 
-<<<<<<< HEAD
     private WorkspaceTemplate? ResolveWorkspaceForSession(SessionState? session, string? fallbackWorkspaceId = null)
     {
         var inferredWorkspaceId = InferWorkspaceIdForPageTag(session?.ActivePageTag);
@@ -837,8 +861,6 @@ public sealed class WorkspaceService
         _workspaceLayouts.Clear();
     }
 
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     private static void MergeMissingPages(WorkspaceTemplate workspace, IEnumerable<WorkspacePage> builtInPages)
     {
         foreach (var page in builtInPages)
@@ -1000,7 +1022,10 @@ public sealed class WorkspaceService
             WorkspaceContext = new Dictionary<string, string>(session.WorkspaceContext, StringComparer.Ordinal),
             WindowBounds = CloneWindowBounds(session.WindowBounds),
             SavedAt = session.SavedAt,
-            ActiveWorkspaceId = session.ActiveWorkspaceId
+            ActiveWorkspaceId = session.ActiveWorkspaceId,
+            WorkstationLayout = session.WorkstationLayout is null
+                ? null
+                : CloneWorkstationLayoutState(session.WorkstationLayout)
         };
     }
 
@@ -1050,7 +1075,6 @@ public sealed class WorkspaceService
         };
     }
 
-<<<<<<< HEAD
     private static WorkspaceLayoutPreset CloneWorkspaceLayoutPreset(WorkspaceLayoutPreset preset)
     {
         return new WorkspaceLayoutPreset
@@ -1106,8 +1130,6 @@ public sealed class WorkspaceService
             : $"{workspaceId}::{normalizedFundProfileId}";
     }
 
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     public event EventHandler<WorkspaceEventArgs>? WorkspaceCreated;
     public event EventHandler<WorkspaceEventArgs>? WorkspaceUpdated;
     public event EventHandler<WorkspaceEventArgs>? WorkspaceDeleted;
@@ -1132,12 +1154,17 @@ public sealed class WorkspaceService
     /// Retrieves the previously persisted AvalonDock layout XML for a workspace shell.
     /// Returns <c>null</c> if no layout has been saved yet.
     /// </summary>
-    public async Task<string?> GetDockLayoutAsync(string workspaceId, CancellationToken ct = default)
+    public async Task<string?> GetDockLayoutAsync(string workspaceId, string? fundProfileId = null, CancellationToken ct = default)
     {
         await EnsureInitializedAsync();
-<<<<<<< HEAD
         var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
         if (_dockLayouts.TryGetValue(layoutKey, out var xml))
+        {
+            return xml;
+        }
+
+        if (!string.Equals(layoutKey, workspaceId, StringComparison.OrdinalIgnoreCase) &&
+            _dockLayouts.TryGetValue(workspaceId, out xml))
         {
             return xml;
         }
@@ -1145,6 +1172,11 @@ public sealed class WorkspaceService
         if (_workspaceLayouts.TryGetValue(layoutKey, out var layoutState))
         {
             return layoutState.DockLayoutXml;
+        }
+
+        if (_activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null)
+        {
+            return _lastSession.WorkstationLayout.DockLayoutXml;
         }
 
         return null;
@@ -1200,10 +1232,9 @@ public sealed class WorkspaceService
         var layoutKey = BuildWorkspaceLayoutKey(workspaceId, fundProfileId);
         return _workspaceLayouts.TryGetValue(layoutKey, out var layoutState)
             ? CloneWorkstationLayoutState(layoutState)
+            : _activeWorkspace?.Id == workspaceId && _lastSession?.WorkstationLayout is not null
+                ? CloneWorkstationLayoutState(_lastSession.WorkstationLayout)
             : null;
-=======
-        return _dockLayouts.TryGetValue(workspaceId, out var xml) ? xml : null;
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     public Task<WorkstationLayoutState?> GetWorkspaceLayoutStateForContextAsync(

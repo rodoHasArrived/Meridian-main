@@ -47,6 +47,7 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 {
     private const string BaseUrl = "https://api.robinhood.com";
+    private const string OptionsPositionsUrl = BaseUrl + "/options/positions/?nonzero=true";
     private const string EnvAccessToken = "ROBINHOOD_ACCESS_TOKEN";
 
     private readonly IHttpClientFactory _httpClientFactory;
@@ -338,6 +339,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     public async Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
+        var optionsFetch = client.GetAsync(OptionsPositionsUrl, ct);
         var response = await client.GetAsync($"{BaseUrl}/positions/?nonzero=true", ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
@@ -354,27 +356,21 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             var symbol = await ResolveSymbolFromInstrumentAsync(p.Instrument, client, ct).ConfigureAwait(false);
             positions.Add(new BrokerPosition
             {
-<<<<<<< HEAD
-                // Resolve the instrument URL to get the symbol.
-                var symbol = await ResolveSymbolFromInstrumentAsync(p.Instrument, client, ct).ConfigureAwait(false);
-                positions.Add(new BrokerPosition
+                PositionId = symbol ?? p.Instrument,
+                Symbol = symbol ?? p.Instrument ?? string.Empty,
+                UnderlyingSymbol = symbol ?? p.Instrument ?? string.Empty,
+                Description = symbol ?? p.Instrument ?? string.Empty,
+                Quantity = ParseDecimal(p.Quantity),
+                AverageEntryPrice = ParseDecimal(p.AveragePrice),
+                MarketPrice = 0m, // Robinhood positions endpoint does not include current price
+                MarketValue = 0m,
+                UnrealizedPnl = 0m,
+                AssetClass = "equity",
+                Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    PositionId         = symbol ?? p.Instrument,
-                    Symbol            = symbol ?? p.Instrument ?? string.Empty,
-                    UnderlyingSymbol  = symbol ?? p.Instrument ?? string.Empty,
-                    Description       = symbol ?? p.Instrument ?? string.Empty,
-                    Quantity          = ParseDecimal(p.Quantity),
-                    AverageEntryPrice = ParseDecimal(p.AveragePrice),
-                    MarketPrice       = 0m, // Robinhood positions endpoint does not include current price
-                    MarketValue       = 0m,
-                    UnrealizedPnl     = 0m,
-                    AssetClass        = "equity",
-                    Metadata          = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["asset_class"] = "equity"
-                    }
-                });
-            }
+                    ["asset_class"] = "equity"
+                }
+            });
         }
 
         // Harvest the options response — already in-flight from the concurrent fetch above.
@@ -409,20 +405,20 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
                         var right = NormalizeOptionRight(detail?.Type ?? p.Type);
                         positions.Add(new BrokerPosition
                         {
-                            PositionId        = p.Option ?? BuildFallbackOptionPositionId(underlyingSymbol, right, expiration, strike),
-                            Symbol            = underlyingSymbol,
-                            UnderlyingSymbol  = underlyingSymbol,
-                            Description       = BuildOptionDescription(underlyingSymbol, strike, right, expiration),
-                            Quantity          = qty,
+                            PositionId = p.Option ?? BuildFallbackOptionPositionId(underlyingSymbol, right, expiration, strike),
+                            Symbol = underlyingSymbol,
+                            UnderlyingSymbol = underlyingSymbol,
+                            Description = BuildOptionDescription(underlyingSymbol, strike, right, expiration),
+                            Quantity = qty,
                             AverageEntryPrice = ParseDecimal(p.AveragePrice),
-                            MarketPrice       = 0m,
-                            MarketValue       = 0m,
-                            UnrealizedPnl     = 0m,
-                            AssetClass        = "option",
-                            Expiration        = expiration,
-                            Strike            = strike,
-                            Right             = right,
-                            Metadata          = BuildOptionPositionMetadata(p.Option, underlyingSymbol, right, expiration, strike)
+                            MarketPrice = 0m,
+                            MarketValue = 0m,
+                            UnrealizedPnl = 0m,
+                            AssetClass = "option",
+                            Expiration = expiration,
+                            Strike = strike,
+                            Right = right,
+                            Metadata = BuildOptionPositionMetadata(p.Option, underlyingSymbol, right, expiration, strike)
                         });
                     }
                 }
@@ -435,18 +431,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
         catch (Exception ex)
         {
-            // Use the URL constant — avoids allocating a new interpolated string on the exception path.
+            // Use the URL constant to keep exception-path logging allocation-free.
             _logger.LogWarning(ex, "Failed to fetch Robinhood options positions from {Url}", OptionsPositionsUrl);
-=======
-                Symbol = symbol ?? p.Instrument ?? string.Empty,
-                Quantity = ParseDecimal(p.Quantity),
-                AverageEntryPrice = ParseDecimal(p.AveragePrice),
-                MarketPrice = 0m, // Robinhood positions endpoint does not include current price
-                MarketValue = 0m,
-                UnrealizedPnl = 0m,
-                AssetClass = "equity",
-            });
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         }
 
         return positions.AsReadOnly();
@@ -834,8 +820,6 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     {
         [JsonPropertyName("results")] public RobinhoodInstrumentResponse[]? Results { get; set; }
     }
-<<<<<<< HEAD
-
     // ── Options DTOs ──────────────────────────────────────────────────────
 
     /// <summary>A single leg within a Robinhood options order.</summary>
@@ -910,8 +894,6 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         [JsonPropertyName("strike_price")] public string? StrikePrice { get; set; }
         [JsonPropertyName("type")] public string? Type { get; set; }
     }
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }
 
 /// <summary>
@@ -926,7 +908,6 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodPositionListResponse))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodInstrumentResponse))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodInstrumentListResponse))]
-<<<<<<< HEAD
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionLeg))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionOrderPayload))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionOrderResponse))]
@@ -934,8 +915,6 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionPositionResponse))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionPositionListResponse))]
 [JsonSerializable(typeof(RobinhoodBrokerageGateway.RobinhoodOptionInstrumentResponse))]
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 [JsonSourceGenerationOptions(DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNameCaseInsensitive = true)]
 internal sealed partial class RobinhoodBrokerageSerializerContext : JsonSerializerContext;

@@ -24,12 +24,11 @@ public partial class NotificationCenterPage : Page
 
     public NotificationCenterPage(WpfServices.NotificationService notificationService)
     {
-        InitializeComponent();
-
         _notificationService = notificationService;
         _alertService = AlertService.Instance;
-
         _viewModel = new NotificationCenterViewModel(notificationService, _alertService);
+
+        InitializeComponent();
         DataContext = _viewModel;
 
         // Sync preference checkboxes with current settings
@@ -407,6 +406,15 @@ public partial class NotificationCenterPage : Page
     private bool _suppressFilterEvents;
     private void FilterChanged(object sender, RoutedEventArgs e)
     {
+        if (FilterAllCheck is null ||
+            FilterErrorsCheck is null ||
+            FilterWarningsCheck is null ||
+            FilterInfoCheck is null ||
+            FilterSuccessCheck is null)
+        {
+            return;
+        }
+
         if (_suppressFilterEvents) return;
 
         if (sender == FilterAllCheck)

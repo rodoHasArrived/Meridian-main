@@ -53,7 +53,10 @@ internal static class WpfTestThread
 
             _thread = new Thread(() =>
             {
-                _ = new System.Windows.Application();
+                _ = new System.Windows.Application
+                {
+                    ShutdownMode = ShutdownMode.OnExplicitShutdown
+                };
                 _dispatcher = Dispatcher.CurrentDispatcher;
                 Ready.Set();
                 Dispatcher.Run();

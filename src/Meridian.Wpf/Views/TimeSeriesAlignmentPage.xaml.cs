@@ -47,6 +47,18 @@ public partial class TimeSeriesAlignmentPage : Page
 
     private void Preset_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (PresetCombo is null ||
+            FrequencyCombo is null ||
+            GapHandlingCombo is null ||
+            IncludeCloseCheck is null ||
+            IncludeOpenCheck is null ||
+            IncludeHighCheck is null ||
+            IncludeLowCheck is null ||
+            IncludeVolumeCheck is null)
+        {
+            return;
+        }
+
         if (PresetCombo.SelectedItem is not ComboBoxItem item || item.Tag is not string preset) return;
 
         switch (preset)

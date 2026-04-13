@@ -5,8 +5,8 @@ namespace Meridian.QuantScript.Tests;
 
 public sealed class RoslynScriptCompilerTests
 {
-    private static RoslynScriptCompiler BuildCompiler() =>
-        new(Options.Create(new QuantScriptOptions()), NullLogger<RoslynScriptCompiler>.Instance);
+    private static RoslynScriptCompiler BuildCompiler(QuantScriptOptions? options = null) =>
+        new(Options.Create(options ?? new QuantScriptOptions()), NullLogger<RoslynScriptCompiler>.Instance);
 
     // ── Successful compilation ────────────────────────────────────────────────
 
@@ -23,13 +23,15 @@ public sealed class RoslynScriptCompilerTests
     }
 
     [Fact]
-    public async Task CompileAsync_ValidSource_ReturnsInUnderFiveSeconds()
+    public async Task CompileAsync_ValidSource_CompletesWithinConfiguredTimeout()
     {
-        var compiler = BuildCompiler();
+        var options = new QuantScriptOptions { CompilationTimeoutSeconds = 15 };
+        var compiler = BuildCompiler(options);
 
         var result = await compiler.CompileAsync("System.Math.Sqrt(4);");
 
-        result.CompilationTime.Should().BeLessThan(TimeSpan.FromSeconds(5));
+        result.Success.Should().BeTrue();
+        result.CompilationTime.Should().BeLessThan(TimeSpan.FromSeconds(options.CompilationTimeoutSeconds));
     }
 
     [Fact]

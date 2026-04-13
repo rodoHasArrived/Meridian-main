@@ -176,7 +176,6 @@ public sealed class StatusEndpointTests
 
     #endregion
 
-<<<<<<< HEAD
     #region Event Stream Endpoint
 
     [Fact]
@@ -205,9 +204,6 @@ public sealed class StatusEndpointTests
     #endregion
 
     #region Root Endpoint
-=======
-    #region Dashboard Endpoint
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     [Fact]
     public async Task Root_ReturnsNotFound()
@@ -223,5 +219,21 @@ public sealed class StatusEndpointTests
     {
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content)!;
+    }
+
+    private static async Task<string> ReadFirstDataLineAsync(StreamReader reader, CancellationToken ct)
+    {
+        while (!reader.EndOfStream)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var line = await reader.ReadLineAsync(ct);
+            if (line is not null && line.StartsWith("data: ", StringComparison.Ordinal))
+            {
+                return line;
+            }
+        }
+
+        throw new InvalidOperationException("Did not receive a server-sent event data payload.");
     }
 }

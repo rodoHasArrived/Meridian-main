@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -17,12 +18,88 @@ public sealed class MainPageSmokeTests
         {
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
-            var services = RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
             NavigationService.Instance.SetServiceProvider(services);
 
-            var exception = Record.Exception(() => services.GetRequiredService<MainPage>());
+            MainPage? page = null;
+            try
+            {
+                var exception = Record.Exception(() => page = services.GetRequiredService<MainPage>());
 
-            exception.Should().BeNull();
+                exception.Should().BeNull();
+            }
+            finally
+            {
+                if (page?.DataContext is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
+                NavigationService.Instance.ResetForTests();
+            }
+        });
+    }
+
+    [Fact]
+    public void MainPage_ShouldInstantiateAfterThemeServiceInitialization()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+            ThemeService.Instance.Initialize(new Window());
+
+            using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            NavigationService.Instance.SetServiceProvider(services);
+
+            MainPage? page = null;
+            try
+            {
+                var exception = Record.Exception(() => page = services.GetRequiredService<MainPage>());
+
+                exception.Should().BeNull();
+            }
+            finally
+            {
+                if (page?.DataContext is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
+                NavigationService.Instance.ResetForTests();
+            }
+        });
+    }
+
+    [Fact]
+    public void MainPage_WaitForShellReadyAsync_ShouldCompleteAfterLoaded()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            NavigationService.Instance.SetServiceProvider(services);
+
+            var page = services.GetRequiredService<MainPage>();
+            try
+            {
+                var waitTask = page.WaitForShellReadyAsync();
+
+                waitTask.IsCompleted.Should().BeFalse();
+
+                RunMatUiAutomationFacade.InvokeMainPageLoaded(page);
+
+                waitTask.IsCompleted.Should().BeTrue();
+            }
+            finally
+            {
+                if (page.DataContext is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
+                NavigationService.Instance.ResetForTests();
+            }
         });
     }
 
@@ -33,23 +110,35 @@ public sealed class MainPageSmokeTests
         {
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
-            var services = RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
             NavigationService.Instance.SetServiceProvider(services);
 
             var page = services.GetRequiredService<MainPage>();
-            page.DataContext.Should().BeOfType<MainPageViewModel>();
-            var viewModel = (MainPageViewModel)page.DataContext!;
-            viewModel.SplitPane.AssignPageToPane("Dashboard", 0);
+            try
+            {
+                page.DataContext.Should().BeOfType<MainPageViewModel>();
+                var viewModel = (MainPageViewModel)page.DataContext!;
+                viewModel.SplitPane.AssignPageToPane("Dashboard", 0);
 
-            var method = typeof(MainPage).GetMethod("OnSplitPanePaneDropRequested", BindingFlags.Instance | BindingFlags.NonPublic);
-            method.Should().NotBeNull();
+                var method = typeof(MainPage).GetMethod("OnSplitPanePaneDropRequested", BindingFlags.Instance | BindingFlags.NonPublic);
+                method.Should().NotBeNull();
 
-            method!.Invoke(page, [page, new PaneDropEventArgs("StrategyRuns", 0, PaneDropAction.SplitRight)]);
+                method!.Invoke(page, [page, new PaneDropEventArgs("StrategyRuns", 0, PaneDropAction.SplitRight)]);
 
-            viewModel.SplitPane.SelectedLayout.PaneCount.Should().Be(2);
-            viewModel.SplitPane.GetAssignedPageTag(0).Should().Be("Dashboard");
-            viewModel.SplitPane.GetAssignedPageTag(1).Should().Be("StrategyRuns");
-            viewModel.SplitPane.ActivePaneIndex.Should().Be(1);
+                viewModel.SplitPane.SelectedLayout.PaneCount.Should().Be(2);
+                viewModel.SplitPane.GetAssignedPageTag(0).Should().Be("Dashboard");
+                viewModel.SplitPane.GetAssignedPageTag(1).Should().Be("StrategyRuns");
+                viewModel.SplitPane.ActivePaneIndex.Should().Be(1);
+            }
+            finally
+            {
+                if (page.DataContext is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
+                NavigationService.Instance.ResetForTests();
+            }
         });
     }
 }

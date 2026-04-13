@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Views;
@@ -18,12 +17,11 @@ public sealed class DataQualityPageSmokeTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             var services = new ServiceCollection();
-            var configuration = new ConfigurationBuilder().Build();
             var configureServices = typeof(Meridian.Wpf.App)
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services, configuration]);
+            configureServices!.Invoke(null, [services]);
 
             using var serviceProvider = services.BuildServiceProvider();
 

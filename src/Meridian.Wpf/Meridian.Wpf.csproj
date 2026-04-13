@@ -24,7 +24,7 @@
   <!-- Windows: Full WPF application -->
   <PropertyGroup Condition="'$(IsWindows)' == 'true'">
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>Meridian.Wpf</RootNamespace>
     <UseWPF>true</UseWPF>
     <!-- Required for System.Windows.Forms.NotifyIcon (balloon-tip notifications) -->

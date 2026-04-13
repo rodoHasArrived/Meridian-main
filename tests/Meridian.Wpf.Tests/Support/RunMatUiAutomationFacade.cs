@@ -6,6 +6,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Converters;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -133,7 +134,14 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
 
             if (System.Windows.Application.Current is null)
             {
-                _ = new System.Windows.Application();
+                _ = new System.Windows.Application
+                {
+                    ShutdownMode = ShutdownMode.OnExplicitShutdown
+                };
+            }
+            else
+            {
+                System.Windows.Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             }
 
             var dictionaries = System.Windows.Application.Current!.Resources.MergedDictionaries;
@@ -151,7 +159,6 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
-<<<<<<< HEAD
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/BrandResources.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
@@ -160,8 +167,6 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
             });
             dictionaries.Add(new ResourceDictionary
             {
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
                 Source = new Uri("pack://application:,,,/Meridian.Desktop;component/Styles/AppStyles.xaml", UriKind.Absolute)
             });
             dictionaries.Add(new ResourceDictionary
@@ -186,6 +191,26 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
                 System.Windows.Application.Current.Resources["GhostButtonStyle"] = new Style(typeof(Button));
             }
 
+            if (!System.Windows.Application.Current.Resources.Contains("StringToVisibilityConverter"))
+            {
+                System.Windows.Application.Current.Resources["StringToVisibilityConverter"] = new StringToVisibilityConverter();
+            }
+
+            if (!System.Windows.Application.Current.Resources.Contains("BoolToVisibility"))
+            {
+                System.Windows.Application.Current.Resources["BoolToVisibility"] = new BoolToVisibilityConverter();
+            }
+
+            if (!System.Windows.Application.Current.Resources.Contains("BoolToVisibilityConverter"))
+            {
+                System.Windows.Application.Current.Resources["BoolToVisibilityConverter"] = new BoolToVisibilityConverter();
+            }
+
+            if (!System.Windows.Application.Current.Resources.Contains("IntToVisibilityConverter"))
+            {
+                System.Windows.Application.Current.Resources["IntToVisibilityConverter"] = new IntToVisibilityConverter();
+            }
+
             System.Windows.Application.Current.Resources["CommandBarBackground"] = new SolidColorBrush(Color.FromRgb(24, 28, 34));
             System.Windows.Application.Current.Resources["CommandBarBorderBrush"] = new SolidColorBrush(Color.FromRgb(52, 58, 68));
             _resourcesInitialized = true;
@@ -197,16 +222,14 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         FundContextService? fundContextService = null)
     {
         var services = new ServiceCollection();
-<<<<<<< HEAD
         var fundContext = fundContextService ?? new FundContextService(Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}.json"));
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         services.AddSingleton<NavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<ConnectionService>(_ => ConnectionService.Instance);
         services.AddSingleton<StatusService>(_ => StatusService.Instance);
         services.AddSingleton<MessagingService>(_ => MessagingService.Instance);
         services.AddSingleton<Meridian.Wpf.Services.NotificationService>(_ => Meridian.Wpf.Services.NotificationService.Instance);
+        services.AddSingleton(fundContext);
         services.AddSingleton(_ => FixtureModeDetector.Instance);
         services.AddTransient<DashboardPage>();
         var resolvedRunMatService = runMatService ?? RunMatService.Instance;
@@ -256,15 +279,13 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
     }
 
     private static RunMatViewModel CreateViewModel(RunMatService runMatService)
-    {
-        var ctor = typeof(RunMatViewModel).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            binder: null,
-            [typeof(RunMatService)],
-            modifiers: null);
+        => new(runMatService);
 
-        ctor.Should().NotBeNull();
-        return (RunMatViewModel)ctor!.Invoke([runMatService]);
+    public static void ClearNavigationServiceProviderForTests()
+    {
+        var field = typeof(NavigationService).GetField("_serviceProvider", BindingFlags.Instance | BindingFlags.NonPublic);
+        field.Should().NotBeNull();
+        field!.SetValue(NavigationService.Instance, null);
     }
 
     private static IAsyncRelayCommand GetRequiredAsyncCommand(Button button)

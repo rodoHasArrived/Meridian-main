@@ -20,6 +20,7 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
     private readonly NavigationService _navigationService;
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _cts = new();
+    private bool _isDisposed;
 
     // Backing storage for all entries before filtering
     private readonly List<BlotterEntry> _allEntries = [];
@@ -153,7 +154,21 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
         };
         _refreshTimer.Tick += (_, _) =>
         {
-            var ct = _cts.Token;
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            CancellationToken ct;
+            try
+            {
+                ct = _cts.Token;
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
             _ = RefreshAsync(ct).ContinueWith(
                 t => { /* exceptions are already handled inside RefreshAsync */ },
                 TaskContinuationOptions.OnlyOnFaulted);
@@ -170,8 +185,23 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
         _refreshTimer.Stop();
-        _cts.Cancel();
+
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Page teardown can run after another owner has already disposed the token source.
+        }
+
         _cts.Dispose();
     }
 

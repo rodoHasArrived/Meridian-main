@@ -1,3 +1,4 @@
+using System.IO;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Models;
 using Meridian.Ui.Services;
@@ -10,7 +11,6 @@ namespace Meridian.Wpf.Tests.Services;
 /// </summary>
 public sealed class WorkspaceServiceTests
 {
-<<<<<<< HEAD
     private static readonly string TestSettingsFilePath = Path.Combine(
         Path.GetTempPath(),
         "Meridian.Wpf.Tests",
@@ -31,9 +31,6 @@ public sealed class WorkspaceServiceTests
         service.LoadWorkspacesAsync().GetAwaiter().GetResult();
         return service;
     }
-=======
-    private static WorkspaceService CreateService() => WorkspaceService.Instance;
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     // ── Singleton ────────────────────────────────────────────────────
 
@@ -608,7 +605,6 @@ public sealed class WorkspaceServiceTests
         restored.ActiveFilters.Should().NotContainKey("governance.filter");
     }
 
-<<<<<<< HEAD
     [Fact]
     public async Task SaveWorkspaceLayoutStateAsync_ShouldPersistLayoutsPerWorkspaceAndFund()
     {
@@ -698,9 +694,6 @@ public sealed class WorkspaceServiceTests
         restored.LayoutPresetId.Should().Be("accounting-review");
         restored.Panes.Should().ContainSingle(pane => pane.PageTag == "FundTrialBalance" && pane.DockZone == "right");
     }
-
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     // ── Export/Import ────────────────────────────────────────────────
 
     [Fact]

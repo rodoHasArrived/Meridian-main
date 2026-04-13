@@ -41,6 +41,16 @@ public sealed class AddProviderWizardViewModel : BindableBase
     private string _saveStatusText = string.Empty;
     private Brush _saveStatusBrush = MutedBrush;
 
+    // Operator-facing relationship summary
+    private string _summaryConnectionTypeText = string.Empty;
+    private string _summaryOperatingModeText = string.Empty;
+    private string _summaryScopeText = string.Empty;
+    private string _summaryCapabilitiesText = string.Empty;
+    private string _summaryCredentialText = string.Empty;
+    private string _summaryPresetText = string.Empty;
+    private string _summaryCertificationText = string.Empty;
+    private string _certificationStatusText = string.Empty;
+
     // Step progress
     private int _currentStep = 1;
 
@@ -136,6 +146,56 @@ public sealed class AddProviderWizardViewModel : BindableBase
         set => SetProperty(ref _saveStatusBrush, value);
     }
 
+    // ---- Relationship summary ----
+
+    public string SummaryConnectionTypeText
+    {
+        get => _summaryConnectionTypeText;
+        set => SetProperty(ref _summaryConnectionTypeText, value);
+    }
+
+    public string SummaryOperatingModeText
+    {
+        get => _summaryOperatingModeText;
+        set => SetProperty(ref _summaryOperatingModeText, value);
+    }
+
+    public string SummaryScopeText
+    {
+        get => _summaryScopeText;
+        set => SetProperty(ref _summaryScopeText, value);
+    }
+
+    public string SummaryCapabilitiesText
+    {
+        get => _summaryCapabilitiesText;
+        set => SetProperty(ref _summaryCapabilitiesText, value);
+    }
+
+    public string SummaryCredentialText
+    {
+        get => _summaryCredentialText;
+        set => SetProperty(ref _summaryCredentialText, value);
+    }
+
+    public string SummaryPresetText
+    {
+        get => _summaryPresetText;
+        set => SetProperty(ref _summaryPresetText, value);
+    }
+
+    public string SummaryCertificationText
+    {
+        get => _summaryCertificationText;
+        set => SetProperty(ref _summaryCertificationText, value);
+    }
+
+    public string CertificationStatusText
+    {
+        get => _certificationStatusText;
+        set => SetProperty(ref _certificationStatusText, value);
+    }
+
     // ---- Step-progress (computed from CurrentStep) ----
 
     public int CurrentStep
@@ -182,6 +242,32 @@ public sealed class AddProviderWizardViewModel : BindableBase
         DetailCredentialsText = provider.CredentialFields.Length > 0
             ? $"{provider.CredentialFields.Length} required"
             : "None";
+    }
+
+    /// <summary>
+    /// Populates the operator-facing relationship summary shown in the wizard side rail.
+    /// </summary>
+    public void ApplyRelationshipSummary(
+        string providerName,
+        string providerDescription,
+        string connectionType,
+        string operatingMode,
+        string scopeSummary,
+        string capabilitiesSummary,
+        string credentialSummary,
+        string presetSummary,
+        string certificationSummary)
+    {
+        SelectedProviderName = providerName;
+        SelectedProviderDescription = providerDescription;
+        DetailsVisibility = Visibility.Visible;
+        SummaryConnectionTypeText = connectionType;
+        SummaryOperatingModeText = operatingMode;
+        SummaryScopeText = scopeSummary;
+        SummaryCapabilitiesText = capabilitiesSummary;
+        SummaryCredentialText = credentialSummary;
+        SummaryPresetText = presetSummary;
+        SummaryCertificationText = certificationSummary;
     }
 
     /// <summary>Sets credential-step display state based on whether the provider needs credentials.</summary>
@@ -233,5 +319,14 @@ public sealed class AddProviderWizardViewModel : BindableBase
     {
         SaveStatusText  = $"Failed to save: {message}";
         SaveStatusBrush = ErrorBrush;
+    }
+
+    /// <summary>
+    /// Updates the certification callout and the compact summary badge copy.
+    /// </summary>
+    public void SetCertificationStatus(string message, bool success)
+    {
+        CertificationStatusText = message;
+        SummaryCertificationText = success ? "Passed" : "Needs attention";
     }
 }

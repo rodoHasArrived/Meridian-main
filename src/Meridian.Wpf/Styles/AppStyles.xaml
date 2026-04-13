@@ -319,6 +319,14 @@
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
     </Style>
 
+    <Style x:Key="FormButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
+    <Style x:Key="ConsoleButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
     <!-- Form Label -->
     <Style x:Key="FormLabelStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12" />
@@ -369,6 +377,14 @@
     <Style x:Key="BodyTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="13" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+    </Style>
+
+    <Style x:Key="ConsoleTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="ConsoleTextMutedStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+        <Setter Property="FontSize" Value="12" />
     </Style>
 
     <!-- Code/Mono Text Style -->

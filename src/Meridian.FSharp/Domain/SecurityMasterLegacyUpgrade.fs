@@ -236,6 +236,7 @@ module SecurityMasterLegacyUpgrade =
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
+            let preferredTerms = preferredTermsFromClassification terms.Classification
             {
                 SecurityTermModules.empty with
                     EquityBehavior =
@@ -263,6 +264,10 @@ module SecurityMasterLegacyUpgrade =
                                 IsCallable = preferred.CallableDate.IsSome
                                 FirstCallDate = preferred.CallableDate
                                 CallPrice = None
+                                CallSchedule = []
+                                MakeWholeSpreadBps = None
+                                IsPuttable = false
+                                PutSchedule = []
                             })
             }
         | SecurityKind.Option terms ->

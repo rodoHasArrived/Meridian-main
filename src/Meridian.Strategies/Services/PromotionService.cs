@@ -161,7 +161,9 @@ public sealed class PromotionService
             AuditReference: promotionRecord.PromotionId,
             Engine: targetRunType == RunType.Paper ? "BrokerPaper" : "BrokerLive",
             ParameterSet: run.ParameterSet,
-            ParentRunId: run.RunId);
+            ParentRunId: run.RunId,
+            FundProfileId: run.FundProfileId,
+            FundDisplayName: run.FundDisplayName);
 
         await _repository.RecordRunAsync(newRun, ct).ConfigureAwait(false);
 

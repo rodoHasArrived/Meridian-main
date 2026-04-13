@@ -23,7 +23,9 @@ public sealed record StrategyRunEntry(
     string? Engine = null,
     IReadOnlyDictionary<string, string>? ParameterSet = null,
     StrategyRunStatus? TerminalStatus = null,
-    string? ParentRunId = null)
+    string? ParentRunId = null,
+    string? FundProfileId = null,
+    string? FundDisplayName = null)
 {
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType) =>

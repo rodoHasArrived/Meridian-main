@@ -111,7 +111,7 @@ public sealed class RunMatViewModel : BindableBase, IDisposable
     public IRelayCommand NewScriptCommand { get; }
     public IRelayCommand StopRunCommand { get; }
 
-    internal RunMatViewModel(RunMatService runMatService)
+    public RunMatViewModel(RunMatService runMatService)
     {
         _runMatService = runMatService;
         InitializeCommand = new AsyncRelayCommand(InitializeAsync);

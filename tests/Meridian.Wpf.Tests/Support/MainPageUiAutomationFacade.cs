@@ -36,6 +36,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         navigationService.SetServiceProvider(_serviceProvider);
 
         Page = _serviceProvider.GetRequiredService<MainPage>();
+        RunMatUiAutomationFacade.ClearNavigationServiceProviderForTests();
         Page.ApplyTemplate();
         Page.UpdateLayout();
         RunMatUiAutomationFacade.InvokeMainPageLoaded(Page);

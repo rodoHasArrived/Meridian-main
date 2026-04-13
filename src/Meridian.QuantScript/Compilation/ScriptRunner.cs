@@ -23,9 +23,9 @@ public sealed class ScriptRunner : IScriptRunner
         IQuantScriptCompiler compiler,
         IQuantDataContext dataContext,
         PlotQueue plotQueue,
-        Backtesting.Engine.BacktestEngine? backtestEngine,
         IOptions<QuantScriptOptions> options,
-        ILogger<ScriptRunner> logger)
+        ILogger<ScriptRunner> logger,
+        Backtesting.Engine.BacktestEngine? backtestEngine = null)
     {
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));

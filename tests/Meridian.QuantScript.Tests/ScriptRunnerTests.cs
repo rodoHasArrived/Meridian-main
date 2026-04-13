@@ -27,9 +27,9 @@ public sealed class ScriptRunnerTests
             compiler,
             dataContext,
             plotQueue ?? new PlotQueue(),
-            null!,
             Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
-            NullLogger<ScriptRunner>.Instance);
+            NullLogger<ScriptRunner>.Instance,
+            null);
     }
 
     private static IReadOnlyDictionary<string, object?> NoParams =>
@@ -196,9 +196,9 @@ public sealed class ScriptRunnerTests
             compiler,
             dataContext,
             new PlotQueue(),
-            null!,
             Options.Create(shortTimeout),
-            NullLogger<ScriptRunner>.Instance);
+            NullLogger<ScriptRunner>.Instance,
+            null);
 
         // Use a tight spin-loop that respects the thread-pool cancellation token
         // (Thread.Sleep cannot be interrupted, but a spin check can)

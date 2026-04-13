@@ -21,9 +21,9 @@ public partial class OrderBookPage : Page
         WpfServices.ConnectionService connectionService,
         WpfServices.LoggingService loggingService)
     {
-        InitializeComponent();
-
         _viewModel = new OrderBookViewModel(statusService, connectionService, loggingService);
+
+        InitializeComponent();
         DataContext = _viewModel;
 
         // ColumnDefinition.Width does not support data binding — relay via PropertyChanged.

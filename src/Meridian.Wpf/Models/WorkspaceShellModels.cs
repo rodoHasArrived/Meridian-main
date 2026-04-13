@@ -5,6 +5,22 @@ namespace Meridian.Wpf.Models;
 // ── Trading Workspace ───────────────────────────────────────────────────────
 
 /// <summary>
+/// Active run context shared by the workstation shell pages.
+/// </summary>
+public sealed class ActiveRunContext
+{
+    public string RunId { get; set; } = string.Empty;
+    public string StrategyName { get; set; } = string.Empty;
+    public string ModeLabel { get; set; } = string.Empty;
+    public string StatusLabel { get; set; } = string.Empty;
+    public string FundScopeLabel { get; set; } = "Global scope";
+    public string PortfolioPreview { get; set; } = "Portfolio preview unavailable.";
+    public string LedgerPreview { get; set; } = "Ledger preview unavailable.";
+    public string RiskSummary { get; set; } = "Risk summary unavailable.";
+    public bool CanPromoteToPaper { get; set; }
+}
+
+/// <summary>
 /// Display item for a single active position shown in the Trading workspace shell.
 /// </summary>
 public sealed class TradingActivePositionItem
@@ -31,6 +47,7 @@ public sealed class TradingWorkspaceSummary
     public string MaxDrawdownFormatted { get; set; } = "—";
     public string PositionLimitLabel { get; set; } = "—";
     public string OrderRateLabel { get; set; } = "—";
+    public ActiveRunContext? ActiveRunContext { get; set; }
     public IReadOnlyList<TradingActivePositionItem> ActivePositions { get; set; } = [];
 }
 

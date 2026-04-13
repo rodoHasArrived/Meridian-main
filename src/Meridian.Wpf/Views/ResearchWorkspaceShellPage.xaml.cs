@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Meridian.Strategies.Services;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -18,7 +19,6 @@ public partial class ResearchWorkspaceShellPage : Page
 
     private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
-<<<<<<< HEAD
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService _shellContextService;
@@ -31,27 +31,17 @@ public partial class ResearchWorkspaceShellPage : Page
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService,
         WorkspaceShellContextService shellContextService)
-=======
-
-    public ResearchWorkspaceShellPage(
-        NavigationService navigationService,
-        StrategyRunWorkspaceService runService)
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     {
         InitializeComponent();
         _navigationService = navigationService;
         _runService = runService;
-<<<<<<< HEAD
         _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
         _shellContextService = shellContextService;
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-<<<<<<< HEAD
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged += OnActiveRunContextChanged;
         _shellContextService.SignalsChanged += OnSignalsChanged;
@@ -61,15 +51,12 @@ public partial class ResearchWorkspaceShellPage : Page
             _operatingContextService.ActiveContextChanged += OnOperatingContextChanged;
         }
 
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         await RefreshAsync();
         await RestoreDockLayoutAsync();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-<<<<<<< HEAD
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         _runService.ActiveRunContextChanged -= OnActiveRunContextChanged;
         _shellContextService.SignalsChanged -= OnSignalsChanged;
@@ -78,8 +65,6 @@ public partial class ResearchWorkspaceShellPage : Page
             _operatingContextService.WindowModeChanged -= OnSignalsChanged;
             _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
         }
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         _ = SaveDockLayoutAsync();
     }
 
@@ -117,6 +102,9 @@ public partial class ResearchWorkspaceShellPage : Page
                 PromotionCandidatesList.ItemsSource = null;
                 NoPromotionsText.Visibility = Visibility.Visible;
             }
+
+            UpdateActiveRunContext(await _runService.GetActiveRunContextAsync());
+            CommandBar.CommandGroup = BuildCommandGroup();
         }
         catch (Exception ex)
         {
@@ -124,7 +112,6 @@ public partial class ResearchWorkspaceShellPage : Page
         }
     }
 
-<<<<<<< HEAD
     private void UpdateActiveRunContext(ActiveRunContext? activeContext)
     {
         if (activeContext is null)
@@ -186,21 +173,6 @@ public partial class ResearchWorkspaceShellPage : Page
         {
             WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to restore dock layout: {ex.Message}");
             await LoadDefaultDockingAsync();
-=======
-    // ── AvalonDock layout persistence ─────────────────────────────────────
-
-    private async System.Threading.Tasks.Task RestoreDockLayoutAsync()
-    {
-        try
-        {
-            var xml = await WorkspaceService.Instance.GetDockLayoutAsync(WorkspaceId);
-            if (!string.IsNullOrWhiteSpace(xml))
-                ResearchDockManager.LoadLayout(xml);
-        }
-        catch (Exception ex)
-        {
-            LoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to restore dock layout: {ex.Message}");
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         }
     }
 
@@ -208,17 +180,11 @@ public partial class ResearchWorkspaceShellPage : Page
     {
         try
         {
-<<<<<<< HEAD
             var layout = ResearchDockManager.CaptureLayoutState("research-backtest-studio", "Backtest Studio");
             layout.OperatingContextKey = GetLayoutScopeKey();
             layout.WindowMode = GetWindowMode();
             layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
             await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
-=======
-            var xml = ResearchDockManager.SaveLayout();
-            if (!string.IsNullOrWhiteSpace(xml))
-                await WorkspaceService.Instance.SaveDockLayoutAsync(WorkspaceId, xml);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
         }
         catch (Exception ex)
         {
@@ -226,7 +192,6 @@ public partial class ResearchWorkspaceShellPage : Page
         }
     }
 
-<<<<<<< HEAD
     private async Task LoadDefaultDockingAsync()
     {
         if (GetWindowMode() == BoundedWindowMode.WorkbenchPreset &&
@@ -255,13 +220,13 @@ public partial class ResearchWorkspaceShellPage : Page
             OpenWorkspacePage("LeanIntegration", PaneDropAction.SplitBelow);
         }
     }
-=======
-    // ── Drop handler ──────────────────────────────────────────────────────
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
     {
-<<<<<<< HEAD
+        var pageTag = e.PageTag;
+        object? parameter = null;
+        var action = e.Action;
+
         try
         {
             var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
@@ -272,17 +237,30 @@ public partial class ResearchWorkspaceShellPage : Page
             WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
             _navigationService.NavigateTo(pageTag, parameter);
         }
-=======
-        // For now, dropped page tags navigate in the main navigation service.
-        // A future iteration will resolve pages via DI and embed them directly
-        // as LayoutDocument content in the dock manager.
-        _navigationService.NavigateTo(e.PageTag);
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+    }
+
+    private async Task OpenActiveRunPageAsync(string pageTag, PaneDropAction action)
+    {
+        var activeRun = await _runService.GetActiveRunContextAsync();
+        OpenWorkspacePage(pageTag, action, activeRun?.RunId);
+    }
+
+    private void OpenWorkspacePage(string pageTag, PaneDropAction action, object? parameter = null)
+    {
+        try
+        {
+            var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
+            ResearchDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
+        }
+        catch (Exception ex)
+        {
+            WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
+            _navigationService.NavigateTo(pageTag, parameter);
+        }
     }
 
     // ── Quick Action Handlers ─────────────────────────────────────────────
 
-<<<<<<< HEAD
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
     {
         switch (e.Command.Id)
@@ -328,10 +306,6 @@ public partial class ResearchWorkspaceShellPage : Page
                 break;
         }
     }
-=======
-    private void NewBacktest_Click(object sender, RoutedEventArgs e)
-        => _navigationService.NavigateTo("Backtest");
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
     private void OpenRunMat_Click(object sender, RoutedEventArgs e)
         => _navigationService.NavigateTo("RunMat");
@@ -341,6 +315,69 @@ public partial class ResearchWorkspaceShellPage : Page
 
     private void OpenStrategyRuns_Click(object sender, RoutedEventArgs e)
         => _navigationService.NavigateTo("StrategyRuns");
+
+    private async void PromoteActiveRun_Click(object sender, RoutedEventArgs e)
+    {
+        var activeRun = await _runService.GetActiveRunContextAsync();
+        if (activeRun is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var promotionService = App.Services.GetService(typeof(PromotionService)) as PromotionService;
+            if (promotionService is null)
+            {
+                OpenWorkspacePage("RunDetail", PaneDropAction.SplitRight, activeRun.RunId);
+                return;
+            }
+
+            var result = await promotionService.ApproveAsync(new PromotionApprovalRequest(
+                RunId: activeRun.RunId,
+                ReviewNotes: "Promoted from research workspace shell.",
+                ApprovedBy: Environment.UserName,
+                ApprovalReason: "Research workstation promotion"));
+
+            if (result.Success && !string.IsNullOrWhiteSpace(result.NewRunId))
+            {
+                await _runService.SetActiveRunContextAsync(result.NewRunId);
+                _navigationService.NavigateTo("TradingShell", result.NewRunId);
+            }
+            else
+            {
+                OpenWorkspacePage("RunDetail", PaneDropAction.SplitRight, activeRun.RunId);
+            }
+
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to promote active run: {ex.Message}");
+            OpenWorkspacePage("RunDetail", PaneDropAction.SplitRight, activeRun.RunId);
+        }
+    }
+
+    private async void OpenTradingCockpit_Click(object sender, RoutedEventArgs e)
+    {
+        var activeRun = await _runService.GetActiveRunContextAsync();
+        if (activeRun is null)
+        {
+            return;
+        }
+
+        await _runService.SetActiveRunContextAsync(activeRun.RunId);
+        _navigationService.NavigateTo("TradingShell", activeRun.RunId);
+    }
+
+    private async void OpenRunDetailDocked_Click(object sender, RoutedEventArgs e)
+        => await OpenActiveRunPageAsync("RunDetail", PaneDropAction.SplitRight);
+
+    private async void OpenPortfolioInspector_Click(object sender, RoutedEventArgs e)
+        => await OpenActiveRunPageAsync("RunPortfolio", PaneDropAction.SplitBelow);
+
+    private async void OpenLedgerInspector_Click(object sender, RoutedEventArgs e)
+        => await OpenActiveRunPageAsync("RunLedger", PaneDropAction.OpenTab);
 
     private void OpenAccountingImpact_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage("FundTrialBalance", PaneDropAction.OpenTab);
@@ -361,7 +398,6 @@ public partial class ResearchWorkspaceShellPage : Page
             _navigationService.NavigateTo("RunDetail", runId);
         }
     }
-<<<<<<< HEAD
 
     private async void OpenRunFromHistory_Click(object sender, RoutedEventArgs e)
     {
@@ -504,6 +540,4 @@ public partial class ResearchWorkspaceShellPage : Page
         "floating" => PaneDropAction.FloatWindow,
         _ => PaneDropAction.Replace
     };
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 }

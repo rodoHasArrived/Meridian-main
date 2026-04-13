@@ -31,9 +31,8 @@ public sealed class WorkstationEndpointsTests
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters = { new JsonStringEnumConverter() }
     };
+
     [Fact]
-<<<<<<< HEAD
-=======
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
     {
         await using var app = await CreateAppAsync(services =>
@@ -278,7 +277,6 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
     public async Task MapWorkstationEndpoints_ReconciliationRoutes_ShouldCreateAndFetchRun()
     {
         await using var app = await CreateAppAsync(services =>
