@@ -10,12 +10,14 @@ namespace Meridian.Backtesting;
 /// <summary>
 /// Coordinates Backtest Studio runs across multiple engines while persisting them through the shared strategy-run model.
 /// </summary>
-public sealed class BacktestStudioRunOrchestrator
+public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
 {
     private readonly IStrategyRepository _repository;
     private readonly ILogger<BacktestStudioRunOrchestrator> _logger;
     private readonly IReadOnlyDictionary<StrategyRunEngine, IBacktestStudioEngine> _engines;
     private readonly ConcurrentDictionary<string, BacktestStudioRunHandle> _runHandles = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Task> _monitorTasks = new(StringComparer.Ordinal);
+    private readonly CancellationTokenSource _shutdown = new();
 
     public BacktestStudioRunOrchestrator(
         IStrategyRepository repository,
@@ -35,6 +37,7 @@ public sealed class BacktestStudioRunOrchestrator
     public async Task<BacktestStudioRunHandle> StartAsync(BacktestStudioRunRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ObjectDisposedException.ThrowIf(_shutdown.IsCancellationRequested, this);
 
         var engine = ResolveEngine(request.Engine);
         var handle = await engine.StartAsync(request, ct).ConfigureAwait(false);
@@ -52,7 +55,14 @@ public sealed class BacktestStudioRunOrchestrator
         await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
         _runHandles[handle.RunId] = handle;
 
-        _ = MonitorRunCompletionAsync(entry, handle, engine);
+        var monitorCts = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token, ct);
+        var monitorTask = MonitorRunCompletionAsync(entry, handle, engine, monitorCts);
+        if (!_monitorTasks.TryAdd(handle.RunId, monitorTask))
+        {
+            monitorCts.Cancel();
+            monitorCts.Dispose();
+            throw new InvalidOperationException($"Backtest Studio run '{handle.RunId}' is already being monitored.");
+        }
 
         _logger.LogInformation(
             "Backtest Studio run started: {RunId} ({StrategyId}, engine {Engine})",
@@ -87,25 +97,87 @@ public sealed class BacktestStudioRunOrchestrator
         return engine.GetCanonicalResultAsync(handle.EngineRunHandle, ct);
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (_shutdown.IsCancellationRequested)
+        {
+            return;
+        }
+
+        _shutdown.Cancel();
+
+        var monitors = _monitorTasks.Values.ToArray();
+        try
+        {
+            await Task.WhenAll(monitors).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_shutdown.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            _shutdown.Dispose();
+        }
+    }
+
     private async Task MonitorRunCompletionAsync(
         StrategyRunEntry initialEntry,
         BacktestStudioRunHandle handle,
-        IBacktestStudioEngine engine)
+        IBacktestStudioEngine engine,
+        CancellationTokenSource monitorCts)
     {
+        var waitToken = monitorCts.Token;
+        var persistenceToken = _shutdown.Token;
+
         try
         {
-            var result = await engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None).ConfigureAwait(false);
-            var completed = initialEntry.Complete(result);
-            await _repository.RecordRunAsync(completed, CancellationToken.None).ConfigureAwait(false);
+            var result = await engine.GetCanonicalResultAsync(handle.EngineRunHandle, waitToken).ConfigureAwait(false);
+            await TryPersistTerminalStateAsync(
+                initialEntry.Complete(result),
+                handle.RunId,
+                terminalState: "completed",
+                persistenceToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
-            await _repository.RecordRunAsync(initialEntry.Cancel(), CancellationToken.None).ConfigureAwait(false);
+            await TryPersistTerminalStateAsync(
+                initialEntry.Cancel(),
+                handle.RunId,
+                terminalState: "cancelled",
+                persistenceToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Backtest Studio run {RunId} failed while awaiting engine completion.", handle.RunId);
-            await _repository.RecordRunAsync(initialEntry.Fail(), CancellationToken.None).ConfigureAwait(false);
+            await TryPersistTerminalStateAsync(
+                initialEntry.Fail(),
+                handle.RunId,
+                terminalState: "failed",
+                persistenceToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            _monitorTasks.TryRemove(handle.RunId, out _);
+            monitorCts.Dispose();
+        }
+    }
+
+    private async Task TryPersistTerminalStateAsync(
+        StrategyRunEntry entry,
+        string runId,
+        string terminalState,
+        CancellationToken ct)
+    {
+        try
+        {
+            await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            _logger.LogInformation(
+                "Backtest Studio run {RunId} reached terminal state '{TerminalState}', but persistence stopped during shutdown.",
+                runId,
+                terminalState);
         }
     }
 

@@ -10,6 +10,9 @@ public sealed class PaperSessionPersistenceServiceTests
     private static PaperSessionPersistenceService Build() =>
         new(NullLogger<PaperSessionPersistenceService>.Instance);
 
+    private static PaperSessionPersistenceService Build(IPaperSessionStore store) =>
+        new(NullLogger<PaperSessionPersistenceService>.Instance, store);
+
     // ---- CreateSessionAsync ----
 
     [Fact]
@@ -212,10 +215,10 @@ public sealed class PaperSessionPersistenceServiceTests
         portfolio.Should().BeNull();
     }
 
-    // ---- RecordOrderUpdate ----
+    // ---- RecordOrderUpdateAsync ----
 
     [Fact]
-    public async Task RecordOrderUpdate_WhenSessionActive_AppendsToOrderHistory()
+    public async Task RecordOrderUpdateAsync_WhenSessionActive_AppendsToOrderHistory()
     {
         var service = Build();
         var dto = new CreatePaperSessionDto("strat-8", null, 100_000m);
@@ -231,14 +234,14 @@ public sealed class PaperSessionPersistenceServiceTests
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        service.RecordOrderUpdate(summary.SessionId, orderState);
+        await service.RecordOrderUpdateAsync(summary.SessionId, orderState);
 
         var detail = service.GetSession(summary.SessionId);
         detail!.OrderHistory.Should().ContainSingle(o => o.OrderId == "order-1");
     }
 
     [Fact]
-    public async Task RecordOrderUpdate_MultipleUpdates_AppendsAllInOrder()
+    public async Task RecordOrderUpdateAsync_MultipleUpdates_AppendsAllInOrder()
     {
         var service = Build();
         var dto = new CreatePaperSessionDto("strat-9", null, 100_000m);
@@ -265,8 +268,8 @@ public sealed class PaperSessionPersistenceServiceTests
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        service.RecordOrderUpdate(summary.SessionId, order1);
-        service.RecordOrderUpdate(summary.SessionId, order2);
+        await service.RecordOrderUpdateAsync(summary.SessionId, order1);
+        await service.RecordOrderUpdateAsync(summary.SessionId, order2);
 
         var detail = service.GetSession(summary.SessionId);
         detail!.OrderHistory.Should().HaveCount(2);
@@ -275,7 +278,7 @@ public sealed class PaperSessionPersistenceServiceTests
     }
 
     [Fact]
-    public void RecordOrderUpdate_WhenSessionNotFound_DoesNotThrow()
+    public async Task RecordOrderUpdateAsync_WhenSessionNotFound_DoesNotThrow()
     {
         var service = Build();
         var orderState = new OrderState
@@ -290,9 +293,53 @@ public sealed class PaperSessionPersistenceServiceTests
         };
 
         // Should silently ignore unknown session IDs
-        var action = () => service.RecordOrderUpdate("nonexistent-session", orderState);
+        Func<Task> action = () => service.RecordOrderUpdateAsync("nonexistent-session", orderState);
 
-        action.Should().NotThrow();
+        await action.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task RecordOrderUpdateAsync_WhenStoreFails_PropagatesException()
+    {
+        var service = Build(new ThrowingOrderUpdateStore(new IOException("disk full")));
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-order-fail", null, 10_000m));
+        var orderState = new OrderState
+        {
+            OrderId = "order-fail",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        Func<Task> act = () => service.RecordOrderUpdateAsync(summary.SessionId, orderState);
+
+        await act.Should().ThrowAsync<IOException>();
+    }
+
+    [Fact]
+    public async Task RecordOrderUpdateAsync_WhenCancelled_ThrowsOperationCanceledException()
+    {
+        var service = Build(new ThrowingOrderUpdateStore());
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-order-cancel", null, 10_000m));
+        var orderState = new OrderState
+        {
+            OrderId = "order-cancel",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            Status = OrderStatus.Accepted,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        Func<Task> act = () => service.RecordOrderUpdateAsync(summary.SessionId, orderState, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 }
 
@@ -500,10 +547,7 @@ public sealed class PaperSessionDurablePersistenceTests : IDisposable
             Status = OrderStatus.Accepted,
             CreatedAt = DateTimeOffset.UtcNow
         };
-        svc1.RecordOrderUpdate(summary.SessionId, order);
-
-        // Give the fire-and-forget a moment to complete.
-        await Task.Delay(50);
+        await svc1.RecordOrderUpdateAsync(summary.SessionId, order);
 
         var svc2 = Build(store);
         await svc2.InitialiseAsync();
@@ -701,4 +745,51 @@ public sealed class PaperSessionReplayTests : IDisposable
 
         verification.Should().BeNull();
     }
+}
+
+internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
+{
+    private readonly Exception? _appendException;
+
+    public ThrowingOrderUpdateStore(Exception? appendException = null)
+    {
+        _appendException = appendException;
+    }
+
+    public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (_appendException is not null)
+        {
+            return Task.FromException(_appendException);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task SaveLedgerJournalAsync(
+        string sessionId,
+        IReadOnlyList<PersistedJournalEntryDto> entries,
+        CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([]);
+
+    public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>([]);
+
+    public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<OrderState>>([]);
+
+    public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
 }

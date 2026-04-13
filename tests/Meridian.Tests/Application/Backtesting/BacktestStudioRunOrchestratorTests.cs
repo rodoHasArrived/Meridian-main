@@ -17,7 +17,7 @@ public sealed class BacktestStudioRunOrchestratorTests
     {
         var store = new StrategyRunStore();
         var engine = new StubBacktestStudioEngine();
-        var orchestrator = new BacktestStudioRunOrchestrator(
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
             store,
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
@@ -53,7 +53,7 @@ public sealed class BacktestStudioRunOrchestratorTests
     {
         var store = new StrategyRunStore();
         var engine = new StubBacktestStudioEngine();
-        var orchestrator = new BacktestStudioRunOrchestrator(
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
             store,
             [engine],
             NullLogger<BacktestStudioRunOrchestrator>.Instance);
@@ -74,6 +74,61 @@ public sealed class BacktestStudioRunOrchestratorTests
 
         failed.EndedAt.Should().NotBeNull();
         failed.TerminalStatus.Should().Be(StrategyRunStatus.Failed);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenCallerCancels_RecordsCancelledRun()
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store,
+            [engine],
+            NullLogger<BacktestStudioRunOrchestrator>.Instance);
+
+        using var cts = new CancellationTokenSource();
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "strategy-3",
+            StrategyName: "Momentum",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: BuildRequest());
+
+        var handle = await orchestrator.StartAsync(request, cts.Token);
+        await engine.WaitForMonitorAsync(handle.EngineRunHandle);
+
+        cts.Cancel();
+
+        var cancelled = await WaitForRunAsync(
+            store,
+            "strategy-3",
+            run => run.TerminalStatus == StrategyRunStatus.Cancelled);
+
+        cancelled.RunId.Should().Be(handle.RunId);
+        cancelled.EndedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task DisposeAsync_CancelsInFlightMonitor()
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        var orchestrator = new BacktestStudioRunOrchestrator(
+            store,
+            [engine],
+            NullLogger<BacktestStudioRunOrchestrator>.Instance);
+
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "strategy-4",
+            StrategyName: "Carry",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: BuildRequest());
+
+        var handle = await orchestrator.StartAsync(request);
+        await engine.WaitForMonitorAsync(handle.EngineRunHandle);
+
+        await orchestrator.DisposeAsync();
+
+        (await engine.WaitForMonitorCancellationAsync(handle.EngineRunHandle)).Should().BeTrue();
     }
 
     private static async Task<StrategyRunEntry> WaitForRunAsync(
@@ -137,6 +192,8 @@ public sealed class BacktestStudioRunOrchestratorTests
     {
         private readonly Dictionary<string, TaskCompletionSource<BacktestResult>> _results = new(StringComparer.Ordinal);
         private readonly Dictionary<string, BacktestStudioRunStatus> _statuses = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TaskCompletionSource<bool>> _monitorStarted = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, TaskCompletionSource<bool>> _monitorCancelled = new(StringComparer.Ordinal);
 
         public StrategyRunEngine Engine => StrategyRunEngine.MeridianNative;
 
@@ -146,6 +203,8 @@ public sealed class BacktestStudioRunOrchestratorTests
             var engineRunHandle = Guid.NewGuid().ToString("N");
 
             _results[engineRunHandle] = new TaskCompletionSource<BacktestResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _monitorStarted[engineRunHandle] = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _monitorCancelled[engineRunHandle] = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             _statuses[engineRunHandle] = new BacktestStudioRunStatus(
                 runId,
                 StrategyRunStatus.Running,
@@ -160,8 +219,22 @@ public sealed class BacktestStudioRunOrchestratorTests
         public Task<BacktestStudioRunStatus> GetStatusAsync(string runHandle, CancellationToken ct) =>
             Task.FromResult(_statuses[runHandle]);
 
-        public Task<BacktestResult> GetCanonicalResultAsync(string runHandle, CancellationToken ct) =>
-            _results[runHandle].Task.WaitAsync(ct);
+        public async Task<BacktestResult> GetCanonicalResultAsync(string runHandle, CancellationToken ct)
+        {
+            _monitorStarted[runHandle].TrySetResult(true);
+
+            try
+            {
+                return await _results[runHandle].Task.WaitAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                var status = _statuses[runHandle];
+                _statuses[runHandle] = status with { Status = StrategyRunStatus.Cancelled, Message = "Cancelled" };
+                _monitorCancelled[runHandle].TrySetResult(true);
+                throw;
+            }
+        }
 
         public void Complete(string runHandle, BacktestResult result)
         {
@@ -176,5 +249,9 @@ public sealed class BacktestStudioRunOrchestratorTests
             _statuses[runHandle] = status with { Status = StrategyRunStatus.Failed, Message = exception.Message };
             _results[runHandle].TrySetException(exception);
         }
+
+        public Task WaitForMonitorAsync(string runHandle) => _monitorStarted[runHandle].Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        public Task<bool> WaitForMonitorCancellationAsync(string runHandle) => _monitorCancelled[runHandle].Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 }

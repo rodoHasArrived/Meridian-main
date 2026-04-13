@@ -262,23 +262,29 @@ public sealed class JsonlStorageSink : IStorageSink
         await _flushGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var tasks = new List<Task>();
-            foreach (var kvp in _buffers)
-            {
-                if (kvp.Value.Count > 0)
-                {
-                    tasks.Add(FlushBufferAsync(kvp.Key, kvp.Value, ct));
-                }
-            }
-
-            if (tasks.Count > 0)
-            {
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-            }
+            await FlushBufferedBatchesUnderGateAsync(ct).ConfigureAwait(false);
         }
         finally
         {
             _flushGate.Release();
+        }
+    }
+
+    // Caller must hold _flushGate before invoking this helper.
+    private async Task FlushBufferedBatchesUnderGateAsync(CancellationToken ct)
+    {
+        var tasks = new List<Task>();
+        foreach (var kvp in _buffers)
+        {
+            if (kvp.Value.Count > 0)
+            {
+                tasks.Add(FlushBufferAsync(kvp.Key, kvp.Value, ct));
+            }
+        }
+
+        if (tasks.Count > 0)
+        {
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
     }
 
@@ -353,18 +359,7 @@ public sealed class JsonlStorageSink : IStorageSink
                 await _flushGate.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 try
                 {
-                    var tasks = new List<Task>();
-                    foreach (var kvp in _buffers)
-                    {
-                        if (kvp.Value.Count > 0)
-                        {
-                            tasks.Add(FlushBufferAsync(kvp.Key, kvp.Value, CancellationToken.None));
-                        }
-                    }
-                    if (tasks.Count > 0)
-                    {
-                        await Task.WhenAll(tasks).ConfigureAwait(false);
-                    }
+                    await FlushBufferedBatchesUnderGateAsync(CancellationToken.None).ConfigureAwait(false);
                 }
                 finally
                 {

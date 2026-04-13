@@ -34,7 +34,18 @@ public sealed class SymbolMappingServiceTests
     }
 
     [Fact]
-    public void Constructor_UsesConfiguredPersistencePathWhenPresent()
+    public void Constructor_DoesNotLoadConfigWhenBuildingService()
+    {
+        using var fixture = new PathFixture("mdc-symbol-map-constructor");
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+
+        _ = new SymbolMappingService(configService);
+
+        configService.LoadConfigCallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task LoadAsync_UsesConfiguredPersistencePathWhenPresent()
     {
         using var fixture = new PathFixture("mdc-symbol-map-path");
         File.WriteAllText(
@@ -52,9 +63,25 @@ public sealed class SymbolMappingServiceTests
         var config = new AppConfigDto { DataRoot = "retained-data" };
         var service = new SymbolMappingService(new FixedConfigService(fixture.ConfigPath, config));
 
-        var path = GetPrivateField<string>(service, "_mappingsFilePath");
+        await service.LoadAsync();
+
+        var path = GetPrivateField<string?>(service, "_mappingsFilePath");
 
         path.Should().Be(Path.Combine(fixture.RootPath, "state", "symbol-mappings.json"));
+    }
+
+    [Fact]
+    public async Task LoadAsync_WhenConfigLoadFails_FallsBackToDefaultDataRoot()
+    {
+        using var fixture = new PathFixture("mdc-symbol-map-fallback");
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+        var service = new SymbolMappingService(configService);
+
+        await service.LoadAsync();
+
+        var path = GetPrivateField<string?>(service, "_mappingsFilePath");
+        path.Should().Be(Path.Combine(fixture.RootPath, "data", "_config", "symbol-mappings.json"));
+        configService.LoadConfigCallCount.Should().Be(1);
     }
 
     // ── KnownProviders ───────────────────────────────────────────────

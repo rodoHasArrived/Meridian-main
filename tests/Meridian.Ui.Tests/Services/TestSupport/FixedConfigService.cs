@@ -40,6 +40,45 @@ internal sealed class FixedConfigService : IConfigService
         => Task.FromResult(new DiagnosticValidationResult { IsValid = true });
 }
 
+internal sealed class ThrowingLoadConfigService : IConfigService
+{
+    public ThrowingLoadConfigService(string configPath)
+    {
+        ConfigPath = configPath;
+    }
+
+    public int LoadConfigCallCount { get; private set; }
+
+    public string ConfigPath { get; }
+
+    public Task<AppConfigDto?> LoadConfigAsync(CancellationToken ct = default)
+    {
+        LoadConfigCallCount++;
+        throw new InvalidOperationException("LoadConfigAsync should not be called for this path resolution flow.");
+    }
+
+    public Task SaveConfigAsync(AppConfigDto config, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SaveDataSourceAsync(string dataSource, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SaveAlpacaOptionsAsync(AlpacaOptionsDto options, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SaveStorageConfigAsync(string dataRoot, bool compress, StorageConfigDto storage, CancellationToken ct = default) => Task.CompletedTask;
+    public Task AddOrUpdateSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default) => Task.CompletedTask;
+    public Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default) => Task.CompletedTask;
+    public Task DeleteSymbolAsync(string symbol, CancellationToken ct = default) => Task.CompletedTask;
+    public Task<DataSourceConfigDto[]> GetDataSourcesAsync(CancellationToken ct = default) => Task.FromResult(Array.Empty<DataSourceConfigDto>());
+    public Task<DataSourcesConfigDto> GetDataSourcesConfigAsync(CancellationToken ct = default) => Task.FromResult(new DataSourcesConfigDto());
+    public Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default) => Task.CompletedTask;
+    public Task DeleteDataSourceAsync(string id, CancellationToken ct = default) => Task.CompletedTask;
+    public Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default) => Task.CompletedTask;
+    public Task ToggleDataSourceAsync(string id, bool enabled, CancellationToken ct = default) => Task.CompletedTask;
+    public Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default) => Task.CompletedTask;
+    public Task<AppSettings> GetAppSettingsAsync(CancellationToken ct = default) => Task.FromResult(new AppSettings());
+    public Task SaveAppSettingsAsync(AppSettings settings, CancellationToken ct = default) => Task.CompletedTask;
+    public Task UpdateServiceUrlAsync(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60, CancellationToken ct = default) => Task.CompletedTask;
+    public Task InitializeAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task<DiagnosticValidationResult> ValidateConfigAsync(CancellationToken ct = default)
+        => Task.FromResult(new DiagnosticValidationResult { IsValid = true });
+}
+
 internal sealed class PathFixture : IDisposable
 {
     public PathFixture(string prefix)

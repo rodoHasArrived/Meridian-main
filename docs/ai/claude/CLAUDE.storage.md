@@ -115,6 +115,10 @@ The storage system comprises **61 files** across multiple subsystems.
 | `Storage/Maintenance/IMaintenanceExecutionHistory.cs` | Execution history interface |
 | `Storage/Maintenance/ArchiveMaintenanceModels.cs` | Maintenance models |
 
+Maintenance execution history and schedule metadata are part of the execution completion contract.
+`ScheduledArchiveMaintenanceService` should await `MaintenanceExecutionHistory` and `ArchiveMaintenanceScheduleManager` persistence before a run is treated as queued, started, or finished.
+Avoid fire-and-forget persistence and avoid `CancellationToken.None` for shutdown-sensitive maintenance metadata writes.
+
 ### Interfaces (5 files)
 | File | Purpose |
 |------|---------|
@@ -187,6 +191,8 @@ Meridian resolves storage roots in two stages:
 For the installed WPF desktop host, the active config file is `%LocalAppData%\Meridian\appsettings.json`, so relative `DataRoot` values land outside the install directory by default. The repository `config/appsettings.json` file remains the normal CLI, server, and local development config surface.
 
 Legacy desktop configs that still carry `Storage.BaseDirectory` should be treated as migration input only. New guidance and new config writes should prefer top-level `DataRoot`.
+Wizard review/save flows should serialize through `AppConfigJsonOptions.Write` and persist through `ConfigStore` so the preview JSON, the saved file, and the resolved active config path stay aligned.
+Paper-session order history is part of the session continuity contract; await the durable order-history append before treating an update as committed.
 
 ### AppConfig Excerpt
 

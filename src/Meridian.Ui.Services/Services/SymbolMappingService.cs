@@ -15,8 +15,10 @@ public sealed class SymbolMappingService
     public static SymbolMappingService Instance => _instance.Value;
 
     private readonly IConfigService _configService;
-    private readonly string _mappingsFilePath;
     private readonly string _legacyMappingsFilePath;
+    private readonly Lock _pathInitializationLock = new();
+    private Task? _pathInitializationTask;
+    private string? _mappingsFilePath;
     private SymbolMappingsConfig _config = new();
 
     // Use centralized JSON options to avoid duplication across services
@@ -49,7 +51,6 @@ public sealed class SymbolMappingService
     internal SymbolMappingService(IConfigService configService)
     {
         _configService = configService;
-        _mappingsFilePath = ResolveMappingsFilePath();
         _legacyMappingsFilePath = Path.Combine(AppContext.BaseDirectory, "data", "_config", "symbol-mappings.json");
     }
 
@@ -60,10 +61,11 @@ public sealed class SymbolMappingService
     {
         try
         {
-            var loadPath = _mappingsFilePath;
+            var mappingsFilePath = await GetMappingsFilePathAsync(ct);
+            var loadPath = mappingsFilePath;
             var migratedFromLegacy = false;
             if (!File.Exists(loadPath) &&
-                !PathsEqual(_mappingsFilePath, _legacyMappingsFilePath) &&
+                !PathsEqual(mappingsFilePath, _legacyMappingsFilePath) &&
                 File.Exists(_legacyMappingsFilePath))
             {
                 loadPath = _legacyMappingsFilePath;
@@ -101,14 +103,15 @@ public sealed class SymbolMappingService
     {
         try
         {
-            var directory = Path.GetDirectoryName(_mappingsFilePath);
+            var mappingsFilePath = await GetMappingsFilePathAsync(ct);
+            var directory = Path.GetDirectoryName(mappingsFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
             var json = JsonSerializer.Serialize(_config, JsonOptions);
-            await File.WriteAllTextAsync(_mappingsFilePath, json);
+            await File.WriteAllTextAsync(mappingsFilePath, json, ct);
             MappingsChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
@@ -158,7 +161,7 @@ public sealed class SymbolMappingService
         }
 
         _config.Mappings = mappings.ToArray();
-        await SaveAsync();
+        await SaveAsync(ct);
     }
 
     /// <summary>
@@ -170,7 +173,7 @@ public sealed class SymbolMappingService
         mappings.RemoveAll(m =>
             string.Equals(m.CanonicalSymbol, canonicalSymbol, StringComparison.OrdinalIgnoreCase));
         _config.Mappings = mappings.ToArray();
-        await SaveAsync();
+        await SaveAsync(ct);
     }
 
     /// <summary>
@@ -329,7 +332,7 @@ public sealed class SymbolMappingService
                 }
             }
 
-            await AddOrUpdateMappingAsync(mapping);
+            await AddOrUpdateMappingAsync(mapping, ct);
             imported++;
         }
 
@@ -411,35 +414,50 @@ public sealed class SymbolMappingService
         return mapping;
     }
 
-    private string ResolveMappingsFilePath()
+    private async Task<string> GetMappingsFilePathAsync(CancellationToken ct)
     {
-        var config = TryLoadConfig();
-        var configuredPersistencePath = TryReadConfiguredPersistencePath();
-        if (!string.IsNullOrWhiteSpace(configuredPersistencePath))
-        {
-            return MeridianPathDefaults.ResolvePathFromConfigBase(
-                _configService.ConfigPath,
-                configuredPersistencePath,
-                Path.Combine(MeridianPathDefaults.DefaultDataRoot, "_config", "symbol-mappings.json"));
-        }
-
-        var dataRoot = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, config?.DataRoot);
-        return Path.Combine(dataRoot, "_config", "symbol-mappings.json");
+        await EnsurePathsResolvedAsync(ct);
+        return _mappingsFilePath!;
     }
 
-    private AppConfig? TryLoadConfig()
+    private async Task EnsurePathsResolvedAsync(CancellationToken ct)
     {
+        Task initializationTask;
+        lock (_pathInitializationLock)
+        {
+            _pathInitializationTask ??= InitialisePathsAsync(CancellationToken.None);
+            initializationTask = _pathInitializationTask;
+        }
+
+        await initializationTask.WaitAsync(ct);
+    }
+
+    private async Task InitialisePathsAsync(CancellationToken ct)
+    {
+        AppConfig? config = null;
         try
         {
-            return _configService.LoadConfigAsync().GetAwaiter().GetResult();
+            config = await _configService.LoadConfigAsync(ct);
         }
         catch
         {
-            return null;
         }
+
+        var configuredPersistencePath = await TryReadConfiguredPersistencePathAsync(ct);
+        if (!string.IsNullOrWhiteSpace(configuredPersistencePath))
+        {
+            _mappingsFilePath = MeridianPathDefaults.ResolvePathFromConfigBase(
+                _configService.ConfigPath,
+                configuredPersistencePath,
+                Path.Combine(MeridianPathDefaults.DefaultDataRoot, "_config", "symbol-mappings.json"));
+            return;
+        }
+
+        var dataRoot = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, config?.DataRoot);
+        _mappingsFilePath = Path.Combine(dataRoot, "_config", "symbol-mappings.json");
     }
 
-    private string? TryReadConfiguredPersistencePath()
+    private async Task<string?> TryReadConfiguredPersistencePathAsync(CancellationToken ct)
     {
         try
         {
@@ -448,7 +466,8 @@ public sealed class SymbolMappingService
                 return null;
             }
 
-            using var document = JsonDocument.Parse(File.ReadAllText(_configService.ConfigPath));
+            var json = await File.ReadAllTextAsync(_configService.ConfigPath, ct);
+            using var document = JsonDocument.Parse(json);
             if (!TryGetProperty(document.RootElement, "dataSources", out var dataSources) ||
                 dataSources.ValueKind != JsonValueKind.Object ||
                 !TryGetProperty(dataSources, "symbolMappings", out var symbolMappings) ||
@@ -464,6 +483,10 @@ public sealed class SymbolMappingService
         catch (IOException)
         {
             return null;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (UnauthorizedAccessException)
         {

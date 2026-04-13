@@ -28,16 +28,43 @@ public sealed class CollectionSessionServiceTests
     }
 
     [Fact]
-    public void Constructor_UsesResolvedDataRootForSessionsFilePath()
+    public void Constructor_DoesNotLoadConfigWhenBuildingService()
+    {
+        using var fixture = new PathFixture("mdc-session-constructor");
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+
+        _ = new CollectionSessionService(configService, NotificationService.Instance);
+
+        configService.LoadConfigCallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task LoadSessionsAsync_UsesResolvedDataRootForSessionsFilePath()
     {
         using var fixture = new PathFixture("mdc-session-path");
         var service = new CollectionSessionService(
             new FixedConfigService(fixture.ConfigPath, new AppConfigDto { DataRoot = "retained-data" }),
             NotificationService.Instance);
 
-        var path = GetPrivateField<string>(service, "_sessionsFilePath");
+        await service.LoadSessionsAsync();
+
+        var path = GetPrivateField<string?>(service, "_sessionsFilePath");
 
         path.Should().Be(Path.Combine(fixture.RootPath, "retained-data", "_sessions", "sessions.json"));
+    }
+
+    [Fact]
+    public async Task LoadSessionsAsync_WhenConfigLoadFails_FallsBackToDefaultDataRoot()
+    {
+        using var fixture = new PathFixture("mdc-session-fallback");
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+        var service = new CollectionSessionService(configService, NotificationService.Instance);
+
+        await service.LoadSessionsAsync();
+
+        var path = GetPrivateField<string?>(service, "_sessionsFilePath");
+        path.Should().Be(Path.Combine(fixture.RootPath, "data", "_sessions", "sessions.json"));
+        configService.LoadConfigCallCount.Should().Be(1);
     }
 
     // ── CollectionSession model (from Contracts) ────────────────────

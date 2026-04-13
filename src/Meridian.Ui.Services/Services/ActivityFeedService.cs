@@ -16,6 +16,10 @@ public sealed class ActivityFeedService
 {
     private const string ActivityLogFileName = "activity_log.json";
     private const int MaxActivities = 100;
+    private static readonly JsonSerializerOptions _configJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     private static readonly Lazy<ActivityFeedService> _instance = new(() => new ActivityFeedService());
     private readonly IConfigService _configService;
@@ -426,12 +430,37 @@ public sealed class ActivityFeedService
     {
         try
         {
-            return _configService.LoadConfigAsync().GetAwaiter().GetResult();
+            if (File.Exists(_configService.ConfigPath))
+            {
+                var json = File.ReadAllText(_configService.ConfigPath);
+                var config = JsonSerializer.Deserialize<AppConfig>(json, _configJsonOptions);
+                if (config != null)
+                {
+                    config.DataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, config.DataRoot);
+                }
+
+                return config;
+            }
         }
         catch
         {
-            return null;
+            // Fall back to a pre-computed config task when the service is not file-backed.
         }
+
+        try
+        {
+            var loadTask = _configService.LoadConfigAsync();
+            if (loadTask.IsCompletedSuccessfully)
+            {
+                return loadTask.GetAwaiter().GetResult();
+            }
+        }
+        catch
+        {
+            // Ignore config load errors and use the default data root.
+        }
+
+        return null;
     }
 
     private static bool PathsEqual(string left, string right)

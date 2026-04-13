@@ -1,6 +1,6 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-04-07 (UTC)
+> Last verified: 2026-04-12 (UTC)
 > Canonical deep reference: `.claude/skills/_shared/project-context.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, commands, and architecture when a skill needs repository grounding without repeating the same facts in every `SKILL.md`.
@@ -53,6 +53,8 @@ Prefer the narrowest validation command that matches the files being changed.
 - Relative `DataRoot` values resolve from the active config file base via `MeridianPathDefaults.ResolveDataRoot`, not from the executable directory.
 - `Storage.BaseDirectory` is legacy migration input only; new code and docs should prefer top-level `DataRoot`.
 - Desktop-retained artifacts such as workspace state, watchlists, credentials, activity logs, collection sessions, symbol mappings, schema dictionaries, and catalog metadata should stay under the resolved external config and data roots so upgrades do not depend on the install directory.
+- Wizard review/save flows should use `AppConfigJsonOptions` plus `ConfigStore` so the previewed JSON and persisted file share the same serializer and resolved config path.
+- Paper-session order history is lifecycle-sensitive metadata; await the durable append before considering an order update committed.
 
 ## Key Abstractions
 
@@ -75,6 +77,7 @@ Prefer the narrowest validation command that matches the files being changed.
 - Use ADR-014 source-generated JSON serialization.
 - Use `EventPipelinePolicy.*.CreateChannel<T>()`, not ad hoc unbounded channels.
 - Route durable storage through WAL or `AtomicFileWriter`, not direct file writes.
+- Avoid constructor sync-over-async and fire-and-forget persistence on lifecycle-sensitive services; await initialisation and terminal metadata writes at the service boundary.
 - Do not add package versions directly to project files; central package management lives in `Directory.Packages.props`.
 
 ## Migration Context

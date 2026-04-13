@@ -1,6 +1,5 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Application.Config;
+using Meridian.Application.UI;
 using Meridian.Application.Wizard.Core;
 
 namespace Meridian.Application.Wizard.Steps;
@@ -11,23 +10,25 @@ namespace Meridian.Application.Wizard.Steps;
 /// </summary>
 public sealed class SaveConfigurationStep : IWizardStep
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter() }
-    };
-
     private readonly TextWriter _output;
     private readonly TextReader _input;
+    private readonly Func<string?, ConfigStore> _configStoreFactory;
 
     public WizardStepId StepId => WizardStepId.SaveConfiguration;
 
     public SaveConfigurationStep(TextWriter output, TextReader input)
+        : this(output, input, static path => new ConfigStore(path))
+    {
+    }
+
+    internal SaveConfigurationStep(
+        TextWriter output,
+        TextReader input,
+        Func<string?, ConfigStore> configStoreFactory)
     {
         _output = output;
         _input = input;
+        _configStoreFactory = configStoreFactory;
     }
 
     public async Task<WizardStepResult> ExecuteAsync(WizardContext context, CancellationToken ct)
@@ -40,11 +41,7 @@ public sealed class SaveConfigurationStep : IWizardStep
         if (config == null)
             return WizardStepResult.Failed("No configuration to save (ReviewConfigurationStep must run first).");
 
-        var configDir = "config";
-        if (!Directory.Exists(configDir))
-            Directory.CreateDirectory(configDir);
-
-        var configPath = Path.Combine(configDir, "appsettings.json");
+        var configPath = _configStoreFactory(null).ConfigPath;
 
         if (File.Exists(configPath))
         {
@@ -54,24 +51,23 @@ public sealed class SaveConfigurationStep : IWizardStep
             if (!overwrite)
             {
                 var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-                configPath = Path.Combine(configDir, $"appsettings.{timestamp}.json");
+                var configDirectory = Path.GetDirectoryName(configPath) ?? Environment.CurrentDirectory;
+                var configFileName = Path.GetFileNameWithoutExtension(configPath);
+                var configExtension = Path.GetExtension(configPath);
+                configPath = Path.Combine(configDirectory, $"{configFileName}.{timestamp}{configExtension}");
                 _output.WriteLine($"  Saving to: {configPath}");
             }
         }
 
-        WriteConfig(config, configPath);
+        await WriteConfigAsync(config, configPath, ct);
         context.SavedConfigPath = configPath;
 
         return WizardStepResult.Succeeded($"Configuration saved to {configPath}");
     }
 
-    internal static void WriteConfig(AppConfig config, string path)
+    internal static Task WriteConfigAsync(AppConfig config, string path, CancellationToken ct = default)
     {
-        var json = JsonSerializer.Serialize(config, JsonOptions);
-        var dir = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-            Directory.CreateDirectory(dir);
-        File.WriteAllText(path, json);
+        return new ConfigStore(path).SaveAsync(config, ct);
     }
 
     private async Task<bool> PromptYesNoAsync(string prompt, bool defaultValue, CancellationToken ct)

@@ -28,6 +28,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
     public Task<BacktestStudioRunHandle> StartAsync(BacktestStudioRunRequest request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
 
         if (request.Strategy is null)
             throw new InvalidOperationException("A native Backtest Studio run requires an IBacktestStrategy instance.");
@@ -40,7 +41,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
             throw new InvalidOperationException($"Unable to track native backtest run '{engineRunHandle}'.");
 
         registration.SetRunning();
-        _ = ExecuteAsync(request, registration);
+        _ = ExecuteAsync(request, registration, ct);
 
         return Task.FromResult(new BacktestStudioRunHandle(runId, engineRunHandle, Engine));
     }
@@ -61,7 +62,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
         return registration.Result.Task.WaitAsync(ct);
     }
 
-    private async Task ExecuteAsync(BacktestStudioRunRequest request, NativeRunRegistration registration)
+    private async Task ExecuteAsync(BacktestStudioRunRequest request, NativeRunRegistration registration, CancellationToken ct)
     {
         var progress = new Progress<BacktestProgressEvent>(evt => registration.UpdateProgress(evt));
 
@@ -71,14 +72,14 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
                     request.NativeRequest,
                     request.Strategy!,
                     progress,
-                    CancellationToken.None)
+                    ct)
                 .ConfigureAwait(false);
 
             registration.Complete(result with { EngineMetadata = new BacktestEngineMetadata("MeridianNative") });
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            registration.Cancel();
+            registration.Cancel(ex.CancellationToken.CanBeCanceled ? ex.CancellationToken : ct);
         }
         catch (Exception ex)
         {
@@ -150,7 +151,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
             Result.TrySetResult(result);
         }
 
-        public void Cancel()
+        public void Cancel(CancellationToken cancellationToken)
         {
             lock (_gate)
             {
@@ -158,7 +159,7 @@ public sealed class MeridianNativeBacktestStudioEngine : IBacktestStudioEngine
                 _message = "Cancelled";
             }
 
-            Result.TrySetCanceled();
+            Result.TrySetCanceled(cancellationToken);
         }
 
         public void Fail(Exception ex)

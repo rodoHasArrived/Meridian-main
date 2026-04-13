@@ -51,6 +51,7 @@ Operator identity is taken from `X-Meridian-Actor` when present, otherwise the a
 ## Audit Categories
 
 Audit records are written under the execution data root and surfaced through `GET /api/execution/audit`.
+The audit trail WAL is initialised lazily on first read or write so host construction does not sync-block on recovery during startup.
 
 Expected categories:
 

@@ -69,6 +69,8 @@ var json = JsonSerializer.Serialize(evt);
 |-----------|----------|---------|
 | JSON Context | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs:97` | Source-generated serializers |
 | Alpaca Context | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs:142` | Alpaca wire messages |
+| Alpaca Corporate Actions | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs` | Dedicated source-generated context for Alpaca announcement DTOs |
+| Audit Trail Contexts | `src/Meridian.Application/Pipeline/DeadLetterSink.cs`, `src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs` | Source-generated audit-record serializers for crash-safe JSONL append paths |
 | HighPerformanceJson | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs:243` | Typed utilities |
 | WAL Integration | `src/Meridian.Storage/Archival/WriteAheadLog.cs:92` | Uses HighPerformanceOptions |
 | JSONL Sink | `src/Meridian.Storage/Sinks/JsonlStorageSink.cs` | Bulk serialization |

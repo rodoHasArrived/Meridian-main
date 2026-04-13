@@ -230,8 +230,14 @@ public sealed class PaperSessionPersistenceService
         return session.Portfolio?.Ledger ?? session.ReconstructedLedger;
     }
 
-    /// <summary>Records an order status update for a session.</summary>
-    public void RecordOrderUpdate(string sessionId, OrderState orderState)
+    /// <summary>
+    /// Records an order status update for a session and does not complete until
+    /// the durable order-history append finishes.
+    /// </summary>
+    public async Task RecordOrderUpdateAsync(
+        string sessionId,
+        OrderState orderState,
+        CancellationToken ct = default)
     {
         if (_sessions.TryGetValue(sessionId, out var session))
         {
@@ -240,13 +246,7 @@ public sealed class PaperSessionPersistenceService
 
         if (_store is not null)
         {
-            // Fire-and-forget — order-history persistence is best-effort.
-            _ = _store.AppendOrderUpdateAsync(sessionId, orderState)
-                .ContinueWith(
-                    t => _logger.LogWarning(t.Exception, "Failed to persist order update for session {SessionId}", sessionId),
-                    default,
-                    TaskContinuationOptions.OnlyOnFaulted,
-                    TaskScheduler.Default);
+            await _store.AppendOrderUpdateAsync(sessionId, orderState, ct).ConfigureAwait(false);
         }
     }
 

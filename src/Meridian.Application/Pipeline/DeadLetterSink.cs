@@ -1,9 +1,12 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Application.Serialization;
 using Meridian.Contracts.Domain;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -27,10 +30,10 @@ public sealed class DeadLetterSink : IAsyncDisposable
     private readonly ILogger<DeadLetterSink> _logger;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private readonly ConcurrentDictionary<SymbolId, long> _rejectedCountsBySymbol = new();
-
-    private StreamWriter? _writer;
     private long _totalRejected;
     private bool _disposed;
+
+    private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
 
     /// <summary>
     /// Initialises a new <see cref="DeadLetterSink"/>.
@@ -78,7 +81,7 @@ public sealed class DeadLetterSink : IAsyncDisposable
             Sequence: evt.Sequence,
             Source: evt.Source,
             SchemaVersion: evt.SchemaVersion,
-            ValidationErrors: errors,
+            ValidationErrors: errors.ToArray(),
             Event: evt);
 
         try
@@ -86,9 +89,8 @@ public sealed class DeadLetterSink : IAsyncDisposable
             await _writeLock.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                var writer = EnsureWriter();
-                var json = JsonSerializer.Serialize(record, MarketDataJsonContext.HighPerformanceOptions);
-                await writer.WriteLineAsync(json.AsMemory(), ct).ConfigureAwait(false);
+                var json = JsonSerializer.Serialize(record, JsonOptions);
+                await AtomicFileWriter.AppendLinesAsync(GetDeadLetterFilePath(), [json], ct).ConfigureAwait(false);
             }
             finally
             {
@@ -119,16 +121,14 @@ public sealed class DeadLetterSink : IAsyncDisposable
     /// <param name="ct">Cancellation token.</param>
     public async Task FlushAsync(CancellationToken ct = default)
     {
-        if (_disposed || _writer is null)
+        if (_disposed)
             return;
 
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (_writer is not null)
-            {
-                await _writer.FlushAsync(ct).ConfigureAwait(false);
-            }
+            // AtomicFileWriter.AppendLinesAsync fsyncs each append, so flush only needs to
+            // wait for any in-flight record append to complete.
         }
         finally
         {
@@ -144,31 +144,23 @@ public sealed class DeadLetterSink : IAsyncDisposable
         return new DeadLetterStatistics(
             TotalRejected: TotalRejected,
             RejectedBySymbol: RejectedCountsBySymbol,
-            DeadLetterFilePath: Path.Combine(_deadLetterDirectory, "rejected_events.jsonl"),
+            DeadLetterFilePath: GetDeadLetterFilePath(),
             Timestamp: DateTimeOffset.UtcNow);
     }
 
-    private StreamWriter EnsureWriter()
+    private string GetDeadLetterFilePath()
     {
-        if (_writer is not null)
-            return _writer;
+        return Path.Combine(_deadLetterDirectory, "rejected_events.jsonl");
+    }
 
-        Directory.CreateDirectory(_deadLetterDirectory);
-        var filePath = Path.Combine(_deadLetterDirectory, "rejected_events.jsonl");
-        var stream = new FileStream(
-            filePath,
-            FileMode.Append,
-            FileAccess.Write,
-            FileShare.Read,
-            bufferSize: 4096,
-            useAsync: true);
-        _writer = new StreamWriter(stream) { AutoFlush = false };
-
-        _logger.LogInformation(
-            "Dead-letter sink initialised at {FilePath}",
-            filePath);
-
-        return _writer;
+    private static JsonSerializerOptions CreateJsonOptions()
+    {
+        return new JsonSerializerOptions(MarketDataJsonContext.HighPerformanceOptions)
+        {
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(
+                DeadLetterJsonContext.Default,
+                MarketDataJsonContext.Default)
+        };
     }
 
     /// <inheritdoc />
@@ -181,12 +173,7 @@ public sealed class DeadLetterSink : IAsyncDisposable
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            if (_writer is not null)
-            {
-                await _writer.FlushAsync().ConfigureAwait(false);
-                await _writer.DisposeAsync().ConfigureAwait(false);
-                _writer = null;
-            }
+            // No buffered writer state remains once AtomicFileWriter.AppendLinesAsync returns.
         }
         finally
         {
@@ -215,8 +202,16 @@ internal sealed record DeadLetterRecord(
     long Sequence,
     string Source,
     byte SchemaVersion,
-    IReadOnlyList<string> ValidationErrors,
+    string[] ValidationErrors,
     MarketEvent Event);
+
+[JsonSourceGenerationOptions(
+    WriteIndented = false,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    PropertyNameCaseInsensitive = true)]
+[JsonSerializable(typeof(DeadLetterRecord))]
+internal sealed partial class DeadLetterJsonContext : JsonSerializerContext;
 
 /// <summary>
 /// Statistics about rejected events for API exposure.

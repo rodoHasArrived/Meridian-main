@@ -179,7 +179,7 @@ public class JsonlBatchWriteTests : IDisposable
         sink.EventsWritten.Should().Be(0, "no events should be written yet");
 
         // Act
-        await sink.DisposeAsync();
+        await sink.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
 
         // Verify events were written during disposal
         sink.EventsWritten.Should().Be(5, "all events should be written after disposal");

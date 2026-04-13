@@ -104,6 +104,10 @@ public sealed class ConfigStore
             }
             await File.WriteAllTextAsync(ConfigPath, json, ct);
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to save configuration: {ex.Message}", ex);

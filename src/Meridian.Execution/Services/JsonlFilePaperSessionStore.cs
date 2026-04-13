@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution.Services;
@@ -178,21 +179,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
 
     private static async Task WriteAtomicAsync(string path, string content, CancellationToken ct)
     {
-        var dir = Path.GetDirectoryName(path)!;
-        Directory.CreateDirectory(dir);
-        var tmpPath = path + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp";
-        try
-        {
-            await File.WriteAllTextAsync(tmpPath, content, Encoding.UTF8, ct).ConfigureAwait(false);
-            File.Move(tmpPath, path, overwrite: true);
-        }
-        catch
-        {
-            try
-            { File.Delete(tmpPath); }
-            catch { /* best-effort cleanup */ }
-            throw;
-        }
+        await AtomicFileWriter.WriteAsync(path, content, ct).ConfigureAwait(false);
     }
 
     private async Task AppendLineAsync(string path, string line, CancellationToken ct)
@@ -203,8 +190,7 @@ public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
         await _appendLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await using var writer = new StreamWriter(path, append: true, Encoding.UTF8);
-            await writer.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
+            await AtomicFileWriter.AppendLinesAsync(path, [line], ct).ConfigureAwait(false);
         }
         finally
         {

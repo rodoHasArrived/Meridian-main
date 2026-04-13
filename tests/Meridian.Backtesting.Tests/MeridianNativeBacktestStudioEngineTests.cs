@@ -4,6 +4,7 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Workstation;
 using Meridian.Domain.Events;
 using Meridian.Storage;
 using Meridian.Storage.Services;
@@ -54,8 +55,49 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
 
         handle.RunId.Should().NotBeNullOrWhiteSpace();
         status.RunId.Should().Be(handle.RunId);
-        result.EngineMetadata.EngineId.Should().Be("MeridianNative");
+        result.EngineMetadata.Should().NotBeNull();
+        result.EngineMetadata!.EngineId.Should().Be("MeridianNative");
         result.TotalEventsProcessed.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenCallerCancels_CancelsNativeRun()
+    {
+        WriteBarJsonl("AAPL", new DateOnly(2024, 1, 2), 185m);
+
+        var blockingAdjuster = new BlockingCorporateActionAdjustmentService();
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var backtestEngine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalog,
+            corporateActionAdjustment: blockingAdjuster);
+        var engine = new MeridianNativeBacktestStudioEngine(
+            backtestEngine,
+            NullLogger<MeridianNativeBacktestStudioEngine>.Instance);
+
+        using var cts = new CancellationTokenSource();
+        var request = new BacktestStudioRunRequest(
+            StrategyId: "native-cancel",
+            StrategyName: "NoOp",
+            Engine: StrategyRunEngine.MeridianNative,
+            NativeRequest: new BacktestRequest(
+                From: new DateOnly(2024, 1, 2),
+                To: new DateOnly(2024, 1, 2),
+                DataRoot: _dataRoot,
+                AdjustForCorporateActions: true),
+            Strategy: new NoOpBacktestStrategy());
+
+        var handle = await engine.StartAsync(request, cts.Token);
+        await blockingAdjuster.Started.WaitAsync(TimeSpan.FromSeconds(5));
+
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () => await engine.GetCanonicalResultAsync(handle.EngineRunHandle, CancellationToken.None)
+                .WaitAsync(TimeSpan.FromSeconds(5)));
+
+        var status = await engine.GetStatusAsync(handle.EngineRunHandle, CancellationToken.None);
+        status.Status.Should().Be(StrategyRunStatus.Cancelled);
     }
 
     private void WriteBarJsonl(string symbol, DateOnly date, decimal basePrice)
@@ -93,5 +135,22 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
         public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
         public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
         public void OnFinished(IBacktestContext ctx) { }
+    }
+
+    private sealed class BlockingCorporateActionAdjustmentService : ICorporateActionAdjustmentService
+    {
+        private readonly TaskCompletionSource<bool> _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task Started => _started.Task;
+
+        public async Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
+            IReadOnlyList<HistoricalBar> bars,
+            string ticker,
+            CancellationToken ct = default)
+        {
+            _started.TrySetResult(true);
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return bars;
+        }
     }
 }

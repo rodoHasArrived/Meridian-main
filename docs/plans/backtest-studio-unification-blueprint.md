@@ -340,9 +340,9 @@ Lean-specific transport endpoints may still exist for setup, verification, and r
 
 1. Research UI or WPF Backtest Studio submits a `BacktestStudioRunRequest`.
 2. `BacktestStudioRunOrchestrator` creates a `StrategyRunEntry` with `Engine = MeridianNative`.
-3. `MeridianNativeBacktestStudioEngine` runs the current native backtest engine.
-4. The engine returns canonical `BacktestResult`.
-5. The orchestrator completes the run entry with that result.
+3. `MeridianNativeBacktestStudioEngine` runs the current native backtest engine and keeps the caller `CancellationToken` wired into the background run.
+4. The engine returns canonical `BacktestResult`, or transitions the tracked run to `Cancelled` if the caller aborts the run before completion.
+5. The orchestrator-owned completion monitor tracks the run until a terminal state is persisted, while still allowing shutdown and caller cancellation to stop the monitor cleanly.
 6. `StrategyRunReadService` and `StrategyRunComparisonService` project shared read models for Research and downstream workflows.
 
 ### Lean path
@@ -352,7 +352,7 @@ Lean-specific transport endpoints may still exist for setup, verification, and r
 3. `LeanBacktestStudioEngine` uses the existing Lean launch/status/export endpoints.
 4. After Lean completes, `LeanBacktestStudioEngine` collects raw artifacts from the result location or ingest endpoint.
 5. `ILeanBacktestResultNormalizer` converts those artifacts into canonical `BacktestResult` plus coverage and engine metadata.
-6. The orchestrator completes the same `StrategyRunEntry` shape used by native runs.
+6. The orchestrator completes the same `StrategyRunEntry` shape used by native runs, using the same tracked monitor lifecycle and cancellation-aware terminal persistence.
 7. Workstation and WPF read paths consume the result with no engine-specific query fork.
 
 ### Comparison and diff path

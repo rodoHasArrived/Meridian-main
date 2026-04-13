@@ -35,6 +35,27 @@ public sealed class ActivityFeedServiceTests
         path.Should().Be(Path.Combine(fixture.RootPath, "retained-data", "_logs", "activity_log.json"));
     }
 
+    [Fact]
+    public void Constructor_UsesConfigFileWithoutInvokingAsyncLoad()
+    {
+        using var fixture = new PathFixture("mdc-activity-file");
+        File.WriteAllText(
+            fixture.ConfigPath,
+            """
+            {
+              "dataRoot": "retained-data"
+            }
+            """);
+
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+        var service = new ActivityFeedService(configService);
+
+        var path = GetPrivateField<string>(service, "_activityLogPath");
+
+        configService.LoadConfigCallCount.Should().Be(0);
+        path.Should().Be(Path.Combine(fixture.RootPath, "retained-data", "_logs", "activity_log.json"));
+    }
+
     // ── AddActivity ──────────────────────────────────────────────────
 
     [Fact]

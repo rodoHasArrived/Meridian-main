@@ -51,6 +51,8 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     private readonly int _inMemoryRetention;
     private readonly List<ExecutionAuditEntry> _entries = [];
     private readonly Lock _lock = new();
+    private readonly Lock _initializationLock = new();
+    private Task? _initializationTask;
 
     public ExecutionAuditTrailService(
         ExecutionAuditTrailOptions? options,
@@ -69,37 +71,37 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
                 MaxWalFileSizeBytes = 5 * 1024 * 1024,
                 CorruptionMode = WalCorruptionMode.Alert
             });
-
-        InitialiseAsync(CancellationToken.None).GetAwaiter().GetResult();
     }
 
     /// <summary>
     /// Returns the most recent audit entries, newest first.
     /// </summary>
-    public Task<IReadOnlyList<ExecutionAuditEntry>> GetRecentAsync(int take = 100, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ExecutionAuditEntry>> GetRecentAsync(int take = 100, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        await EnsureInitialisedAsync(ct).ConfigureAwait(false);
 
         lock (_lock)
         {
-            return Task.FromResult<IReadOnlyList<ExecutionAuditEntry>>(
+            return
                 _entries
                     .OrderByDescending(static entry => entry.OccurredAt)
                     .Take(Math.Max(1, take))
-                    .ToArray());
+                    .ToArray();
         }
     }
 
     /// <summary>
     /// Returns all retained audit entries in chronological order.
     /// </summary>
-    public Task<IReadOnlyList<ExecutionAuditEntry>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<ExecutionAuditEntry>> GetAllAsync(CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        await EnsureInitialisedAsync(ct).ConfigureAwait(false);
 
         lock (_lock)
         {
-            return Task.FromResult<IReadOnlyList<ExecutionAuditEntry>>(_entries.ToArray());
+            return _entries.ToArray();
         }
     }
 
@@ -145,6 +147,7 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     public async Task RecordAsync(ExecutionAuditEntry entry, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        await EnsureInitialisedAsync(ct).ConfigureAwait(false);
 
         var json = JsonSerializer.Serialize(entry, ExecutionJsonContext.Default.ExecutionAuditEntry);
         await _wal.AppendAsync(json, AuditRecordType, ct).ConfigureAwait(false);
@@ -165,7 +168,25 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        var initialisationTask = GetInitialisationTask();
+        if (initialisationTask is not null)
+        {
+            await initialisationTask.ConfigureAwait(false);
+        }
+
         await _wal.DisposeAsync().ConfigureAwait(false);
+    }
+
+    private async Task EnsureInitialisedAsync(CancellationToken ct)
+    {
+        Task initialisationTask;
+        lock (_initializationLock)
+        {
+            _initializationTask ??= InitialiseAsync(CancellationToken.None);
+            initialisationTask = _initializationTask;
+        }
+
+        await initialisationTask.WaitAsync(ct).ConfigureAwait(false);
     }
 
     private async Task InitialiseAsync(CancellationToken ct)
@@ -206,6 +227,14 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
         {
             _entries.Sort(static (left, right) => left.OccurredAt.CompareTo(right.OccurredAt));
             TrimRetainedEntries();
+        }
+    }
+
+    private Task? GetInitialisationTask()
+    {
+        lock (_initializationLock)
+        {
+            return _initializationTask;
         }
     }
 

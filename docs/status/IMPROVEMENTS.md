@@ -137,7 +137,7 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 **Solution Implemented:**
 - Cancel disposal token first to stop new writes
 - Dispose flush timer (waiting for pending callbacks)
-- Execute guaranteed final flush under semaphore gate
+- Execute guaranteed final flush under a non-reentrant semaphore-gated core flush path
 - Then dispose writers and remaining resources
 
 **Files:**
@@ -279,6 +279,7 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 - JSONL format with timestamp, event type, symbol, sequence, source, drop reason
 - Integrated with `EventPipeline`
 - Tracks drop counts per symbol via `ConcurrentDictionary`
+- Dropped-event and dead-letter audit JSONL writes now append through `AtomicFileWriter.AppendLinesAsync`, so crash recovery never leaves partial audit records behind
 - **NEW**: `/api/quality/drops` HTTP endpoint exposing `DroppedEventStatistics`
 - **NEW**: `/api/quality/drops/{symbol}` for per-symbol drill-down
 - **NEW**: 10 comprehensive integration tests covering all scenarios
