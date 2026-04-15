@@ -179,7 +179,8 @@ public sealed class InMemoryFundStructureService : IFundStructureService
             request.EffectiveFrom,
             EffectiveTo: null,
             InvestmentPortfolioIds: [],
-            request.Description);
+            request.Description,
+            request.ClientSegmentKind);
 
         (long Version, string Json)? snapshot;
         lock (_gate)

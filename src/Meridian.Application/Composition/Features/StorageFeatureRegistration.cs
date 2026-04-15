@@ -1,5 +1,6 @@
 using Meridian.Application.Config;
 using Meridian.Application.DirectLending;
+using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Application.SecurityMaster;
@@ -173,6 +174,16 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 securityMasterQueryService,
                 persistencePath);
         });
+        services.TryAddSingleton<EnvironmentDesignerService>(sp =>
+        {
+            var storageOptions = sp.GetRequiredService<StorageOptions>();
+            var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "environment-designer.json");
+            return new EnvironmentDesignerService(persistencePath);
+        });
+        services.TryAddSingleton<IEnvironmentDesignService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.TryAddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.TryAddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.TryAddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         return services;
     }
 

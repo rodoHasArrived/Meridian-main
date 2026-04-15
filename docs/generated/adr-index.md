@@ -1,6 +1,10 @@
 # Architecture Decision Records
 
+<<<<<<< HEAD
 > Auto-generated on 2026-04-14 08:00:42 UTC
+=======
+> Auto-generated on 2026-04-13 04:10:32 UTC
+>>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
 
 | ADR | Title | Status |
 |-----|-------|--------|

@@ -618,6 +618,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             .Select(pageTag => ShellNavigationCatalog.GetPage(pageTag))
             .Where(static descriptor => descriptor is not null)
             .Select(static descriptor => descriptor!)
+            .GroupBy(static descriptor => descriptor.PageTag, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
             .Where(page => string.IsNullOrWhiteSpace(query)
                 ? !page.HideFromDefaultPalette
                 : MatchesPaletteQuery(page, query))
@@ -811,13 +813,14 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private string NormalizePageTag(string? pageTag)
     {
-        if (string.IsNullOrWhiteSpace(pageTag))
+        var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+        if (string.IsNullOrWhiteSpace(canonicalPageTag))
         {
             return DefaultPageTag;
         }
 
-        return _navigationService.IsPageRegistered(pageTag)
-            ? pageTag
+        return _navigationService.IsPageRegistered(canonicalPageTag)
+            ? canonicalPageTag
             : DefaultPageTag;
     }
 

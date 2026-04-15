@@ -4,6 +4,7 @@ using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Tests.TestHelpers;
+using System.Text.Json;
 using Xunit;
 
 namespace Meridian.Tests.Providers;
@@ -160,6 +161,56 @@ public sealed class AlpacaCredentialAndReconnectTests
         client.ProviderCapabilities.MaxRequestsPerWindow.Should().BeGreaterThan(0);
         client.ProviderCapabilities.RateLimitWindow.Should().NotBeNull();
         client.ProviderCapabilities.MinRequestDelay.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void BuildAuthenticationMessage_EscapesCredentialsWithoutReflectionSerialization()
+    {
+        var json = AlpacaMarketDataClient.BuildAuthenticationMessage(
+            new AlpacaOptions(
+                KeyId: "AK\"TEST\\KEY",
+                SecretKey: "secret\\value\"with-quotes"));
+
+        using var doc = JsonDocument.Parse(json);
+
+        doc.RootElement.GetProperty("action").GetString().Should().Be("auth");
+        doc.RootElement.GetProperty("key").GetString().Should().Be("AK\"TEST\\KEY");
+        doc.RootElement.GetProperty("secret").GetString().Should().Be("secret\\value\"with-quotes");
+    }
+
+    [Fact]
+    public void BuildSubscriptionMessage_OnlyIncludesQuotesWhenEnabled()
+    {
+        var withoutQuotes = AlpacaMarketDataClient.BuildSubscriptionMessage(
+            subscribeQuotes: false,
+            trades: ["AAPL", "MSFT"],
+            quotes: ["AAPL"]);
+
+        using (var withoutQuotesDoc = JsonDocument.Parse(withoutQuotes))
+        {
+            withoutQuotesDoc.RootElement.GetProperty("action").GetString().Should().Be("subscribe");
+            withoutQuotesDoc.RootElement.GetProperty("trades")
+                .EnumerateArray()
+                .Select(x => x.GetString())
+                .Should()
+                .ContainInOrder("AAPL", "MSFT");
+            withoutQuotesDoc.RootElement.TryGetProperty("quotes", out _).Should().BeFalse();
+        }
+
+        var withQuotes = AlpacaMarketDataClient.BuildSubscriptionMessage(
+            subscribeQuotes: true,
+            trades: ["AAPL"],
+            quotes: ["AAPL"]);
+
+        using var withQuotesDoc = JsonDocument.Parse(withQuotes);
+        withQuotesDoc.RootElement.GetProperty("quotes")
+            .EnumerateArray()
+            .Select(x => x.GetString())
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be("AAPL");
     }
 
     [Fact]

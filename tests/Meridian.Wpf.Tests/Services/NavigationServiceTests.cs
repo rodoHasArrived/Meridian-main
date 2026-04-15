@@ -1,5 +1,6 @@
 using System.Runtime.ExceptionServices;
 using System.Windows.Controls;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Services;
 
@@ -146,6 +147,17 @@ public sealed class NavigationServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetRegisteredPages_ShouldMatchShellNavigationCatalogIncludingAliases()
+    {
+        var service = NavigationService.Instance;
+
+        var registeredPages = service.GetRegisteredPages().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var catalogPages = ShellNavigationCatalog.GetRegisteredPageTags().ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        registeredPages.Should().BeEquivalentTo(catalogPages);
+    }
+
+    [Fact]
     public void IsPageRegistered_WithKnownPage_ShouldReturnTrue()
     {
         // Arrange
@@ -264,6 +276,24 @@ public sealed class NavigationServiceTests : IDisposable
 
         // Assert
         pageType.Should().NotBeNull($"registered page '{firstPage}' should have a type");
+    }
+
+    [Theory]
+    [InlineData("ResearchWorkspace", "ResearchShell")]
+    [InlineData("BacktestStudio", "Backtest")]
+    [InlineData("RunBrowser", "StrategyRuns")]
+    [InlineData("TradingWorkspace", "TradingShell")]
+    [InlineData("Blotter", "PositionBlotter")]
+    [InlineData("Providers", "Provider")]
+    [InlineData("Alerts", "NotificationCenter")]
+    [InlineData("Preferences", "Settings")]
+    public void GetPageType_WithAlias_ShouldResolveCanonicalPageType(string alias, string canonicalPageTag)
+    {
+        var service = NavigationService.Instance;
+
+        service.IsPageRegistered(alias).Should().BeTrue($"alias '{alias}' should be registered");
+        service.GetPageType(alias).Should().Be(service.GetPageType(canonicalPageTag));
+        ShellNavigationCatalog.GetCanonicalPageTag(alias).Should().Be(canonicalPageTag);
     }
 
     [Fact]

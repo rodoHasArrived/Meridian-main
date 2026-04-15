@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -339,13 +341,73 @@ public static class FundStructureEndpoints
         .Produces<GovernanceCashFlowViewDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet("/workspace-view", async (HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var q = context.Request.Query;
+            var fundProfileId = q["fundProfileId"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(fundProfileId))
+            {
+                return Results.Problem(
+                    "fundProfileId is required.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var query = new FundOperationsWorkspaceQuery(
+                FundProfileId: fundProfileId,
+                AsOf: ParseDateTimeOffset(q["asOf"]),
+                Currency: q["currency"].FirstOrDefault(),
+                ScopeKind: ParseFundLedgerScope(q["scopeKind"]) ?? FundLedgerScope.Consolidated,
+                ScopeId: q["scopeId"].FirstOrDefault());
+
+            var result = await service.GetWorkspaceAsync(query, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundOperationsWorkspaceView")
+        .Produces<FundOperationsWorkspaceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/report-pack-preview", async (JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var request = JsonSerializer.Deserialize<FundReportPackPreviewRequestDto>(body.GetRawText(), jsonOptions);
+            if (request is null || string.IsNullOrWhiteSpace(request.FundProfileId))
+            {
+                return Results.Problem(
+                    "A request body with fundProfileId is required.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var result = await service.PreviewReportPackAsync(request, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("PreviewFundReportPack")
+        .Produces<FundReportPackPreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
     }
 
     private static IFundStructureService? ResolveService(HttpContext context) =>
         context.RequestServices.GetService<IFundStructureService>();
 
+    private static FundOperationsWorkspaceReadService? ResolveWorkspaceService(HttpContext context) =>
+        context.RequestServices.GetService<FundOperationsWorkspaceReadService>();
+
     private static IResult ServiceUnavailable() =>
         Results.Problem("Fund structure service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+    private static IResult WorkspaceServiceUnavailable() =>
+        Results.Problem("Fund operations workspace service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
     private static Guid? ParseGuid(string? value) =>
         Guid.TryParse(value, out var parsed) ? parsed : null;
@@ -361,6 +423,9 @@ public static class FundStructureEndpoints
 
     private static GovernanceCashFlowScopeKindDto? ParseCashFlowScopeKind(string? value) =>
         Enum.TryParse<GovernanceCashFlowScopeKindDto>(value, ignoreCase: true, out var parsed) ? parsed : null;
+
+    private static FundLedgerScope? ParseFundLedgerScope(string? value) =>
+        Enum.TryParse<FundLedgerScope>(value, ignoreCase: true, out var parsed) ? parsed : null;
 
     private static LedgerGroupId? ParseLedgerGroupId(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : new LedgerGroupId(value);

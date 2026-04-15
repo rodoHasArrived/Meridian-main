@@ -1,6 +1,10 @@
 # Meridian AI Repo Navigation
 
+<<<<<<< HEAD
 > Auto-generated on 2026-04-14T08:00:42Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+=======
+> Auto-generated on 2026-04-13T04:10:31Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+>>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
 
 ## Quick Start
 

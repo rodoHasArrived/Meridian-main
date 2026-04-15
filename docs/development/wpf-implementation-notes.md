@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-03-26 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-04-14 | **Status**: Authored / Included in solution build
 
 ## Overview
 
@@ -81,7 +81,15 @@ Each workspace persists:
 
 ## Page Registry
 
-All pages registered in `NavigationService.RegisterAllPages()` and declared in `Views/Pages.cs`.
+Catalog-backed desktop pages now live in the `ShellNavigationCatalog` partials under
+`src/Meridian.Wpf/Models/`. `NavigationService.RegisterAllPages()` and the WPF DI setup both loop
+over that catalog, so adding a new shell page typically requires:
+
+1. the page and its view model
+2. one `ShellNavigationCatalog` entry
+3. optionally, a workspace default-pane entry if the page should open in a shell layout
+
+Only non-catalog utility pages still need direct manual registration in `App.xaml.cs`.
 
 ### Research workspace pages
 | Tag | Class | Notes |
@@ -278,6 +286,13 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 Two dedicated workspace shell pages provide the initial entry point into each primary workflow. They are lightweight presenter pages — no deep data logic — that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages.
 
+Shell implementation now shares descriptor-driven infrastructure:
+
+- `WorkspaceShellPageBase<TStateProvider, TViewModel>` owns dock restore/save, fallback content, and pane opening
+- `WorkspaceShellViewModelBase` carries shell command state
+- `IWorkspaceShellStateProvider` and `WorkspaceShellState` translate active run, operating-context, and preset state into declarative default panes
+- `ShellNavigationCatalog.Workspaces.cs` is the source of truth for default panes and preset layouts across `Research`, `Trading`, `Data Operations`, and `Governance`
+
 ### `ResearchWorkspaceShellPage` (`Views/ResearchWorkspaceShellPage.xaml`)
 
 **Purpose**: Single-page landing for the Research workspace. Shows recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
@@ -317,7 +332,7 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 |-------|-----|
 | NETSDK1100 | Add `/p:EnableWindowsTargeting=true` on non-Windows hosts |
 | `NU1008` | Remove `Version="..."` from any `<PackageReference>` — versions live in `Directory.Packages.props` |
-| Page not found at runtime | Ensure page is declared in `Views/Pages.cs` **and** registered in `NavigationService.RegisterAllPages()` |
+| Page not found at runtime | Ensure the page has a `ShellNavigationCatalog` entry with the correct `PageType`, and that `AddMeridianWpfShell()` is active in `App.ConfigureServices()` |
 
 ---
 
@@ -337,9 +352,9 @@ make test-desktop-services
 
 ## Contributing
 
-1. **Register new pages** in both `Views/Pages.cs` (partial class) and `NavigationService.RegisterAllPages()`
+1. **Register new shell pages** by adding one `ShellNavigationCatalog` entry; add a workspace pane definition only if the page belongs in a default dock layout
 2. **Add command palette entry** in `CommandPaletteService.RegisterDefaultCommands()` — include workspace label in the `pageTag` argument so `BuildNavigationDescription` resolves correctly
-3. **Follow MVVM patterns** — all data logic in ViewModels; code-behind restricted to UI event wiring
+3. **Follow MVVM patterns** — all data logic in ViewModels; code-behind restricted to UI event wiring and shell-specific visual concerns
 4. **Event cleanup** — always unsubscribe in `OnPageUnloaded` / `OnNavigatedFrom`
 5. **Use shared contracts** — workstation read models live in `Meridian.Contracts.Workstation`; never duplicate DTO types in the WPF project
 

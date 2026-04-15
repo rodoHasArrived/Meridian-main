@@ -70,6 +70,31 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             created_at = "2024-01-02T10:00:00Z"
         });
 
+    private static StringContent BuildOptionOrderResponse(string id = "option-order-1", string state = "confirmed") =>
+        BuildJson(new
+        {
+            id,
+            ref_id = "client-1",
+            chain_symbol = "AAPL",
+            direction = "credit",
+            quantity = "1",
+            type = "market",
+            time_in_force = "gfd",
+            price = "1.25",
+            legs = new[]
+            {
+                new
+                {
+                    option = "https://api.robinhood.com/options/instruments/opt-close/",
+                    side = "sell",
+                    ratio_quantity = 1,
+                    position_effect = "close"
+                }
+            },
+            state,
+            created_at = "2024-01-02T10:00:00Z"
+        });
+
     private static StringContent BuildInstrumentListResponse() =>
         BuildJson(new
         {
@@ -219,6 +244,95 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         await sut.DisposeAsync();
     }
 
+    [Fact]
+    public async Task SubmitOrderAsync_WithOptionMetadata_RoutesThroughOptionsOrdersEndpoint()
+    {
+        var handler = new RecordingHttpHandler((request, _) =>
+        {
+            var response = request.RequestUri?.AbsolutePath switch
+            {
+                "/accounts/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+                "/options/orders/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOptionOrderResponse() },
+                _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") }
+            };
+
+            return Task.FromResult(response);
+        });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var request = new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 1m,
+            TimeInForce = TimeInForce.Day,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["asset_class"] = "option",
+                ["option_instrument_url"] = "https://api.robinhood.com/options/instruments/opt-close/",
+                ["position_effect"] = "close"
+            }
+        };
+
+        var report = await sut.SubmitOrderAsync(request, cts.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.New);
+        report.OrderStatus.Should().Be(OrderStatus.Accepted);
+
+        var submit = handler.Requests.Should().ContainSingle(
+            r => r.Method == HttpMethod.Post && r.Url.EndsWith("/options/orders/", StringComparison.Ordinal))
+            .Subject;
+        submit.Body.Should().Contain("\"option\":\"https://api.robinhood.com/options/instruments/opt-close/\"");
+        handler.Requests.Should().NotContain(r => r.Url.Contains("/instruments/", StringComparison.Ordinal));
+        handler.Requests.Should().NotContain(
+            r => r.Method == HttpMethod.Post && string.Equals(r.Url, "https://api.robinhood.com/orders/", StringComparison.Ordinal));
+
+        await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_WhenCancelFails_DoesNotResubmitReplacementOrder()
+    {
+        var handler = new RecordingHttpHandler((request, _) =>
+        {
+            var response = request.RequestUri?.AbsolutePath switch
+            {
+                "/accounts/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
+                "/orders/order-1/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse(id: "order-1") },
+                "/orders/order-1/cancel/" => new HttpResponseMessage(HttpStatusCode.Conflict) { Content = new StringContent("too late") },
+                "/orders/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse(id: "replacement-order") },
+                "/options/orders/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOptionOrderResponse(id: "replacement-option") },
+                _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") }
+            };
+
+            return Task.FromResult(response);
+        });
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.ConnectAsync(cts.Token);
+
+        var report = await sut.ModifyOrderAsync(
+            "order-1",
+            new OrderModification { NewQuantity = 2m },
+            cts.Token);
+
+        report.OrderStatus.Should().Be(OrderStatus.Rejected);
+        report.RejectReason.Should().Contain("Cancel request failed");
+        handler.Requests.Should().ContainSingle(
+            r => r.Method == HttpMethod.Post && r.Url.EndsWith("/orders/order-1/cancel/", StringComparison.Ordinal));
+        handler.Requests.Should().NotContain(
+            r => r.Method == HttpMethod.Post && r.Url.EndsWith("/orders/", StringComparison.Ordinal));
+        handler.Requests.Should().NotContain(
+            r => r.Method == HttpMethod.Post && r.Url.EndsWith("/options/orders/", StringComparison.Ordinal));
+
+        await sut.DisposeAsync();
+    }
+
     // ── GetAccountInfoAsync ───────────────────────────────────────────────
 
     [Fact]
@@ -317,6 +431,36 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             return _responses.Count > 0
                 ? Task.FromResult(_responses.Dequeue())
                 : Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
+        }
+    }
+
+    private sealed record RecordedRequest(HttpMethod Method, string Url, string? Body);
+
+    private sealed class RecordingHttpHandler : HttpMessageHandler
+    {
+        private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _responder;
+
+        public RecordingHttpHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> responder)
+        {
+            _responder = responder;
+        }
+
+        public List<RecordedRequest> Requests { get; } = [];
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var body = request.Content is null
+                ? null
+                : await request.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+
+            Requests.Add(new RecordedRequest(
+                request.Method,
+                request.RequestUri?.AbsoluteUri ?? string.Empty,
+                body));
+
+            return await _responder(request, ct).ConfigureAwait(false);
         }
     }
 

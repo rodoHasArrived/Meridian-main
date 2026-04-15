@@ -4,6 +4,7 @@ using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
+using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
@@ -108,6 +109,9 @@ public static class UiEndpoints
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
+        services.TryAddSingleton<NavAttributionService>();
+        services.TryAddSingleton<ReportGenerationService>();
+        services.TryAddSingleton<FundOperationsWorkspaceReadService>();
 
         // Reconciliation services — required by /api/workstation/reconciliation/* endpoints.
         // InMemoryReconciliationRunRepository is the default; a persistent implementation can
@@ -209,6 +213,7 @@ public static class UiEndpoints
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 
@@ -324,6 +329,7 @@ public static class UiEndpoints
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
 

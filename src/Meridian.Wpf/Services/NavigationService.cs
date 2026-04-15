@@ -70,114 +70,15 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// <inheritdoc />
     protected override void RegisterAllPages()
     {
-        // Primary navigation (2 pages)
-        RegisterPage("Dashboard", typeof(DashboardPage));
-        RegisterPage("Watchlist", typeof(WatchlistPage));
+        foreach (var page in ShellNavigationCatalog.Pages)
+        {
+            RegisterPage(page.PageTag, page.PageType);
 
-        // Data Sources (3 pages)
-        RegisterPage("Provider", typeof(ProviderPage));
-        RegisterPage("ProviderHealth", typeof(ProviderHealthPage));
-        RegisterPage("DataSources", typeof(DataSourcesPage));
-
-        // Data Management (9 pages)
-        RegisterPage("LiveData", typeof(LiveDataViewerPage));
-        RegisterPage("RunMat", typeof(RunMatPage));
-        RegisterPage("DataBrowser", typeof(DataBrowserPage));
-        RegisterPage("Symbols", typeof(SymbolsPage));
-        RegisterPage("SymbolMapping", typeof(SymbolMappingPage));
-        RegisterPage("SymbolStorage", typeof(SymbolStoragePage));
-        RegisterPage("Storage", typeof(StoragePage));
-        RegisterPage("Backfill", typeof(BackfillPage));
-        RegisterPage("PortfolioImport", typeof(PortfolioImportPage));
-        RegisterPage("IndexSubscription", typeof(IndexSubscriptionPage));
-        RegisterPage("Options", typeof(OptionsPage));
-        RegisterPage("Schedules", typeof(ScheduleManagerPage));
-
-        // Trading & Backtesting (4 pages)
-        RegisterPage("Backtest", typeof(BacktestPage));
-        RegisterPage("BatchBacktest", typeof(BatchBacktestPage));
-        RegisterPage("TradingHours", typeof(TradingHoursPage));
-        RegisterPage("StrategyRuns", typeof(StrategyRunsPage));
-        RegisterPage("RunDetail", typeof(RunDetailPage));
-        RegisterPage("RunPortfolio", typeof(RunPortfolioPage));
-        RegisterPage("RunLedger", typeof(RunLedgerPage));
-        RegisterPage("RunCashFlow", typeof(RunCashFlowPage));
-        RegisterPage("PositionBlotter", typeof(PositionBlotterPage));
-        RegisterPage("RunRisk", typeof(RunRiskPage));
-        RegisterPage("AccountPortfolio", typeof(AccountPortfolioPage));
-        RegisterPage("AggregatePortfolio", typeof(AggregatePortfolioPage));
-
-        // Monitoring (6 pages)
-        RegisterPage("DataQuality", typeof(DataQualityPage));
-        RegisterPage("CollectionSessions", typeof(CollectionSessionPage));
-        RegisterPage("ArchiveHealth", typeof(ArchiveHealthPage));
-        RegisterPage("ServiceManager", typeof(ServiceManagerPage));
-        RegisterPage("SystemHealth", typeof(SystemHealthPage));
-        RegisterPage("Diagnostics", typeof(DiagnosticsPage));
-
-        // Tools (8 pages)
-        RegisterPage("DataExport", typeof(DataExportPage));
-        RegisterPage("DataSampling", typeof(DataSamplingPage));
-        RegisterPage("TimeSeriesAlignment", typeof(TimeSeriesAlignmentPage));
-        RegisterPage("ExportPresets", typeof(ExportPresetsPage));
-        RegisterPage("AnalysisExport", typeof(AnalysisExportPage));
-        RegisterPage("AnalysisExportWizard", typeof(AnalysisExportWizardPage));
-        RegisterPage("EventReplay", typeof(EventReplayPage));
-        RegisterPage("PackageManager", typeof(PackageManagerPage));
-
-        // Analytics & Visualization (4 pages)
-        RegisterPage("AdvancedAnalytics", typeof(AdvancedAnalyticsPage));
-        RegisterPage("Charts", typeof(ChartingPage));
-        RegisterPage("OrderBook", typeof(OrderBookPage));
-        RegisterPage("DataCalendar", typeof(DataCalendarPage));
-        RegisterPage("QuantScript", typeof(QuantScriptPage));
-
-        // Storage & Maintenance (3 pages)
-        RegisterPage("StorageOptimization", typeof(StorageOptimizationPage));
-        RegisterPage("RetentionAssurance", typeof(RetentionAssurancePage));
-        RegisterPage("AdminMaintenance", typeof(AdminMaintenancePage));
-
-        // Integrations (2 pages)
-        RegisterPage("LeanIntegration", typeof(LeanIntegrationPage));
-        RegisterPage("MessagingHub", typeof(MessagingHubPage));
-
-        // Workspace shell landing pages
-        RegisterPage("ResearchShell", typeof(ResearchWorkspaceShellPage));
-        RegisterPage("TradingShell", typeof(TradingWorkspaceShellPage));
-        RegisterPage("DataOperationsShell", typeof(DataOperationsWorkspaceShellPage));
-        RegisterPage("GovernanceShell", typeof(GovernanceWorkspaceShellPage));
-
-        // Workspaces & Notifications (2 pages)
-        RegisterPage("Workspaces", typeof(WorkspacePage));
-        RegisterPage("NotificationCenter", typeof(NotificationCenterPage));
-
-        // Support & Setup (6 pages)
-        RegisterPage("Help", typeof(HelpPage));
-        RegisterPage("Welcome", typeof(WelcomePage));
-        RegisterPage("Settings", typeof(SettingsPage));
-        RegisterPage("CredentialManagement", typeof(CredentialManagementPage));
-        RegisterPage("KeyboardShortcuts", typeof(KeyboardShortcutsPage));
-        RegisterPage("SetupWizard", typeof(SetupWizardPage));
-        RegisterPage("AddProviderWizard", typeof(AddProviderWizardPage));
-
-        // Activity Log (1 page)
-        RegisterPage("ActivityLog", typeof(ActivityLogPage));
-
-        // Fund operations workstation aliases
-        RegisterPage("FundAccounts", typeof(FundAccountsPage));
-        RegisterPage("FundBanking", typeof(FundLedgerPage));
-        RegisterPage("FundPortfolio", typeof(FundLedgerPage));
-        RegisterPage("FundCashFinancing", typeof(FundLedgerPage));
-        RegisterPage("FundLedger", typeof(FundLedgerPage));
-        RegisterPage("FundTrialBalance", typeof(FundLedgerPage));
-        RegisterPage("FundReconciliation", typeof(FundLedgerPage));
-        RegisterPage("FundAuditTrail", typeof(FundLedgerPage));
-
-        // Security Master workstation (1 page)
-        RegisterPage("SecurityMaster", typeof(SecurityMasterPage));
-
-        // Direct Lending workstation (1 page)
-        RegisterPage("DirectLending", typeof(DirectLendingPage));
+            foreach (var alias in page.Aliases)
+            {
+                RegisterPage(alias, page.PageType);
+            }
+        }
     }
 
     /// <summary>

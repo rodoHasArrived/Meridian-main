@@ -51,7 +51,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var registry = new ProviderRegistry(alertDispatcher: null, LoggingSetup.ForContext<ProviderRegistry>());
 
             var configStore = sp.GetRequiredService<ConfigStore>();
-            var config = configStore.Load();
+            var config = LoadPreparedConfig(sp, configStore);
             var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var log = LoggingSetup.ForContext("ProviderRegistration");
 
@@ -87,13 +87,19 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<ProviderFactory>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
-            var config = configStore.Load();
+            var config = LoadPreparedConfig(sp, configStore);
             var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var logger = LoggingSetup.ForContext<ProviderFactory>();
             return new ProviderFactory(config, credentialResolver, logger);
         });
 
         return services;
+    }
+
+    private static AppConfig LoadPreparedConfig(IServiceProvider sp, ConfigStore configStore)
+    {
+        var configService = sp.GetRequiredService<ConfigurationService>();
+        return configService.LoadAndPrepareConfig(configStore.ConfigPath);
     }
 
     private static void RegisterOptionsChainProviders(
@@ -156,7 +162,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var secretKey = credentialContext.Get("ALPACA_SECRET_KEY");
             return new Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient(
                 tradeCollector, quoteCollector,
-                config.Alpaca! with { KeyId = keyId ?? "", SecretKey = secretKey ?? "" });
+                (config.Alpaca ?? new AlpacaOptions()) with { KeyId = keyId ?? "", SecretKey = secretKey ?? "" });
         });
 
         registry.RegisterStreamingFactory("polygon", () =>

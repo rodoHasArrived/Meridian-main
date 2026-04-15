@@ -76,6 +76,22 @@ Pass `--fixture` flag when starting the application:
 dotnet run --project src/Meridian.Wpf -- --fixture
 ```
 
+### End-to-End Desktop Launcher
+
+When you want the WPF shell plus the local Meridian backend to start together in an offline-safe
+development mode, use the desktop launcher with `-Fixture`:
+
+```powershell
+pwsh -File scripts/dev/run-desktop.ps1 -Fixture
+```
+
+This forces the backend onto the synthetic provider and enables fixture mode for the desktop shell,
+so local startup does not depend on live Alpaca or other provider credentials in
+`config/appsettings.json`. The launcher also restores any temporary fixture-mode environment overrides
+when it exits, stops a previously running `Meridian.Desktop.exe` from this same workspace before a rebuild,
+and shuts down the launcher-owned local host after the desktop window closes so local debugging sessions do
+not leave orphaned Meridian processes behind.
+
 ### Programmatic (For Testing)
 
 In your test setup or initialization code:

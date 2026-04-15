@@ -127,21 +127,23 @@ public static class WorkstationEndpoints
         .Produces<IReadOnlyList<ReconciliationRunSummary>>(200)
         .Produces(404);
 
-        group.MapGet("/reconciliation/break-queue", (string? status) =>
+        group.MapGet("/reconciliation/break-queue", async (string? status, HttpContext context) =>
         {
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var items = GetBreakQueueItems(status);
             return Results.Json(items, jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue")
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/review", (string breakId, ReviewReconciliationBreakRequest request) =>
+        group.MapPost("/reconciliation/break-queue/{breakId}/review", async (string breakId, ReviewReconciliationBreakRequest request, HttpContext context) =>
         {
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
             {
                 return Results.BadRequest(new { error = "BreakId in body must match route parameter." });
             }
 
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var updated = ReviewBreak(request);
             return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
         })
@@ -150,7 +152,7 @@ public static class WorkstationEndpoints
         .Produces(400)
         .Produces(404);
 
-        group.MapPost("/reconciliation/break-queue/{breakId}/resolve", (string breakId, ResolveReconciliationBreakRequest request) =>
+        group.MapPost("/reconciliation/break-queue/{breakId}/resolve", async (string breakId, ResolveReconciliationBreakRequest request, HttpContext context) =>
         {
             if (!string.Equals(request.BreakId, breakId, StringComparison.OrdinalIgnoreCase))
             {
@@ -162,6 +164,7 @@ public static class WorkstationEndpoints
                 return Results.BadRequest(new { error = "Status must be Resolved or Dismissed for resolve action." });
             }
 
+            await EnsureBreakQueueSeededAsync(context.RequestServices, context.RequestAborted).ConfigureAwait(false);
             var updated = ResolveBreak(request);
             return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
         })
@@ -2341,6 +2344,26 @@ public static class WorkstationEndpoints
                 }
             }
         }
+    }
+
+    private static async Task EnsureBreakQueueSeededAsync(IServiceProvider services, CancellationToken ct)
+    {
+        var readService = services.GetService<StrategyRunReadService>();
+        var reconciliationService = services.GetService<IReconciliationRunService>();
+        if (readService is null || reconciliationService is null)
+        {
+            return;
+        }
+
+        var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+        if (runs.Count == 0)
+        {
+            return;
+        }
+
+        var reconciliations = await Task.WhenAll(
+            runs.Select(run => reconciliationService.GetLatestForRunAsync(run.RunId, ct))).ConfigureAwait(false);
+        SeedBreakQueue(runs, reconciliations);
     }
 
     private static IReadOnlyList<ReconciliationBreakQueueItem> GetBreakQueueItems(string? status)

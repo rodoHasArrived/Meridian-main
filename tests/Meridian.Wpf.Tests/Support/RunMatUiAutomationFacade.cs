@@ -259,7 +259,7 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         services.AddSingleton(sp => new WorkstationOperatingContextService(
             sp.GetRequiredService<FundContextService>(),
             sp.GetService<IFundStructureService>(),
-            Path.Combine(serviceRoot, "operating-context.json")));
+            storagePath: Path.Combine(serviceRoot, "operating-context.json")));
         services.AddSingleton<WorkspaceShellContextService>();
         services.AddSingleton<FundAccountReadService>();
         services.AddSingleton<CashFinancingReadService>();

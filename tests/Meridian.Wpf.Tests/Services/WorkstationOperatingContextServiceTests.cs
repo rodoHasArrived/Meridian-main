@@ -1,4 +1,7 @@
 using System.IO;
+using Meridian.Application.EnvironmentDesign;
+using Meridian.Contracts.EnvironmentDesign;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
@@ -62,6 +65,59 @@ public sealed class WorkstationOperatingContextServiceTests
         changedEventCount.Should().Be(0);
         reloaded.CurrentContext.Should().NotBeNull();
         reloaded.CurrentContext!.ContextKey.Should().Be(service.Contexts[0].ContextKey);
+    }
+
+    [Fact]
+    public async Task LoadAsync_WithPublishedEnvironmentRuntime_ShouldApplyLaneMetadata()
+    {
+        var fundContext = await CreateFundContextAsync();
+        var runtimeService = new EnvironmentDesignerService(persistencePath: null);
+        var draft = await runtimeService.CreateDraftAsync(new CreateEnvironmentDraftRequest(
+            Guid.NewGuid(),
+            "Advisory Practice",
+            "test",
+            new OrganizationEnvironmentDefinitionDto(
+                Guid.NewGuid(),
+                "org-root",
+                "ADV-ORG",
+                "Northwind Advisory Group",
+                "USD",
+                [
+                    new EnvironmentLaneDefinitionDto(
+                        "advisory-lane",
+                        "Advisory Practice",
+                        EnvironmentLaneArchetype.AdvisoryPractice,
+                        "governance",
+                        "GovernanceShell",
+                        "advisory-business",
+                        "investor-client",
+                        [
+                            EnvironmentManagedScopeKind.IndividualInvestor,
+                            EnvironmentManagedScopeKind.FamilyOffice,
+                            EnvironmentManagedScopeKind.Fund
+                        ])
+                ],
+                [
+                    new EnvironmentNodeDefinitionDto("org-root", EnvironmentNodeKind.Organization, "ADV-ORG", "Northwind Advisory Group", "USD"),
+                    new EnvironmentNodeDefinitionDto("advisory-business", EnvironmentNodeKind.Business, "ADV-HYB", "Advisory Operating Shell", "USD", ParentNodeDefinitionId: "org-root", ParentRelationshipType: OwnershipRelationshipTypeDto.Owns, LaneId: "advisory-lane", BusinessKind: BusinessKindDto.Hybrid),
+                    new EnvironmentNodeDefinitionDto("investor-client", EnvironmentNodeKind.Client, "CLI-001", "Individual Investor Mandate", "USD", ParentNodeDefinitionId: "advisory-business", ParentRelationshipType: OwnershipRelationshipTypeDto.Advises, LaneId: "advisory-lane", ClientSegmentKind: ClientSegmentKind.IndividualInvestor)
+                ],
+                [])));
+        await runtimeService.PublishAsync(new EnvironmentPublishPlanDto(draft.DraftId, "test"));
+
+        var service = new WorkstationOperatingContextService(
+            fundContext,
+            fundStructureService: null,
+            environmentRuntimeProjectionService: runtimeService,
+            storagePath: BuildStoragePath("operating-context"));
+
+        await service.LoadAsync();
+
+        service.Contexts.Should().Contain(context =>
+            context.EnvironmentLaneId == "advisory-lane" &&
+            context.EnvironmentLaneName == "Advisory Practice" &&
+            context.OperatingEnvironmentKind == OperatingEnvironmentKind.AdvisoryPractice &&
+            context.DefaultWorkspaceId == "governance");
     }
 
     private static async Task<FundContextService> CreateFundContextAsync()

@@ -6,27 +6,27 @@ using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
-using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
+using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
-public partial class DataOperationsWorkspaceShellPage : Page
+public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceShellPageBase
 {
-    private const string WorkspaceId = "data-operations";
-
-    private readonly NavigationService _navigationService;
     private readonly WorkspaceShellContextService _shellContextService;
     private readonly Meridian.Wpf.Services.NotificationService _notificationService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
 
     public DataOperationsWorkspaceShellPage(
         NavigationService navigationService,
+        WorkspaceService workspaceService,
+        DataOperationsWorkspaceShellStateProvider stateProvider,
+        DataOperationsWorkspaceShellViewModel viewModel,
         WorkspaceShellContextService shellContextService,
         WorkstationOperatingContextService? operatingContextService,
         Meridian.Wpf.Services.NotificationService notificationService)
+        : base(navigationService, workspaceService, stateProvider, viewModel)
     {
         InitializeComponent();
-        _navigationService = navigationService;
         _shellContextService = shellContextService;
         _operatingContextService = operatingContextService;
         _notificationService = notificationService;
@@ -36,13 +36,13 @@ public partial class DataOperationsWorkspaceShellPage : Page
     {
         _shellContextService.SignalsChanged += OnSignalsChanged;
         await RefreshAsync();
-        await RestoreDockLayoutAsync();
+        await RestoreDockLayoutAsync(DataOperationsDockManager);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         _shellContextService.SignalsChanged -= OnSignalsChanged;
-        _ = SaveDockLayoutAsync();
+        _ = SaveDockLayoutAsync(DataOperationsDockManager);
     }
 
     private async Task RefreshAsync()
@@ -73,7 +73,7 @@ public partial class DataOperationsWorkspaceShellPage : Page
             CriticalTone = unreadAlerts > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info
         });
 
-        CommandBar.CommandGroup = new WorkspaceCommandGroup
+        ViewModel.CommandGroup = new WorkspaceCommandGroup
         {
             PrimaryCommands =
             [
@@ -90,6 +90,7 @@ public partial class DataOperationsWorkspaceShellPage : Page
                 new WorkspaceCommandItem { Id = "Schedules", Label = "Schedules", Description = "Open schedules", Glyph = "\uE823" }
             ]
         };
+        CommandBar.CommandGroup = ViewModel.CommandGroup;
 
         QueueScopeBadgeText.Text = unreadAlerts > 0 ? $"{scopeLabel} · {unreadAlerts} alert-linked" : scopeLabel;
         QueueSummaryText.Text = scopeSummary;
@@ -135,54 +136,8 @@ public partial class DataOperationsWorkspaceShellPage : Page
             };
     }
 
-    private async Task RestoreDockLayoutAsync()
-    {
-        try
-        {
-            var layout = await WorkspaceService.Instance.GetWorkspaceLayoutStateForContextAsync(WorkspaceId, GetLayoutScopeKey());
-            if (layout?.Panes.Count > 0)
-            {
-                foreach (var pane in layout.Panes.OrderBy(static pane => pane.Order))
-                {
-                    OpenWorkspacePage(pane.PageTag, NormalizeDockAction(MapDockAction(pane.DockZone)));
-                }
-
-                if (ShouldRestoreSerializedLayout(layout))
-                {
-                    DataOperationsDockManager.LoadLayout(layout.DockLayoutXml);
-                }
-
-                return;
-            }
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to restore dock layout: {ex.Message}");
-        }
-
-        OpenWorkspacePage("Provider", PaneDropAction.Replace);
-        OpenWorkspacePage("Backfill", PaneDropAction.SplitRight);
-        OpenWorkspacePage("Storage", PaneDropAction.SplitBelow);
-        OpenWorkspacePage("CollectionSessions", PaneDropAction.OpenTab);
-    }
-
-    private async Task SaveDockLayoutAsync()
-    {
-        try
-        {
-            var layout = DataOperationsDockManager.CaptureLayoutState("data-operations-workspace", "Data Operations Workspace");
-            layout.OperatingContextKey = GetLayoutScopeKey();
-            layout.WindowMode = GetWindowMode();
-            layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
-            await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to save dock layout: {ex.Message}");
-        }
-    }
-
-    private void OnPaneDropRequested(object? sender, PaneDropEventArgs e) => OpenWorkspacePage(e.PageTag, e.Action);
+    private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
+        => OpenWorkspacePage(DataOperationsDockManager, e.PageTag, e.Action);
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e) => ExecuteAction(e.Command.Id, navigate: true);
     private void OnQueuePrimaryActionClick(object sender, RoutedEventArgs e) { if (sender is Button { Tag: string actionId }) ExecuteAction(actionId, navigate: false); }
@@ -198,7 +153,7 @@ public partial class DataOperationsWorkspaceShellPage : Page
 
         if (navigate)
         {
-            _navigationService.NavigateTo(actionId);
+            NavigationService.NavigateTo(actionId);
             return;
         }
 
@@ -210,60 +165,16 @@ public partial class DataOperationsWorkspaceShellPage : Page
             _ => PaneDropAction.OpenTab
         };
 
-        OpenWorkspacePage(actionId, dockAction);
-    }
-
-    private void OpenWorkspacePage(string pageTag, PaneDropAction action, object? parameter = null)
-    {
-        try
-        {
-            var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
-            DataOperationsDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            DataOperationsDockManager.LoadPage(
-                BuildPageKey(pageTag, parameter),
-                GetPageTitle(pageTag),
-                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
-                NormalizeDockAction(action));
-        }
+        OpenWorkspacePage(DataOperationsDockManager, actionId, dockAction);
     }
 
     private void OnSignalsChanged(object? sender, EventArgs e)
-    {
-        if (!Dispatcher.CheckAccess())
-        {
-            _ = Dispatcher.InvokeAsync(async () => await RefreshAsync());
-            return;
-        }
+        => DispatchRefresh(RefreshAsync);
 
-        _ = RefreshAsync();
-    }
-
-    private void OpenProviders_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("Provider");
-    private void OpenBackfill_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("Backfill");
-    private void OpenSymbols_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("Symbols");
-    private void OpenStorage_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("Storage");
-    private void OpenCollectionSessions_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("CollectionSessions");
-    private void OpenPackageManager_Click(object sender, RoutedEventArgs e) => _navigationService.NavigateTo("PackageManager");
-
-    private string? GetLayoutScopeKey()
-        => _operatingContextService?.GetActiveScopeKey();
-
-    private BoundedWindowMode GetWindowMode()
-        => _operatingContextService?.CurrentWindowMode ?? BoundedWindowMode.DockFloat;
-
-    private static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layout)
-        => layout.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layout.DockLayoutXml);
-
-    private PaneDropAction NormalizeDockAction(PaneDropAction action)
-        => GetWindowMode() == BoundedWindowMode.Focused && action == PaneDropAction.FloatWindow
-            ? PaneDropAction.OpenTab
-            : action;
-
-    private static string BuildPageKey(string pageTag, object? parameter) => parameter is null ? pageTag : $"{pageTag}:{parameter}";
-    private static string GetPageTitle(string pageTag) => pageTag switch { "Provider" => "Providers", "Backfill" => "Backfill", "Storage" => "Storage", "CollectionSessions" => "Collection Sessions", "PackageManager" => "Package Manager", "DataExport" => "Data Export", _ => pageTag };
-    private static PaneDropAction MapDockAction(string dockZone) => dockZone switch { "left" => PaneDropAction.SplitLeft, "right" => PaneDropAction.SplitRight, "bottom" => PaneDropAction.SplitBelow, "floating" => PaneDropAction.FloatWindow, _ => PaneDropAction.Replace };
+    private void OpenProviders_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Provider");
+    private void OpenBackfill_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Backfill");
+    private void OpenSymbols_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Symbols");
+    private void OpenStorage_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("Storage");
+    private void OpenCollectionSessions_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("CollectionSessions");
+    private void OpenPackageManager_Click(object sender, RoutedEventArgs e) => NavigationService.NavigateTo("PackageManager");
 }

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
+using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
@@ -27,6 +28,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -277,6 +279,15 @@ public partial class App : System.Windows.Application
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Meridian",
                 "fund-structure.json")));
+        services.AddSingleton<EnvironmentDesignerService>(_ => new EnvironmentDesignerService(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "environment-designer.json")));
+        services.AddSingleton<IEnvironmentDesignService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
         services.AddSingleton<WpfServices.WorkstationOperatingContextService>();
         services.AddSingleton<WpfServices.WorkspaceShellContextService>();
 
@@ -320,97 +331,18 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Wpf.ViewModels.MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
 
-        // ── Pages (transient — created per navigation) ──────────────────────
-        services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
-        services.AddTransient<MainPage>();
+        // ── Catalog-driven WPF shell pages and shell services ───────────────
+        services.AddMeridianWpfShell();
+
+        // ── Additional pages not yet catalog-backed ─────────────────────────
         services.AddTransient<FundProfileSelectionPage>();
-        services.AddTransient<DashboardPage>();
-        services.AddTransient<WatchlistPage>();
-        services.AddTransient<ProviderPage>();
-        services.AddTransient<ProviderHealthPage>();
-        services.AddTransient<DataSourcesPage>();
-        services.AddTransient<LiveDataViewerPage>();
-        services.AddTransient<SymbolsPage>();
-        services.AddTransient<SymbolMappingPage>();
-        services.AddTransient<SymbolStoragePage>();
-        services.AddTransient<StoragePage>();
-        services.AddTransient<BackfillPage>();
-        services.AddTransient<PortfolioImportPage>();
-        services.AddTransient<IndexSubscriptionPage>();
-        services.AddTransient<ScheduleManagerPage>();
-        services.AddTransient<DataQualityPage>();
-        services.AddTransient<CollectionSessionPage>();
-        services.AddTransient<ArchiveHealthPage>();
-        services.AddTransient<ServiceManagerPage>();
-        services.AddTransient<SystemHealthPage>();
-        services.AddTransient<DiagnosticsPage>();
-        services.AddTransient<DataExportPage>();
-        services.AddTransient<DataSamplingPage>();
-        services.AddTransient<TimeSeriesAlignmentPage>();
-        services.AddTransient<ExportPresetsPage>();
-        services.AddTransient<AnalysisExportPage>();
-        services.AddTransient<AnalysisExportWizardPage>();
-        services.AddTransient<EventReplayPage>();
-        services.AddTransient<PackageManagerPage>();
-        services.AddTransient<TradingHoursPage>();
-        services.AddTransient<AdvancedAnalyticsPage>();
-        services.AddTransient<ChartingPage>();
-        services.AddTransient<OrderBookPage>();
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
-        services.AddTransient<DataCalendarPage>();
-        services.AddTransient<StorageOptimizationPage>();
-        services.AddTransient<RetentionAssurancePage>();
-        services.AddTransient<AdminMaintenancePage>();
-        services.AddTransient<LeanIntegrationPage>();
-        services.AddTransient<MessagingHubPage>();
-        services.AddTransient<Meridian.Wpf.Views.WorkspacePage>();
-        services.AddTransient<NotificationCenterPage>();
-        services.AddTransient<HelpPage>();
-        services.AddTransient<WelcomePage>();
-        services.AddTransient<SettingsPage>();
-        services.AddTransient<KeyboardShortcutsPage>();
-        services.AddTransient<SetupWizardPage>();
-        services.AddTransient<AddProviderWizardPage>();
-        services.AddTransient<ActivityLogPage>();
-        services.AddTransient<DataBrowserPage>();
-        services.AddTransient<BacktestPage>();
-        services.AddTransient<RunMatPage>();
-        services.AddTransient<StrategyRunsPage>();
-        services.AddTransient<RunDetailPage>();
-        services.AddTransient<RunPortfolioPage>();
-        services.AddTransient<RunLedgerPage>();
-        services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
-        services.AddTransient<FundAccountsPage>();
-        services.AddTransient<FundLedgerPage>();
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
-        services.AddTransient<CredentialManagementPage>();
-        services.AddTransient<QuantScriptPage>();
-        services.AddTransient<AccountPortfolioPage>();
         services.AddTransient<QualityArchivePage>();
-        services.AddTransient<ResearchWorkspaceShellPage>();
-        services.AddTransient<TradingWorkspaceShellPage>();
-        services.AddTransient<DataOperationsWorkspaceShellPage>();
-        services.AddTransient<GovernanceWorkspaceShellPage>();
-        services.AddTransient<RunRiskPage>();
 
-        // ── Missing pages (registered for DI-aware navigation) ───────────────
-        services.AddTransient<AggregatePortfolioPage>();
-        services.AddTransient<BatchBacktestPage>();
         services.AddTransient<ClusterStatusPage>();
-        services.AddTransient<CredentialManagementPage>();
-        services.AddTransient<DirectLendingPage>();
-        services.AddTransient<OptionsPage>();
-        services.AddTransient<PositionBlotterPage>();
-        services.AddTransient<QualityArchivePage>();
-        services.AddTransient<QuantScriptPage>();
-        services.AddTransient<ResearchWorkspaceShellPage>();
-        services.AddTransient<DataOperationsWorkspaceShellPage>();
-        services.AddTransient<GovernanceWorkspaceShellPage>();
-        services.AddTransient<RunCashFlowPage>();
-        services.AddTransient<RunRiskPage>();
-        services.AddTransient<TradingWorkspaceShellPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         // Registered in RegisterStrategyWorkspaceServices so optional Security Master
@@ -555,6 +487,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton<NavAttributionService>();
+        services.AddSingleton<ReportGenerationService>();
+        services.AddSingleton<FundOperationsWorkspaceReadService>();
         services.AddSingleton<WpfServices.StrategyRunWorkspaceService>(sp =>
         {
             var service = new WpfServices.StrategyRunWorkspaceService(
@@ -743,7 +678,7 @@ public partial class App : System.Windows.Application
                 SavedAt = DateTime.UtcNow
             };
 
-            await workspaceService.SaveSessionStateAsync(session);
+            await workspaceService.SaveSessionStateAsync(session, ct: ct).ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -801,10 +736,10 @@ public partial class App : System.Windows.Application
     /// <summary>
     /// Handles app exit for clean shutdown of background services with timeout.
     /// </summary>
-    private async void OnExit(object sender, ExitEventArgs e)
+    private void OnExit(object sender, ExitEventArgs e)
     {
-        await SafeOnExitAsync();
-        _host?.Dispose();
+        SafeOnExitAsync().GetAwaiter().GetResult();
+        StopHostSafely();
         WpfServices.SingleInstanceService.Instance.Dispose();
     }
 
@@ -824,7 +759,7 @@ public partial class App : System.Windows.Application
             using var cts = new CancellationTokenSource(ShutdownTimeoutMs);
 
             // Save workspace session before shutting down services
-            await SaveWorkspaceSessionAsync();
+            await SaveWorkspaceSessionAsync(cts.Token).ConfigureAwait(false);
 
             // Shutdown services in parallel with timeout for better performance
             var shutdownTasks = new[]
@@ -832,10 +767,11 @@ public partial class App : System.Windows.Application
                 ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(), "BackgroundTaskScheduler", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.PendingOperationsQueueService.Instance.ShutdownAsync(), "PendingOperationsQueue", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.OfflineTrackingPersistenceService.Instance.ShutdownAsync(), "OfflineTrackingPersistence", cts.Token),
-                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token)
+                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token),
+                ShutdownServiceAsync(() => StopManagedBackendAsync(cts.Token), "BackendServiceManager", cts.Token)
             };
 
-            await Task.WhenAll(shutdownTasks);
+            await Task.WhenAll(shutdownTasks).ConfigureAwait(false);
 
             // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
             try
@@ -858,6 +794,55 @@ public partial class App : System.Windows.Application
         }
     }
 
+    private void StopHostSafely()
+    {
+        var host = _host;
+        _host = null;
+        if (host is null)
+        {
+            return;
+        }
+
+        const int HostShutdownTimeoutMs = 5000;
+        try
+        {
+            using var cts = new CancellationTokenSource(HostShutdownTimeoutMs);
+            host.StopAsync(cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception)
+        {
+        }
+
+        try
+        {
+            if (host is IAsyncDisposable asyncHost)
+            {
+                asyncHost.DisposeAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            else
+            {
+                host.Dispose();
+            }
+        }
+        catch (Exception)
+        {
+        }
+    }
+
+    private static async Task StopManagedBackendAsync(CancellationToken ct)
+    {
+        var result = await WpfServices.BackendServiceManager.Instance.StopAsync(ct).ConfigureAwait(false);
+        if (!result.Success)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Backend service manager reported a shutdown failure",
+                ("Message", result.Message));
+        }
+    }
+
     /// <summary>
     /// Helper method to shutdown a service with proper error handling.
     /// </summary>
@@ -865,7 +850,7 @@ public partial class App : System.Windows.Application
     {
         try
         {
-            await shutdownAction().WaitAsync(ct);
+            await shutdownAction().WaitAsync(ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -893,7 +878,7 @@ public partial class App : System.Windows.Application
             catch (Exception)
             {
             }
-        }, ct);
+        }, ct).ConfigureAwait(false);
     }
 
     /// <summary>

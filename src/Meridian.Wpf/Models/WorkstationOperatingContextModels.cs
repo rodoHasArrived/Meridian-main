@@ -1,4 +1,5 @@
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Models;
@@ -51,6 +52,16 @@ public enum GovernanceSubarea : byte
     Audit
 }
 
+public enum OperatingEnvironmentKind : byte
+{
+    LegacyFundProfile,
+    IndividualInvestor,
+    AdvisoryPractice,
+    FamilyOffice,
+    FundPlatform,
+    Custom
+}
+
 /// <summary>
 /// One selectable operating context in the workstation shell.
 /// </summary>
@@ -66,6 +77,9 @@ public sealed record WorkstationOperatingContext
     public IReadOnlyList<string> LedgerGroupIds { get; init; } = Array.Empty<string>();
     public string DefaultWorkspaceId { get; init; } = "research";
     public string DefaultLandingPageTag { get; init; } = "ResearchShell";
+    public OperatingEnvironmentKind OperatingEnvironmentKind { get; init; } = OperatingEnvironmentKind.LegacyFundProfile;
+    public string? EnvironmentLaneId { get; init; }
+    public string? EnvironmentLaneName { get; init; }
     public string? OrganizationId { get; init; }
     public string? BusinessId { get; init; }
     public string? ClientId { get; init; }
@@ -101,6 +115,12 @@ public sealed record WorkstationOperatingContext
             if (!string.IsNullOrWhiteSpace(BaseCurrency))
             {
                 parts.Add(BaseCurrency);
+            }
+
+            if (!string.IsNullOrWhiteSpace(EnvironmentLaneName) &&
+                !string.Equals(EnvironmentLaneName, DisplayName, StringComparison.OrdinalIgnoreCase))
+            {
+                parts.Add(EnvironmentLaneName);
             }
 
             if (!string.IsNullOrWhiteSpace(LegalEntityName) &&
@@ -163,6 +183,16 @@ public sealed record WorkstationOperatingContext
         fundScopeId = scopeId;
         return true;
     }
+
+    public static OperatingEnvironmentKind FromArchetype(EnvironmentLaneArchetype archetype)
+        => archetype switch
+        {
+            EnvironmentLaneArchetype.IndividualInvestor => OperatingEnvironmentKind.IndividualInvestor,
+            EnvironmentLaneArchetype.AdvisoryPractice => OperatingEnvironmentKind.AdvisoryPractice,
+            EnvironmentLaneArchetype.FamilyOffice => OperatingEnvironmentKind.FamilyOffice,
+            EnvironmentLaneArchetype.FundPlatform => OperatingEnvironmentKind.FundPlatform,
+            _ => OperatingEnvironmentKind.Custom
+        };
 }
 
 public sealed class WorkstationOperatingContextChangingEventArgs : EventArgs

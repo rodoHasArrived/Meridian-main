@@ -1,7 +1,6 @@
 using FluentAssertions;
-using Meridian.Application.Exceptions;
-using Meridian.Execution.Adapters;
 using Meridian.Execution.Exceptions;
+using Meridian.Execution.Adapters;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -242,7 +241,7 @@ public sealed class BrokerageGatewayAdapterTests
         updates.Should().HaveCount(1);
         updates[0].ClientOrderId.Should().Be("my-client-id");
         updates[0].OrderId.Should().Be("broker-456");
-        updates[0].FilledQuantity.Should().Be(5L);
+        updates[0].FilledQuantity.Should().Be(5m);
         updates[0].Status.Should().Be(GatewayOrderStatus.Filled);
     }
 
@@ -277,7 +276,7 @@ public sealed class BrokerageGatewayAdapterTests
     }
 
     [Fact]
-    public async Task StreamOrderUpdatesAsync_ThrowsMeridianException_ForFractionalFilledQuantity()
+    public async Task StreamOrderUpdatesAsync_PreservesFractionalFilledQuantity()
     {
         var gateway = CreateMockGateway();
         var report = new ExecutionReport
@@ -294,15 +293,16 @@ public sealed class BrokerageGatewayAdapterTests
 
         await using var adapter = new BrokerageGatewayAdapter(gateway, NullLogger<BrokerageGatewayAdapter>.Instance);
 
-        Func<Task> act = async () =>
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var updates = new List<OrderStatusUpdate>();
+        await foreach (var update in adapter.StreamOrderUpdatesAsync(cts.Token))
         {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            await foreach (var _ in adapter.StreamOrderUpdatesAsync(cts.Token))
-            { }
-        };
+            updates.Add(update);
+        }
 
-        await act.Should().ThrowAsync<MeridianException>()
-            .WithMessage("*fractional*");
+        updates.Should().ContainSingle();
+        updates[0].FilledQuantity.Should().Be(1.5m);
+        updates[0].Status.Should().Be(GatewayOrderStatus.Filled);
     }
 
     // ── Helpers ────────────────────────────────────────────────────────

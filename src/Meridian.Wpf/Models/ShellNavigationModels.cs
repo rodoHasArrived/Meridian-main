@@ -1,3 +1,5 @@
+using Meridian.Ui.Services;
+
 namespace Meridian.Wpf.Models;
 
 public enum ShellNavigationVisibilityTier
@@ -21,8 +23,33 @@ public sealed record WorkspaceShellDescriptor(
     string HomePageTag,
     string TileSummary);
 
+public enum WorkspacePaneParameterBinding : byte
+{
+    None,
+    ActiveRunId
+}
+
+public sealed record WorkspacePaneDefinition(
+    string PageTag,
+    PaneDropAction Action,
+    WorkspacePaneParameterBinding ParameterBinding = WorkspacePaneParameterBinding.None,
+    bool OpenWithoutBoundParameter = false,
+    string? FallbackPageTag = null,
+    PaneDropAction? FallbackAction = null);
+
+public sealed record WorkspaceShellDefinition(
+    string WorkspaceId,
+    string LayoutId,
+    string DisplayName,
+    IReadOnlyList<WorkspacePaneDefinition> DefaultPanes,
+    IReadOnlyDictionary<string, IReadOnlyList<WorkspacePaneDefinition>> PresetPanes,
+    IReadOnlyList<WorkspacePaneDefinition> ContextlessPanes,
+    Type? StateProviderType = null,
+    Type? ViewModelType = null);
+
 public sealed record ShellPageDescriptor(
     string PageTag,
+    Type PageType,
     string Title,
     string Subtitle,
     string WorkspaceId,
@@ -32,6 +59,7 @@ public sealed record ShellPageDescriptor(
     ShellNavigationVisibilityTier VisibilityTier,
     IReadOnlyList<string> SearchKeywords,
     IReadOnlyList<string> RelatedPageTags,
+    IReadOnlyList<string> Aliases,
     bool HideFromDefaultPalette = false);
 
 public sealed record ShellNavigationItem(
@@ -47,6 +75,16 @@ public sealed record ShellNavigationItem(
         ? $"{WorkspaceTitle} · {SectionLabel}"
         : $"{WorkspaceTitle} · {SectionLabel} · {VisibilityLabel}";
 }
+
+public sealed record WorkspaceShellState(
+    string WorkspaceId,
+    string LayoutId,
+    string DisplayName,
+    string? LayoutScopeKey,
+    BoundedWindowMode WindowMode,
+    string? LayoutPresetId = null,
+    bool HasPrimaryContext = true,
+    string? ActiveRunId = null);
 
 public sealed record ShellCommandPaletteEntry(
     string PageTag,

@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Application.EnvironmentDesign;
+using Meridian.Contracts.EnvironmentDesign;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
@@ -12,6 +14,7 @@ public sealed partial class WorkstationOperatingContextService
 {
     private readonly FundContextService _fundContextService;
     private readonly IFundStructureService? _fundStructureService;
+    private readonly IEnvironmentRuntimeProjectionService? _environmentRuntimeProjectionService;
     private readonly string _storagePath;
     private readonly List<WorkstationOperatingContext> _contexts = new();
     private bool _loaded;
@@ -19,10 +22,12 @@ public sealed partial class WorkstationOperatingContextService
     public WorkstationOperatingContextService(
         FundContextService fundContextService,
         IFundStructureService? fundStructureService = null,
+        IEnvironmentRuntimeProjectionService? environmentRuntimeProjectionService = null,
         string? storagePath = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _fundStructureService = fundStructureService;
+        _environmentRuntimeProjectionService = environmentRuntimeProjectionService;
         _storagePath = storagePath ?? GetDefaultStoragePath();
     }
 
@@ -88,7 +93,28 @@ public sealed partial class WorkstationOperatingContextService
             contexts[context.ContextKey] = context;
         }
 
-        if (_fundStructureService is not null)
+        if (_environmentRuntimeProjectionService is not null)
+        {
+            try
+            {
+                var runtime = await _environmentRuntimeProjectionService
+                    .GetCurrentRuntimeAsync(ct: ct)
+                    .ConfigureAwait(false);
+
+                if (runtime is not null)
+                {
+                    foreach (var context in await BuildRuntimeContextsAsync(runtime, _fundContextService.Profiles, ct).ConfigureAwait(false))
+                    {
+                        contexts[context.ContextKey] = context;
+                    }
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        if (_fundStructureService is not null && (_environmentRuntimeProjectionService is null || contexts.Count == 0))
         {
             try
             {
@@ -96,7 +122,7 @@ public sealed partial class WorkstationOperatingContextService
                     .GetOrganizationStructureAsync(new OrganizationStructureQuery(), ct)
                     .ConfigureAwait(false);
 
-                foreach (var context in await BuildGraphContextsAsync(graph, _fundContextService.Profiles, ct).ConfigureAwait(false))
+                foreach (var context in await BuildGraphContextsAsync(graph, _fundContextService.Profiles, runtimeLedgerGroups: null, ct).ConfigureAwait(false))
                 {
                     contexts[context.ContextKey] = context;
                 }
@@ -265,7 +291,8 @@ public sealed partial class WorkstationOperatingContextService
                     "USD",
                     effectiveFrom,
                     createdBy,
-                    "Advisory client with shared accounting visibility."),
+                    "Advisory client with shared accounting visibility.",
+                    ClientSegmentKind.FamilyOffice),
                 ct)).ConfigureAwait(false);
 
         await TryExecuteAsync(
@@ -346,6 +373,7 @@ public sealed partial class WorkstationOperatingContextService
     private async Task<IReadOnlyList<WorkstationOperatingContext>> BuildGraphContextsAsync(
         OrganizationStructureGraphDto graph,
         IReadOnlyList<FundProfileDetail> profiles,
+        IReadOnlyList<EnvironmentLedgerGroupRuntimeDto>? runtimeLedgerGroups,
         CancellationToken ct)
     {
         var contexts = new Dictionary<string, WorkstationOperatingContext>(StringComparer.OrdinalIgnoreCase);
@@ -598,7 +626,45 @@ public sealed partial class WorkstationOperatingContextService
                 };
         }
 
-        if (_fundStructureService is not null)
+        if (runtimeLedgerGroups is not null)
+        {
+            foreach (var ledgerGroup in runtimeLedgerGroups)
+            {
+                var business = ledgerGroup.BusinessId.HasValue
+                    ? graph.Businesses.FirstOrDefault(item => item.BusinessId == ledgerGroup.BusinessId.Value)
+                    : null;
+
+                contexts[WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.LedgerGroup, ledgerGroup.LedgerGroupId.ToString())] =
+                    new WorkstationOperatingContext
+                    {
+                        ScopeKind = OperatingContextScopeKind.LedgerGroup,
+                        ScopeId = ledgerGroup.LedgerGroupId.ToString(),
+                        DisplayName = ledgerGroup.DisplayName,
+                        BusinessKind = business?.BusinessKind ?? BusinessKindDto.Hybrid,
+                        BaseCurrency = ledgerGroup.BaseCurrency,
+                        EntityIds = graph.Funds.Where(fund => ledgerGroup.FundId.HasValue && fund.FundId == ledgerGroup.FundId.Value)
+                            .SelectMany(static fund => fund.EntityIds)
+                            .Select(static id => id.ToString("D"))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToArray(),
+                        PortfolioIds = ledgerGroup.InvestmentPortfolioIds.Select(static id => id.ToString("D")).ToArray(),
+                        LedgerGroupIds = new[] { ledgerGroup.LedgerGroupId.ToString() },
+                        DefaultWorkspaceId = "governance",
+                        DefaultLandingPageTag = "GovernanceShell",
+                        OrganizationId = ledgerGroup.OrganizationId?.ToString("D"),
+                        BusinessId = ledgerGroup.BusinessId?.ToString("D"),
+                        ClientId = ledgerGroup.ClientId?.ToString("D"),
+                        FundId = ledgerGroup.FundId?.ToString("D"),
+                        SleeveId = ledgerGroup.SleeveId?.ToString("D"),
+                        VehicleId = ledgerGroup.VehicleId?.ToString("D"),
+                        LedgerGroupId = ledgerGroup.LedgerGroupId.ToString(),
+                        CompatibilityFundProfileId = ResolveCompatibilityFundProfileId(
+                            graph.Funds.Where(fund => ledgerGroup.FundId.HasValue && fund.FundId == ledgerGroup.FundId.Value),
+                            compatibilityByFundName)
+                    };
+            }
+        }
+        else if (_fundStructureService is not null)
         {
             foreach (var business in graph.Businesses)
             {
@@ -646,6 +712,38 @@ public sealed partial class WorkstationOperatingContextService
                         };
                 }
             }
+        }
+
+        return contexts.Values.ToArray();
+    }
+
+    private async Task<IReadOnlyList<WorkstationOperatingContext>> BuildRuntimeContextsAsync(
+        PublishedEnvironmentRuntimeDto runtime,
+        IReadOnlyList<FundProfileDetail> profiles,
+        CancellationToken ct)
+    {
+        var contexts = (await BuildGraphContextsAsync(runtime.OrganizationGraph, profiles, runtime.LedgerGroups, ct).ConfigureAwait(false))
+            .ToDictionary(context => context.ContextKey, StringComparer.OrdinalIgnoreCase);
+        var laneLookup = runtime.Lanes.ToDictionary(lane => lane.LaneId, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var mapping in runtime.ContextMappings
+            .OrderBy(static mapping => mapping.ContextKey, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static mapping => mapping.LaneName, StringComparer.OrdinalIgnoreCase))
+        {
+            if (!contexts.TryGetValue(mapping.ContextKey, out var context) ||
+                !laneLookup.TryGetValue(mapping.LaneId, out var lane))
+            {
+                continue;
+            }
+
+            contexts[mapping.ContextKey] = context with
+            {
+                EnvironmentLaneId = mapping.LaneId,
+                EnvironmentLaneName = mapping.LaneName,
+                OperatingEnvironmentKind = WorkstationOperatingContext.FromArchetype(mapping.Archetype),
+                DefaultWorkspaceId = lane.DefaultWorkspaceId,
+                DefaultLandingPageTag = lane.DefaultLandingPageTag
+            };
         }
 
         return contexts.Values.ToArray();

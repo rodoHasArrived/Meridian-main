@@ -28,7 +28,8 @@ public sealed record CreateClientRequest(
     string BaseCurrency,
     DateTimeOffset EffectiveFrom,
     string CreatedBy,
-    string? Description = null);
+    string? Description = null,
+    ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
 
 public sealed record CreateFundRequest(
     Guid FundId,

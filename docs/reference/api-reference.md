@@ -510,6 +510,28 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/quality/drops` | Dropped event statistics |
 | GET | `/api/quality/drops/{symbol}` | Drops for specific symbol |
 
+### Environment Designer (`/api/environment-designer/*`)
+
+These endpoints expose the company-umbrella environment designer workflow used by the WPF
+governance admin surface.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/environment-designer/drafts` | List environment drafts ordered by last update. |
+| GET | `/api/environment-designer/drafts/{draftId}` | Load a single environment draft. |
+| POST | `/api/environment-designer/drafts` | Create a new environment draft. |
+| PUT | `/api/environment-designer/drafts/{draftId}` | Save an edited environment draft. |
+| DELETE | `/api/environment-designer/drafts/{draftId}` | Delete an environment draft. |
+| POST | `/api/environment-designer/validate` | Validate a draft, optionally against a publish plan. |
+| POST | `/api/environment-designer/publish/preview` | Preview publish diff and destructive-change status. |
+| POST | `/api/environment-designer/publish` | Publish a draft and create a new versioned runtime projection. |
+| GET | `/api/environment-designer/versions` | List published versions, optionally filtered by organization. |
+| GET | `/api/environment-designer/versions/current` | Get the current published version for an organization or the latest current version. |
+| GET | `/api/environment-designer/versions/{versionId}` | Load a published version. |
+| POST | `/api/environment-designer/versions/{versionId}/rollback` | Roll back the current published version pointer. |
+| GET | `/api/environment-designer/runtime/current` | Fetch the current published runtime projection. |
+| GET | `/api/environment-designer/runtime/versions/{versionId}` | Fetch the runtime projection for a specific published version. |
+
 ### Health (`/healthz`, `/api/*`)
 
 | Method | Route | Description |

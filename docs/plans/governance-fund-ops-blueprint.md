@@ -1,6 +1,6 @@
 # Governance and Fund Operations Blueprint
 
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-14
 
 ## Summary
 
@@ -43,8 +43,15 @@ The current repository now includes the first organization-rooted governance str
   - Security Master-driven instrument rule projections for structure-assigned instruments, including coupon/dividend/maturity events sourced from economic definitions and corporate actions without querying position holdings
   - realized-vs-projected variance summaries and per-account contribution breakdowns
   - a shared `/api/fund-structure/cash-flow-view` query path that reuses the F# cash ladder kernel without relying on position holdings
+- A shared governance fund-operations projection now exists for `fundProfileId` scopes through `FundOperationsWorkspaceReadService` plus `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview`, combining:
+  - account summaries and bank snapshots sourced from fund-account state
+  - cash/financing posture derived from linked runs and balance snapshots
+  - fund-ledger journal/trial-balance summaries
+  - reconciliation posture across account and run-scoped seams
+  - NAV attribution and report/export profile preview metadata
+  - one reusable HTTP/service query path now consumed by the Governance WPF shell so workstation entry points stop rebuilding the same posture through parallel read services
 
-This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, and governance cash-flow projection/variance views are now in place, but Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation, report packs, and publication/readiness controls still remain future implementation waves.
+This is intentionally still an early governance slice. Durable local-first persistence, shared Security Master/price/backfill accessibility summaries, governance cash-flow projection/variance views, and a fund-scoped workspace/report-preview API baseline are now in place, but Postgres-backed governance persistence, deeper amortization/direct-loan schedule rules, generalized reconciliation, full report packs, and publication/readiness controls still remain future implementation waves.
 
 ## Scope
 
@@ -480,6 +487,8 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 
 ### Phase F4: Fund Operations Workstation
 
+Current delivered slice: fund-level shared workspace and report-preview API projections now exist for governance/fund-ops entry points, but broader workstation UX and queue workflows still remain.
+
 - [ ] Define governance dashboard sections and quick actions.
 - [ ] Add NAV and attribution baseline service.
 - [ ] Add governance queue for valuation exceptions, reconciliation breaks, and pending actions.
@@ -487,6 +496,8 @@ dotnet test tests/Meridian.Wpf.Tests -c Release /p:EnableWindowsTargeting=true
 - [ ] Ensure all flows reuse shared workstation query paths.
 
 ### Phase F4.5: Report Generation Tools
+
+Current delivered slice: report-pack preview contracts and a shared preview endpoint now exist, but governed artifact packaging/export flows remain incomplete.
 
 - [ ] Define `ReportPackRequest`, `ReportPackDto`, and report section models.
 - [ ] Add governance export profiles for board, investor, compliance, and operations packs.

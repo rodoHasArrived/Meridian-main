@@ -519,6 +519,7 @@ This section inventories the workflow-centric product model that now sits above 
 | Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`; cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently; further cross-links and workflow shells remain |
 | Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, and Security Master/reconciliation drill-ins are live; broader governance-first product flows remain incomplete |
+| Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, and reporting profile previews for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and governed artifact generation remain open |
 | Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
 | Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
@@ -542,7 +543,7 @@ This section inventories the workflow-centric product model that now sits above 
 - **Cash-flow modeling surfaces:** governance-oriented cash-movement and projection views are not yet productized.
 - **Multi-ledger tracking:** governance workflows do not yet expose multiple ledgers, ledger groups, or cross-ledger consolidation explicitly.
 - **Reconciliation engine expansion:** run-scoped reconciliation now exists for recorded strategy runs, but broader position, cash, NAV, external statement, and exception-queue workflows remain incomplete.
-- **Report generation tools:** export infrastructure exists, but governed report-pack generation for investor, board, compliance, and fund-ops workflows is not yet productized.
+- **Report generation tools:** export infrastructure exists and fund-scoped report-pack preview APIs now expose the first governed slice, but full investor, board, compliance, and fund-ops artifact generation is not yet productized.
 
 ### Remaining work
 
@@ -629,7 +630,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-04-13*
+*Last Updated: 2026-04-14*
 
 
 

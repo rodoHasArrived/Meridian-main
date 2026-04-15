@@ -3,20 +3,18 @@ using System.Windows.Controls;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Trading workspace shell — landing page for the Trading workspace.
+/// Trading workspace shell - landing page for the Trading workspace.
 /// Surfaces active paper/live run counts, total equity, open positions, and the risk rail.
 /// Embeds a <see cref="MeridianDockingManager"/> for IDE-style floating panes.
 /// </summary>
-public partial class TradingWorkspaceShellPage : Page
+public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 {
-    private const string WorkspaceId = "trading";
-
-    private readonly NavigationService _navigationService;
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
@@ -25,14 +23,17 @@ public partial class TradingWorkspaceShellPage : Page
 
     public TradingWorkspaceShellPage(
         NavigationService navigationService,
+        WorkspaceService workspaceService,
+        TradingWorkspaceShellStateProvider stateProvider,
+        TradingWorkspaceShellViewModel viewModel,
         StrategyRunWorkspaceService runService,
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService,
         CashFinancingReadService cashFinancingReadService,
         WorkspaceShellContextService shellContextService)
+        : base(navigationService, workspaceService, stateProvider, viewModel)
     {
         InitializeComponent();
-        _navigationService = navigationService;
         _runService = runService;
         _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
@@ -53,7 +54,7 @@ public partial class TradingWorkspaceShellPage : Page
 
         UpdateActiveFundText();
         await RefreshAsync();
-        await RestoreDockLayoutAsync();
+        await RestoreDockLayoutAsync(TradingDockManager);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -66,10 +67,9 @@ public partial class TradingWorkspaceShellPage : Page
             _operatingContextService.ActiveContextChanged -= OnOperatingContextChanged;
             _operatingContextService.WindowModeChanged -= OnSignalsChanged;
         }
-        _ = SaveDockLayoutAsync();
-    }
 
-    // ── Data ─────────────────────────────────────────────────────────────
+        _ = SaveDockLayoutAsync(TradingDockManager);
+    }
 
     private async System.Threading.Tasks.Task RefreshAsync()
     {
@@ -109,10 +109,10 @@ public partial class TradingWorkspaceShellPage : Page
             }
             else
             {
-                CapitalCashText.Text = "—";
-                CapitalGrossExposureText.Text = "—";
-                CapitalNetExposureText.Text = "—";
-                CapitalFinancingText.Text = "—";
+                CapitalCashText.Text = "-";
+                CapitalGrossExposureText.Text = "-";
+                CapitalNetExposureText.Text = "-";
+                CapitalFinancingText.Text = "-";
                 CapitalControlsDetailText.Text = _operatingContextService?.CurrentContext is { } operatingContext
                     ? $"Switch to a fund-linked accounting view to unlock capital and reconciliation posture for {operatingContext.DisplayName}."
                     : "Select an operating context to unlock capital, financing, and reconciliation posture.";
@@ -145,7 +145,8 @@ public partial class TradingWorkspaceShellPage : Page
             });
 
             UpdateActiveRun(summary.ActiveRunContext);
-            CommandBar.CommandGroup = BuildCommandGroup();
+            ViewModel.CommandGroup = BuildCommandGroup();
+            CommandBar.CommandGroup = ViewModel.CommandGroup;
         }
         catch (Exception ex)
         {
@@ -172,116 +173,13 @@ public partial class TradingWorkspaceShellPage : Page
         RiskRailText.Text = $"{activeRun.RiskSummary} Audit references and reconciliation review remain one action away.";
     }
 
-    private async Task RestoreDockLayoutAsync()
-    {
-        try
-        {
-            var operatingContextKey = GetLayoutScopeKey();
-            var layoutState = await WorkspaceService.Instance.GetWorkspaceLayoutStateForContextAsync(WorkspaceId, operatingContextKey);
-
-            if (layoutState?.Panes.Count > 0)
-            {
-                foreach (var pane in layoutState.Panes.OrderBy(static pane => pane.Order))
-                {
-                    OpenWorkspacePage(pane.PageTag, NormalizeDockAction(MapDockAction(pane.DockZone)));
-                }
-
-                if (ShouldRestoreSerializedLayout(layoutState))
-                {
-                    TradingDockManager.LoadLayout(layoutState.DockLayoutXml);
-                }
-
-                return;
-            }
-
-            await LoadDefaultDockingAsync();
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to restore dock layout: {ex.Message}");
-            await LoadDefaultDockingAsync();
-        }
-    }
-
-    private async System.Threading.Tasks.Task SaveDockLayoutAsync()
-    {
-        try
-        {
-            var layout = TradingDockManager.CaptureLayoutState("trading-cockpit", "Trading Cockpit");
-            layout.OperatingContextKey = GetLayoutScopeKey();
-            layout.WindowMode = GetWindowMode();
-            layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
-            await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to save dock layout: {ex.Message}");
-        }
-    }
-
-    private async Task LoadDefaultDockingAsync()
-    {
-        OpenWorkspacePage("LiveData", PaneDropAction.Replace);
-        OpenWorkspacePage("RunPortfolio", PaneDropAction.SplitLeft);
-        OpenWorkspacePage("PositionBlotter", PaneDropAction.SplitRight);
-        OpenWorkspacePage("RunRisk", PaneDropAction.SplitBelow);
-
-        var activeRun = await _runService.GetActiveRunContextAsync();
-        if (activeRun is not null || GetWindowMode() == BoundedWindowMode.WorkbenchPreset)
-        {
-            OpenWorkspacePage("RunLedger", PaneDropAction.OpenTab, activeRun?.RunId);
-            OpenWorkspacePage("FundTrialBalance", PaneDropAction.OpenTab);
-        }
-        else
-        {
-            OpenWorkspacePage("OrderBook", PaneDropAction.OpenTab);
-        }
-    }
-
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
-    {
-        var pageTag = e.PageTag;
-        object? parameter = null;
-        var action = e.Action;
-
-        try
-        {
-            var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
-            TradingDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            TradingDockManager.LoadPage(
-                BuildPageKey(pageTag, parameter),
-                GetPageTitle(pageTag),
-                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
-                NormalizeDockAction(action));
-        }
-    }
-
-    private void OpenWorkspacePage(string pageTag, PaneDropAction action, object? parameter = null)
-    {
-        try
-        {
-            var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
-            TradingDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            TradingDockManager.LoadPage(
-                BuildPageKey(pageTag, parameter),
-                GetPageTitle(pageTag),
-                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
-                NormalizeDockAction(action));
-        }
-    }
+        => OpenWorkspacePage(TradingDockManager, e.PageTag, e.Action);
 
     private async Task OpenActiveRunPageAsync(string pageTag, PaneDropAction action)
     {
         var activeRun = await _runService.GetActiveRunContextAsync();
-        OpenWorkspacePage(pageTag, action, activeRun?.RunId);
+        OpenWorkspacePage(TradingDockManager, pageTag, action, activeRun?.RunId);
     }
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
@@ -325,7 +223,7 @@ public partial class TradingWorkspaceShellPage : Page
                 OpenAuditTrail_Click(sender, new RoutedEventArgs());
                 break;
             case "TradingHours":
-                _navigationService.NavigateTo("TradingHours");
+                NavigationService.NavigateTo("TradingHours");
                 break;
         }
     }
@@ -333,62 +231,62 @@ public partial class TradingWorkspaceShellPage : Page
     private void PauseTrading_Click(object sender, RoutedEventArgs e)
     {
         DeskActionStatusText.Text = "Pause queued. Review blotter and risk rail before resuming.";
-        OpenWorkspacePage("PositionBlotter", PaneDropAction.SplitRight);
+        OpenWorkspacePage(TradingDockManager, "PositionBlotter", PaneDropAction.SplitRight);
     }
 
     private void StopTrading_Click(object sender, RoutedEventArgs e)
     {
         DeskActionStatusText.Text = "Stop requested. Existing positions remain visible for review.";
-        OpenWorkspacePage("RunRisk", PaneDropAction.SplitBelow);
+        OpenWorkspacePage(TradingDockManager, "RunRisk", PaneDropAction.SplitBelow);
     }
 
     private void FlattenPositions_Click(object sender, RoutedEventArgs e)
     {
         DeskActionStatusText.Text = "Flatten review opened. Use the blotter and order book to verify exit posture.";
-        OpenWorkspacePage("OrderBook", PaneDropAction.FloatWindow);
+        OpenWorkspacePage(TradingDockManager, "OrderBook", PaneDropAction.FloatWindow);
     }
 
     private void CancelAll_Click(object sender, RoutedEventArgs e)
     {
         DeskActionStatusText.Text = "Cancel-all review opened. Confirm open orders in the blotter.";
-        OpenWorkspacePage("PositionBlotter", PaneDropAction.FloatWindow);
+        OpenWorkspacePage(TradingDockManager, "PositionBlotter", PaneDropAction.FloatWindow);
     }
 
     private void AcknowledgeRisk_Click(object sender, RoutedEventArgs e)
     {
         DeskActionStatusText.Text = "Risk acknowledgement captured locally for this workstation session.";
-        OpenWorkspacePage("RunRisk", PaneDropAction.SplitRight);
+        OpenWorkspacePage(TradingDockManager, "RunRisk", PaneDropAction.SplitRight);
     }
 
     private void OpenLiveData_Click(object sender, RoutedEventArgs e)
-        => _navigationService.NavigateTo("LiveData");
+        => NavigationService.NavigateTo("LiveData");
 
     private void OpenBlotter_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("PositionBlotter", PaneDropAction.SplitRight);
+        => OpenWorkspacePage(TradingDockManager, "PositionBlotter", PaneDropAction.SplitRight);
 
     private void OpenPortfolio_Click(object sender, RoutedEventArgs e)
-        => _navigationService.NavigateTo("RunPortfolio");
+        => NavigationService.NavigateTo("RunPortfolio");
 
     private void ImportPositions_Click(object sender, RoutedEventArgs e)
-        => _navigationService.NavigateTo("PortfolioImport");
+        => NavigationService.NavigateTo("PortfolioImport");
 
     private void OpenOrderBook_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("OrderBook", PaneDropAction.FloatWindow);
+        => OpenWorkspacePage(TradingDockManager, "OrderBook", PaneDropAction.FloatWindow);
 
     private void OpenRiskRail_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("RunRisk", PaneDropAction.SplitRight);
+        => OpenWorkspacePage(TradingDockManager, "RunRisk", PaneDropAction.SplitRight);
 
     private void OpenAlerts_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("NotificationCenter", PaneDropAction.SplitBelow);
+        => OpenWorkspacePage(TradingDockManager, "NotificationCenter", PaneDropAction.SplitBelow);
 
     private void OpenAccountingConsequences_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("FundTrialBalance", PaneDropAction.OpenTab);
+        => OpenWorkspacePage(TradingDockManager, "FundTrialBalance", PaneDropAction.OpenTab);
 
     private void OpenReconciliationReview_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("FundReconciliation", PaneDropAction.SplitBelow);
+        => OpenWorkspacePage(TradingDockManager, "FundReconciliation", PaneDropAction.SplitBelow);
 
     private void OpenAuditTrail_Click(object sender, RoutedEventArgs e)
-        => OpenWorkspacePage("FundAuditTrail", PaneDropAction.OpenTab);
+        => OpenWorkspacePage(TradingDockManager, "FundAuditTrail", PaneDropAction.OpenTab);
 
     private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
@@ -403,26 +301,10 @@ public partial class TradingWorkspaceShellPage : Page
     }
 
     private void OnActiveRunContextChanged(object? sender, ActiveRunContext? e)
-    {
-        if (!Dispatcher.CheckAccess())
-        {
-            _ = Dispatcher.InvokeAsync(() => OnActiveRunContextChanged(sender, e));
-            return;
-        }
-
-        _ = RefreshAsync();
-    }
+        => DispatchRefresh(RefreshAsync);
 
     private void OnSignalsChanged(object? sender, EventArgs e)
-    {
-        if (!Dispatcher.CheckAccess())
-        {
-            _ = Dispatcher.InvokeAsync(async () => await RefreshAsync());
-            return;
-        }
-
-        _ = RefreshAsync();
-    }
+        => DispatchRefresh(RefreshAsync);
 
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
@@ -457,20 +339,6 @@ public partial class TradingWorkspaceShellPage : Page
         ActiveFundDetailText.Text = $"{profile.LegalEntityName} · {profile.BaseCurrency}";
     }
 
-    private string? GetLayoutScopeKey()
-        => _operatingContextService?.GetActiveScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
-
-    private BoundedWindowMode GetWindowMode()
-        => _operatingContextService?.CurrentWindowMode ?? BoundedWindowMode.DockFloat;
-
-    private static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layoutState)
-        => layoutState.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layoutState.DockLayoutXml);
-
-    private PaneDropAction NormalizeDockAction(PaneDropAction action)
-        => GetWindowMode() == BoundedWindowMode.Focused && action == PaneDropAction.FloatWindow
-            ? PaneDropAction.OpenTab
-            : action;
-
     private static WorkspaceCommandGroup BuildCommandGroup() =>
         new()
         {
@@ -494,31 +362,4 @@ public partial class TradingWorkspaceShellPage : Page
                 new WorkspaceCommandItem { Id = "TradingHours", Label = "Trading Hours", Description = "Open trading hours", Glyph = "\uE823" }
             ]
         };
-
-    private static string BuildPageKey(string pageTag, object? parameter)
-        => parameter is null ? pageTag : $"{pageTag}:{parameter}";
-
-    private static string GetPageTitle(string pageTag) => pageTag switch
-    {
-        "LiveData" => "Live Market View",
-        "RunPortfolio" => "Portfolio",
-        "PositionBlotter" => "Blotter",
-        "OrderBook" => "Order Book",
-        "RunRisk" => "Risk Rail",
-        "RunLedger" => "Ledger Activity",
-        "FundTrialBalance" => "Accounting Consequences",
-        "FundReconciliation" => "Reconciliation",
-        "FundAuditTrail" => "Audit Trail",
-        "NotificationCenter" => "Alerts",
-        _ => pageTag
-    };
-
-    private static PaneDropAction MapDockAction(string dockZone) => dockZone switch
-    {
-        "left" => PaneDropAction.SplitLeft,
-        "right" => PaneDropAction.SplitRight,
-        "bottom" => PaneDropAction.SplitBelow,
-        "floating" => PaneDropAction.FloatWindow,
-        _ => PaneDropAction.Replace
-    };
 }

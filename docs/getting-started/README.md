@@ -70,7 +70,7 @@ dotnet run --project src/Meridian/Meridian.csproj -- --mode headless
 pwsh ./scripts/dev/run-desktop.ps1
 ```
 
-This launcher is the recommended Windows desktop path. It starts the local Meridian host on `http://localhost:8080` when needed, waits for it to pass `/healthz`, then opens the WPF shell.
+This launcher is the recommended Windows desktop path. It starts the local Meridian host on `http://localhost:8080` when needed, waits for it to pass `/healthz`, then opens the WPF shell. If a `Meridian.Desktop.exe` from this same workspace is already running, the launcher closes it before rebuilding so the WPF binaries are not left locked, and it tears down any host process it started after the desktop shell exits.
 
 Manual fallback:
 

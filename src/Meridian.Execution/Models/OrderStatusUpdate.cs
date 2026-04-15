@@ -9,7 +9,7 @@ public sealed record OrderStatusUpdate(
     string ClientOrderId,
     string Symbol,
     OrderStatus Status,
-    long FilledQuantity,
+    decimal FilledQuantity,
     decimal? AverageFillPrice,
     string? RejectReason,
     DateTimeOffset Timestamp);

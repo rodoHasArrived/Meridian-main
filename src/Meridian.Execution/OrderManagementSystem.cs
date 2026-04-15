@@ -184,6 +184,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             // consumers can subscribe without coupling directly to the gateway.
             if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
             {
+                if (_portfolioState is PaperTradingPortfolio paperPortfolio)
+                {
+                    paperPortfolio.ApplyFill(report);
+                }
+
                 _executionChannel.Writer.TryWrite(report);
             }
 
@@ -219,10 +224,26 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         var report = await _gateway.CancelOrderAsync(orderId, ct).ConfigureAwait(false);
+        if (report.OrderStatus is not OrderStatus.Cancelled)
+        {
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = state,
+                ErrorMessage = report.RejectReason ?? "Cancel request failed"
+            };
+        }
+
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
 
-        return new OrderResult { Success = true, OrderId = orderId, OrderState = updated };
+        return new OrderResult
+        {
+            Success = true,
+            OrderId = orderId,
+            OrderState = updated
+        };
     }
 
     /// <inheritdoc />

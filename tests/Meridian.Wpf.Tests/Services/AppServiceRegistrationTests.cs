@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Views;
@@ -43,6 +45,7 @@ public sealed class AppServiceRegistrationTests
             ResolveRequired<FundLedgerPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<OrderBookPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<RunRiskPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<EnvironmentDesignerPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<ResearchWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<TradingWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<DataOperationsWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
@@ -51,6 +54,59 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<FundAccountReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<CashFinancingReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ReconciliationReadService>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<FundOperationsWorkspaceReadService>().Should().NotBeNull();
+        });
+    }
+
+    [Fact]
+    public void ConfigureServices_ShouldRegisterCatalogPagesAndShellInfrastructureExactlyOnce()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var env = new EnvironmentVariableScope()
+                .Set("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null)
+                .Set("POLYGON_API_KEY", null);
+
+            var services = BuildServiceCollection();
+
+            foreach (var pageType in ShellNavigationCatalog.GetRegisteredPageTypes())
+            {
+                services.Count(descriptor => descriptor.ServiceType == pageType).Should().Be(
+                    1,
+                    $"catalog-backed page type '{pageType.Name}' should be registered exactly once through AddMeridianWpfShell");
+            }
+
+            foreach (var shell in ShellNavigationCatalog.WorkspaceShells)
+            {
+                shell.StateProviderType.Should().NotBeNull();
+                shell.ViewModelType.Should().NotBeNull();
+
+                services.Count(descriptor => descriptor.ServiceType == shell.StateProviderType).Should().Be(
+                    1,
+                    $"workspace state provider '{shell.StateProviderType!.Name}' should be registered exactly once");
+                services.Count(descriptor => descriptor.ServiceType == shell.ViewModelType).Should().Be(
+                    1,
+                    $"workspace shell view model '{shell.ViewModelType!.Name}' should be registered exactly once");
+            }
+        });
+    }
+
+    [Fact]
+    public void ConfigureServices_ShouldResolveEveryCatalogPageType()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var env = new EnvironmentVariableScope()
+                .Set("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null)
+                .Set("POLYGON_API_KEY", null);
+
+            using var serviceProvider = BuildServiceProvider();
+
+            foreach (var pageType in ShellNavigationCatalog.GetRegisteredPageTypes())
+            {
+                serviceProvider.GetRequiredService(pageType).Should().NotBeNull(
+                    $"catalog-backed page '{pageType.Name}' should resolve from DI");
+            }
         });
     }
 
@@ -109,6 +165,13 @@ public sealed class AppServiceRegistrationTests
     {
         RunMatUiAutomationFacade.EnsureApplicationResources();
 
+        return BuildServiceCollection().BuildServiceProvider();
+    }
+
+    private static ServiceCollection BuildServiceCollection()
+    {
+        RunMatUiAutomationFacade.EnsureApplicationResources();
+
         var services = new ServiceCollection();
         var configureServices = typeof(Meridian.Wpf.App)
             .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
@@ -116,7 +179,7 @@ public sealed class AppServiceRegistrationTests
         configureServices.Should().NotBeNull();
         configureServices!.Invoke(null, [services]);
 
-        return services.BuildServiceProvider();
+        return services;
     }
 
     private static T ResolveRequired<T>(IServiceProvider serviceProvider) where T : notnull

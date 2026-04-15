@@ -91,9 +91,9 @@ public sealed class MainShellViewModelTests
             using var vm = CreateMainPageViewModel();
 
             var registeredPages = NavigationService.Instance.GetRegisteredPages().ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var catalogPages = ShellNavigationCatalog.Pages.Select(page => page.PageTag).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var catalogPages = ShellNavigationCatalog.GetRegisteredPageTags().ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            registeredPages.Should().BeSubsetOf(catalogPages);
+            registeredPages.Should().BeEquivalentTo(catalogPages);
         });
     }
 

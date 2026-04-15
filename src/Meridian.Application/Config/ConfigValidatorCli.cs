@@ -13,10 +13,12 @@ namespace Meridian.Application.Config;
 public sealed class ConfigValidatorCli
 {
     private readonly ILogger _log;
+    private readonly ConfigurationPipeline _pipeline;
 
-    public ConfigValidatorCli(ILogger? log = null)
+    public ConfigValidatorCli(ILogger? log = null, ConfigurationPipeline? pipeline = null)
     {
         _log = log ?? LoggingSetup.ForContext<ConfigValidatorCli>();
+        _pipeline = pipeline ?? new ConfigurationPipeline(_log);
     }
 
     /// <summary>
@@ -56,6 +58,7 @@ public sealed class ConfigValidatorCli
                 return 1;
             }
 
+            config = PrepareEffectiveConfig(config);
             PrintSuccess("JSON syntax is valid");
         }
         catch (JsonException ex)
@@ -144,6 +147,7 @@ public sealed class ConfigValidatorCli
                 });
             }
 
+            config = PrepareEffectiveConfig(config);
             var validator = new AppConfigValidator();
             return validator.Validate(config);
         }
@@ -154,6 +158,13 @@ public sealed class ConfigValidatorCli
                 new ValidationFailure("JSON", $"Invalid JSON: {ex.Message}")
             });
         }
+    }
+
+    private AppConfig PrepareEffectiveConfig(AppConfig config)
+    {
+        // Route CLI validation through the same override and credential-resolution stages
+        // as the main configuration pipeline so env-backed configs validate consistently.
+        return _pipeline.Process(config, PipelineOptions.Lenient).Config;
     }
 
     private void PrintSuccess(string message)

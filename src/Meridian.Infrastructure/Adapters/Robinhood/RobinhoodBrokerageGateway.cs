@@ -132,6 +132,33 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             "Robinhood submitting order: {Side} {Quantity} {Symbol} @ {Type}",
             request.Side, request.Quantity, request.Symbol, request.Type);
 
+        var accountUrl = await GetAccountUrlAsync(ct).ConfigureAwait(false);
+        if (string.IsNullOrWhiteSpace(accountUrl))
+        {
+            var rejectReport = BuildRejectedReport(request, "Could not resolve Robinhood account URL.");
+            await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
+            return rejectReport;
+        }
+
+        if (IsOptionOrderRequest(request))
+        {
+            if (!TryGetOptionOrderMetadata(request, out var optionInstrumentUrl, out var positionEffect))
+            {
+                var rejectReport = BuildRejectedReport(
+                    request,
+                    "Robinhood option orders require option_instrument_url and position_effect metadata.");
+                await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
+                return rejectReport;
+            }
+
+            return await SubmitOptionOrderAsync(
+                request,
+                accountUrl,
+                optionInstrumentUrl,
+                positionEffect,
+                ct).ConfigureAwait(false);
+        }
+
         // Look up the instrument URL required by Robinhood's order API.
         var instrumentUrl = await GetInstrumentUrlAsync(request.Symbol, ct).ConfigureAwait(false);
         if (instrumentUrl is null)
@@ -143,7 +170,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 
         var payload = new RobinhoodOrderPayload
         {
-            Account = await GetAccountUrlAsync(ct).ConfigureAwait(false),
+            Account = accountUrl,
             Instrument = instrumentUrl,
             Symbol = request.Symbol.ToUpperInvariant(),
             Side = request.Side == OrderSide.Buy ? "buy" : "sell",
@@ -200,37 +227,38 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         using var client = CreateHttpClient();
 
         // Fetch current order so the report carries symbol + side.
-        RobinhoodOrderResponse? existing = null;
-        try
-        {
-            var getResp = await client.GetAsync($"{BaseUrl}/orders/{orderId}/", ct).ConfigureAwait(false);
-            if (getResp.IsSuccessStatusCode)
-                existing = await getResp.Content.ReadFromJsonAsync(
-                    RobinhoodBrokerageSerializerContext.Default.RobinhoodOrderResponse, ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Robinhood failed to fetch order {OrderId} before cancel", orderId);
-        }
+        var existing = await TryGetOrderAsync(client, orderId, ct).ConfigureAwait(false);
+        var existingOption = existing is null
+            ? await TryGetOptionOrderAsync(client, orderId, ct).ConfigureAwait(false)
+            : null;
+        var cancelUrl = existingOption is null
+            ? $"{BaseUrl}/orders/{orderId}/cancel/"
+            : $"{BaseUrl}/options/orders/{orderId}/cancel/";
 
         var cancelResp = await client.PostAsync(
-            $"{BaseUrl}/orders/{orderId}/cancel/", content: null, ct).ConfigureAwait(false);
+            cancelUrl, content: null, ct).ConfigureAwait(false);
+
+        string? body = null;
 
         if (!cancelResp.IsSuccessStatusCode)
         {
-            var body = await cancelResp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            body = await cancelResp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             _logger.LogWarning("Robinhood cancel failed for {OrderId}: {Body}", orderId, body);
         }
 
         var report = new ExecutionReport
         {
             OrderId = orderId,
-            ClientOrderId = existing?.RefId,
+            ClientOrderId = existing?.RefId ?? existingOption?.RefId,
             ReportType = cancelResp.IsSuccessStatusCode ? ExecutionReportType.Cancelled : ExecutionReportType.Rejected,
-            Symbol = existing?.Symbol ?? string.Empty,
-            Side = existing?.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
+            Symbol = existing?.Symbol ?? existingOption?.ChainSymbol ?? string.Empty,
+            Side = existing is not null ? ParseOrderSide(existing.Side) : ParseOptionOrderSide(existingOption),
             OrderStatus = cancelResp.IsSuccessStatusCode ? OrderStatus.Cancelled : OrderStatus.Rejected,
-            RejectReason = cancelResp.IsSuccessStatusCode ? null : "Cancel request failed",
+            RejectReason = cancelResp.IsSuccessStatusCode
+                ? null
+                : string.IsNullOrWhiteSpace(body)
+                    ? "Cancel request failed"
+                    : $"Cancel request failed: {body}",
             GatewayOrderId = orderId,
             Timestamp = DateTimeOffset.UtcNow,
         };
@@ -256,20 +284,12 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
 
         // Fetch original order details.
         using var client = CreateHttpClient();
-        RobinhoodOrderResponse? original = null;
-        try
-        {
-            var getResp = await client.GetAsync($"{BaseUrl}/orders/{orderId}/", ct).ConfigureAwait(false);
-            if (getResp.IsSuccessStatusCode)
-                original = await getResp.Content.ReadFromJsonAsync(
-                    RobinhoodBrokerageSerializerContext.Default.RobinhoodOrderResponse, ct).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Robinhood failed to fetch order {OrderId} for modify", orderId);
-        }
+        var original = await TryGetOrderAsync(client, orderId, ct).ConfigureAwait(false);
+        var originalOption = original is null
+            ? await TryGetOptionOrderAsync(client, orderId, ct).ConfigureAwait(false)
+            : null;
 
-        if (original is null)
+        if (original is null && originalOption is null)
         {
             var report = new ExecutionReport
             {
@@ -286,19 +306,31 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
 
         // Cancel the original order.
-        await CancelOrderAsync(orderId, ct).ConfigureAwait(false);
+        var cancelReport = await CancelOrderAsync(orderId, ct).ConfigureAwait(false);
+        if (cancelReport.OrderStatus is not OrderStatus.Cancelled)
+        {
+            _logger.LogWarning(
+                "Robinhood modify aborted for {OrderId} because cancel returned {Status}",
+                orderId,
+                cancelReport.OrderStatus);
+            return cancelReport;
+        }
 
         // Resubmit with updated fields.
-        var newRequest = new OrderRequest
-        {
-            Symbol = original.Symbol ?? string.Empty,
-            Side = original.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            Type = ParseOrderType(original.Type),
-            TimeInForce = ParseTimeInForce(original.TimeInForce),
-            Quantity = modification.NewQuantity ?? ParseDecimal(original.Quantity),
-            LimitPrice = modification.NewLimitPrice ?? (string.IsNullOrEmpty(original.Price) ? null : ParseDecimal(original.Price)),
-            StopPrice = modification.NewStopPrice ?? (string.IsNullOrEmpty(original.StopPrice) ? null : ParseDecimal(original.StopPrice)),
-        };
+        var newRequest = original is not null
+            ? new OrderRequest
+            {
+                Symbol = original.Symbol ?? string.Empty,
+                Side = ParseOrderSide(original.Side),
+                Type = ParseOrderType(original.Type),
+                TimeInForce = ParseTimeInForce(original.TimeInForce),
+                Quantity = modification.NewQuantity ?? ParseDecimal(original.Quantity),
+                LimitPrice = modification.NewLimitPrice
+                    ?? (string.IsNullOrEmpty(original.Price) ? null : ParseDecimal(original.Price)),
+                StopPrice = modification.NewStopPrice
+                    ?? (string.IsNullOrEmpty(original.StopPrice) ? null : ParseDecimal(original.StopPrice)),
+            }
+            : BuildOptionModifyRequest(orderId, originalOption!, modification);
 
         return await SubmitOrderAsync(newRequest, ct).ConfigureAwait(false);
     }
@@ -559,6 +591,114 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         }
     }
 
+    private async Task<RobinhoodOrderResponse?> TryGetOrderAsync(
+        HttpClient client,
+        string orderId,
+        CancellationToken ct)
+    {
+        try
+        {
+            var response = await client.GetAsync($"{BaseUrl}/orders/{orderId}/", ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadFromJsonAsync(
+                RobinhoodBrokerageSerializerContext.Default.RobinhoodOrderResponse,
+                ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Robinhood failed to fetch equity order {OrderId}", orderId);
+            return null;
+        }
+    }
+
+    private async Task<RobinhoodOptionOrderResponse?> TryGetOptionOrderAsync(
+        HttpClient client,
+        string orderId,
+        CancellationToken ct)
+    {
+        try
+        {
+            var response = await client.GetAsync($"{BaseUrl}/options/orders/{orderId}/", ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            return await response.Content.ReadFromJsonAsync(
+                RobinhoodBrokerageSerializerContext.Default.RobinhoodOptionOrderResponse,
+                ct).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Robinhood failed to fetch option order {OrderId}", orderId);
+            return null;
+        }
+    }
+
+    private async Task<ExecutionReport> SubmitOptionOrderAsync(
+        OrderRequest request,
+        string accountUrl,
+        string optionInstrumentUrl,
+        string positionEffect,
+        CancellationToken ct)
+    {
+        var payload = new RobinhoodOptionOrderPayload
+        {
+            Account = accountUrl,
+            Direction = request.Side == OrderSide.Buy ? "debit" : "credit",
+            Quantity = request.Quantity.ToString("G", CultureInfo.InvariantCulture),
+            Type = MapOrderType(request.Type),
+            TimeInForce = MapTimeInForce(request.TimeInForce),
+            Price = request.LimitPrice?.ToString("G", CultureInfo.InvariantCulture),
+            RefId = request.ClientOrderId ?? Guid.NewGuid().ToString("N"),
+            Legs =
+            [
+                new RobinhoodOptionLeg
+                {
+                    Option = optionInstrumentUrl,
+                    Side = request.Side == OrderSide.Buy ? "buy" : "sell",
+                    PositionEffect = positionEffect,
+                    RatioQuantity = 1,
+                }
+            ]
+        };
+
+        using var client = CreateHttpClient();
+        var response = await client.PostAsJsonAsync(
+            $"{BaseUrl}/options/orders/",
+            payload,
+            RobinhoodBrokerageSerializerContext.Default.RobinhoodOptionOrderPayload,
+            ct).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            _logger.LogError("Robinhood option order rejected: {StatusCode} {Body}", response.StatusCode, errorBody);
+            var rejectReport = BuildRejectedReport(request, $"API error {response.StatusCode}: {errorBody}");
+            await _reportChannel.Writer.WriteAsync(rejectReport, ct).ConfigureAwait(false);
+            return rejectReport;
+        }
+
+        var order = await response.Content.ReadFromJsonAsync(
+            RobinhoodBrokerageSerializerContext.Default.RobinhoodOptionOrderResponse,
+            ct).ConfigureAwait(false);
+
+        var report = new ExecutionReport
+        {
+            OrderId = order?.Id ?? request.ClientOrderId ?? Guid.NewGuid().ToString("N"),
+            ClientOrderId = request.ClientOrderId,
+            ReportType = ExecutionReportType.New,
+            Symbol = request.Symbol,
+            Side = request.Side,
+            OrderStatus = MapRobinhoodStatus(order?.State),
+            OrderQuantity = request.Quantity,
+            GatewayOrderId = order?.Id,
+            Timestamp = order?.CreatedAt ?? DateTimeOffset.UtcNow,
+        };
+        await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
+        return report;
+    }
+
     private static async Task<string?> ResolveSymbolFromInstrumentAsync(
         string? instrumentUrl, HttpClient client, CancellationToken ct)
     {
@@ -679,6 +819,68 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             ? parsed
             : null;
 
+    private static bool IsOptionOrderRequest(OrderRequest request)
+    {
+        if (request.Metadata is null)
+            return false;
+
+        return request.Metadata.TryGetValue("option_instrument_url", out var optionInstrumentUrl)
+                   && !string.IsNullOrWhiteSpace(optionInstrumentUrl)
+               || request.Metadata.TryGetValue("asset_class", out var assetClass)
+                   && string.Equals(assetClass, "option", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetOptionOrderMetadata(
+        OrderRequest request,
+        out string optionInstrumentUrl,
+        out string positionEffect)
+    {
+        optionInstrumentUrl = string.Empty;
+        positionEffect = string.Empty;
+
+        if (request.Metadata is null)
+            return false;
+
+        request.Metadata.TryGetValue("option_instrument_url", out var optionInstrumentUrlValue);
+        request.Metadata.TryGetValue("position_effect", out var positionEffectValue);
+        optionInstrumentUrl = optionInstrumentUrlValue ?? string.Empty;
+        positionEffect = positionEffectValue ?? string.Empty;
+
+        return !string.IsNullOrWhiteSpace(optionInstrumentUrl)
+               && !string.IsNullOrWhiteSpace(positionEffect);
+    }
+
+    private static OrderRequest BuildOptionModifyRequest(
+        string orderId,
+        RobinhoodOptionOrderResponse originalOption,
+        OrderModification modification)
+    {
+        var leg = originalOption.Legs?.FirstOrDefault();
+        if (leg is null || string.IsNullOrWhiteSpace(leg.Option) || string.IsNullOrWhiteSpace(leg.PositionEffect))
+        {
+            throw new InvalidOperationException(
+                $"Cannot modify Robinhood option order {orderId}: option leg metadata is missing.");
+        }
+
+        return new OrderRequest
+        {
+            Symbol = originalOption.ChainSymbol ?? string.Empty,
+            Side = ParseOptionOrderSide(originalOption),
+            Type = ParseOrderType(originalOption.Type),
+            TimeInForce = ParseTimeInForce(originalOption.TimeInForce),
+            Quantity = modification.NewQuantity ?? ParseDecimal(originalOption.Quantity),
+            LimitPrice = modification.NewLimitPrice
+                ?? (string.IsNullOrEmpty(originalOption.Price) ? null : ParseDecimal(originalOption.Price)),
+            StopPrice = modification.NewStopPrice,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["asset_class"] = "option",
+                ["option_instrument_url"] = leg.Option,
+                ["position_effect"] = leg.PositionEffect
+            }
+        };
+    }
+
     private static ExecutionReport BuildRejectedReport(OrderRequest request, string reason) =>
         new()
         {
@@ -691,6 +893,21 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
             RejectReason = reason,
             Timestamp = DateTimeOffset.UtcNow,
         };
+
+    private static OrderSide ParseOrderSide(string? side) =>
+        string.Equals(side, "sell", StringComparison.OrdinalIgnoreCase)
+            ? OrderSide.Sell
+            : OrderSide.Buy;
+
+    private static OrderSide ParseOptionOrderSide(RobinhoodOptionOrderResponse? optionOrder)
+    {
+        var legSide = optionOrder?.Legs?.FirstOrDefault()?.Side;
+        return !string.IsNullOrWhiteSpace(legSide)
+            ? ParseOrderSide(legSide)
+            : string.Equals(optionOrder?.Direction, "credit", StringComparison.OrdinalIgnoreCase)
+                ? OrderSide.Sell
+                : OrderSide.Buy;
+    }
 
     private static string MapOrderType(OrderType type) => type switch
     {
@@ -855,6 +1072,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
         [JsonPropertyName("type")] public string? Type { get; set; }
         [JsonPropertyName("time_in_force")] public string? TimeInForce { get; set; }
         [JsonPropertyName("price")] public string? Price { get; set; }
+        [JsonPropertyName("legs")] public RobinhoodOptionLeg[]? Legs { get; set; }
         [JsonPropertyName("state")] public string? State { get; set; }
         [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
     }

@@ -24,6 +24,14 @@ public enum BusinessKindDto
     Hybrid
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ClientSegmentKind>))]
+public enum ClientSegmentKind
+{
+    Unspecified,
+    IndividualInvestor,
+    FamilyOffice
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<LegalEntityTypeDto>))]
 public enum LegalEntityTypeDto
 {
@@ -107,7 +115,8 @@ public sealed record ClientSummaryDto(
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
     IReadOnlyList<Guid> InvestmentPortfolioIds,
-    string? Description = null);
+    string? Description = null,
+    ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
 
 public sealed record FundSummaryDto(
     Guid FundId,

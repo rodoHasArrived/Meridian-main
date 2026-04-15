@@ -436,6 +436,74 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldHydrateQueueWithoutGovernanceBootstrap()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-queue-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/reconciliation/break-queue");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var queue = await response.Content.ReadFromJsonAsync<List<ReconciliationBreakQueueItem>>(ServerJsonOptions);
+        queue.Should().NotBeNull();
+        queue!.Should().Contain(item =>
+            item.RunId == runId &&
+            reconciliation!.Breaks.Any(reconciliationBreak => item.BreakId == $"{runId}:{reconciliationBreak.CheckId}"));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueReviewRoute_ShouldHydrateQueueWithoutListBootstrap()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-review-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating the mismatch."));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var updated = await response.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
+        updated.Should().NotBeNull();
+        updated!.RunId.Should().Be(runId);
+        updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        updated.AssignedTo.Should().Be("ops-review");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnSharedContinuityPayload()
     {
         await using var app = await CreateAppAsync(services =>

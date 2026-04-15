@@ -88,10 +88,6 @@ public partial class DirectLendingPage : Page { }
 // Data Browser page
 public partial class DataBrowserPage : Page { }
 
-// Workspace shell landing pages
-public partial class ResearchWorkspaceShellPage : Page { }
-public partial class TradingWorkspaceShellPage : Page { }
-
 // Workspaces & Notifications pages
 public partial class WorkspacePage : Page { }
 public partial class NotificationCenterPage : Page { }

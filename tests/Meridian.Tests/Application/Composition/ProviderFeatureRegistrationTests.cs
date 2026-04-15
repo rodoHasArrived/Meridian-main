@@ -4,9 +4,12 @@ using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Config;
 using Meridian.Contracts.Api;
+using Meridian.Domain.Events;
+using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Application.Composition;
 
@@ -14,11 +17,15 @@ namespace Meridian.Tests.Application.Composition;
 public sealed class ProviderFeatureRegistrationTests : IDisposable
 {
     private readonly string? _originalRobinhoodAccessToken;
+    private readonly string? _originalAlpacaKeyId;
+    private readonly string? _originalAlpacaSecretKey;
     private readonly List<string> _tempFiles = new();
 
     public ProviderFeatureRegistrationTests()
     {
         _originalRobinhoodAccessToken = Environment.GetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN");
+        _originalAlpacaKeyId = Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
+        _originalAlpacaSecretKey = Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
     }
 
     [Fact]
@@ -84,14 +91,33 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
         robinhood.DataTypes.Should().Contain("Brokerage");
     }
 
+    [Fact]
+    public async Task Register_CreatesAlpacaStreamingClient_WhenCredentialsComeFromEnvironmentOnly()
+    {
+        Environment.SetEnvironmentVariable("ALPACA_KEY_ID", "AKXXXXXXXXXXXXXXXX");
+        Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", "secretxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+        var configPath = WriteConfig(new AppConfig(DataSource: DataSourceKind.Alpaca, Alpaca: null));
+        var services = CreateServices(configPath);
+
+        await using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<ProviderRegistry>();
+
+        await using var client = registry.CreateStreamingClient("alpaca");
+
+        client.Should().BeOfType<AlpacaMarketDataClient>();
+    }
+
     private static ServiceCollection CreateServices(string configPath)
     {
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddHttpClient();
+        services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
 
         var options = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         new ConfigurationFeatureRegistration().Register(services, options);
+        new CollectorFeatureRegistration().Register(services, options);
         new ProviderFeatureRegistration().Register(services, options);
 
         return services;
@@ -109,6 +135,8 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
     public void Dispose()
     {
         Environment.SetEnvironmentVariable("ROBINHOOD_ACCESS_TOKEN", _originalRobinhoodAccessToken);
+        Environment.SetEnvironmentVariable("ALPACA_KEY_ID", _originalAlpacaKeyId);
+        Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", _originalAlpacaSecretKey);
         ProviderCatalog.RuntimeCatalogProvider = null;
         ProviderCatalog.RuntimeCatalogEntryProvider = null;
 

@@ -3,46 +3,42 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Views;
 
-public partial class GovernanceWorkspaceShellPage : Page
+public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPageBase
 {
-    private const string WorkspaceId = "governance";
-
-    private readonly NavigationService _navigationService;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
     private readonly WorkspaceShellContextService _shellContextService;
-    private readonly FundLedgerReadService _fundLedgerReadService;
-    private readonly ReconciliationReadService _reconciliationReadService;
-    private readonly CashFinancingReadService _cashFinancingReadService;
+    private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly Meridian.Wpf.Services.NotificationService _notificationService;
     private GovernanceSubarea _selectedSubarea = GovernanceSubarea.Operations;
 
     public GovernanceWorkspaceShellPage(
         NavigationService navigationService,
+        WorkspaceService workspaceService,
+        GovernanceWorkspaceShellStateProvider stateProvider,
+        GovernanceWorkspaceShellViewModel viewModel,
         FundContextService fundContextService,
         WorkstationOperatingContextService? operatingContextService,
         WorkspaceShellContextService shellContextService,
-        FundLedgerReadService fundLedgerReadService,
-        ReconciliationReadService reconciliationReadService,
-        CashFinancingReadService cashFinancingReadService,
+        FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         Meridian.Wpf.Services.NotificationService notificationService)
+        : base(navigationService, workspaceService, stateProvider, viewModel)
     {
         InitializeComponent();
-        _navigationService = navigationService;
         _fundContextService = fundContextService;
         _operatingContextService = operatingContextService;
         _shellContextService = shellContextService;
-        _fundLedgerReadService = fundLedgerReadService;
-        _reconciliationReadService = reconciliationReadService;
-        _cashFinancingReadService = cashFinancingReadService;
+        _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService;
         _notificationService = notificationService;
     }
 
@@ -57,7 +53,7 @@ public partial class GovernanceWorkspaceShellPage : Page
         }
 
         await RefreshAsync();
-        await RestoreDockLayoutAsync();
+        await RestoreDockLayoutAsync(GovernanceDockManager);
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -70,7 +66,7 @@ public partial class GovernanceWorkspaceShellPage : Page
             _operatingContextService.WindowModeChanged -= OnSignalsChanged;
         }
 
-        _ = SaveDockLayoutAsync();
+        _ = SaveDockLayoutAsync(GovernanceDockManager);
     }
 
     private async Task RefreshAsync()
@@ -101,7 +97,8 @@ public partial class GovernanceWorkspaceShellPage : Page
                     CriticalTone = unreadAlerts > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info
                 });
 
-                CommandBar.CommandGroup = BuildCommandGroup(hasFund: false);
+                ViewModel.CommandGroup = BuildCommandGroup(hasFund: false);
+                CommandBar.CommandGroup = ViewModel.CommandGroup;
                 NoFundEmptyState.Visibility = Visibility.Visible;
                 AttentionQueueScrollViewer.Visibility = Visibility.Collapsed;
                 QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? "Awaiting fund-linked scope";
@@ -111,14 +108,15 @@ public partial class GovernanceWorkspaceShellPage : Page
                 return;
             }
 
-            var ledgerTask = _fundLedgerReadService.GetAsync(new FundLedgerQuery(profile.FundProfileId));
-            var reconTask = _reconciliationReadService.GetAsync(profile.FundProfileId);
-            var cashTask = _cashFinancingReadService.GetAsync(profile.FundProfileId, profile.BaseCurrency);
-            await Task.WhenAll(ledgerTask, reconTask, cashTask);
-
-            var ledger = await ledgerTask.ConfigureAwait(false);
-            var reconciliation = await reconTask.ConfigureAwait(false);
-            var cash = await cashTask.ConfigureAwait(false);
+            var workspace = await _fundOperationsWorkspaceReadService
+                .GetWorkspaceAsync(
+                    new FundOperationsWorkspaceQuery(
+                        FundProfileId: profile.FundProfileId,
+                        Currency: profile.BaseCurrency))
+                .ConfigureAwait(false);
+            var ledger = workspace.Ledger;
+            var reconciliation = workspace.Reconciliation;
+            var cash = workspace.CashFinancing;
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
@@ -136,17 +134,18 @@ public partial class GovernanceWorkspaceShellPage : Page
                 CriticalTone = unreadAlerts > 0 || reconciliation.SecurityCoverageIssueCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Info
             });
 
-            CommandBar.CommandGroup = BuildCommandGroup(hasFund: true);
+            ViewModel.CommandGroup = BuildCommandGroup(hasFund: true);
+            CommandBar.CommandGroup = ViewModel.CommandGroup;
             NoFundEmptyState.Visibility = Visibility.Collapsed;
             AttentionQueueScrollViewer.Visibility = Visibility.Visible;
             QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? profile.DisplayName;
             QueueSummaryText.Text = $"Prioritize operations, accounting, reconciliation, reporting, and audit review for {(operatingContext?.DisplayName ?? profile.DisplayName)}.";
 
             PopulateQueues(
-                BuildOperationsQueue(profile, ledger),
-                BuildAccountingQueue(profile, ledger, cash),
+                BuildOperationsQueue(profile, workspace),
+                BuildAccountingQueue(profile, workspace),
                 BuildReconciliationQueue(reconciliation, ledger),
-                BuildReportingQueue(profile, cash),
+                BuildReportingQueue(profile, workspace),
                 BuildAuditQueue(reconciliation, notifications, unreadAlerts));
             PopulateInspector(operatingContext, profile, ledger, reconciliation, cash, notifications);
         }
@@ -156,79 +155,9 @@ public partial class GovernanceWorkspaceShellPage : Page
         }
     }
 
-    private async Task RestoreDockLayoutAsync()
-    {
-        try
-        {
-            var layout = await WorkspaceService.Instance.GetWorkspaceLayoutStateForContextAsync(WorkspaceId, GetLayoutScopeKey());
-            if (layout?.Panes.Count > 0)
-            {
-                foreach (var pane in layout.Panes.OrderBy(static pane => pane.Order))
-                {
-                    OpenWorkspacePage(pane.PageTag, NormalizeDockAction(MapDockAction(pane.DockZone)));
-                }
+    private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
+        => OpenWorkspacePage(GovernanceDockManager, e.PageTag, e.Action);
 
-                if (ShouldRestoreSerializedLayout(layout))
-                {
-                    GovernanceDockManager.LoadLayout(layout.DockLayoutXml);
-                }
-
-                return;
-            }
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[GovernanceWorkspaceShell] Failed to restore dock layout: {ex.Message}");
-        }
-
-        if (_fundContextService.CurrentFundProfile is null)
-        {
-            OpenWorkspacePage("Diagnostics", PaneDropAction.Replace);
-            OpenWorkspacePage("NotificationCenter", PaneDropAction.SplitRight);
-            OpenWorkspacePage("SystemHealth", PaneDropAction.SplitBelow);
-        }
-        else if (GetWindowMode() == BoundedWindowMode.WorkbenchPreset &&
-                 string.Equals(_operatingContextService?.CurrentLayoutPresetId, "reconciliation-workbench", StringComparison.OrdinalIgnoreCase))
-        {
-            OpenWorkspacePage("FundReconciliation", PaneDropAction.Replace);
-            OpenWorkspacePage("FundTrialBalance", PaneDropAction.SplitLeft);
-            OpenWorkspacePage("NotificationCenter", PaneDropAction.SplitBelow);
-            OpenWorkspacePage("FundAuditTrail", PaneDropAction.OpenTab);
-        }
-        else if (GetWindowMode() == BoundedWindowMode.WorkbenchPreset &&
-                 string.Equals(_operatingContextService?.CurrentLayoutPresetId, "accounting-review", StringComparison.OrdinalIgnoreCase))
-        {
-            OpenWorkspacePage("FundLedger", PaneDropAction.Replace);
-            OpenWorkspacePage("FundTrialBalance", PaneDropAction.SplitRight);
-            OpenWorkspacePage("FundCashFinancing", PaneDropAction.SplitBelow);
-            OpenWorkspacePage("FundAuditTrail", PaneDropAction.OpenTab);
-        }
-        else
-        {
-            OpenWorkspacePage("FundLedger", PaneDropAction.Replace);
-            OpenWorkspacePage("FundReconciliation", PaneDropAction.SplitRight);
-            OpenWorkspacePage("NotificationCenter", PaneDropAction.SplitBelow);
-            OpenWorkspacePage("FundAuditTrail", PaneDropAction.OpenTab);
-        }
-    }
-
-    private async Task SaveDockLayoutAsync()
-    {
-        try
-        {
-            var layout = GovernanceDockManager.CaptureLayoutState("governance-workspace", "Governance Workspace");
-            layout.OperatingContextKey = GetLayoutScopeKey();
-            layout.WindowMode = GetWindowMode();
-            layout.LayoutPresetId = _operatingContextService?.CurrentLayoutPresetId;
-            await WorkspaceService.Instance.SaveWorkspaceLayoutStateForContextAsync(WorkspaceId, layout, layout.OperatingContextKey);
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[GovernanceWorkspaceShell] Failed to save dock layout: {ex.Message}");
-        }
-    }
-
-    private void OnPaneDropRequested(object? sender, PaneDropEventArgs e) => OpenWorkspacePage(e.PageTag, e.Action);
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e) => ExecuteAction(e.Command.Id, navigate: false);
     private void SwitchFund_Click(object sender, RoutedEventArgs e) => RequestContextSelection();
     private void SwitchContext_Click(object sender, RoutedEventArgs e) => RequestContextSelection();
@@ -268,15 +197,7 @@ public partial class GovernanceWorkspaceShellPage : Page
     }
 
     private void OnSignalsChanged(object? sender, EventArgs e)
-    {
-        if (!Dispatcher.CheckAccess())
-        {
-            _ = Dispatcher.InvokeAsync(async () => await RefreshAsync());
-            return;
-        }
-
-        _ = RefreshAsync();
-    }
+        => DispatchRefresh(RefreshAsync);
 
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
@@ -304,7 +225,7 @@ public partial class GovernanceWorkspaceShellPage : Page
 
         if (navigate)
         {
-            _navigationService.NavigateTo(actionId);
+            NavigationService.NavigateTo(actionId);
             return;
         }
 
@@ -316,25 +237,7 @@ public partial class GovernanceWorkspaceShellPage : Page
             _ => PaneDropAction.OpenTab
         };
 
-        OpenWorkspacePage(actionId, dockAction);
-    }
-
-    private void OpenWorkspacePage(string pageTag, PaneDropAction action, object? parameter = null)
-    {
-        try
-        {
-            var pageContent = _navigationService.CreatePageContent(pageTag, parameter);
-            GovernanceDockManager.LoadPage(BuildPageKey(pageTag, parameter), GetPageTitle(pageTag), pageContent, NormalizeDockAction(action));
-        }
-        catch (Exception ex)
-        {
-            WpfLoggingService.Instance.LogError($"[GovernanceWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            GovernanceDockManager.LoadPage(
-                BuildPageKey(pageTag, parameter),
-                GetPageTitle(pageTag),
-                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
-                NormalizeDockAction(action));
-        }
+        OpenWorkspacePage(GovernanceDockManager, actionId, dockAction);
     }
 
     private static WorkspaceCommandGroup BuildCommandGroup(bool hasFund) => hasFund
@@ -370,17 +273,33 @@ public partial class GovernanceWorkspaceShellPage : Page
             ]
         };
 
-    private static IReadOnlyList<WorkspaceQueueItem> BuildOperationsQueue(FundProfileDetail profile, FundLedgerSummary? ledger) =>
-    [
-        new WorkspaceQueueItem { Title = "Fund operations posture", Detail = ledger is null ? "Awaiting the first ledger snapshot for the selected fund." : $"{ledger.EntityCount} entities, {ledger.SleeveCount} sleeves, {ledger.VehicleCount} vehicles across {ledger.JournalEntryCount} journals and {ledger.TrialBalance.Count} trial-balance lines.", StatusLabel = ledger?.JournalEntryCount > 0 ? "Live review" : "Needs setup", CountLabel = ledger?.JournalEntryCount > 0 ? $"{ledger!.JournalEntryCount} journals" : "No journals", Tone = ledger?.JournalEntryCount > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundLedger", PrimaryActionLabel = "Open Operations", SecondaryActionId = "FundAccounts", SecondaryActionLabel = "Accounts" },
-        new WorkspaceQueueItem { Title = "Accounts and banking coordination", Detail = $"{profile.DisplayName} is ready for account, banking, and entity drill-ins from the governance shell.", StatusLabel = "Operator review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundAccounts", PrimaryActionLabel = "Accounts", SecondaryActionId = "FundLedger", SecondaryActionLabel = "Operations" }
-    ];
+    private static IReadOnlyList<WorkspaceQueueItem> BuildOperationsQueue(
+        FundProfileDetail profile,
+        FundOperationsWorkspaceDto workspace)
+    {
+        var ledger = workspace.Ledger;
+        var summary = workspace.Workspace;
 
-    private static IReadOnlyList<WorkspaceQueueItem> BuildAccountingQueue(FundProfileDetail profile, FundLedgerSummary? ledger, CashFinancingSummary? cash) =>
-    [
-        new WorkspaceQueueItem { Title = "Trial balance and journals", Detail = ledger is null ? "Trial-balance, journal, and ledger detail becomes available after the first governance snapshot." : $"{ledger.TrialBalance.Count} trial-balance line(s) and {ledger.JournalEntryCount} journal(s) are ready for accounting review.", StatusLabel = ledger?.TrialBalance.Count > 0 ? "Accounting ready" : "Awaiting snapshot", CountLabel = ledger?.TrialBalance.Count > 0 ? $"{ledger!.TrialBalance.Count} lines" : "No lines", Tone = ledger?.TrialBalance.Count > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundTrialBalance", PrimaryActionLabel = "Open Accounting", SecondaryActionId = "FundLedger", SecondaryActionLabel = "Ledger" },
-        new WorkspaceQueueItem { Title = "Cash and financing posture", Detail = cash is null ? $"Accounting review for {profile.DisplayName} is waiting on capital and financing metrics." : $"Total cash {cash.TotalCash:C0}, financing cost {cash.FinancingCost:C0}, and bank posture are available for reporting and sign-off.", StatusLabel = cash is null ? "Pending" : "Ready", CountLabel = profile.BaseCurrency, Tone = cash is null ? WorkspaceTone.Warning : WorkspaceTone.Success, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundTrialBalance", SecondaryActionLabel = "Trial Balance" }
-    ];
+        return
+        [
+            new WorkspaceQueueItem { Title = "Fund operations posture", Detail = $"{summary.TotalAccounts} linked account(s), {ledger.EntityCount} entities, {ledger.SleeveCount} sleeves, and {ledger.VehicleCount} vehicles feed {ledger.JournalEntryCount} journals and {ledger.TrialBalance.Count} trial-balance lines through the shared governance workspace.", StatusLabel = ledger.JournalEntryCount > 0 ? "Live review" : "Needs setup", CountLabel = ledger.JournalEntryCount > 0 ? $"{ledger.JournalEntryCount} journals" : "No journals", Tone = ledger.JournalEntryCount > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundLedger", PrimaryActionLabel = "Open Operations", SecondaryActionId = "FundAccounts", SecondaryActionLabel = "Accounts" },
+            new WorkspaceQueueItem { Title = "Accounts and banking coordination", Detail = $"{profile.DisplayName} now reuses the shared fund-operations projection for account, banking, and entity drill-ins from the governance shell.", StatusLabel = "Operator review", CountLabel = workspace.BankSnapshots.Count > 0 ? $"{workspace.BankSnapshots.Count} bank views" : profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundAccounts", PrimaryActionLabel = "Accounts", SecondaryActionId = "FundLedger", SecondaryActionLabel = "Operations" }
+        ];
+    }
+
+    private static IReadOnlyList<WorkspaceQueueItem> BuildAccountingQueue(
+        FundProfileDetail profile,
+        FundOperationsWorkspaceDto workspace)
+    {
+        var ledger = workspace.Ledger;
+        var cash = workspace.CashFinancing;
+
+        return
+        [
+            new WorkspaceQueueItem { Title = "Trial balance and journals", Detail = $"{ledger.TrialBalance.Count} trial-balance line(s) and {ledger.JournalEntryCount} journal(s) are ready for accounting review from the shared fund-operations query path.", StatusLabel = ledger.TrialBalance.Count > 0 ? "Accounting ready" : "Awaiting snapshot", CountLabel = ledger.TrialBalance.Count > 0 ? $"{ledger.TrialBalance.Count} lines" : "No lines", Tone = ledger.TrialBalance.Count > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning, PrimaryActionId = "FundTrialBalance", PrimaryActionLabel = "Open Accounting", SecondaryActionId = "FundLedger", SecondaryActionLabel = "Ledger" },
+            new WorkspaceQueueItem { Title = "Cash and financing posture", Detail = $"Total cash {cash.TotalCash:C0}, financing cost {cash.FinancingCost:C0}, and pending settlement {cash.PendingSettlement:C0} are synchronized for reporting and sign-off.", StatusLabel = "Ready", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Success, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundTrialBalance", SecondaryActionLabel = "Trial Balance" }
+        ];
+    }
 
     private static IReadOnlyList<WorkspaceQueueItem> BuildReconciliationQueue(ReconciliationSummary reconciliation, FundLedgerSummary? ledger) =>
     [
@@ -388,11 +307,19 @@ public partial class GovernanceWorkspaceShellPage : Page
         new WorkspaceQueueItem { Title = "Security coverage posture", Detail = reconciliation.SecurityCoverageIssueCount > 0 ? $"{reconciliation.SecurityCoverageIssueCount} coverage issue(s) need review before approvals are released." : $"Security coverage is aligned for the current reconciliation scope{(ledger is null ? string.Empty : $" with {ledger.TrialBalance.Count} ledger lines available for validation")}.", StatusLabel = reconciliation.SecurityCoverageIssueCount > 0 ? "Coverage open" : "Aligned", CountLabel = reconciliation.SecurityCoverageIssueCount > 0 ? $"{reconciliation.SecurityCoverageIssueCount} issue(s)" : "0 issues", Tone = reconciliation.SecurityCoverageIssueCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Success, PrimaryActionId = "FundReconciliation", PrimaryActionLabel = "Open Review", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit Trail" }
     ];
 
-    private static IReadOnlyList<WorkspaceQueueItem> BuildReportingQueue(FundProfileDetail profile, CashFinancingSummary? cash) =>
-    [
-        new WorkspaceQueueItem { Title = "Portfolio and cash reporting", Detail = cash is null ? $"Reporting for {profile.DisplayName} is waiting on cash and financing data." : "Cash, financing, and portfolio-linked reporting can be reviewed without leaving governance.", StatusLabel = cash is null ? "Pending" : "Ready", CountLabel = cash is null ? "Awaiting data" : $"{cash.TotalCash:C0}", Tone = cash is null ? WorkspaceTone.Warning : WorkspaceTone.Info, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundPortfolio", SecondaryActionLabel = "Portfolio" },
-        new WorkspaceQueueItem { Title = "Board and operator handoff", Detail = "Keep reporting, trial-balance, and audit references together before approvals or exports leave the workstation.", StatusLabel = "Review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundTrialBalance", PrimaryActionLabel = "Accounting", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit" }
-    ];
+    private static IReadOnlyList<WorkspaceQueueItem> BuildReportingQueue(
+        FundProfileDetail profile,
+        FundOperationsWorkspaceDto workspace)
+    {
+        var cash = workspace.CashFinancing;
+        var reporting = workspace.Reporting;
+
+        return
+        [
+            new WorkspaceQueueItem { Title = "Portfolio and cash reporting", Detail = $"Cash, financing, NAV, and portfolio-linked reporting can be reviewed without leaving governance. {reporting.ProfileCount} reporting/export profile(s) are already available through the shared workspace summary.", StatusLabel = "Ready", CountLabel = $"{cash.TotalCash:C0}", Tone = WorkspaceTone.Info, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundPortfolio", SecondaryActionLabel = "Portfolio" },
+            new WorkspaceQueueItem { Title = "Board and operator handoff", Detail = $"Keep reporting, trial-balance, audit references, and {string.Join(", ", reporting.ReportPackTargets)} pack targets together before approvals or exports leave the workstation.", StatusLabel = "Review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundTrialBalance", PrimaryActionLabel = "Accounting", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit" }
+        ];
+    }
 
     private static IReadOnlyList<WorkspaceQueueItem> BuildAuditQueue(ReconciliationSummary reconciliation, IReadOnlyList<NotificationHistoryItem> notifications, int unreadAlerts) =>
     [
@@ -414,9 +341,9 @@ public partial class GovernanceWorkspaceShellPage : Page
         FundSummaryTitleText.Text = operatingContext?.DisplayName ?? profile?.DisplayName ?? "No operating context selected";
         FundSummaryDetailText.Text = profile is null ? "Switch to a fund-linked operating context to unlock operations, accounting, reconciliation, reporting, and audit review." : $"{profile.LegalEntityName} · {profile.BaseCurrency} · default {profile.DefaultLedgerScope}";
         FundSummaryMetaText.Text = ledger is null ? "No current ledger snapshot." : $"As of {ledger.AsOf:MMM dd yyyy HH:mm} · {ledger.EntityCount} entities · {ledger.VehicleCount} vehicles";
-        SummaryCashText.Text = cash is null || cash.TotalCash == 0m ? "—" : cash.TotalCash.ToString("C0");
-        SummaryBreaksText.Text = reconciliation?.OpenBreakCount.ToString() ?? "—";
-        SummaryJournalText.Text = ledger?.JournalEntryCount.ToString() ?? "—";
+        SummaryCashText.Text = cash is null || cash.TotalCash == 0m ? "-" : cash.TotalCash.ToString("C0");
+        SummaryBreaksText.Text = reconciliation?.OpenBreakCount.ToString() ?? "-";
+        SummaryJournalText.Text = ledger?.JournalEntryCount.ToString() ?? "-";
 
         RecentWorkList.ItemsSource = notifications.Count > 0
             ? notifications.Take(3).Select(notification => new WorkspaceRecentItem { Title = notification.Title, Detail = notification.Message, Meta = $"{notification.Timestamp:g} · {notification.Type}", Tone = notification.IsRead ? WorkspaceTone.Neutral : WorkspaceTone.Warning, ActionId = "NotificationCenter", ActionLabel = "Open Alerts" }).ToArray()
@@ -424,29 +351,7 @@ public partial class GovernanceWorkspaceShellPage : Page
     }
 
     private void RequestContextSelection()
-    {
-        if (_operatingContextService is not null)
-        {
-            _operatingContextService.RequestSwitchContext();
-            return;
-        }
-
-        _fundContextService.RequestSwitchFund();
-    }
-
-    private string? GetLayoutScopeKey()
-        => _operatingContextService?.GetActiveScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
-
-    private BoundedWindowMode GetWindowMode()
-        => _operatingContextService?.CurrentWindowMode ?? BoundedWindowMode.DockFloat;
-
-    private static bool ShouldRestoreSerializedLayout(WorkstationLayoutState layout)
-        => layout.WindowMode != BoundedWindowMode.Focused && !string.IsNullOrWhiteSpace(layout.DockLayoutXml);
-
-    private PaneDropAction NormalizeDockAction(PaneDropAction action)
-        => GetWindowMode() == BoundedWindowMode.Focused && action == PaneDropAction.FloatWindow
-            ? PaneDropAction.OpenTab
-            : action;
+        => RequestContextSelection(_fundContextService, _operatingContextService);
 
     private void SelectSubarea(GovernanceSubarea subarea)
     {
@@ -485,8 +390,4 @@ public partial class GovernanceWorkspaceShellPage : Page
         var resourceKey = isSelected ? "SecondaryButtonStyle" : "GhostButtonStyle";
         button.Style = (Style)System.Windows.Application.Current.FindResource(resourceKey);
     }
-
-    private static string BuildPageKey(string pageTag, object? parameter) => parameter is null ? pageTag : $"{pageTag}:{parameter}";
-    private static string GetPageTitle(string pageTag) => pageTag switch { "FundLedger" => "Operations", "FundAccounts" => "Accounts", "FundReconciliation" => "Reconciliation", "FundTrialBalance" => "Accounting", "FundCashFinancing" => "Reporting", "FundPortfolio" => "Portfolio", "FundAuditTrail" => "Audit Trail", "NotificationCenter" => "Alerts", "Diagnostics" => "Diagnostics", "ProviderHealth" => "Provider Health", "SystemHealth" => "System Health", _ => pageTag };
-    private static PaneDropAction MapDockAction(string dockZone) => dockZone switch { "left" => PaneDropAction.SplitLeft, "right" => PaneDropAction.SplitRight, "bottom" => PaneDropAction.SplitBelow, "floating" => PaneDropAction.FloatWindow, _ => PaneDropAction.Replace };
 }

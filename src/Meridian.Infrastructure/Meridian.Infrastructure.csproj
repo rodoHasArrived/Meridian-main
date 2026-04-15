@@ -77,7 +77,7 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Threading.Channels" />
-    <PackageReference Include="Renci.SshNet" Condition="'$(EnableSftp)' == 'true'" />
+    <PackageReference Include="SSH.NET" Condition="'$(EnableSftp)' == 'true'" />
 
     <!-- StockSharp (optional) -->
     <PackageReference Include="StockSharp.Algo" Condition="'$(EnableStockSharp)' == 'true'" />

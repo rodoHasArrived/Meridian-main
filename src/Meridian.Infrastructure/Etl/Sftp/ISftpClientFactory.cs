@@ -57,7 +57,7 @@ internal sealed class SshNetSftpClient(Renci.SshNet.SftpClient inner) : ISftpCli
     public IEnumerable<ISftpFileEntry> ListDirectory(string path)
         => inner.ListDirectory(path).Select(static f => (ISftpFileEntry)new SshNetFileEntry(f));
 
-    private sealed class SshNetFileEntry(Renci.SshNet.SftpFile file) : ISftpFileEntry
+    private sealed class SshNetFileEntry(Renci.SshNet.Sftp.ISftpFile file) : ISftpFileEntry
     {
         public string Name => file.Name;
         public string FullName => file.FullName;
