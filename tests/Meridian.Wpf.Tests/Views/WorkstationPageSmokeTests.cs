@@ -8,11 +8,15 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
 
+[Collection("NavigationServiceSerialCollection")]
 public sealed class WorkstationPageSmokeTests
 {
     [Theory]
+    [InlineData(typeof(AnalysisExportPage))]
     [InlineData(typeof(EventReplayPage))]
     [InlineData(typeof(PositionBlotterPage))]
+    [InlineData(typeof(ServiceManagerPage))]
+    [InlineData(typeof(SettingsPage))]
     public void WorkstationPages_ShouldResolveWithApplicationResources(Type pageType)
     {
         WpfTestThread.Run(() =>
@@ -59,8 +63,11 @@ public sealed class WorkstationPageSmokeTests
     }
 
     [Theory]
+    [InlineData("AnalysisExport", typeof(AnalysisExportPage))]
     [InlineData("EventReplay", typeof(EventReplayPage))]
     [InlineData("PositionBlotter", typeof(PositionBlotterPage))]
+    [InlineData("ServiceManager", typeof(ServiceManagerPage))]
+    [InlineData("Settings", typeof(SettingsPage))]
     public void WorkstationPages_ShouldNavigateByTag(string pageTag, Type expectedPageType)
     {
         WpfTestThread.Run(() =>
@@ -104,7 +111,8 @@ public sealed class WorkstationPageSmokeTests
                 hostWindow.UpdateLayout();
 
                 navigated.Should().BeTrue();
-                frame.Content.Should().BeOfType(expectedPageType);
+                frame.Content.Should().BeOfType<WorkspaceDeepPageHostPage>();
+                NavigationHostInspector.ResolveInnermostPage(frame.Content).Should().BeOfType(expectedPageType);
             }
             finally
             {

@@ -116,6 +116,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
+            services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
             services.AddSingleton<ISecurityMasterConflictService, SecurityMasterConflictService>();
         }
 
@@ -128,6 +129,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterAmender, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterConflictService, NullSecurityMasterConflictService>();
         services.TryAddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
+        services.TryAddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
         services.TryAddSingleton<ISecurityMasterEventStore, NullSecurityMasterEventStore>();
 
         if (DirectLendingStartup.IsConfigured())

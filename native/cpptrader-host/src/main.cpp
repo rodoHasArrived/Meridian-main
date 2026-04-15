@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 // Meridian CppTrader Host
 //
 // Length-prefixed JSON protocol host that mediates between the Meridian managed
@@ -234,6 +232,10 @@ struct OrderBook
 class MatchingEngine
 {
 public:
+    MatchingEngine() = default;
+    MatchingEngine(const MatchingEngine&) = delete;
+    MatchingEngine& operator=(const MatchingEngine&) = delete;
+
     bool register_symbol(const SymbolSpec& spec)
     {
         const std::lock_guard lock{_mu};
@@ -402,6 +404,16 @@ public:
         return json{{"snapshot", snap}};
     }
 
+    double tick_size_for_symbol(const std::string& symbol)
+    {
+        const std::lock_guard lock{_mu};
+        auto it = _symbols.find(symbol);
+        if (it == _symbols.end() || it->second.tick_size_nanos <= 0)
+            return static_cast<double>(10'000'000) / 1e9;
+
+        return static_cast<double>(it->second.tick_size_nanos) / 1e9;
+    }
+
 private:
     std::mutex                                   _mu;
     std::unordered_map<std::string, SymbolSpec>  _symbols;
@@ -427,17 +439,17 @@ static void handle_create_session(const json& envelope)
     const std::string req_id = envelope.value("requestId", "");
     const auto&       payload = envelope["payload"];
 
-    Session s;
-    s.session_id   = new_uuid();
-    s.session_kind = payload.value("sessionKind", "Execution");
+    const std::string session_id = new_uuid();
+    auto [it, inserted] = g_sessions.try_emplace(session_id);
+    Session& session = it->second;
+    session.session_id = session_id;
+    session.session_kind = payload.value("sessionKind", "Execution");
 
-    send_response("createSessionResponse", req_id, s.session_id, {
-        {"sessionId",   s.session_id},
-        {"sessionKind", s.session_kind},
+    send_response("createSessionResponse", req_id, session.session_id, {
+        {"sessionId",   session.session_id},
+        {"sessionKind", session.session_kind},
         {"createdAt",   utc_now_iso8601()}
     });
-
-    g_sessions[s.session_id] = std::move(s);
 }
 
 static void handle_register_symbol(const json& envelope)
@@ -534,9 +546,7 @@ static void handle_submit_order(const json& envelope)
     });
 
         // Emit fills, if any
-        const double tick_size =
-            static_cast<double>(_symbols.count(entry.symbol) && _symbols[entry.symbol].tick_size_nanos > 0
-                ? _symbols[entry.symbol].tick_size_nanos : 10'000'000) / 1e9;
+        const double tick_size = it->second.engine.tick_size_for_symbol(entry.symbol);
         for (const auto& fill : result.fills)
         {
             const bool is_full = fill.is_terminal;
@@ -658,4 +668,3 @@ int main()
 
     return 0;
 }
->>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3

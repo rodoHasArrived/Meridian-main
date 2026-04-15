@@ -173,4 +173,34 @@ public sealed class DataLineageServiceTests : IDisposable
         graph!.Ingestions.Should().HaveCount(1);
         graph.Ingestions[0].Provider.Should().Be("alpaca");
     }
+
+    [Fact]
+    public async Task RecordIngestion_ShouldPersistImmediately()
+    {
+        _service.RecordIngestion("/data/immediate.jsonl", new IngestionRecord(
+            DateTime.UtcNow, "alpaca", "QQQ", "Trade", 250));
+
+        File.Exists(_lineagePath).Should().BeTrue();
+        var content = await File.ReadAllTextAsync(_lineagePath);
+        content.Should().Contain("immediate.jsonl");
+        content.Should().Contain("QQQ");
+    }
+
+    [Fact]
+    public void RecordIngestion_WhenPersistenceWriteFails_Throws()
+    {
+        var brokenPath = Path.Combine(_tempDir, "broken-lineage.json");
+        File.WriteAllText(brokenPath, "{}");
+
+        var loggerMock = new Mock<ILogger<DataLineageService>>();
+        var service = new DataLineageService(brokenPath, loggerMock.Object);
+        File.Delete(brokenPath);
+        Directory.CreateDirectory(brokenPath);
+
+        var act = () => service.RecordIngestion("/data/broken.jsonl", new IngestionRecord(
+            DateTime.UtcNow, "alpaca", "IWM", "Trade", 10));
+
+        var exception = act.Should().Throw<Exception>().Which;
+        (exception is IOException || exception is UnauthorizedAccessException).Should().BeTrue();
+    }
 }

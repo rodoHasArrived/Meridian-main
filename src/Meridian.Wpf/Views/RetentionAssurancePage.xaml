@@ -8,7 +8,7 @@
         <StackPanel MaxWidth="1200">
 
             <!-- Header -->
-            <StackPanel Margin="0,0,0,24">
+            <StackPanel Margin="0,0,0,24" Style="{StaticResource EmbeddedShellHeaderStackPanelStyle}">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                     <TextBlock Text="&#xE73E;" FontFamily="{StaticResource SymbolThemeFontFamily}"
                                FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />

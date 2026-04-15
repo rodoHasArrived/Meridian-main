@@ -131,6 +131,7 @@ public class ConfigValidatorTests
         // Arrange
         var config = new AppConfig(
             DataSource: DataSourceKind.IB,
+            IB: new IBOptions(),
             Alpaca: null
         );
 
@@ -139,6 +140,48 @@ public class ConfigValidatorTests
 
         // Assert
         result.IsValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IBOptions_Defaults_ArePaperSafe()
+    {
+        var options = new IBOptions();
+
+        options.Port.Should().Be(7497);
+        options.ClientId.Should().Be(1);
+        options.UsePaperTrading.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ConfigValidationPipeline_WarnsWhenIbIsSetToLiveTrading()
+    {
+        var pipeline = ConfigValidationPipeline.CreateDefault();
+        var config = new AppConfig(
+            DataSource: DataSourceKind.IB,
+            IB: new IBOptions(UsePaperTrading: false));
+
+        var results = pipeline.Validate(config);
+
+        results.Should().Contain(r =>
+            r.Property == "IB.UsePaperTrading" &&
+            r.Severity == ConfigValidationSeverity.Warning);
+    }
+
+    [Fact]
+    public void ConfigValidationPipeline_WarnsWhenLocalClientPortalHttpsDisablesSelfSignedCertificates()
+    {
+        var pipeline = ConfigValidationPipeline.CreateDefault();
+        var config = new AppConfig(
+            IBClientPortal: new IBClientPortalOptions(
+                Enabled: true,
+                BaseUrl: "https://localhost:5000",
+                AllowSelfSignedCertificates: false));
+
+        var results = pipeline.Validate(config);
+
+        results.Should().Contain(r =>
+            r.Property == "IBClientPortal.AllowSelfSignedCertificates" &&
+            r.Severity == ConfigValidationSeverity.Warning);
     }
 
     [Fact]

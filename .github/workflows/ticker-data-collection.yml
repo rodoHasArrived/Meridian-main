@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # Configurable Ticker Data Collection Workflow
 # Fetches historical data from Yahoo Finance for user-specified ticker symbols
 # and uploads the results as a downloadable artifact.
@@ -235,24 +233,11 @@ jobs:
             echo "> No collection summary available." >> $GITHUB_STEP_SUMMARY
           fi
 
-<<<<<<< HEAD
-            if [ -n "$OUTPUT_DIR" ] && [ -f "$OUTPUT_DIR/collection_summary.txt" ]; then
-              echo '```'
-              cat "$OUTPUT_DIR/collection_summary.txt"
-              echo '```'
-            else
-              echo "> No collection summary available."
-            fi
-
-            echo ""
-            echo "### Artifacts"
-            echo "- **ticker-data-${{ github.run_number }}-$SHORT_SHA** — ${{ steps.normalize-inputs.outputs.validated_output_format }} files with historical bar data"
-            echo "- **ticker-test-results-${{ github.run_number }}** — Test result (.trx) file"
-          } >> "$GITHUB_STEP_SUMMARY"
->>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3
-=======
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- **ticker-data-${{ github.run_number }}-${GITHUB_SHA}** — ${{ steps.normalize-inputs.outputs.validated_output_format }} files with historical bar data" >> $GITHUB_STEP_SUMMARY
           echo "- **ticker-test-results-${{ github.run_number }}** — Test result (.trx) file" >> $GITHUB_STEP_SUMMARY
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- **ticker-data-${{ github.run_number }}-${GITHUB_SHA}** — ${{ steps.normalize-inputs.outputs.validated_output_format }} files with historical bar data" >> $GITHUB_STEP_SUMMARY
+          echo "- **ticker-test-results-${{ github.run_number }}** — Test result (.trx) file" >> $GITHUB_STEP_SUMMARY

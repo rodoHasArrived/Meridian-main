@@ -357,8 +357,8 @@ public static partial class HtmlTemplateGenerator
         <p class=""muted"">IB Settings</p>
         <div class=""form-row"">
           <div class=""form-group""><label>Host</label><input id=""dsIbHost"" value=""127.0.0.1"" /></div>
-          <div class=""form-group""><label>Port</label><input id=""dsIbPort"" type=""number"" value=""7496"" /></div>
-          <div class=""form-group""><label>Client ID</label><input id=""dsIbClientId"" type=""number"" value=""0"" /></div>
+          <div class=""form-group""><label>Port</label><input id=""dsIbPort"" type=""number"" value=""7497"" /></div>
+            <div class=""form-group""><label>Client ID</label><input id=""dsIbClientId"" type=""number"" value=""1"" /></div>
         </div>
         <div class=""form-group"">
           <label><input type=""checkbox"" id=""dsIbPaper"" /> Paper Trading</label>

@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Execution.Sdk;
@@ -7,247 +9,417 @@ using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
-/// <summary>
-/// Unit tests for <see cref="IBBrokerageGateway"/>, including fixed income (bond/treasury) support.
-/// Because the IB gateway communicates via TWS (not HTTP), these tests validate gateway
-/// metadata and the stub order-submission path without requiring a live TWS connection.
-/// </summary>
 public sealed class IBBrokerageGatewayTests
 {
-    // ── Helpers ──────────────────────────────────────────────────────────
+    private static IBOptions DefaultOptions(bool paper = true)
+        => new(Host: "127.0.0.1", Port: paper ? 7497 : 7496, ClientId: 1, UsePaperTrading: paper);
 
-    private static IBBrokerageGateway CreateSut(bool paper = true) =>
-        new(
-            new IBOptions(Host: "127.0.0.1", Port: paper ? 7497 : 7496, ClientId: 1, UsePaperTrading: paper),
-            NullLogger<IBBrokerageGateway>.Instance);
-
-    /// <summary>Creates a connected gateway (skips the host/port validation side-effect).</summary>
-    private static async Task<IBBrokerageGateway> CreateConnectedSutAsync(CancellationToken ct = default)
-    {
-        var sut = CreateSut();
-        await sut.ConnectAsync(ct);
-        return sut;
-    }
-
-    // ── Identity / metadata ────────────────────────────────────────────────
+    private static IBBrokerageGateway CreateSut(FakeIbBrokerageClient client, bool paper = true)
+        => new(DefaultOptions(paper), NullLogger<IBBrokerageGateway>.Instance, client);
 
     [Fact]
-    public void GatewayId_ReturnsIb()
+    public void Gateway_Metadata_DeclaresIbAndFixedIncomeSupport()
     {
-        var sut = CreateSut();
+        var sut = CreateSut(new FakeIbBrokerageClient());
+
         sut.GatewayId.Should().Be("ib");
-    }
-
-    [Fact]
-    public void BrokerDisplayName_ContainsInteractiveBrokers()
-    {
-        var sut = CreateSut();
         sut.BrokerDisplayName.Should().Contain("Interactive Brokers");
-    }
-
-    // ── Fixed income capabilities ─────────────────────────────────────────
-
-    [Fact]
-    public void BrokerageCapabilities_DeclaresEquityAndBond()
-    {
-        var sut = CreateSut();
-        sut.BrokerageCapabilities.SupportedAssetClasses.Should().Contain("equity");
-        sut.BrokerageCapabilities.SupportedAssetClasses.Should().Contain("bond");
-    }
-
-    [Fact]
-    public void BrokerageCapabilities_SupportsFixedIncome()
-    {
-        var sut = CreateSut();
-        sut.BrokerageCapabilities.Extensions.Should().ContainKey("supportsFixedIncome");
+        sut.BrokerageCapabilities.SupportedAssetClasses.Should().Contain(["equity", "bond"]);
         sut.BrokerageCapabilities.Extensions["supportsFixedIncome"].Should().Be("true");
     }
 
     [Fact]
-    public void BrokerageCapabilities_SupportsOrderModificationAndExtendedHours()
+    public async Task ConnectAsync_WithNativeClient_PrimesNextValidId()
     {
-        var sut = CreateSut();
-        sut.BrokerageCapabilities.SupportsOrderModification.Should().BeTrue();
-        sut.BrokerageCapabilities.SupportsExtendedHours.Should().BeTrue();
-    }
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(1100)
+        };
 
-    // ── ConnectAsync ──────────────────────────────────────────────────────
+        await using var sut = CreateSut(client);
 
-    [Fact]
-    public async Task ConnectAsync_ValidOptions_SetsIsConnectedTrue()
-    {
-        var sut = CreateSut();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-        await sut.ConnectAsync(cts.Token);
+        await sut.ConnectAsync();
 
         sut.IsConnected.Should().BeTrue();
-        await sut.DisposeAsync();
+        client.IsConnected.Should().BeTrue();
     }
 
+#if !IBAPI
     [Fact]
-    public async Task ConnectAsync_MissingHost_ThrowsInvalidOperationException()
+    public async Task ConnectAsync_WithoutVendorRuntime_ThrowsGuidanceException()
     {
-        var sut = new IBBrokerageGateway(
-            new IBOptions(Host: "", Port: 7497, ClientId: 1),
-            NullLogger<IBBrokerageGateway>.Instance);
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await using var sut = new IBBrokerageGateway(DefaultOptions(), NullLogger<IBBrokerageGateway>.Instance);
 
-        var act = () => sut.ConnectAsync(cts.Token);
+        var act = () => sut.ConnectAsync();
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*Host*");
+        await act.Should().ThrowAsync<NotSupportedException>()
+            .WithMessage("*EnableIbApiVendor=true*")
+            .WithMessage("*interactive-brokers-setup.md*");
     }
+#endif
 
     [Fact]
-    public async Task ConnectAsync_InvalidPort_ThrowsInvalidOperationException()
+    public async Task SubmitOrderAsync_MapsOpenOrderCallbackIntoAcceptedReport()
     {
-        var sut = new IBBrokerageGateway(
-            new IBOptions(Host: "127.0.0.1", Port: 0, ClientId: 1),
-            NullLogger<IBBrokerageGateway>.Instance);
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(2001),
+            OnPlaceOrder = (c, orderId, request) =>
+            {
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    orderId,
+                    request.Symbol,
+                    request.Metadata?.GetValueOrDefault("sec_type") ?? "STK",
+                    request.Side == OrderSide.Buy ? "BUY" : "SELL",
+                    request.Type == OrderType.Limit ? "LMT" : "MKT",
+                    request.Quantity,
+                    0m,
+                    request.LimitPrice is decimal limit ? (double)limit : null,
+                    request.StopPrice is decimal stop ? (double)stop : null,
+                    "Submitted",
+                    request.ClientOrderId,
+                    "DU123456",
+                    null,
+                    null,
+                    request.Metadata,
+                    DateTimeOffset.UtcNow));
+            }
+        };
 
-        var act = () => sut.ConnectAsync(cts.Token);
-
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*Port*");
-    }
-
-    // ── SubmitOrderAsync: equity orders ───────────────────────────────────
-
-    [Fact]
-    public async Task SubmitOrderAsync_EquityMarketBuy_ReturnsAcceptedReport()
-    {
-        await using var sut = await CreateConnectedSutAsync();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
 
         var report = await sut.SubmitOrderAsync(new OrderRequest
         {
-            Symbol = "AAPL",
+            Symbol = "912828YY0",
             Side = OrderSide.Buy,
             Type = OrderType.Market,
-            Quantity = 100m,
-        }, cts.Token);
+            Quantity = 10_000m,
+            ClientOrderId = "treasury-1",
+            Metadata = new Dictionary<string, string> { ["sec_type"] = "GOVT" }
+        });
 
+        report.OrderId.Should().Be("treasury-1");
+        report.GatewayOrderId.Should().Be("2001");
         report.ReportType.Should().Be(ExecutionReportType.New);
-        report.Symbol.Should().Be("AAPL");
-        report.Side.Should().Be(OrderSide.Buy);
         report.OrderStatus.Should().Be(OrderStatus.Accepted);
-        report.OrderQuantity.Should().Be(100m);
-    }
-
-    // ── SubmitOrderAsync: fixed income orders ─────────────────────────────
-
-    [Fact]
-    public async Task SubmitOrderAsync_BondOrder_SecTypeMetadata_ReturnsAcceptedReport()
-    {
-        // secType="BOND" in Metadata should route the order without error and return an accepted report.
-        await using var sut = await CreateConnectedSutAsync();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-        var report = await sut.SubmitOrderAsync(new OrderRequest
-        {
-            Symbol = "459200HU8",   // IBM corporate bond CUSIP
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 5000m,       // 5,000 bonds = $5,000,000 face value (1 bond = $1,000 par)
-            Metadata = new Dictionary<string, string>
-            {
-                ["sec_type"] = "BOND",
-            },
-        }, cts.Token);
-
-        report.ReportType.Should().Be(ExecutionReportType.New);
-        report.Symbol.Should().Be("459200HU8");
-        report.Side.Should().Be(OrderSide.Buy);
-        report.OrderStatus.Should().Be(OrderStatus.Accepted);
-        report.OrderQuantity.Should().Be(5000m);
-    }
-
-    [Fact]
-    public async Task SubmitOrderAsync_TreasuryOrder_SecTypeGovt_ReturnsAcceptedReport()
-    {
-        // secType="GOVT" in Metadata should route to the IB government bond desk without error.
-        await using var sut = await CreateConnectedSutAsync();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-        var report = await sut.SubmitOrderAsync(new OrderRequest
-        {
-            Symbol = "912828YY0",   // 2-Year Treasury Note CUSIP
-            Side = OrderSide.Buy,
-            Type = OrderType.Limit,
-            Quantity = 10000m,      // 10,000 bonds = $10,000,000 face value (1 bond = $1,000 par)
-            Metadata = new Dictionary<string, string>
-            {
-                ["sec_type"] = "GOVT",
-            },
-        }, cts.Token);
-
-        report.ReportType.Should().Be(ExecutionReportType.New);
         report.Symbol.Should().Be("912828YY0");
-        report.OrderStatus.Should().Be(OrderStatus.Accepted);
-        report.OrderQuantity.Should().Be(10000m);
     }
 
     [Fact]
-    public async Task SubmitOrderAsync_OrderWithoutSecTypeMetadata_StillSucceeds()
+    public async Task ModifyOrderAsync_ReusesGatewayOrderIdAndReturnsModifiedReport()
     {
-        // No Metadata → gateway defaults to IB SecType STK (equity) in the TWS contract layer.
-        await using var sut = await CreateConnectedSutAsync();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-        var report = await sut.SubmitOrderAsync(new OrderRequest
+        var placeCalls = 0;
+        var client = new FakeIbBrokerageClient
         {
-            Symbol = "SPY",
-            Side = OrderSide.Sell,
-            Type = OrderType.Limit,
-            Quantity = 50m,
-        }, cts.Token);
+            OnRequestNextValidId = c => c.RaiseNextValidId(3001),
+            OnPlaceOrder = (c, orderId, request) =>
+            {
+                placeCalls++;
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    orderId,
+                    request.Symbol,
+                    "STK",
+                    request.Side == OrderSide.Buy ? "BUY" : "SELL",
+                    "LMT",
+                    request.Quantity,
+                    0m,
+                    request.LimitPrice is decimal limit ? (double)limit : null,
+                    null,
+                    "Submitted",
+                    request.ClientOrderId,
+                    "DU123456",
+                    null,
+                    null,
+                    request.Metadata,
+                    DateTimeOffset.UtcNow));
+            }
+        };
 
-        report.OrderStatus.Should().Be(OrderStatus.Accepted);
-        report.Symbol.Should().Be("SPY");
-    }
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
 
-    // ── GetPositionsAsync ─────────────────────────────────────────────────
-
-    [Fact]
-    public async Task GetPositionsAsync_ReturnsEmpty_InStubMode()
-    {
-        // In non-IBAPI stub mode, no real positions are returned.
-        // In a full IBAPI build, bond/treasury positions include AccruedInterest.
-        await using var sut = await CreateConnectedSutAsync();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-        var positions = await sut.GetPositionsAsync(cts.Token);
-
-        positions.Should().BeEmpty();
-    }
-
-    // ── Lifecycle ──────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task SubmitOrderAsync_WhenNotConnected_ThrowsInvalidOperationException()
-    {
-        var sut = CreateSut();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-
-        var act = () => sut.SubmitOrderAsync(new OrderRequest
+        await sut.SubmitOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 25m,
+            LimitPrice = 185.25m,
+            ClientOrderId = "eq-1",
+        });
+
+        var report = await sut.ModifyOrderAsync("eq-1", new OrderModification
+        {
+            NewQuantity = 30m,
+            NewLimitPrice = 184.75m
+        });
+
+        placeCalls.Should().Be(2);
+        report.ReportType.Should().Be(ExecutionReportType.Modified);
+        report.GatewayOrderId.Should().Be("3001");
+        report.OrderQuantity.Should().Be(30m);
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_MapsOrderStatusCancelledCallback()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(4001),
+            OnPlaceOrder = (c, orderId, request) =>
+            {
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    orderId, request.Symbol, "STK", "BUY", "MKT", request.Quantity, 0m,
+                    null, null, "Submitted", request.ClientOrderId, "DU123456", null, null, request.Metadata, DateTimeOffset.UtcNow));
+            },
+            OnCancelOrder = (c, orderId) =>
+            {
+                c.RaiseOrderStatus(new IBOrderStatusUpdate(
+                    orderId, "Cancelled", 0m, 1m, 0d, 0d, 0L, 1, null, DateTimeOffset.UtcNow));
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "MSFT",
             Side = OrderSide.Buy,
             Type = OrderType.Market,
             Quantity = 1m,
-        }, cts.Token);
+            ClientOrderId = "cancel-me"
+        });
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*not connected*");
+        var report = await sut.CancelOrderAsync("cancel-me");
+
+        report.ReportType.Should().Be(ExecutionReportType.Cancelled);
+        report.OrderStatus.Should().Be(OrderStatus.Cancelled);
+        report.OrderId.Should().Be("cancel-me");
     }
 
     [Fact]
-    public async Task DisposeAsync_CompletesCleanly()
+    public async Task StreamExecutionReportsAsync_EmitsFillFromExecDetails()
     {
-        var sut = CreateSut();
-        await sut.DisposeAsync();
-        sut.IsConnected.Should().BeFalse();
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(5001),
+            OnPlaceOrder = (c, orderId, request) =>
+            {
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    orderId, request.Symbol, "STK", "BUY", "MKT", request.Quantity, 0m,
+                    null, null, "Submitted", request.ClientOrderId, "DU123456", null, null, request.Metadata, DateTimeOffset.UtcNow));
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await sut.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            ClientOrderId = "fill-me"
+        }, cts.Token);
+
+        client.RaiseExecution(new IBExecutionUpdate(
+            5001, "SPY", "BOT", 10m, 511.25d, 10m, 511.25d, "0001", "DU123456", "SMART", 42L, DateTimeOffset.UtcNow));
+
+        var report = await ReadUntilAsync(sut.StreamExecutionReportsAsync(cts.Token), r => r.ReportType == ExecutionReportType.Fill, cts.Token);
+
+        report.OrderId.Should().Be("fill-me");
+        report.OrderStatus.Should().Be(OrderStatus.Filled);
+        report.FillPrice.Should().Be(511.25m);
+        report.FilledQuantity.Should().Be(10m);
+    }
+
+    [Fact]
+    public async Task GetPositionsAsync_MapsPositionCallbacks()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(6001),
+            OnRequestPositions = c =>
+            {
+                c.RaisePosition(new IBPositionUpdate(
+                    "DU123456", "IEF", "BOND", 5m, 99.875d, "USD", "SMART",
+                    new Dictionary<string, string> { ["accrued_interest"] = "12.50" },
+                    DateTimeOffset.UtcNow));
+                c.RaisePositionsCompleted();
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        var positions = await sut.GetPositionsAsync();
+
+        positions.Should().ContainSingle();
+        positions[0].Symbol.Should().Be("IEF");
+        positions[0].AssetClass.Should().Be("bond");
+        positions[0].AccruedInterest.Should().Be(12.50m);
+    }
+
+    [Fact]
+    public async Task GetOpenOrdersAsync_MapsOpenOrderSnapshotCallbacks()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(7001),
+            OnRequestOpenOrders = c =>
+            {
+                c.RaiseOpenOrder(new IBOpenOrderUpdate(
+                    7001, "AAPL", "STK", "SELL", "LMT", 12m, 2m,
+                    205.50d, null, "Submitted", "open-1", "DU123456", null, null, null, DateTimeOffset.UtcNow));
+                c.RaiseOpenOrdersCompleted();
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        var openOrders = await sut.GetOpenOrdersAsync();
+
+        openOrders.Should().ContainSingle();
+        openOrders[0].OrderId.Should().Be("7001");
+        openOrders[0].ClientOrderId.Should().Be("open-1");
+        openOrders[0].Side.Should().Be(OrderSide.Sell);
+        openOrders[0].LimitPrice.Should().Be(205.50m);
+    }
+
+    [Fact]
+    public async Task GetAccountInfoAsync_MapsAccountSummaryCallbacks()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(8001),
+            OnRequestAccountSummary = (c, requestId) =>
+            {
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(25);
+                    c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "NetLiquidation", "125000.50", "USD", DateTimeOffset.UtcNow));
+                    c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "TotalCashValue", "25000.25", "USD", DateTimeOffset.UtcNow));
+                    c.RaiseAccountSummary(new IBAccountSummaryUpdate(requestId, "DU123456", "BuyingPower", "50000.75", "USD", DateTimeOffset.UtcNow));
+                    c.RaiseAccountSummaryCompleted(requestId);
+                });
+            }
+        };
+
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        var account = await sut.GetAccountInfoAsync();
+
+        account.AccountId.Should().Be("DU123456");
+        account.Equity.Should().Be(125000.50m);
+        account.Cash.Should().Be(25000.25m);
+        account.BuyingPower.Should().Be(50000.75m);
+        account.Status.Should().Be("paper");
+    }
+
+    private static async Task<ExecutionReport> ReadUntilAsync(
+        IAsyncEnumerable<ExecutionReport> stream,
+        Func<ExecutionReport, bool> predicate,
+        CancellationToken ct)
+    {
+        await foreach (var report in stream.WithCancellation(ct))
+        {
+            if (predicate(report))
+                return report;
+        }
+
+        throw new InvalidOperationException("Expected execution report was not observed.");
+    }
+
+    private sealed class FakeIbBrokerageClient : IIBBrokerageClient
+    {
+        private int _nextRequestId = 100;
+
+        public string Host { get; init; } = "127.0.0.1";
+        public int Port { get; init; } = 7497;
+        public int ClientId { get; init; } = 1;
+        public bool IsConnected { get; private set; }
+
+        public Action<FakeIbBrokerageClient>? OnRequestNextValidId { get; set; }
+        public Action<FakeIbBrokerageClient, int, OrderRequest>? OnPlaceOrder { get; set; }
+        public Action<FakeIbBrokerageClient, int>? OnCancelOrder { get; set; }
+        public Action<FakeIbBrokerageClient, int>? OnRequestAccountSummary { get; set; }
+        public Action<FakeIbBrokerageClient>? OnRequestPositions { get; set; }
+        public Action<FakeIbBrokerageClient>? OnRequestOpenOrders { get; set; }
+
+        public event EventHandler<int>? NextValidIdReceived;
+        public event EventHandler<IBOrderStatusUpdate>? OrderStatusReceived;
+        public event EventHandler<IBOpenOrderUpdate>? OpenOrderReceived;
+        public event EventHandler? OpenOrdersCompleted;
+        public event EventHandler<IBExecutionUpdate>? ExecutionDetailsReceived;
+        public event EventHandler<IBPositionUpdate>? PositionReceived;
+        public event EventHandler? PositionsCompleted;
+        public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
+        public event EventHandler<int>? AccountSummaryCompleted;
+        public event EventHandler<IBApiError>? ErrorOccurred;
+
+        public Task ConnectAsync(CancellationToken ct = default)
+        {
+            IsConnected = true;
+            return Task.CompletedTask;
+        }
+
+        public Task DisconnectAsync(CancellationToken ct = default)
+        {
+            IsConnected = false;
+            return Task.CompletedTask;
+        }
+
+        public void RequestNextValidId() => OnRequestNextValidId?.Invoke(this);
+
+        public Task PlaceOrderAsync(int orderId, OrderRequest request, CancellationToken ct = default)
+        {
+            OnPlaceOrder?.Invoke(this, orderId, request);
+            return Task.CompletedTask;
+        }
+
+        public Task CancelOrderAsync(int orderId, CancellationToken ct = default)
+        {
+            OnCancelOrder?.Invoke(this, orderId);
+            return Task.CompletedTask;
+        }
+
+        public int RequestAccountSummary()
+        {
+            var requestId = Interlocked.Increment(ref _nextRequestId);
+            OnRequestAccountSummary?.Invoke(this, requestId);
+            return requestId;
+        }
+
+        public void CancelAccountSummary(int requestId)
+        {
+        }
+
+        public void RequestPositions() => OnRequestPositions?.Invoke(this);
+
+        public void CancelPositions()
+        {
+        }
+
+        public void RequestOpenOrders() => OnRequestOpenOrders?.Invoke(this);
+
+        public void RaiseNextValidId(int orderId) => NextValidIdReceived?.Invoke(this, orderId);
+        public void RaiseOrderStatus(IBOrderStatusUpdate update) => OrderStatusReceived?.Invoke(this, update);
+        public void RaiseOpenOrder(IBOpenOrderUpdate update) => OpenOrderReceived?.Invoke(this, update);
+        public void RaiseExecution(IBExecutionUpdate update) => ExecutionDetailsReceived?.Invoke(this, update);
+        public void RaisePosition(IBPositionUpdate update) => PositionReceived?.Invoke(this, update);
+        public void RaisePositionsCompleted() => PositionsCompleted?.Invoke(this, EventArgs.Empty);
+        public void RaiseOpenOrdersCompleted() => OpenOrdersCompleted?.Invoke(this, EventArgs.Empty);
+        public void RaiseAccountSummary(IBAccountSummaryUpdate update) => AccountSummaryReceived?.Invoke(this, update);
+        public void RaiseAccountSummaryCompleted(int requestId) => AccountSummaryCompleted?.Invoke(this, requestId);
+        public void RaiseError(IBApiError error) => ErrorOccurred?.Invoke(this, error);
+
+        public void Dispose()
+        {
+        }
     }
 }

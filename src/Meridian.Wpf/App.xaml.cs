@@ -231,37 +231,37 @@ public partial class App : System.Windows.Application
         services.AddLogging();
 
         // Shared API infrastructure
-        services.AddSingleton(_ => ApiClientService.Instance);
+        services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
 
         // ── Fixture mode service (offline mock data) ────────────────────────
-        services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
+        services.AddSingleton<Meridian.Ui.Services.Services.FixtureDataService>(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.Services.FixtureModeDetector>(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
 
         // ── Core services (by interface + concrete type) ────────────────────
         services.AddSingleton<IConnectionService>(_ => WpfServices.ConnectionService.Instance);
-        services.AddSingleton(_ => WpfServices.ConnectionService.Instance);
+        services.AddSingleton<WpfServices.ConnectionService>(_ => WpfServices.ConnectionService.Instance);
 
         services.AddSingleton<INavigationService>(_ => WpfServices.NavigationService.Instance);
-        services.AddSingleton(_ => WpfServices.NavigationService.Instance);
+        services.AddSingleton<WpfServices.NavigationService>(_ => WpfServices.NavigationService.Instance);
 
         services.AddSingleton<Meridian.Ui.Services.Contracts.ILoggingService>(_ => WpfServices.LoggingService.Instance);
-        services.AddSingleton(_ => WpfServices.LoggingService.Instance);
+        services.AddSingleton<WpfServices.LoggingService>(_ => WpfServices.LoggingService.Instance);
 
-        services.AddSingleton(_ => WpfServices.ConfigService.Instance);
-        services.AddSingleton(_ => WpfServices.ThemeService.Instance);
-        services.AddSingleton(_ => WpfServices.NotificationService.Instance);
-        services.AddSingleton(_ => WpfServices.KeyboardShortcutService.Instance);
-        services.AddSingleton(_ => WpfServices.MessagingService.Instance);
+        services.AddSingleton<WpfServices.ConfigService>(_ => WpfServices.ConfigService.Instance);
+        services.AddSingleton<WpfServices.ThemeService>(_ => WpfServices.ThemeService.Instance);
+        services.AddSingleton<WpfServices.NotificationService>(_ => WpfServices.NotificationService.Instance);
+        services.AddSingleton<WpfServices.KeyboardShortcutService>(_ => WpfServices.KeyboardShortcutService.Instance);
+        services.AddSingleton<WpfServices.MessagingService>(_ => WpfServices.MessagingService.Instance);
         services.AddSingleton<WpfServices.ApiStatusService>();
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
-        services.AddSingleton(_ => WpfServices.StatusService.Instance);
-        services.AddSingleton(_ => WpfServices.FirstRunService.Instance);
+        services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
+        services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
 
         // ── Onboarding / workspace services ──────────────────────────────────
-        services.AddSingleton(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
-        services.AddSingleton(_ => WpfServices.WorkspaceService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
-        services.AddSingleton(_ => WpfServices.FundContextService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.OnboardingTourService>(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
+        services.AddSingleton<WpfServices.WorkspaceService>(_ => WpfServices.WorkspaceService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.AlertService>(_ => Meridian.Ui.Services.AlertService.Instance);
+        services.AddSingleton<WpfServices.FundContextService>(_ => WpfServices.FundContextService.Instance);
         services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
         services.AddSingleton(sp => new InMemoryFundAccountService(
             Path.Combine(
@@ -281,15 +281,15 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.WorkspaceShellContextService>();
 
         // ── Domain / feature services ───────────────────────────────────────
-        services.AddSingleton(_ => WpfServices.BackendServiceManager.Instance);
-        services.AddSingleton(_ => WpfServices.WatchlistService.Instance);
-        services.AddSingleton(_ => WpfServices.ArchiveHealthService.Instance);
-        services.AddSingleton(_ => WpfServices.SchemaService.Instance);
-        services.AddSingleton(_ => WpfServices.RunMatService.Instance);
-        services.AddSingleton(_ => ProviderManagementService.Instance);
+        services.AddSingleton<WpfServices.BackendServiceManager>(_ => WpfServices.BackendServiceManager.Instance);
+        services.AddSingleton<WpfServices.WatchlistService>(_ => WpfServices.WatchlistService.Instance);
+        services.AddSingleton<WpfServices.ArchiveHealthService>(_ => WpfServices.ArchiveHealthService.Instance);
+        services.AddSingleton<WpfServices.SchemaService>(_ => WpfServices.SchemaService.Instance);
+        services.AddSingleton<WpfServices.RunMatService>(_ => WpfServices.RunMatService.Instance);
+        services.AddSingleton<ProviderManagementService>(_ => ProviderManagementService.Instance);
         services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
-        services.AddSingleton(_ => SearchService.Instance);
+        services.AddSingleton<SearchService>(_ => SearchService.Instance);
         services.AddSingleton<WpfServices.FundAccountReadService>();
         services.AddSingleton<WpfServices.FundLedgerReadService>();
         services.AddSingleton<WpfServices.ReconciliationReadService>();
@@ -307,10 +307,10 @@ public partial class App : System.Windows.Application
         RegisterStrategyWorkspaceServices(services);
 
         // ── Background / infrastructure services ────────────────────────────
-        services.AddSingleton(_ => WpfServices.BackgroundTaskSchedulerService.Instance);
-        services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
-        services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
-        services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
+        services.AddSingleton<WpfServices.BackgroundTaskSchedulerService>(_ => WpfServices.BackgroundTaskSchedulerService.Instance);
+        services.AddSingleton<WpfServices.OfflineTrackingPersistenceService>(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
+        services.AddSingleton<WpfServices.PendingOperationsQueueService>(_ => WpfServices.PendingOperationsQueueService.Instance);
+        services.AddSingleton<WpfServices.ToastNotificationService>(_ => WpfServices.ToastNotificationService.Instance);
         // C1 fix: register a single SystemTrayService instance under the interface contract;
         //         the concrete type is resolved via the same singleton.
         services.AddSingleton<WpfServices.SystemTrayService>();
@@ -381,6 +381,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<RunLedgerPage>();
         services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
+        services.AddTransient<FundAccountsPage>();
+        services.AddTransient<FundLedgerPage>();
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
         services.AddTransient<CredentialManagementPage>();
@@ -389,6 +391,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<QualityArchivePage>();
         services.AddTransient<ResearchWorkspaceShellPage>();
         services.AddTransient<TradingWorkspaceShellPage>();
+        services.AddTransient<DataOperationsWorkspaceShellPage>();
+        services.AddTransient<GovernanceWorkspaceShellPage>();
         services.AddTransient<RunRiskPage>();
 
         // ── Missing pages (registered for DI-aware navigation) ───────────────
@@ -402,6 +406,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<QualityArchivePage>();
         services.AddTransient<QuantScriptPage>();
         services.AddTransient<ResearchWorkspaceShellPage>();
+        services.AddTransient<DataOperationsWorkspaceShellPage>();
+        services.AddTransient<GovernanceWorkspaceShellPage>();
         services.AddTransient<RunCashFlowPage>();
         services.AddTransient<RunRiskPage>();
         services.AddTransient<TradingWorkspaceShellPage>();
@@ -411,15 +417,14 @@ public partial class App : System.Windows.Application
         // collaborators can be attached when that feature is enabled.
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
-        services.AddSingleton(_ => BackfillProviderConfigService.Instance);
-        services.AddSingleton(_ => BackfillCheckpointService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.SymbolManagementService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.BackfillService.Instance);
-        services.AddSingleton(_ => WpfServices.TaskbarProgressService.Instance);
-        services.AddSingleton(_ => WpfServices.TearOffPanelService.Instance);
-        services.AddSingleton(_ => WpfServices.StrategyRunWorkspaceService.Instance);
+        services.AddSingleton<BackfillProviderConfigService>(_ => BackfillProviderConfigService.Instance);
+        services.AddSingleton<BackfillCheckpointService>(_ => BackfillCheckpointService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.ActivityFeedService>(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.CommandPaletteService>(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.SymbolManagementService>(_ => Meridian.Ui.Services.SymbolManagementService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.BackfillService>(_ => Meridian.Ui.Services.BackfillService.Instance);
+        services.AddSingleton<WpfServices.TaskbarProgressService>(_ => WpfServices.TaskbarProgressService.Instance);
+        services.AddSingleton<WpfServices.TearOffPanelService>(_ => WpfServices.TearOffPanelService.Instance);
 
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
@@ -502,6 +507,9 @@ public partial class App : System.Windows.Application
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterRuntimeStatus>(_ => new WpfServices.SecurityMasterRuntimeStatusService(
+                isAvailable: true,
+                availabilityDescription: "Security Master runtime is configured for workstation workflows."));
 
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
@@ -514,6 +522,7 @@ public partial class App : System.Windows.Application
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
+            services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
         }
         else
         {
@@ -546,7 +555,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
-        services.AddSingleton(sp =>
+        services.AddSingleton<WpfServices.StrategyRunWorkspaceService>(sp =>
         {
             var service = new WpfServices.StrategyRunWorkspaceService(
                 sp.GetRequiredService<IStrategyRepository>(),

@@ -198,14 +198,40 @@ public sealed class MetadataTagServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Constructor_ShouldLoadExistingData()
+    public void Constructor_ShouldLoadExistingData()
     {
         _service.SetTag("/data/test.jsonl", "persisted", "yes");
-        await _service.SaveAsync();
 
         // Create new instance pointing to same file
         var newService = new MetadataTagService(_metadataPath);
 
         newService.GetTag("/data/test.jsonl", "persisted").Should().Be("yes");
+    }
+
+    [Fact]
+    public async Task SetTag_ShouldPersistImmediately()
+    {
+        _service.SetTag("/data/immediate.jsonl", "persisted", "true");
+
+        File.Exists(_metadataPath).Should().BeTrue();
+        var content = await File.ReadAllTextAsync(_metadataPath);
+        content.Should().Contain("persisted");
+        content.Should().Contain("true");
+    }
+
+    [Fact]
+    public void SetTag_WhenPersistenceWriteFails_Throws()
+    {
+        var brokenPath = Path.Combine(_tempDir, "broken-store.json");
+        File.WriteAllText(brokenPath, "{}");
+
+        var service = new MetadataTagService(brokenPath);
+        File.Delete(brokenPath);
+        Directory.CreateDirectory(brokenPath);
+
+        var act = () => service.SetTag("/data/broken.jsonl", "source", "alpaca");
+
+        var exception = act.Should().Throw<Exception>().Which;
+        (exception is IOException || exception is UnauthorizedAccessException).Should().BeTrue();
     }
 }

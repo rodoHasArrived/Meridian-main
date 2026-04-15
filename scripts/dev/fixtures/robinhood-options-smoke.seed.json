@@ -1,0 +1,149 @@
+{
+  "workspaces": [
+    {
+      "id": "research",
+      "name": "Research",
+      "description": "Backtests, experiments, charts, strategy runs, and result analysis.",
+      "preferredPageTag": "ResearchShell",
+      "category": 0,
+      "isBuiltIn": true,
+      "createdAt": "2026-04-14T00:00:00Z",
+      "updatedAt": "2026-04-14T00:00:00Z",
+      "pages": [
+        {
+          "pageTag": "ResearchShell",
+          "title": "Research Workspace",
+          "isDefault": true,
+          "scrollPosition": 0,
+          "pageState": {}
+        },
+        {
+          "pageTag": "Dashboard",
+          "title": "Dashboard",
+          "isDefault": false,
+          "scrollPosition": 0,
+          "pageState": {}
+        }
+      ],
+      "recentPageTags": [],
+      "widgetLayout": {},
+      "filters": {},
+      "context": {}
+    },
+    {
+      "id": "trading",
+      "name": "Trading",
+      "description": "Live monitoring, order flow, and trading controls.",
+      "preferredPageTag": "TradingShell",
+      "category": 1,
+      "isBuiltIn": true,
+      "createdAt": "2026-04-14T00:00:00Z",
+      "updatedAt": "2026-04-14T00:00:00Z",
+      "pages": [
+        {
+          "pageTag": "TradingShell",
+          "title": "Trading Workspace",
+          "isDefault": true,
+          "scrollPosition": 0,
+          "pageState": {}
+        },
+        {
+          "pageTag": "PositionBlotter",
+          "title": "Position Blotter",
+          "isDefault": false,
+          "scrollPosition": 0,
+          "pageState": {}
+        }
+      ],
+      "recentPageTags": [],
+      "widgetLayout": {},
+      "filters": {},
+      "context": {}
+    },
+    {
+      "id": "data-operations",
+      "name": "Data Operations",
+      "description": "Providers, ingestion, storage, schedules, exports, and blocker visibility.",
+      "preferredPageTag": "DataOperationsShell",
+      "category": 2,
+      "isBuiltIn": true,
+      "createdAt": "2026-04-14T00:00:00Z",
+      "updatedAt": "2026-04-14T00:00:00Z",
+      "pages": [
+        {
+          "pageTag": "DataOperationsShell",
+          "title": "Data Operations Workspace",
+          "isDefault": true,
+          "scrollPosition": 0,
+          "pageState": {}
+        },
+        {
+          "pageTag": "AddProviderWizard",
+          "title": "Add Provider Wizard",
+          "isDefault": false,
+          "scrollPosition": 0,
+          "pageState": {}
+        },
+        {
+          "pageTag": "Options",
+          "title": "Options / Derivatives",
+          "isDefault": false,
+          "scrollPosition": 0,
+          "pageState": {}
+        }
+      ],
+      "recentPageTags": [],
+      "widgetLayout": {},
+      "filters": {},
+      "context": {}
+    },
+    {
+      "id": "governance",
+      "name": "Governance",
+      "description": "Controls, diagnostics, fund operations, reconciliation, and trust-critical review.",
+      "preferredPageTag": "GovernanceShell",
+      "category": 3,
+      "isBuiltIn": true,
+      "createdAt": "2026-04-14T00:00:00Z",
+      "updatedAt": "2026-04-14T00:00:00Z",
+      "pages": [
+        {
+          "pageTag": "GovernanceShell",
+          "title": "Governance Workspace",
+          "isDefault": true,
+          "scrollPosition": 0,
+          "pageState": {}
+        }
+      ],
+      "recentPageTags": [],
+      "widgetLayout": {},
+      "filters": {},
+      "context": {}
+    }
+  ],
+  "activeWorkspaceId": "research",
+  "lastSession": {
+    "activePageTag": "ResearchShell",
+    "openPages": [
+      {
+        "pageTag": "ResearchShell",
+        "title": "Research Workspace",
+        "isDefault": true,
+        "scrollPosition": 0,
+        "pageState": {}
+      }
+    ],
+    "recentPages": [
+      "ResearchShell"
+    ],
+    "widgetLayout": {},
+    "activeFilters": {},
+    "workspaceContext": {},
+    "savedAt": "2026-04-14T00:00:00Z",
+    "activeWorkspaceId": "research"
+  },
+  "lastSelectedFundProfileId": "Fund:alpha-credit",
+  "sessionsByFundProfileId": {},
+  "workspaceLayouts": {},
+  "dockLayouts": {}
+}

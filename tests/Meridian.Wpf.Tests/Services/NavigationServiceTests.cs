@@ -9,8 +9,19 @@ namespace Meridian.Wpf.Tests.Services;
 /// Tests for NavigationService singleton service.
 /// Validates navigation functionality, page registration, and history tracking.
 /// </summary>
-public sealed class NavigationServiceTests
+[CollectionDefinition("NavigationServiceSerialCollection", DisableParallelization = true)]
+public sealed class NavigationServiceSerialCollection
 {
+}
+
+[Collection("NavigationServiceSerialCollection")]
+public sealed class NavigationServiceTests : IDisposable
+{
+    public NavigationServiceTests()
+    {
+        NavigationService.Instance.ResetForTests();
+    }
+
     /// <summary>
     /// Runs an action on a dedicated STA thread. Required for tests that create WPF UI objects.
     /// </summary>
@@ -26,6 +37,11 @@ public sealed class NavigationServiceTests
         thread.Start();
         thread.Join();
         captured?.Throw();
+    }
+
+    public void Dispose()
+    {
+        NavigationService.Instance.ResetForTests();
     }
 
     [Fact]

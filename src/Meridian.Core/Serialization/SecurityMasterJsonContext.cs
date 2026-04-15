@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
@@ -35,6 +36,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SecuritySummaryDto[]))]
 [JsonSerializable(typeof(List<SecuritySummaryDto>))]
 [JsonSerializable(typeof(CreateSecurityRequest))]
+[JsonSerializable(typeof(List<CreateSecurityRequest>))]
 [JsonSerializable(typeof(AmendSecurityTermsRequest))]
 [JsonSerializable(typeof(AmendPreferredEquityTermsRequest))]
 [JsonSerializable(typeof(AmendConvertibleEquityTermsRequest))]
@@ -49,6 +51,9 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SecurityMasterWorkstationDto))]
 [JsonSerializable(typeof(SecurityMasterWorkstationDto[]))]
 [JsonSerializable(typeof(List<SecurityMasterWorkstationDto>))]
+[JsonSerializable(typeof(SecurityMasterIngestStatusResponse))]
+[JsonSerializable(typeof(SecurityMasterActiveImportStatusResponse))]
+[JsonSerializable(typeof(SecurityMasterCompletedImportStatusResponse))]
 public partial class SecurityMasterJsonContext : JsonSerializerContext
 {
     public static readonly JsonSerializerOptions HighPerformanceOptions = new()

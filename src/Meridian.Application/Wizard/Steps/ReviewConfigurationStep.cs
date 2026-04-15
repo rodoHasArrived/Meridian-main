@@ -60,6 +60,7 @@ public sealed class ReviewConfigurationStep : IWizardStep
             DataSource: dataSource.DataSource,
             Alpaca: dataSource.Alpaca,
             IB: dataSource.IB,
+            IBClientPortal: dataSource.IBClientPortal,
             Polygon: dataSource.Polygon,
             Storage: context.Storage,
             Symbols: context.Symbols,

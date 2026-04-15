@@ -123,8 +123,8 @@ def yaml_list(lines: Iterable[str]) -> str:
 def build_workflow_prompt(workflow: str, run_url: str, findings: list[str], now: str, conclusion: str) -> str:
     stub = workflow_stub_name(workflow)
     findings_block = yaml_list(findings) if findings else "      No specific patterns detected."
-    return f"""name: Workflow Results - {stub}
-description: Address issues found in the {stub} workflow run
+    return f"""name: "Workflow Results - {stub}"
+description: "Address issues found in the {stub} workflow run"
 # Auto-generated prompt from workflow run analysis
 # Generated: {now}
 # Source: {run_url}
@@ -164,8 +164,8 @@ messages:
 
 def build_category_prompt(spec: PromptSpec, workflow: str, run_url: str, findings: list[str], now: str) -> str:
     findings_block = yaml_list(findings) if findings else "      - `No specific error patterns extracted from logs.`"
-    return f"""name: {spec.name}
-description: {spec.description}
+    return f"""name: "{spec.name}"
+description: "{spec.description}"
 # Auto-generated prompt from workflow results - {workflow}
 # Generated: {now}
 # Source: {run_url}

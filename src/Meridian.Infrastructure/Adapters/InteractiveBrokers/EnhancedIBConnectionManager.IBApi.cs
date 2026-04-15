@@ -1,6 +1,7 @@
 #if IBAPI
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using IBApi;
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Core.Performance;
+using Meridian.Execution.Sdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -27,6 +29,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     private int _nextDepthTickerId = 10_000;
     private readonly ConcurrentDictionary<int, string> _depthTickerMap = new();
+    private readonly ConcurrentDictionary<int, bool> _depthTickerSmartDepthMap = new();
 
     private int _nextTradeTickerId = 20_000;
     private readonly ConcurrentDictionary<int, string> _tradeTickerMap = new();
@@ -37,6 +40,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private int _nextHistoricalReqId = 40_000;
     private readonly ConcurrentDictionary<int, TaskCompletionSource<List<IBApi.Bar>>> _historicalDataRequests = new();
     private readonly ConcurrentDictionary<int, List<IBApi.Bar>> _historicalDataBuffers = new();
+    private int _nextBrokerRequestId = 50_000;
 
     // Performance monitoring
     private readonly ConnectionWarmUp _warmUp;
@@ -124,6 +128,15 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     /// Event raised on latency measurement from heartbeat/time request.
     /// </summary>
     public event EventHandler<double>? LatencyMeasured;
+    public event EventHandler<int>? NextValidIdReceived;
+    public event EventHandler<IBOrderStatusUpdate>? OrderStatusReceived;
+    public event EventHandler<IBOpenOrderUpdate>? OpenOrderReceived;
+    public event EventHandler? OpenOrdersCompleted;
+    public event EventHandler<IBExecutionUpdate>? ExecutionDetailsReceived;
+    public event EventHandler<IBPositionUpdate>? PositionReceived;
+    public event EventHandler? PositionsCompleted;
+    public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
+    public event EventHandler<int>? AccountSummaryCompleted;
 
     public async Task ConnectAsync(CancellationToken ct = default)
     {
@@ -373,8 +386,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
         // Router needs this mapping for callbacks
         _router.RegisterDepthTicker(id, symbol);
+        _depthTickerSmartDepthMap[id] = smartDepth;
 
+#if IBAPI_VENDOR
+        _clientSocket.reqMarketDepth(id, contract, depthLevels, smartDepth, null);
+#else
         _clientSocket.reqMktDepth(id, contract, depthLevels, smartDepth, null);
+#endif
         return id;
     }
 
@@ -391,7 +409,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void UnsubscribeMarketDepth(int tickerId)
     {
-        _clientSocket.cancelMktDepth(tickerId);
+        var smartDepth = _depthTickerSmartDepthMap.TryRemove(tickerId, out var storedSmartDepth) && storedSmartDepth;
+        _clientSocket.cancelMktDepth(tickerId, smartDepth);
         _depthTickerMap.TryRemove(tickerId, out _);
     }
 
@@ -527,6 +546,70 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         }
     }
 
+    public void RequestNextValidId()
+    {
+        if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+        _clientSocket.reqIds(-1);
+    }
+
+    public Task PlaceOrderAsync(int orderId, OrderRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+        ct.ThrowIfCancellationRequested();
+
+        var contract = BuildBrokerageContract(request);
+        var order = BuildBrokerageOrder(orderId, request);
+        _clientSocket.placeOrder(orderId, contract, order);
+        return Task.CompletedTask;
+    }
+
+    public Task CancelOrderAsync(int orderId, CancellationToken ct = default)
+    {
+        if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+        ct.ThrowIfCancellationRequested();
+
+        _clientSocket.cancelOrder(orderId, new IBApi.OrderCancel());
+        return Task.CompletedTask;
+    }
+
+    public int RequestAccountSummary()
+    {
+        if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+
+        var requestId = Interlocked.Increment(ref _nextBrokerRequestId);
+        _clientSocket.reqAccountSummary(
+            requestId,
+            "All",
+            "NetLiquidation,TotalCashValue,BuyingPower,Currency");
+        return requestId;
+    }
+
+    public void CancelAccountSummary(int requestId)
+    {
+        if (IsConnected)
+            _clientSocket.cancelAccountSummary(requestId);
+    }
+
+    public void RequestPositions()
+    {
+        if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+        _clientSocket.reqPositions();
+    }
+
+    public void CancelPositions()
+    {
+        if (IsConnected)
+            _clientSocket.cancelPositions();
+    }
+
+    public void RequestOpenOrders()
+    {
+        if (!IsConnected) throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+        _clientSocket.reqOpenOrders();
+    }
+
+
     /// <summary>
     /// Request historical bars with default settings for daily OHLCV data.
     /// </summary>
@@ -595,7 +678,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         ErrorOccurred?.Invoke(this, new IBApiError(-1, -1, str, null));
     }
 
-    public void error(int id, int errorCode, string errorMsg, string advancedOrderRejectJson)
+    public void error(int id, long errorTime, int errorCode, string errorMsg, string advancedOrderRejectJson)
     {
         RecordMessageReceived();
 
@@ -678,7 +761,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         RecordMessageReceived();
         _router.OnTickSnapshotEnd(tickerId);
     }
-    public void nextValidId(int orderId) { }
+    public void nextValidId(int orderId)
+    {
+        RecordMessageReceived();
+        NextValidIdReceived?.Invoke(this, orderId);
+    }
     public void managedAccounts(string accountsList) { }
     public void currentTime(long time)
     {
@@ -693,8 +780,22 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             LatencyMeasured?.Invoke(this, latencyUs);
         }
     }
-    public void accountSummary(int reqId, string account, string tag, string value, string currency) { }
-    public void accountSummaryEnd(int reqId) { }
+    public void accountSummary(int reqId, string account, string tag, string value, string currency)
+    {
+        RecordMessageReceived();
+        AccountSummaryReceived?.Invoke(this, new IBAccountSummaryUpdate(
+            reqId,
+            account,
+            tag,
+            value,
+            currency,
+            DateTimeOffset.UtcNow));
+    }
+    public void accountSummaryEnd(int reqId)
+    {
+        RecordMessageReceived();
+        AccountSummaryCompleted?.Invoke(this, reqId);
+    }
     public void accountUpdateMulti(int reqId, string account, string modelCode, string key, string value, string currency) { }
     public void accountUpdateMultiEnd(int reqId) { }
     public void tickOptionComputation(int tickerId, int field, int tickAttrib, double impliedVolatility, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice)
@@ -755,6 +856,224 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         RecordMessageReceived();
         // For keepUpToDate=True subscriptions - route to callback if needed
     }
+
+    public void orderStatus(int orderId, string status, decimal filled, decimal remaining, double avgFillPrice, long permId, int parentId, double lastFillPrice, int clientId, string whyHeld, double mktCapPrice)
+    {
+        RecordMessageReceived();
+        OrderStatusReceived?.Invoke(this, new IBOrderStatusUpdate(
+            orderId,
+            status,
+            filled,
+            remaining,
+            avgFillPrice,
+            lastFillPrice,
+            permId,
+            clientId,
+            whyHeld,
+            DateTimeOffset.UtcNow));
+    }
+
+    public void openOrder(int orderId, Contract contract, Order order, IBApi.OrderState orderState)
+    {
+        RecordMessageReceived();
+
+        var metadata = BuildContractMetadata(contract);
+        OpenOrderReceived?.Invoke(this, new IBOpenOrderUpdate(
+            orderId,
+            contract.Symbol ?? contract.LocalSymbol ?? order.OrderRef ?? orderId.ToString(CultureInfo.InvariantCulture),
+            contract.SecType,
+            order.Action ?? "BUY",
+            order.OrderType ?? "MKT",
+            order.TotalQuantity,
+            0m,
+            order.LmtPrice > 0 ? order.LmtPrice : null,
+            order.AuxPrice > 0 ? order.AuxPrice : null,
+            orderState.Status ?? "Submitted",
+            string.IsNullOrWhiteSpace(order.OrderRef) ? null : order.OrderRef,
+            null,
+            orderState.CommissionAndFees > 0 ? orderState.CommissionAndFees : null,
+            string.IsNullOrWhiteSpace(orderState.RejectReason) ? null : orderState.RejectReason,
+            metadata,
+            DateTimeOffset.UtcNow));
+    }
+
+    public void openOrderEnd()
+    {
+        RecordMessageReceived();
+        OpenOrdersCompleted?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void execDetails(int reqId, Contract contract, IBApi.Execution execution)
+    {
+        RecordMessageReceived();
+
+        var executedAt = DateTimeOffset.TryParse(execution.Time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
+            ? parsed
+            : DateTimeOffset.UtcNow;
+
+        ExecutionDetailsReceived?.Invoke(this, new IBExecutionUpdate(
+            execution.OrderId,
+            contract.Symbol ?? contract.LocalSymbol ?? execution.OrderRef ?? execution.OrderId.ToString(CultureInfo.InvariantCulture),
+            execution.Side ?? "BOT",
+            execution.Shares,
+            execution.Price,
+            execution.CumQty,
+            execution.AvgPrice,
+            execution.ExecId ?? string.Empty,
+            execution.AcctNumber,
+            execution.Exchange,
+            execution.PermId,
+            executedAt));
+    }
+
+    public void execDetailsEnd(int reqId) { }
+
+    public void position(string account, Contract contract, decimal pos, double avgCost)
+    {
+        RecordMessageReceived();
+        PositionReceived?.Invoke(this, new IBPositionUpdate(
+            account,
+            contract.Symbol ?? contract.LocalSymbol ?? string.Empty,
+            contract.SecType,
+            pos,
+            avgCost,
+            contract.Currency,
+            contract.Exchange,
+            BuildContractMetadata(contract),
+            DateTimeOffset.UtcNow));
+    }
+
+    public void positionEnd()
+    {
+        RecordMessageReceived();
+        PositionsCompleted?.Invoke(this, EventArgs.Empty);
+    }
+
+    private static Contract BuildBrokerageContract(OrderRequest request)
+    {
+        var metadata = request.Metadata;
+        var securityType = GetMetadata(metadata, "sec_type")
+            ?? GetMetadata(metadata, "security_type")
+            ?? "STK";
+
+        var contract = new Contract
+        {
+            Symbol = request.Symbol,
+            SecType = securityType,
+            Exchange = GetMetadata(metadata, "exchange") ?? GetDefaultExchange(securityType),
+            Currency = GetMetadata(metadata, "currency") ?? "USD",
+        };
+
+        if (int.TryParse(GetMetadata(metadata, "con_id"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var conId))
+            contract.ConId = conId;
+
+        contract.PrimaryExch = GetMetadata(metadata, "primary_exchange");
+        contract.TradingClass = GetMetadata(metadata, "trading_class");
+        contract.LocalSymbol = GetMetadata(metadata, "local_symbol");
+        contract.LastTradeDateOrContractMonth = GetMetadata(metadata, "last_trade_date_or_contract_month");
+
+        if (decimal.TryParse(GetMetadata(metadata, "strike"), NumberStyles.Float, CultureInfo.InvariantCulture, out var strike))
+            contract.Strike = (double)strike;
+
+        var right = GetMetadata(metadata, "right");
+        if (!string.IsNullOrWhiteSpace(right))
+            contract.Right = right.Equals("call", StringComparison.OrdinalIgnoreCase) ? "C"
+                : right.Equals("put", StringComparison.OrdinalIgnoreCase) ? "P"
+                : right;
+
+        var multiplier = GetMetadata(metadata, "multiplier");
+        if (!string.IsNullOrWhiteSpace(multiplier))
+            contract.Multiplier = multiplier;
+
+        return contract;
+    }
+
+    private static Order BuildBrokerageOrder(int orderId, OrderRequest request)
+    {
+        var order = new Order
+        {
+            OrderId = orderId,
+            Action = request.Side == Meridian.Execution.Sdk.OrderSide.Buy ? "BUY" : "SELL",
+            TotalQuantity = request.Quantity,
+            OrderType = request.Type switch
+            {
+                OrderType.Market => "MKT",
+                OrderType.Limit => "LMT",
+                OrderType.StopMarket => "STP",
+                OrderType.StopLimit => "STP LMT",
+                _ => "MKT"
+            },
+            Tif = request.TimeInForce switch
+            {
+                TimeInForce.Day => "DAY",
+                TimeInForce.GoodTilCancelled => "GTC",
+                TimeInForce.ImmediateOrCancel => "IOC",
+                TimeInForce.FillOrKill => "FOK",
+                _ => "DAY"
+            },
+            Transmit = true,
+            OrderRef = request.ClientOrderId ?? request.StrategyId ?? string.Empty,
+            OutsideRth = ParseBooleanMetadata(request.Metadata, "outside_rth")
+        };
+
+        if (request.LimitPrice is decimal limitPrice)
+            order.LmtPrice = (double)limitPrice;
+
+        if (request.StopPrice is decimal stopPrice)
+            order.AuxPrice = (double)stopPrice;
+
+        var account = GetMetadata(request.Metadata, "account");
+        if (!string.IsNullOrWhiteSpace(account))
+            order.Account = account;
+
+        return order;
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildContractMetadata(Contract contract)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        if (contract.ConId > 0)
+            metadata["con_id"] = contract.ConId.ToString(CultureInfo.InvariantCulture);
+        if (!string.IsNullOrWhiteSpace(contract.Currency))
+            metadata["currency"] = contract.Currency;
+        if (!string.IsNullOrWhiteSpace(contract.Exchange))
+            metadata["exchange"] = contract.Exchange;
+        if (!string.IsNullOrWhiteSpace(contract.LocalSymbol))
+            metadata["local_symbol"] = contract.LocalSymbol;
+        if (!string.IsNullOrWhiteSpace(contract.PrimaryExch))
+            metadata["primary_exchange"] = contract.PrimaryExch;
+        if (!string.IsNullOrWhiteSpace(contract.TradingClass))
+            metadata["trading_class"] = contract.TradingClass;
+        if (!string.IsNullOrWhiteSpace(contract.LastTradeDateOrContractMonth))
+            metadata["last_trade_date_or_contract_month"] = contract.LastTradeDateOrContractMonth;
+        if (!string.IsNullOrWhiteSpace(contract.SecType))
+            metadata["sec_type"] = contract.SecType;
+        if (contract.Strike > 0)
+            metadata["strike"] = contract.Strike.ToString(CultureInfo.InvariantCulture);
+        if (!string.IsNullOrWhiteSpace(contract.Right))
+            metadata["right"] = contract.Right;
+        if (!string.IsNullOrWhiteSpace(contract.Multiplier))
+            metadata["multiplier"] = contract.Multiplier;
+
+        return metadata;
+    }
+
+    private static string? GetMetadata(IReadOnlyDictionary<string, string>? metadata, string key)
+        => metadata is not null && metadata.TryGetValue(key, out var value) ? value : null;
+
+    private static bool ParseBooleanMetadata(IReadOnlyDictionary<string, string>? metadata, string key)
+        => bool.TryParse(GetMetadata(metadata, key), out var value) && value;
+
+    private static string GetDefaultExchange(string securityType)
+        => securityType.ToUpperInvariant() switch
+        {
+            "CASH" => "IDEALPRO",
+            "FUT" => "GLOBEX",
+            "GOVT" => "SMART",
+            "BOND" => "SMART",
+            _ => "SMART"
+        };
 
     // The full EWrapper interface is extensive. Add methods as you need them for trades/ticks/orders.
 }

@@ -9,6 +9,7 @@ using Meridian.Wpf.Tests.Support;
 
 namespace Meridian.Wpf.Tests.Views;
 
+[Collection("NavigationServiceSerialCollection")]
 public sealed class FullNavigationSweepTests
 {
     [Fact]
@@ -164,7 +165,7 @@ public sealed class FullNavigationSweepTests
 
         try
         {
-            _ = serviceProvider.GetService(pageType) ?? ActivatorUtilities.CreateInstance(serviceProvider, pageType);
+            _ = serviceProvider.GetRequiredService(pageType);
             return null;
         }
         catch (Exception ex)

@@ -1,11 +1,13 @@
 using Meridian.Application.Config;
 using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
+using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -108,6 +110,9 @@ public sealed class ProviderFactory
         // Synthetic offline dataset
         TryAddBackfillProvider(providers, () => CreateSyntheticBackfillProvider(providersCfg?.Synthetic));
 
+        // Interactive Brokers native historical path (or guidance-only stub in non-IBAPI builds)
+        TryAddBackfillProvider(providers, () => CreateIbBackfillProvider(_config.IB));
+
         // Alpaca Markets (highest priority when configured)
         TryAddBackfillProvider(providers, () => CreateAlpacaBackfillProvider(providersCfg?.Alpaca));
 
@@ -165,6 +170,25 @@ public sealed class ProviderFactory
             return null;
 
         return new SyntheticHistoricalDataProvider(cfg);
+    }
+
+    private IHistoricalDataProvider? CreateIbBackfillProvider(IBOptions? cfg)
+    {
+        if (_config.DataSource != DataSourceKind.IB && cfg is null)
+            return null;
+
+        var effectiveOptions = cfg ?? new IBOptions();
+        var publisher = new NullMarketEventPublisher();
+        var router = new IBCallbackRouter(
+            new MarketDepthCollector(publisher, requireExplicitSubscription: false),
+            new TradeDataCollector(publisher));
+        var connectionManager = new EnhancedIBConnectionManager(
+            router,
+            host: effectiveOptions.Host,
+            port: effectiveOptions.Port,
+            clientId: effectiveOptions.ClientId);
+
+        return new IBHistoricalDataProvider(connectionManager, priority: 10, log: _log);
     }
 
     private IHistoricalDataProvider? CreateAlpacaBackfillProvider(AlpacaBackfillConfig? cfg)

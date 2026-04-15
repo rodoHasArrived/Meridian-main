@@ -392,8 +392,8 @@ public static class ProviderCatalog
             CredentialFields = new[]
             {
                 new CredentialFieldInfo("Host", null, "TWS/Gateway Host", false, "127.0.0.1"),
-                new CredentialFieldInfo("Port", null, "TWS/Gateway Port", false, "7496"),
-                new CredentialFieldInfo("ClientId", null, "Client ID", false, "0")
+                new CredentialFieldInfo("Port", null, "TWS/Gateway Port", false, "7497"),
+                new CredentialFieldInfo("ClientId", null, "Client ID", false, "1")
             },
             RateLimit = new RateLimitInfo
             {

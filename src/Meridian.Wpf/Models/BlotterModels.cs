@@ -160,6 +160,22 @@ public sealed class BlotterGroup : INotifyPropertyChanged
 
     /// <summary>Child entries belonging to this group.</summary>
     public ObservableCollection<BlotterEntry> Entries { get; } = [];
+
+    /// <summary>
+    /// Syncs the group checkbox to the current child-row selection state without
+    /// reapplying the selection to every child entry.
+    /// </summary>
+    public void RefreshSelectionFromEntries()
+    {
+        var shouldBeSelected = Entries.Count > 0 && Entries.All(entry => entry.IsSelected);
+        if (_isSelected == shouldBeSelected)
+        {
+            return;
+        }
+
+        _isSelected = shouldBeSelected;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+    }
 }
 
 /// <summary>

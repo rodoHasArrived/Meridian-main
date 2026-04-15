@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using System.Threading;
+using Meridian.Application.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
@@ -23,10 +25,16 @@ public sealed class IBMarketDataClient : IMarketDataClient
     private readonly IMarketDataClient _inner;
     private readonly bool _isSimulation;
 
-    public IBMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null)
+    public IBMarketDataClient(
+        IMarketEventPublisher publisher,
+        TradeDataCollector tradeCollector,
+        MarketDepthCollector depthCollector,
+        QuoteCollector? quoteCollector = null,
+        OptionDataCollector? optionCollector = null,
+        IBOptions? options = null)
     {
 #if IBAPI
-        _inner = new IBMarketDataClientIBApi(publisher, tradeCollector, depthCollector, quoteCollector, optionCollector);
+        _inner = new IBMarketDataClientIBApi(publisher, tradeCollector, depthCollector, quoteCollector, optionCollector, options ?? new IBOptions());
         _isSimulation = false;
 #else
         _inner = new IBSimulationClient(publisher);
@@ -71,8 +79,8 @@ public sealed class IBMarketDataClient : IMarketDataClient
     public ProviderCredentialField[] ProviderCredentialFields => new[]
     {
         new ProviderCredentialField("Host", null, "TWS/Gateway Host", false, "127.0.0.1"),
-        new ProviderCredentialField("Port", null, "TWS/Gateway Port", false, "7496"),
-        new ProviderCredentialField("ClientId", null, "Client ID", false, "0")
+        new ProviderCredentialField("Port", null, "TWS/Gateway Port", false, "7497"),
+        new ProviderCredentialField("ClientId", null, "Client ID", false, "1")
     };
 
     /// <inheritdoc/>
@@ -111,17 +119,30 @@ internal sealed class IBMarketDataClientIBApi : IMarketDataClient
     private static readonly ILogger _log = Log.ForContext<IBMarketDataClientIBApi>();
     private readonly EnhancedIBConnectionManager _conn;
     private readonly IBCallbackRouter _router;
+    private readonly IBOptions _options;
+    private readonly ConcurrentDictionary<int, bool> _tradeSubscriptionKinds = new();
 
     // Track subscription ids if you want per-symbol teardown later
     public bool IsEnabled => true;
 
-    public IBMarketDataClientIBApi(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null)
+    public IBMarketDataClientIBApi(
+        IMarketEventPublisher publisher,
+        TradeDataCollector tradeCollector,
+        MarketDepthCollector depthCollector,
+        QuoteCollector? quoteCollector = null,
+        OptionDataCollector? optionCollector = null,
+        IBOptions? options = null)
     {
         // Router wires IB callbacks -> collectors (collectors already publish into publisher).
         // QuoteCollector enables Level 1 BBO quote emission from reqMktData callbacks.
         // OptionDataCollector enables live greeks from tickOptionComputation callbacks.
+        _options = options ?? new IBOptions();
         _router = new IBCallbackRouter(depthCollector, tradeCollector, quoteCollector, optionCollector);
-        _conn = new EnhancedIBConnectionManager(_router, host: "127.0.0.1", port: 7497, clientId: 1);
+        _conn = new EnhancedIBConnectionManager(
+            _router,
+            host: _options.Host,
+            port: _options.Port,
+            clientId: _options.ClientId);
     }
 
     public async Task ConnectAsync(CancellationToken ct = default)
@@ -135,16 +156,38 @@ internal sealed class IBMarketDataClientIBApi : IMarketDataClient
     }
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
-        => _conn.SubscribeMarketDepth(cfg);
+        => _conn.SubscribeMarketDepth(cfg with
+        {
+            DepthLevels = cfg.DepthLevels > 0 ? cfg.DepthLevels : _options.DepthLevels
+        });
 
     public void UnsubscribeMarketDepth(int subscriptionId)
         => _conn.UnsubscribeMarketDepth(subscriptionId);
 
     public int SubscribeTrades(SymbolConfig cfg)
-        => _conn.SubscribeTrades(cfg);
+    {
+        if (_options.TickByTick)
+        {
+            var tradeSubscriptionId = _conn.SubscribeTrades(cfg);
+            _tradeSubscriptionKinds[tradeSubscriptionId] = true;
+            return tradeSubscriptionId;
+        }
+
+        var quoteSubscriptionId = _conn.SubscribeQuotes(cfg);
+        _tradeSubscriptionKinds[quoteSubscriptionId] = false;
+        return quoteSubscriptionId;
+    }
 
     public void UnsubscribeTrades(int subscriptionId)
-        => _conn.UnsubscribeTrades(subscriptionId);
+    {
+        if (_tradeSubscriptionKinds.TryRemove(subscriptionId, out var isTickByTick) && !isTickByTick)
+        {
+            _conn.UnsubscribeQuotes(subscriptionId);
+            return;
+        }
+
+        _conn.UnsubscribeTrades(subscriptionId);
+    }
 
     public ValueTask DisposeAsync()
     {

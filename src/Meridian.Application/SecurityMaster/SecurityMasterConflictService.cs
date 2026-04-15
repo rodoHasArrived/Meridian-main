@@ -22,7 +22,7 @@ public interface ISecurityMasterConflictService
     /// <summary>
     /// Checks a freshly written projection for identifier conflicts with existing securities
     /// and records any newly found conflicts in the in-memory store.
-    /// Called automatically after every create/amend operation.
+    /// Called automatically after projection writes such as create, amend, import, and rebuild replay.
     /// </summary>
     Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct);
 }

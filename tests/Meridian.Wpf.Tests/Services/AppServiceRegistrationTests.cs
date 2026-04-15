@@ -1,5 +1,4 @@
 using System.Reflection;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.FundAccounts;
@@ -24,21 +23,30 @@ public sealed class AppServiceRegistrationTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             var services = new ServiceCollection();
-            var configuration = new ConfigurationBuilder().Build();
             var configureServices = typeof(Meridian.Wpf.App)
                 .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
             configureServices.Should().NotBeNull();
-            configureServices!.Invoke(null, [services, configuration]);
+            configureServices!.Invoke(null, [services]);
 
             using var serviceProvider = services.BuildServiceProvider();
 
             serviceProvider.GetRequiredService<ConfigService>().Should().BeSameAs(ConfigService.Instance);
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
-            serviceProvider.GetRequiredService<SymbolsPage>().Should().NotBeNull();
-            serviceProvider.GetRequiredService<BackfillPage>().Should().NotBeNull();
-            serviceProvider.GetRequiredService<RunMatPage>().Should().NotBeNull();
-            serviceProvider.GetRequiredService<FundLedgerPage>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);
+            serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
+            serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
+            serviceProvider.GetRequiredService<StrategyRunWorkspaceService>().Should().NotBeNull();
+            ResolveRequired<SymbolsPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<BackfillPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<RunMatPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<FundLedgerPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<OrderBookPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<RunRiskPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<ResearchWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<TradingWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<DataOperationsWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
+            ResolveRequired<GovernanceWorkspaceShellPage>(serviceProvider).Should().NotBeNull();
             serviceProvider.GetRequiredService<IFundAccountService>().Should().BeOfType<InMemoryFundAccountService>();
             serviceProvider.GetRequiredService<FundAccountReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<CashFinancingReadService>().Should().NotBeNull();
@@ -59,7 +67,7 @@ public sealed class AppServiceRegistrationTests
 
             serviceProvider.GetRequiredService<ISecurityMasterImportService>().Should().BeOfType<NullSecurityMasterImportService>();
             serviceProvider.GetRequiredService<ITradingParametersBackfillService>().Should().BeOfType<NullTradingParametersBackfillService>();
-            serviceProvider.GetRequiredService<SecurityMasterPage>().Should().NotBeNull();
+            ResolveRequired<SecurityMasterPage>(serviceProvider).Should().NotBeNull();
         });
     }
 
@@ -75,8 +83,8 @@ public sealed class AppServiceRegistrationTests
             var serviceProvider = BuildServiceProvider();
 
             serviceProvider.GetRequiredService<ISecurityMasterImportService>().Should().BeOfType<SecurityMasterImportService>();
-            serviceProvider.GetRequiredService<ITradingParametersBackfillService>().Should().BeOfType<NullTradingParametersBackfillService>();
-            serviceProvider.GetRequiredService<SecurityMasterPage>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<ITradingParametersBackfillService>().Should().BeOfType<TradingParametersBackfillService>();
+            ResolveRequired<SecurityMasterPage>(serviceProvider).Should().NotBeNull();
         });
     }
 
@@ -93,7 +101,7 @@ public sealed class AppServiceRegistrationTests
 
             serviceProvider.GetRequiredService<ISecurityMasterImportService>().Should().BeOfType<SecurityMasterImportService>();
             serviceProvider.GetRequiredService<ITradingParametersBackfillService>().Should().BeOfType<TradingParametersBackfillService>();
-            serviceProvider.GetRequiredService<SecurityMasterPage>().Should().NotBeNull();
+            ResolveRequired<SecurityMasterPage>(serviceProvider).Should().NotBeNull();
         });
     }
 
@@ -102,15 +110,17 @@ public sealed class AppServiceRegistrationTests
         RunMatUiAutomationFacade.EnsureApplicationResources();
 
         var services = new ServiceCollection();
-        var configuration = new ConfigurationBuilder().Build();
         var configureServices = typeof(Meridian.Wpf.App)
             .GetMethod("ConfigureServices", BindingFlags.NonPublic | BindingFlags.Static);
 
         configureServices.Should().NotBeNull();
-        configureServices!.Invoke(null, [services, configuration]);
+        configureServices!.Invoke(null, [services]);
 
         return services.BuildServiceProvider();
     }
+
+    private static T ResolveRequired<T>(IServiceProvider serviceProvider) where T : notnull
+        => serviceProvider.GetRequiredService<T>();
 
     private sealed class EnvironmentVariableScope : IDisposable
     {

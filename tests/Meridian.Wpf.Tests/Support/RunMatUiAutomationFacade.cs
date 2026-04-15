@@ -5,6 +5,11 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
+using Meridian.Contracts.FundStructure;
+using Meridian.Ui.Services;
+using Meridian.Ui.Services.Contracts;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Converters;
 using Meridian.Ui.Services.Services;
@@ -222,15 +227,44 @@ internal sealed class RunMatUiAutomationFacade : IDisposable
         FundContextService? fundContextService = null)
     {
         var services = new ServiceCollection();
+        var serviceRoot = Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}");
+        Directory.CreateDirectory(serviceRoot);
         var fundContext = fundContextService ?? new FundContextService(Path.Combine(Path.GetTempPath(), "meridian-mainpage-tests", $"{Guid.NewGuid():N}.json"));
         services.AddSingleton<NavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
         services.AddSingleton<ConnectionService>(_ => ConnectionService.Instance);
         services.AddSingleton<StatusService>(_ => StatusService.Instance);
+        services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
+        services.AddSingleton<ApiStatusService>();
+        services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<ApiStatusService>());
+        services.AddSingleton<Meridian.Wpf.Services.LoggingService>(_ => Meridian.Wpf.Services.LoggingService.Instance);
+        services.AddSingleton<ILoggingService>(_ => Meridian.Wpf.Services.LoggingService.Instance);
         services.AddSingleton<MessagingService>(_ => MessagingService.Instance);
         services.AddSingleton<Meridian.Wpf.Services.NotificationService>(_ => Meridian.Wpf.Services.NotificationService.Instance);
         services.AddSingleton(fundContext);
-        services.AddSingleton(_ => FixtureModeDetector.Instance);
+        services.AddSingleton<FixtureModeDetector>(_ => FixtureModeDetector.Instance);
+        services.AddSingleton<StrategyRunWorkspaceService>(_ =>
+        {
+            var service = new StrategyRunWorkspaceService();
+            StrategyRunWorkspaceService.SetInstance(service);
+            return service;
+        });
+        services.AddSingleton<InMemoryFundAccountService>(_ => new InMemoryFundAccountService(Path.Combine(serviceRoot, "fund-accounts.json")));
+        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
+        services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
+            sp.GetRequiredService<IFundAccountService>(),
+            sharedDataAccessService: null,
+            securityMasterQueryService: null,
+            persistencePath: Path.Combine(serviceRoot, "fund-structure.json")));
+        services.AddSingleton(sp => new WorkstationOperatingContextService(
+            sp.GetRequiredService<FundContextService>(),
+            sp.GetService<IFundStructureService>(),
+            Path.Combine(serviceRoot, "operating-context.json")));
+        services.AddSingleton<WorkspaceShellContextService>();
+        services.AddSingleton<FundAccountReadService>();
+        services.AddSingleton<CashFinancingReadService>();
+        services.AddSingleton<FundLedgerReadService>();
+        services.AddSingleton<ReconciliationReadService>();
         services.AddTransient<DashboardPage>();
         var resolvedRunMatService = runMatService ?? RunMatService.Instance;
         services.AddSingleton(resolvedRunMatService);

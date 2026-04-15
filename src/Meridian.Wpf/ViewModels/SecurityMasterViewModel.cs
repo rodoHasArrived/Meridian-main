@@ -47,14 +47,26 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public string SearchQuery
     {
         get => _searchQuery;
-        set => SetProperty(ref _searchQuery, value);
+        set
+        {
+            if (SetProperty(ref _searchQuery, value))
+            {
+                RaiseSearchDerivedStateChanged();
+            }
+        }
     }
 
     private bool _activeOnly = true;
     public bool ActiveOnly
     {
         get => _activeOnly;
-        set => SetProperty(ref _activeOnly, value);
+        set
+        {
+            if (SetProperty(ref _activeOnly, value))
+            {
+                RaiseSearchDerivedStateChanged();
+            }
+        }
     }
 
     private bool _isLoading;
@@ -79,11 +91,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _selectedSecurity, value))
             {
-                RaisePropertyChanged(nameof(HasSelectedSecurity));
-                RaisePropertyChanged(nameof(SelectedAssetClass));
-                RaisePropertyChanged(nameof(SelectedCurrency));
-                RaisePropertyChanged(nameof(SelectedStatusBadge));
-                RaisePropertyChanged(nameof(SelectedIdentifier));
+                RaiseSelectionDerivedStateChanged();
             }
         }
     }
@@ -92,7 +100,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public string HistoryText
     {
         get => _historyText;
-        private set => SetProperty(ref _historyText, value);
+        private set
+        {
+            if (SetProperty(ref _historyText, value))
+            {
+                RaisePropertyChanged(nameof(LatestHistoryEventText));
+            }
+        }
     }
 
     private bool _isEditPanelVisible;
@@ -169,14 +183,26 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsBackfillingTradingParams
     {
         get => _isBackfillingTradingParams;
-        private set => SetProperty(ref _isBackfillingTradingParams, value);
+        private set
+        {
+            if (SetProperty(ref _isBackfillingTradingParams, value))
+            {
+                RaisePropertyChanged(nameof(RuntimeStatusDetail));
+            }
+        }
     }
 
     private string _backfillStatus = string.Empty;
     public string BackfillStatus
     {
         get => _backfillStatus;
-        private set => SetProperty(ref _backfillStatus, value);
+        private set
+        {
+            if (SetProperty(ref _backfillStatus, value))
+            {
+                RaisePropertyChanged(nameof(RuntimeStatusDetail));
+            }
+        }
     }
 
     // ── Import properties ───────────────────────────────────────────────────────
@@ -184,35 +210,68 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public int ImportTotal
     {
         get => _importTotal;
-        private set => SetProperty(ref _importTotal, value);
+        private set
+        {
+            if (SetProperty(ref _importTotal, value))
+            {
+                RaisePropertyChanged(nameof(ImportStatus));
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private int _importProcessed;
     public int ImportProcessed
     {
         get => _importProcessed;
-        private set => SetProperty(ref _importProcessed, value);
+        private set
+        {
+            if (SetProperty(ref _importProcessed, value))
+            {
+                RaisePropertyChanged(nameof(ImportStatus));
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private int _importImported;
     public int ImportImported
     {
         get => _importImported;
-        private set => SetProperty(ref _importImported, value);
+        private set
+        {
+            if (SetProperty(ref _importImported, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private int _importFailed;
     public int ImportFailed
     {
         get => _importFailed;
-        private set => SetProperty(ref _importFailed, value);
+        private set
+        {
+            if (SetProperty(ref _importFailed, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private bool _isImporting;
     public bool IsImporting
     {
         get => _isImporting;
-        private set => SetProperty(ref _isImporting, value);
+        private set
+        {
+            if (SetProperty(ref _isImporting, value))
+            {
+                ImportFromFileCommand.NotifyCanExecuteChanged();
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     public string ImportStatus
@@ -229,18 +288,38 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsImportResultVisible
     {
         get => _isImportResultVisible;
-        private set => SetProperty(ref _isImportResultVisible, value);
+        private set
+        {
+            if (SetProperty(ref _isImportResultVisible, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private string _importResultSummary = string.Empty;
     public string ImportResultSummary
     {
         get => _importResultSummary;
-        private set => SetProperty(ref _importResultSummary, value);
+        private set
+        {
+            if (SetProperty(ref _importResultSummary, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     // ── Derived display helpers ─────────────────────────────────────────────
     public bool HasSelectedSecurity => SelectedSecurity is not null;
+
+    public int ResultCount => Results.Count;
+
+    public string SearchScopeText => string.IsNullOrWhiteSpace(SearchQuery)
+        ? ActiveOnly
+            ? "Active-only scope ready. Enter a symbol, name, or identifier."
+            : "All-status scope ready. Enter a symbol, name, or identifier."
+        : $"{(ActiveOnly ? "Active-only" : "All-status")} scope • query \"{SearchQuery.Trim()}\"";
 
     public string SelectedAssetClass =>
         SelectedSecurity?.Classification.AssetClass ?? string.Empty;
@@ -255,6 +334,56 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         SelectedSecurity?.Classification.PrimaryIdentifierValue is { } v
             ? $"{SelectedSecurity!.Classification.PrimaryIdentifierKind}: {v}"
             : string.Empty;
+
+    public string RuntimeStatusLabel => _hasPolygonApiKey
+        ? "Polygon enrichment available"
+        : "Manual enrichment only";
+
+    public string RuntimeStatusDetail => IsBackfillingTradingParams
+        ? BackfillStatus
+        : _hasPolygonApiKey
+            ? "API key present. Trading-parameter enrichment and data backfill are available from this workstation."
+            : "POLYGON_API_KEY is not set. Securities can still be managed, but enrichment remains manual.";
+
+    public string ConflictSummaryText => HasOpenConflicts
+        ? $"{OpenConflictCount} identifier conflict{(OpenConflictCount == 1 ? string.Empty : "s")} require review."
+        : "No open identifier conflicts detected.";
+
+    public string SelectionSummaryText => SelectedSecurity is null
+        ? "Select a security to inspect identifiers, runtime state, history, and corporate actions."
+        : $"{SelectedSecurity.DisplayName} • {SelectedAssetClass} • {SelectedCurrency}";
+
+    public string SelectionLifecycleText => SelectedSecurity is null
+        ? "No security selected."
+        : $"Status {SelectedStatusBadge} • version {SelectedSecurity.EconomicDefinition?.Version ?? 0}";
+
+    public string CorporateActionSummaryText => SelectedSecurity is null
+        ? "Corporate action timeline appears after a security is selected."
+        : CorporateActions.Count == 0
+            ? "No corporate actions recorded for the selected security."
+            : $"{CorporateActions.Count} corporate action(s) loaded for the selected security.";
+
+    public string LatestHistoryEventText
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(HistoryText) || HistoryText == "(no history)")
+            {
+                return "No audit history loaded.";
+            }
+
+            return HistoryText
+                       .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                       .FirstOrDefault()
+                   ?? "No audit history loaded.";
+        }
+    }
+
+    public string ImportSessionText => IsImporting
+        ? ImportStatus
+        : ImportTotal > 0 || IsImportResultVisible
+            ? $"Last import session: {ImportImported} imported • {ImportFailed} failed."
+            : "No import activity in this session.";
 
     // ── Commands ────────────────────────────────────────────────────────────
     public IRelayCommand CreateNewCommand { get; }
@@ -278,7 +407,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         private set
         {
             if (SetProperty(ref _openConflictCount, value))
+            {
                 RaisePropertyChanged(nameof(HasOpenConflicts));
+                RaisePropertyChanged(nameof(ConflictSummaryText));
+            }
         }
     }
 
@@ -315,6 +447,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
+
+        Results.CollectionChanged += (_, _) => RaiseSearchDerivedStateChanged();
+        CorporateActions.CollectionChanged += (_, _) => RaiseSelectionDerivedStateChanged();
 
         // Fire-and-forget initial conflict count load; failures are suppressed
         _ = RefreshConflictCountAsync();
@@ -383,6 +518,34 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private bool IsSelectedSecurityActive()
     {
         return SelectedSecurity?.Status == SecurityStatusDto.Active;
+    }
+
+    private void RaiseSearchDerivedStateChanged()
+    {
+        RaisePropertyChanged(nameof(ResultCount));
+        RaisePropertyChanged(nameof(SearchScopeText));
+    }
+
+    private void RaiseSelectionDerivedStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasSelectedSecurity));
+        RaisePropertyChanged(nameof(SelectedAssetClass));
+        RaisePropertyChanged(nameof(SelectedCurrency));
+        RaisePropertyChanged(nameof(SelectedStatusBadge));
+        RaisePropertyChanged(nameof(SelectedIdentifier));
+        RaisePropertyChanged(nameof(SelectionSummaryText));
+        RaisePropertyChanged(nameof(SelectionLifecycleText));
+        RaisePropertyChanged(nameof(CorporateActionSummaryText));
+        RaisePropertyChanged(nameof(LatestHistoryEventText));
+        NotifySelectionCommandsChanged();
+    }
+
+    private void NotifySelectionCommandsChanged()
+    {
+        EditSelectedCommand.NotifyCanExecuteChanged();
+        DeactivateSelectedCommand.NotifyCanExecuteChanged();
+        LoadCorporateActionsCommand.NotifyCanExecuteChanged();
+        ShowRecordCorpActionCommand.NotifyCanExecuteChanged();
     }
 
     private void WireEditVmEvents()

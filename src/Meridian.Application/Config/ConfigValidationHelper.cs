@@ -29,6 +29,21 @@ public sealed class AppConfigValidator : AbstractValidator<AppConfig>
                 .SetValidator(new AlpacaOptionsValidator()!);
         });
 
+        // Interactive Brokers-specific validation
+        When(x => x.DataSource == DataSourceKind.IB || x.IB != null, () =>
+        {
+            RuleFor(x => x.IB)
+                .NotNull()
+                .WithMessage("Interactive Brokers configuration is required when DataSource is set to IB")
+                .SetValidator(new IBOptionsValidator()!);
+        });
+
+        When(x => x.IBClientPortal != null, () =>
+        {
+            RuleFor(x => x.IBClientPortal)
+                .SetValidator(new IBClientPortalOptionsValidator()!);
+        });
+
         // StockSharp-specific validation
         When(x => x.DataSource == DataSourceKind.StockSharp, () =>
         {
@@ -122,6 +137,58 @@ public sealed class AlpacaOptionsValidator : AbstractValidator<AlpacaOptions>
 
         var placeholders = new[] { "__SET_ME__", "YOUR_", "REPLACE_", "ENTER_", "INSERT_", "TODO" };
         return placeholders.Any(p => value.Contains(p, StringComparison.OrdinalIgnoreCase));
+    }
+}
+
+/// <summary>
+/// Validates Interactive Brokers socket options.
+/// </summary>
+public sealed class IBOptionsValidator : AbstractValidator<IBOptions>
+{
+    public IBOptionsValidator()
+    {
+        RuleFor(x => x.Host)
+            .NotEmpty()
+            .WithMessage("Interactive Brokers host is required");
+
+        RuleFor(x => x.Port)
+            .InclusiveBetween(1, 65535)
+            .WithMessage("Interactive Brokers port must be between 1 and 65535");
+
+        RuleFor(x => x.ClientId)
+            .GreaterThanOrEqualTo(0)
+            .WithMessage("Interactive Brokers client ID must be zero or greater");
+
+        When(x => x.SubscribeDepth, () =>
+        {
+            RuleFor(x => x.DepthLevels)
+                .InclusiveBetween(1, 50)
+                .WithMessage("Interactive Brokers depth levels must be between 1 and 50");
+        });
+    }
+}
+
+/// <summary>
+/// Validates Interactive Brokers Client Portal options.
+/// </summary>
+public sealed class IBClientPortalOptionsValidator : AbstractValidator<IBClientPortalOptions>
+{
+    public IBClientPortalOptionsValidator()
+    {
+        When(x => x.Enabled, () =>
+        {
+            RuleFor(x => x.BaseUrl)
+                .NotEmpty()
+                .WithMessage("Interactive Brokers Client Portal base URL is required when enabled")
+                .Must(BeAbsoluteHttpUrl)
+                .WithMessage("Interactive Brokers Client Portal base URL must be an absolute HTTP or HTTPS URL");
+        });
+    }
+
+    private static bool BeAbsoluteHttpUrl(string? value)
+    {
+        return Uri.TryCreate(value, UriKind.Absolute, out var uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 }
 

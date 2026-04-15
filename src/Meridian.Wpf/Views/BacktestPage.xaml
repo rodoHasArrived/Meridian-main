@@ -248,7 +248,7 @@
         <!-- ══════════════════════════════════════════════════════════════════ -->
         <!-- ROW 2 ▸ PAGE TITLE WITH BLUE LEFT-BORDER ACCENT                  -->
         <!-- ══════════════════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="2" Margin="24,0">
+        <Grid Grid.Row="2" Margin="24,0" Style="{StaticResource EmbeddedShellHeaderGridStyle}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />

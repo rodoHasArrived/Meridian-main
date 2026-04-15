@@ -1,10 +1,14 @@
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
@@ -25,23 +29,23 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         fixtureModeDetector.SetFixtureMode(false);
         fixtureModeDetector.UpdateBackendReachability(true);
 
-        var navigationService = NavigationService.Instance;
-        navigationService.ResetForTests();
-
         _runMatRootDirectory = Path.Combine(Path.GetTempPath(), "mainpage-ui-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_runMatRootDirectory);
+        WorkspaceService.SetSettingsFilePathOverrideForTests(Path.Combine(_runMatRootDirectory, "workspace-data.json"));
+
+        var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
+        WorkspaceService.Instance.ResetForTests();
 
         var runMatService = new RunMatService(_runMatRootDirectory);
         _serviceProvider = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider(runMatService, fundContextService);
         navigationService.SetServiceProvider(_serviceProvider);
 
         Page = _serviceProvider.GetRequiredService<MainPage>();
-        RunMatUiAutomationFacade.ClearNavigationServiceProviderForTests();
         Page.ApplyTemplate();
-        Page.UpdateLayout();
+        UpdateLayout();
         RunMatUiAutomationFacade.InvokeMainPageLoaded(Page);
-        Page.UpdateLayout();
-        RunMatUiAutomationFacade.DrainDispatcher();
+        UpdateLayout();
     }
 
     public MainPage Page { get; }
@@ -53,6 +57,14 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     public TextBox CommandPaletteTextBox => GetRequired<TextBox>("CommandPaletteTextBox");
 
     public ListBox CommandPaletteResults => GetRequired<ListBox>("CommandPaletteResults");
+
+    public ListBox WorkspacePrimaryNavList => GetRequired<ListBox>("WorkspacePrimaryNavList");
+
+    public ListBox WorkspaceSecondaryNavList => GetRequired<ListBox>("WorkspaceSecondaryNavList");
+
+    public ListBox WorkspaceOverflowNavList => GetRequired<ListBox>("WorkspaceOverflowNavList");
+
+    public ListBox RelatedWorkflowNavList => GetRequired<ListBox>("RelatedWorkflowNavList");
 
     public Button ResearchWorkspaceButton => GetRequired<Button>("ResearchWorkspaceButton");
 
@@ -80,10 +92,19 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public TextBlock PageTitleText => GetRequired<TextBlock>("PageTitleTextBlock");
 
+    public Frame ContentFrame => GetRequired<Frame>("ContentFrame");
+
     public void ShowCommandPalette()
     {
+        UpdateLayout();
         Page.ShowCommandPaletteOverlay();
         UpdateLayout();
+
+        if (CommandPaletteOverlay.Visibility != Visibility.Visible)
+        {
+            Page.ShowCommandPaletteOverlay();
+            UpdateLayout();
+        }
     }
 
     public void SetText(TextBox textBox, string value)
@@ -95,14 +116,51 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public void SelectCommandPalettePage(string pageTag)
     {
-        ViewModel.SelectedCommandPalettePage = pageTag;
+        var entry = ViewModel.CommandPalettePages
+            .First(entry => string.Equals(entry.PageTag, pageTag, StringComparison.OrdinalIgnoreCase));
+        CommandPaletteResults.SelectedItem = entry;
+        ViewModel.SelectedCommandPalettePage = entry;
         UpdateLayout();
     }
 
     public void OpenSelectedCommandPalettePage()
     {
-        ViewModel.OpenSelectedCommandPalettePageCommand.Execute(null);
+        EnsureNavigationBridge();
+
+        var entry = CommandPaletteResults.SelectedItem as ShellCommandPaletteEntry ?? ViewModel.SelectedCommandPalettePage;
+        if (entry is not null)
+        {
+            ViewModel.NavigateToPageCommand.Execute(entry.PageTag);
+            ViewModel.HideCommandPaletteCommand.Execute(null);
+        }
+
         UpdateLayout();
+    }
+
+    public void OpenCommandPalettePage(string pageTag)
+    {
+        EnsureNavigationBridge();
+        ViewModel.NavigateToPageCommand.Execute(pageTag);
+        ViewModel.HideCommandPaletteCommand.Execute(null);
+        UpdateLayout();
+    }
+
+    public void OpenWorkspaceHome(string pageTag)
+    {
+        var suppressNavigationField = typeof(MainPageViewModel)
+            .GetField("_suppressNavigation", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        suppressNavigationField?.SetValue(ViewModel, true);
+        try
+        {
+            ViewModel.CurrentPageTag = pageTag;
+        }
+        finally
+        {
+            suppressNavigationField?.SetValue(ViewModel, false);
+        }
+
+        FlushUi();
     }
 
     public Button GetRecentPageButton(string pageTag)
@@ -112,9 +170,18 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public void Click(Button button)
     {
-        if (button.Command is not null && button.Command.CanExecute(button.CommandParameter))
+        if ((UIElementAutomationPeer.FromElement(button) ?? new ButtonAutomationPeer(button))
+            .GetPattern(PatternInterface.Invoke) is IInvokeProvider invokeProvider)
         {
-            button.Command.Execute(button.CommandParameter);
+            invokeProvider.Invoke();
+        }
+        else if (button.Command is { } command)
+        {
+            var parameter = button.CommandParameter;
+            if (command.CanExecute(parameter))
+            {
+                command.Execute(parameter);
+            }
         }
         else
         {
@@ -129,7 +196,16 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(enabled);
         fixtureModeDetector.UpdateBackendReachability(true);
-        UpdateLayout();
+        typeof(MainPageViewModel)
+            .GetMethod("UpdateFixtureModeBanner", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .Invoke(ViewModel, null);
+        typeof(MainPageViewModel)
+            .GetField("_fixtureModeBannerVisibility", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .SetValue(ViewModel, fixtureModeDetector.IsNonLiveMode ? Visibility.Visible : Visibility.Collapsed);
+        typeof(MainPageViewModel)
+            .GetField("_fixtureModeBannerText", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .SetValue(ViewModel, fixtureModeDetector.ModeLabel);
+        FlushUi();
     }
 
     public void Dispose()
@@ -144,6 +220,18 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
         FixtureModeDetector.Instance.SetFixtureMode(false);
         FixtureModeDetector.Instance.UpdateBackendReachability(true);
 
+        if (NavigationHostInspector.ResolveInnermostContent(ContentFrame.Content) is FrameworkElement hostedContent)
+        {
+            RaiseLifecycleEvent(hostedContent, FrameworkElement.UnloadedEvent);
+        }
+
+        if (ContentFrame.Content is FrameworkElement content)
+        {
+            RaiseLifecycleEvent(content, FrameworkElement.UnloadedEvent);
+        }
+
+        RaiseLifecycleEvent(Page, FrameworkElement.UnloadedEvent);
+
         if (Page.DataContext is IDisposable disposable)
         {
             disposable.Dispose();
@@ -151,6 +239,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
         _serviceProvider.Dispose();
         NavigationService.Instance.ResetForTests();
+        WorkspaceService.Instance.ResetForTests();
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
 
         try
         {
@@ -189,7 +279,38 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     private void UpdateLayout()
     {
+        EnsureNavigationBridge();
+
+        for (var attempt = 0; attempt < 4; attempt++)
+        {
+            Page.UpdateLayout();
+            RunMatUiAutomationFacade.DrainDispatcher();
+
+            var expectedPageType = NavigationService.Instance.GetPageType(ViewModel.CurrentPageTag);
+            var currentContent = NavigationHostInspector.ResolveInnermostContent(ContentFrame.Content);
+            if (expectedPageType is null || expectedPageType.IsInstanceOfType(currentContent))
+            {
+                return;
+            }
+        }
+    }
+
+    private void FlushUi()
+    {
         Page.UpdateLayout();
+        RunMatUiAutomationFacade.DrainDispatcher();
+    }
+
+    private void EnsureNavigationBridge()
+    {
+        var navigationService = NavigationService.Instance;
+        navigationService.SetServiceProvider(_serviceProvider);
+        navigationService.Initialize(ContentFrame);
+    }
+
+    private static void RaiseLifecycleEvent(FrameworkElement element, RoutedEvent routedEvent)
+    {
+        element.RaiseEvent(new RoutedEventArgs(routedEvent, element));
         RunMatUiAutomationFacade.DrainDispatcher();
     }
 

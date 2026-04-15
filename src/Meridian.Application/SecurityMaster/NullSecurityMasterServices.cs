@@ -143,8 +143,11 @@ internal sealed class NullSecurityMasterConflictService : ISecurityMasterConflic
 // Import service — returns error result when Security Master is not configured
 // ──────────────────────────────────────────────────────────────────────────────
 
-public sealed class NullSecurityMasterImportService : ISecurityMasterImportService
+public sealed class NullSecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
 {
+    public SecurityMasterIngestStatusSnapshot GetSnapshot()
+        => new(null, null);
+
     public Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,

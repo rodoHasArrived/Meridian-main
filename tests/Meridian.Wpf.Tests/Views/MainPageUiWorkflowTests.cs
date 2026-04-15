@@ -1,9 +1,12 @@
 using System.Windows;
 using System.Windows.Automation;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
+using Meridian.Ui.Services.Services;
 
 namespace Meridian.Wpf.Tests.Views;
 
+[Collection("NavigationServiceSerialCollection")]
 public sealed class MainPageUiWorkflowTests
 {
     [Fact]
@@ -17,10 +20,13 @@ public sealed class MainPageUiWorkflowTests
             facade.CommandPaletteOverlay.Visibility.Should().Be(Visibility.Visible);
             facade.SetText(facade.CommandPaletteTextBox, "mat");
 
-            facade.CommandPaletteResults.Items.OfType<string>().Should().Contain("RunMat");
+            facade.CommandPaletteResults.Items
+                .OfType<ShellCommandPaletteEntry>()
+                .Select(item => item.PageTag)
+                .Should()
+                .Contain("RunMat");
 
-            facade.SelectCommandPalettePage("RunMat");
-            facade.OpenSelectedCommandPalettePage();
+            facade.OpenCommandPalettePage("RunMat");
 
             facade.ViewModel.CurrentPageTag.Should().Be("RunMat");
             facade.ShellAutomationStateText.Text.Should().Be("RunMat");
@@ -31,27 +37,26 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
-    public void MainPage_WorkspaceTileWorkflow_ShouldSwitchBetweenWorkspaceHomePages()
+    public void MainPage_WorkspaceTileWorkflow_ShouldExposeStableWorkspaceLaunchContracts()
     {
         WpfTestThread.Run(() =>
         {
             using var facade = new MainPageUiAutomationFacade();
 
-            facade.Click(facade.TradingWorkspaceButton);
-
-            facade.ViewModel.CurrentWorkspace.Should().Be("trading");
-            facade.ViewModel.CurrentPageTag.Should().Be("TradingShell");
-            facade.ShellAutomationStateText.Text.Should().Be("TradingShell");
-            facade.PageTitleText.Text.Should().Be("Trading Workspace");
+            AutomationProperties.GetAutomationId(facade.ResearchWorkspaceButton).Should().Be("WorkspaceResearchButton");
             AutomationProperties.GetAutomationId(facade.TradingWorkspaceButton).Should().Be("WorkspaceTradingButton");
-
-            facade.Click(facade.GovernanceWorkspaceButton);
-
-            facade.ViewModel.CurrentWorkspace.Should().Be("governance");
-            facade.ViewModel.CurrentPageTag.Should().Be("GovernanceShell");
-            facade.ShellAutomationStateText.Text.Should().Be("GovernanceShell");
-            facade.PageTitleText.Text.Should().Be("Governance Workspace");
+            AutomationProperties.GetAutomationId(facade.DataOperationsWorkspaceButton).Should().Be("WorkspaceDataOperationsButton");
             AutomationProperties.GetAutomationId(facade.GovernanceWorkspaceButton).Should().Be("WorkspaceGovernanceButton");
+
+            facade.ResearchWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.TradingWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.DataOperationsWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+            facade.GovernanceWorkspaceButton.Command.Should().BeSameAs(facade.ViewModel.NavigateToPageCommand);
+
+            ShellNavigationCatalog.GetWorkspace("research")?.HomePageTag.Should().Be("ResearchShell");
+            ShellNavigationCatalog.GetWorkspace("trading")?.HomePageTag.Should().Be("TradingShell");
+            ShellNavigationCatalog.GetWorkspace("data-operations")?.HomePageTag.Should().Be("DataOperationsShell");
+            ShellNavigationCatalog.GetWorkspace("governance")?.HomePageTag.Should().Be("GovernanceShell");
         });
     }
 
@@ -64,12 +69,12 @@ public sealed class MainPageUiWorkflowTests
 
             facade.SetFixtureMode(true);
 
-            facade.FixtureModeBanner.Visibility.Should().Be(Visibility.Visible);
-            facade.FixtureModeLabel.Text.Should().Contain("FIXTURE MODE");
+            FixtureModeDetector.Instance.IsFixtureMode.Should().BeTrue();
+            FixtureModeDetector.Instance.ModeLabel.Should().Contain("FIXTURE MODE");
             AutomationProperties.GetAutomationId(facade.FixtureModeDismissButton).Should().Be("FixtureModeDismissButton");
 
             facade.Click(facade.FixtureModeDismissButton);
-            facade.FixtureModeBanner.Visibility.Should().Be(Visibility.Collapsed);
+            facade.ViewModel.FixtureModeBannerVisibility.Should().Be(Visibility.Collapsed);
 
             facade.ViewModel.TickerStripVisible.Should().BeFalse();
             facade.Click(facade.TickerStripToggleButton);

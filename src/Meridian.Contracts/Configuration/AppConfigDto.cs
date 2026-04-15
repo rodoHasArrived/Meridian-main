@@ -20,6 +20,12 @@ public sealed class AppConfigDto
     [JsonPropertyName("alpaca")]
     public AlpacaOptionsDto? Alpaca { get; set; }
 
+    [JsonPropertyName("ib")]
+    public IBOptionsDto? IB { get; set; }
+
+    [JsonPropertyName("ibClientPortal")]
+    public IBClientPortalOptionsDto? IBClientPortal { get; set; }
+
     [JsonPropertyName("polygon")]
     public PolygonOptionsDto? Polygon { get; set; }
 
@@ -579,13 +585,13 @@ public sealed class IBOptionsDto
     public string Host { get; set; } = "127.0.0.1";
 
     [JsonPropertyName("port")]
-    public int Port { get; set; } = 7496;
+    public int Port { get; set; } = 7497;
 
     [JsonPropertyName("clientId")]
-    public int ClientId { get; set; }
+    public int ClientId { get; set; } = 1;
 
     [JsonPropertyName("usePaperTrading")]
-    public bool UsePaperTrading { get; set; }
+    public bool UsePaperTrading { get; set; } = true;
 
     [JsonPropertyName("subscribeDepth")]
     public bool SubscribeDepth { get; set; } = true;
@@ -595,6 +601,21 @@ public sealed class IBOptionsDto
 
     [JsonPropertyName("tickByTick")]
     public bool TickByTick { get; set; } = true;
+}
+
+/// <summary>
+/// Interactive Brokers Client Portal HTTP configuration.
+/// </summary>
+public sealed class IBClientPortalOptionsDto
+{
+    [JsonPropertyName("enabled")]
+    public bool Enabled { get; set; }
+
+    [JsonPropertyName("baseUrl")]
+    public string BaseUrl { get; set; } = "https://localhost:5000";
+
+    [JsonPropertyName("allowSelfSignedCertificates")]
+    public bool AllowSelfSignedCertificates { get; set; } = true;
 }
 
 /// <summary>

@@ -28,6 +28,22 @@ public sealed class SourceRegistry : ISourceRegistry
         else
         {
             InitializeDefaults();
+
+            if (!string.IsNullOrEmpty(_persistencePath))
+            {
+                try
+                {
+                    SaveToDisk();
+                }
+                catch (IOException)
+                {
+                    // Keep defaults in memory; the next explicit mutation can retry persistence.
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // Keep defaults in memory; the next explicit mutation can retry persistence.
+                }
+            }
         }
     }
 
@@ -61,24 +77,12 @@ public sealed class SourceRegistry : ISourceRegistry
 
     public void RegisterSource(SourceInfo source)
     {
-        _sources[source.Id] = source;
-        SaveAsync();
+        PersistChange(() => _sources[source.Id] = source);
     }
 
     public void RegisterSymbol(SymbolInfo symbol)
     {
-        _symbols[symbol.Symbol] = symbol;
-
-        // Register aliases
-        if (symbol.Aliases != null)
-        {
-            foreach (var alias in symbol.Aliases)
-            {
-                _aliases[alias] = symbol.Canonical;
-            }
-        }
-
-        SaveAsync();
+        PersistChange(() => AddOrUpdateSymbol(symbol));
     }
 
     public string ResolveSymbolAlias(string alias)
@@ -101,7 +105,7 @@ public sealed class SourceRegistry : ISourceRegistry
     private void InitializeDefaults()
     {
         // Register default data sources
-        RegisterSource(new SourceInfo(
+        AddOrUpdateSource(new SourceInfo(
             Id: "alpaca",
             Name: "Alpaca Markets",
             Type: SourceType.Live,
@@ -113,7 +117,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: true
         ));
 
-        RegisterSource(new SourceInfo(
+        AddOrUpdateSource(new SourceInfo(
             Id: "ib",
             Name: "Interactive Brokers",
             Type: SourceType.Live,
@@ -125,7 +129,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: true
         ));
 
-        RegisterSource(new SourceInfo(
+        AddOrUpdateSource(new SourceInfo(
             Id: "polygon",
             Name: "Polygon.io",
             Type: SourceType.Live,
@@ -135,7 +139,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: false
         ));
 
-        RegisterSource(new SourceInfo(
+        AddOrUpdateSource(new SourceInfo(
             Id: "stooq",
             Name: "Stooq Historical",
             Type: SourceType.Historical,
@@ -145,7 +149,7 @@ public sealed class SourceRegistry : ISourceRegistry
             Enabled: true
         ));
 
-        RegisterSource(new SourceInfo(
+        AddOrUpdateSource(new SourceInfo(
             Id: "yahoo",
             Name: "Yahoo Finance",
             Type: SourceType.Historical,
@@ -154,6 +158,34 @@ public sealed class SourceRegistry : ISourceRegistry
             DataTypes: new[] { "HistoricalBar" },
             Enabled: true
         ));
+    }
+
+    private void AddOrUpdateSource(SourceInfo source)
+    {
+        _sources[source.Id] = source;
+    }
+
+    private void AddOrUpdateSymbol(SymbolInfo symbol)
+    {
+        foreach (var existingAlias in _aliases
+                     .Where(entry => string.Equals(entry.Value, symbol.Canonical, StringComparison.OrdinalIgnoreCase))
+                     .Select(entry => entry.Key)
+                     .ToArray())
+        {
+            _aliases.TryRemove(existingAlias, out _);
+        }
+
+        _symbols[symbol.Symbol] = symbol;
+
+        if (symbol.Aliases == null)
+        {
+            return;
+        }
+
+        foreach (var alias in symbol.Aliases)
+        {
+            _aliases[alias] = symbol.Canonical;
+        }
     }
 
     private void Load()
@@ -207,57 +239,43 @@ public sealed class SourceRegistry : ISourceRegistry
         }
     }
 
-    private void SaveAsync()
+    private void PersistChange(Action applyChange)
     {
         if (string.IsNullOrEmpty(_persistencePath))
+        {
+            applyChange();
             return;
+        }
 
-        _ = SaveToDiskAsync();
-    }
-
-    private async Task SaveToDiskAsync(CancellationToken ct = default)
-    {
-        if (string.IsNullOrEmpty(_persistencePath))
-            return;
-
-        await _saveGate.WaitAsync(ct).ConfigureAwait(false);
+        _saveGate.Wait();
         try
         {
-            ct.ThrowIfCancellationRequested();
-
-            var data = new RegistryData
-            {
-                Sources = _sources.Values.ToList(),
-                Symbols = _symbols.Values.ToList()
-            };
-
-            var dir = Path.GetDirectoryName(_persistencePath);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
-
-            var json = JsonSerializer.Serialize(data, SourceRegistryJsonContext.Default.RegistryData);
-            await AtomicFileWriter.WriteAsync(_persistencePath, json, ct).ConfigureAwait(false);
-        }
-        catch (IOException)
-        {
-            // Silently fail on save errors
-        }
-        catch (UnauthorizedAccessException)
-        {
-            // Silently fail on save errors
-        }
-        catch (JsonException)
-        {
-            // Silently fail on save errors
-        }
-        catch (NotSupportedException)
-        {
-            // Silently fail on save errors
+            applyChange();
+            SaveToDisk();
         }
         finally
         {
             _saveGate.Release();
         }
+    }
+
+    private void SaveToDisk()
+    {
+        if (string.IsNullOrEmpty(_persistencePath))
+            return;
+
+        var data = new RegistryData
+        {
+            Sources = _sources.Values.ToList(),
+            Symbols = _symbols.Values.ToList()
+        };
+
+        var dir = Path.GetDirectoryName(_persistencePath);
+        if (!string.IsNullOrEmpty(dir))
+            Directory.CreateDirectory(dir);
+
+        var json = JsonSerializer.Serialize(data, SourceRegistryJsonContext.Default.RegistryData);
+        AtomicFileWriter.Write(_persistencePath, json);
     }
 
     internal sealed class RegistryData
@@ -267,7 +285,7 @@ public sealed class SourceRegistry : ISourceRegistry
     }
 }
 
-[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNameCaseInsensitive = true)]
 [JsonSerializable(typeof(SourceRegistry.RegistryData))]
 internal sealed partial class SourceRegistryJsonContext : JsonSerializerContext
 {

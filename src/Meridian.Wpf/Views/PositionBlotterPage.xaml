@@ -5,12 +5,12 @@
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Position Blotter">
+      AutomationProperties.Name="Position Blotter"
+      AutomationProperties.AutomationId="PositionBlotterPage">
 
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
 
-        <!-- Style for a filter chip pill -->
         <Style x:Key="FilterChipStyle" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
             <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
@@ -20,7 +20,30 @@
             <Setter Property="Margin" Value="0,0,6,0" />
         </Style>
 
-        <!-- Style for the expand/collapse icon inside group rows -->
+        <Style x:Key="ContextChipStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+
+        <Style x:Key="NumericCellTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, monospace" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="NumericMetricTextStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource StatValueCompactStyle}">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+
         <Style x:Key="ExpandIconStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
             <Setter Property="FontSize" Value="10" />
@@ -33,31 +56,27 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <!-- Page header card -->
             <RowDefinition Height="Auto" />
-            <!-- Filter bar card -->
             <RowDefinition Height="Auto" />
-            <!-- Main data grid (takes remaining space) -->
             <RowDefinition Height="*" />
-            <!-- Status bar -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             Row 0 · Page Header
-             ═══════════════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="24,20,24,0">
+        <Border Grid.Row="0" Style="{StaticResource EmbeddedShellCompactHeaderCardStyle}" Margin="24,20,24,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0">
+                <StackPanel Grid.Column="0" Style="{StaticResource EmbeddedShellHeaderIdentityStackPanelStyle}">
                     <StackPanel Orientation="Horizontal">
-                        <Border Width="44" Height="44" CornerRadius="14"
+                        <Border Width="44"
+                                Height="44"
+                                CornerRadius="14"
                                 Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1"
+                                BorderBrush="{StaticResource InfoColorBrush}"
+                                BorderThickness="1"
                                 Margin="0,0,12,0">
                             <TextBlock Text="&#xE8EC;"
                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -75,7 +94,16 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,4,0">
+                    <TextBlock Text="{Binding SelectionSummaryText}"
+                               Style="{StaticResource EmbeddedShellHostedOnlyTextBlockStyle}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0" />
                     <Button Content="Upsize"
                             Command="{Binding UpsizeCommand}"
                             Style="{StaticResource SecondaryButtonStyle}"
@@ -84,7 +112,7 @@
                     <Button Content="Terminate"
                             Command="{Binding TerminateCommand}"
                             Style="{StaticResource DangerButtonStyle}"
-                            ToolTip="Close / flatten selected positions"
+                            ToolTip="Close or flatten selected positions"
                             Margin="0,0,8,0" />
                     <Button Content="Refresh"
                             Command="{Binding RefreshCommand}"
@@ -93,29 +121,85 @@
             </Grid>
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             Row 1 · Filter Bar
-             ═══════════════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="24,12,24,0">
+        <Border Grid.Row="1" Style="{StaticResource WorkspaceCommandBarSurfaceStyle}" Margin="24,12,24,0">
             <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <!-- Preset dropdown -->
                     <ColumnDefinition Width="180" />
-                    <!-- Filter chips area -->
                     <ColumnDefinition Width="*" />
-                    <!-- Search box -->
-                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="220" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Preset dropdown -->
-                <ComboBox Grid.Column="0"
+                <StackPanel Grid.Row="0"
+                            Grid.ColumnSpan="3"
+                            Orientation="Horizontal"
+                            Margin="0,0,0,12">
+                    <Border Style="{StaticResource ContextChipStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Entity"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Margin="0,0,6,0" />
+                            <TextBlock Text="Execution book"
+                                       Style="{StaticResource MonoTextStyle}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource ContextChipStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Period"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Margin="0,0,6,0" />
+                            <TextBlock Text="{Binding TradeTimeText}"
+                                       Style="{StaticResource MonoTextStyle}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource ContextChipStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Currency"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Margin="0,0,6,0" />
+                            <TextBlock Text="Instrument native"
+                                       Style="{StaticResource MonoTextStyle}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource ContextChipStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Source"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       Margin="0,0,6,0" />
+                            <TextBlock Text="{Binding SnapshotSourceText}"
+                                       Style="{StaticResource MonoTextStyle}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <ComboBox Grid.Row="1"
+                          Grid.Column="0"
                           ItemsSource="{Binding Presets}"
                           SelectedItem="{Binding SelectedPreset, Mode=TwoWay}"
                           VerticalAlignment="Center"
                           Margin="0,0,12,0" />
 
-                <!-- Active filter chips -->
-                <ItemsControl Grid.Column="1"
+                <ItemsControl Grid.Row="1"
+                              Grid.Column="1"
                               ItemsSource="{Binding ActiveFilterChips}"
                               VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel>
@@ -128,7 +212,8 @@
                             <Border Style="{StaticResource FilterChipStyle}">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Label}"
-                                               FontSize="11" FontWeight="SemiBold"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
                                                Foreground="{StaticResource InfoColorBrush}"
                                                Margin="0,0,4,0" />
                                     <TextBlock Text="{Binding Value}"
@@ -137,8 +222,7 @@
                                     <Button Content="&#xE711;"
                                             FontFamily="{StaticResource SymbolThemeFontFamily}"
                                             FontSize="9"
-                                            Command="{Binding DataContext.RemoveFilterChipCommand,
-                                                              RelativeSource={RelativeSource AncestorType=Page}}"
+                                            Command="{Binding DataContext.RemoveFilterChipCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}"
                                             Style="{StaticResource GhostButtonStyle}"
                                             Padding="2,0,0,0"
@@ -150,243 +234,279 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Symbol / description search -->
-                <TextBox Grid.Column="2"
+                <TextBox Grid.Row="1"
+                         Grid.Column="2"
                          Text="{Binding FilterSearchText, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource FormTextBoxStyle}"
-                         VerticalAlignment="Center">
-                    <TextBox.Resources>
-                        <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource FormTextBoxStyle}">
-                            <Style.Triggers>
-                                <Trigger Property="Text" Value="">
-                                    <Setter Property="Tag" Value="Enter filter parameters" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Resources>
-                </TextBox>
+                         VerticalAlignment="Center" />
             </Grid>
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             Row 2 · Main Blotter Grid
-             ═══════════════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="24,12,24,0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <!-- Column header row -->
-                    <RowDefinition Height="Auto" />
-                    <!-- Scrollable data rows -->
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+        <Grid Grid.Row="2" Margin="24,12,24,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="340" />
+            </Grid.ColumnDefinitions>
 
-                <!-- ── Column header ── -->
-                <Grid Grid.Row="0"
-                      Background="{StaticResource ConsoleBackgroundLightBrush}"
-                      Margin="0,0,0,1">
-                    <Grid.ColumnDefinitions>
-                        <!-- Checkbox column -->
-                        <ColumnDefinition Width="36" />
-                        <!-- Expand/collapse column -->
-                        <ColumnDefinition Width="20" />
-                        <!-- Group -->
-                        <ColumnDefinition Width="2*" />
-                        <!-- Product Description -->
-                        <ColumnDefinition Width="3*" />
-                        <!-- Trade ID -->
-                        <ColumnDefinition Width="100" />
-                        <!-- Unit Price -->
-                        <ColumnDefinition Width="90" />
-                        <!-- Qty -->
-                        <ColumnDefinition Width="80" />
-                        <!-- Side -->
-                        <ColumnDefinition Width="60" />
-                        <!-- Unrealised PnL -->
-                        <ColumnDefinition Width="110" />
-                        <!-- Status -->
-                        <ColumnDefinition Width="80" />
-                    </Grid.ColumnDefinitions>
+            <Border Grid.Column="0"
+                    Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                    AutomationProperties.AutomationId="PositionBlotterWorkbench">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                    <!-- Master select-all checkbox -->
-                    <CheckBox Grid.Column="0"
-                              IsChecked="{Binding IsAllSelected, Mode=TwoWay}"
-                              VerticalAlignment="Center"
-                              HorizontalAlignment="Center"
-                              Margin="6,6,4,6"
-                              ToolTip="Select / deselect all rows" />
+                    <Grid Grid.Row="0"
+                          Background="{StaticResource ConsoleBackgroundLightBrush}"
+                          Margin="0,0,0,1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="36" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="3*" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="96" />
+                            <ColumnDefinition Width="92" />
+                            <ColumnDefinition Width="68" />
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="90" />
+                        </Grid.ColumnDefinitions>
 
-                    <!-- Spacer for expand column -->
-                    <Border Grid.Column="1" />
+                        <CheckBox Grid.Column="0"
+                                  IsChecked="{Binding IsAllSelected, Mode=TwoWay}"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"
+                                  Margin="6,6,4,6"
+                                  ToolTip="Select or deselect all rows" />
 
-                    <TextBlock Grid.Column="2"  Text="Group"               FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                    <TextBlock Grid.Column="3"  Text="Product Description" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                    <TextBlock Grid.Column="4"  Text="Trade ID"            FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                    <TextBlock Grid.Column="5"  Text="Unit Price"          FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                    <TextBlock Grid.Column="6"  Text="Qty"                 FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                    <TextBlock Grid.Column="7"  Text="Side"                FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                    <TextBlock Grid.Column="8"  Text="Unreal. PnL"        FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                    <TextBlock Grid.Column="9"  Text="Status"              FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
-                </Grid>
+                        <Border Grid.Column="1" />
 
-                <!-- ── Scrollable rows ── -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Groups}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:BlotterGroup}">
-                                <StackPanel>
+                        <TextBlock Grid.Column="2" Text="Group" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
+                        <TextBlock Grid.Column="3" Text="Product Description" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
+                        <TextBlock Grid.Column="4" Text="Trade ID" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
+                        <TextBlock Grid.Column="5" Text="Unit Price" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="Cascadia Code, JetBrains Mono, Consolas, monospace" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="6" Text="Qty" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="Cascadia Code, JetBrains Mono, Consolas, monospace" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="7" Text="Side" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
+                        <TextBlock Grid.Column="8" Text="Unreal. PnL" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" FontFamily="Cascadia Code, JetBrains Mono, Consolas, monospace" TextAlignment="Right" VerticalAlignment="Center" Margin="8,6,8,6" />
+                        <TextBlock Grid.Column="9" Text="Status" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,6,4,6" />
+                    </Grid>
 
-                                    <!-- Group header row -->
-                                    <Grid Background="{StaticResource ConsoleBackgroundLightBrush}"
-                                          Margin="0,0,0,1">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="36" />
-                                            <ColumnDefinition Width="20" />
-                                            <ColumnDefinition Width="2*" />
-                                            <ColumnDefinition Width="3*" />
-                                            <ColumnDefinition Width="100" />
-                                            <ColumnDefinition Width="90" />
-                                            <ColumnDefinition Width="80" />
-                                            <ColumnDefinition Width="60" />
-                                            <ColumnDefinition Width="110" />
-                                            <ColumnDefinition Width="80" />
-                                        </Grid.ColumnDefinitions>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Groups}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:BlotterGroup}">
+                                    <StackPanel>
+                                        <Grid Background="{StaticResource ConsoleBackgroundLightBrush}" Margin="0,0,0,1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="36" />
+                                                <ColumnDefinition Width="20" />
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="3*" />
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="96" />
+                                                <ColumnDefinition Width="92" />
+                                                <ColumnDefinition Width="68" />
+                                                <ColumnDefinition Width="120" />
+                                                <ColumnDefinition Width="90" />
+                                            </Grid.ColumnDefinitions>
 
-                                        <!-- Group checkbox -->
-                                        <CheckBox Grid.Column="0"
-                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                  VerticalAlignment="Center"
-                                                  HorizontalAlignment="Center"
-                                                  Margin="6,4,4,4" />
+                                            <CheckBox Grid.Column="0"
+                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Center"
+                                                      Margin="6,4,4,4" />
 
-                                        <!-- Expand / collapse toggle -->
-                                        <TextBlock Grid.Column="1"
-                                                   Text="{Binding ExpandIcon}"
-                                                   Style="{StaticResource ExpandIconStyle}"
-                                                   ToolTip="Expand/collapse group">
-                                            <TextBlock.InputBindings>
-                                                <MouseBinding MouseAction="LeftClick"
-                                                              Command="{Binding DataContext.ToggleGroupCommand,
-                                                                                RelativeSource={RelativeSource AncestorType=Page}}"
-                                                              CommandParameter="{Binding}" />
-                                            </TextBlock.InputBindings>
-                                        </TextBlock>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding ExpandIcon}"
+                                                       Style="{StaticResource ExpandIconStyle}"
+                                                       ToolTip="Expand or collapse group">
+                                                <TextBlock.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick"
+                                                                  Command="{Binding DataContext.ToggleGroupCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                                  CommandParameter="{Binding}" />
+                                                </TextBlock.InputBindings>
+                                            </TextBlock>
 
-                                        <!-- Group name + count -->
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="4,4,4,4" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Name}"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="13"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                            <TextBlock Text="{Binding Count, StringFormat= ({0})}"
+                                            <StackPanel Grid.Column="2"
+                                                        Orientation="Horizontal"
+                                                        Margin="4,4,4,4"
+                                                        VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <TextBlock Text="{Binding Count, StringFormat= ({0})}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="4,0,0,0" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="3"
+                                                       Text="Grouped underlying exposure"
                                                        FontSize="11"
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                       Margin="4,0,0,0" />
-                                        </StackPanel>
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,4,4,4" />
 
-                                        <!-- Total PnL for group -->
-                                        <TextBlock Grid.Column="8"
-                                                   Text="{Binding TotalPnlText}"
-                                                   FontSize="12" FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   Foreground="{Binding TotalPnlBrush}"
-                                                   Margin="4,4,4,4" />
-                                    </Grid>
+                                            <TextBlock Grid.Column="6"
+                                                       Text="{Binding NetQuantity, StringFormat={}{0:+#,0.####;-#,0.####;0}}"
+                                                       Style="{StaticResource NumericCellTextStyle}"
+                                                       FontWeight="SemiBold"
+                                                       Margin="8,4,8,4" />
 
-                                    <!-- Child entry rows (collapsed when IsExpanded=false) -->
-                                    <ItemsControl ItemsSource="{Binding Entries}"
-                                                  Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibility}}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate DataType="{x:Type models:BlotterEntry}">
-                                                <Grid Margin="0,0,0,1">
-                                                    <Grid.Style>
-                                                        <Style TargetType="Grid">
-                                                            <Setter Property="Background" Value="Transparent" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Grid.Style>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="36" />
-                                                        <ColumnDefinition Width="20" />
-                                                        <ColumnDefinition Width="2*" />
-                                                        <ColumnDefinition Width="3*" />
-                                                        <ColumnDefinition Width="100" />
-                                                        <ColumnDefinition Width="90" />
-                                                        <ColumnDefinition Width="80" />
-                                                        <ColumnDefinition Width="60" />
-                                                        <ColumnDefinition Width="110" />
-                                                        <ColumnDefinition Width="80" />
-                                                    </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="8"
+                                                       Text="{Binding TotalPnlText}"
+                                                       Style="{StaticResource NumericCellTextStyle}"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{Binding TotalPnlBrush}"
+                                                       Margin="8,4,8,4" />
+                                        </Grid>
 
-                                                    <!-- Row checkbox -->
-                                                    <CheckBox Grid.Column="0"
-                                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                              VerticalAlignment="Center"
-                                                              HorizontalAlignment="Center"
-                                                              Margin="6,3,4,3" />
+                                        <ItemsControl ItemsSource="{Binding Entries}"
+                                                      Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibility}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type models:BlotterEntry}">
+                                                    <Grid Margin="0,0,0,1">
+                                                        <Grid.Style>
+                                                            <Style TargetType="Grid">
+                                                                <Setter Property="Background" Value="Transparent" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                        <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha20Brush}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Grid.Style>
 
-                                                    <!-- Indent spacer -->
-                                                    <Border Grid.Column="1" />
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="36" />
+                                                            <ColumnDefinition Width="20" />
+                                                            <ColumnDefinition Width="2*" />
+                                                            <ColumnDefinition Width="3*" />
+                                                            <ColumnDefinition Width="100" />
+                                                            <ColumnDefinition Width="96" />
+                                                            <ColumnDefinition Width="92" />
+                                                            <ColumnDefinition Width="68" />
+                                                            <ColumnDefinition Width="120" />
+                                                            <ColumnDefinition Width="90" />
+                                                        </Grid.ColumnDefinitions>
 
-                                                    <!-- Group (symbol) -->
-                                                    <TextBlock Grid.Column="2"
-                                                               Text="{Binding Group}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="20,0,4,0" />
+                                                        <CheckBox Grid.Column="0"
+                                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                  VerticalAlignment="Center"
+                                                                  HorizontalAlignment="Center"
+                                                                  Margin="6,3,4,3" />
 
-                                                    <!-- Product Description -->
-                                                    <TextBlock Grid.Column="3"
-                                                               Text="{Binding ProductDescription}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+                                                        <Border Grid.Column="1" />
 
-                                                    <!-- Trade ID -->
-                                                    <TextBlock Grid.Column="4"
-                                                               Text="{Binding TradeId}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+                                                        <TextBlock Grid.Column="2" Text="{Binding Group}" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="20,0,4,0" />
+                                                        <TextBlock Grid.Column="3" Text="{Binding ProductDescription}" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+                                                        <TextBlock Grid.Column="4" Text="{Binding TradeId}" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+                                                        <TextBlock Grid.Column="5" Text="{Binding UnitPriceText}" Style="{StaticResource NumericCellTextStyle}" Margin="8,5,8,5" />
+                                                        <TextBlock Grid.Column="6" Text="{Binding QuantityText}" Style="{StaticResource NumericCellTextStyle}" Margin="8,5,8,5" />
+                                                        <TextBlock Grid.Column="7" Text="{Binding Side}" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+                                                        <TextBlock Grid.Column="8" Text="{Binding UnrealisedPnlText}" Style="{StaticResource NumericCellTextStyle}" Foreground="{Binding PnlBrush}" Margin="8,5,8,5" />
+                                                        <TextBlock Grid.Column="9" Text="{Binding Status}" FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
 
-                                                    <!-- Unit Price -->
-                                                    <TextBlock Grid.Column="5"
-                                                               Text="{Binding UnitPriceText}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
+            <StackPanel Grid.Column="2">
+                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                        AutomationProperties.AutomationId="PositionBlotterSelectionInspector">
+                    <StackPanel>
+                        <TextBlock Text="Selection Posture" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding SelectionSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,14" TextWrapping="Wrap" />
 
-                                                    <!-- Quantity -->
-                                                    <TextBlock Grid.Column="6"
-                                                               Text="{Binding QuantityText}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
-
-                                                    <!-- Side -->
-                                                    <TextBlock Grid.Column="7"
-                                                               Text="{Binding Side}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
-
-                                                    <!-- Unrealised PnL -->
-                                                    <TextBlock Grid.Column="8"
-                                                               Text="{Binding UnrealisedPnlText}"
-                                                               FontSize="12" Foreground="{Binding PnlBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
-
-                                                    <!-- Status -->
-                                                    <TextBlock Grid.Column="9"
-                                                               Text="{Binding Status}"
-                                                               FontSize="12" Foreground="{StaticResource ConsoleTextMutedBrush}" VerticalAlignment="Center" Margin="4,5,4,5" />
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-
+                        <UniformGrid Columns="2" Margin="0,0,0,8">
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedPositionCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Selected positions" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                 </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedGroupCount}" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Selected groups" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedNetQuantityText}" Style="{StaticResource NumericMetricTextStyle}" />
+                                    <TextBlock Text="Net quantity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding SelectedUnrealisedPnlText}" Style="{StaticResource NumericMetricTextStyle}" Foreground="{Binding SelectedUnrealisedPnlBrush}" />
+                                    <TextBlock Text="Unrealised PnL" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
 
-            </Grid>
-        </Border>
+                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                        AutomationProperties.AutomationId="PositionBlotterFilterInspector">
+                    <StackPanel>
+                        <TextBlock Text="Filter &amp; Freshness" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding FilterSummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,8" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding SnapshotSourceText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,14" TextWrapping="Wrap" />
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             Row 3 · Status Bar
-             ═══════════════════════════════════════════════════════════════════ -->
+                        <UniformGrid Columns="3">
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding MinMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Min mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding MaxMktTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Max mkt time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding TradeTimeText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Trade time" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                        AutomationProperties.AutomationId="PositionBlotterActionInspector">
+                    <StackPanel>
+                        <TextBlock Text="Batch Action Readiness" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding SelectionActionStateText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,14" TextWrapping="Wrap" />
+
+                        <Button Content="Increase Selected Size"
+                                Command="{Binding UpsizeCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,8" />
+                        <Button Content="Flatten Selected Positions"
+                                Command="{Binding TerminateCommand}"
+                                Style="{StaticResource DangerButtonStyle}"
+                                HorizontalAlignment="Stretch" />
+
+                        <TextBlock Text="Provider-aware execution actions stay available only for supported rows, and the grouped workbench keeps your place after review."
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Margin="0,12,0,0"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
         <Border Grid.Row="3"
                 Background="{StaticResource ConsoleBackgroundLightBrush}"
                 BorderBrush="{StaticResource ConsoleBorderBrush}"
@@ -395,24 +515,19 @@
                 Padding="12,6">
             <StackPanel Orientation="Horizontal">
                 <TextBlock FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}">
-                    <Run Text="{Binding RowCount, Mode=OneWay}" FontWeight="SemiBold"
-                         Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    <Run Text="{Binding RowCount, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                     <Run Text=" rows" />
-                    <Run Text=" &#x2022; " />
-                    <Run Text="Min Mkt Time " />
-                    <Run Text="{Binding MinMktTimeText, Mode=OneWay}" FontWeight="SemiBold"
-                         Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                    <Run Text=" &#x2022; " />
-                    <Run Text="Max Mkt Time " />
-                    <Run Text="{Binding MaxMktTimeText, Mode=OneWay}" FontWeight="SemiBold"
-                         Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                    <Run Text=" &#x2022; " />
-                    <Run Text="Trade Time " />
-                    <Run Text="{Binding TradeTimeText, Mode=OneWay}" FontWeight="SemiBold"
-                         Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    <Run Text=" • " />
+                    <Run Text="{Binding GroupCount, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    <Run Text=" groups" />
+                    <Run Text=" • Min Mkt Time " />
+                    <Run Text="{Binding MinMktTimeText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    <Run Text=" • Max Mkt Time " />
+                    <Run Text="{Binding MaxMktTimeText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                    <Run Text=" • Trade Time " />
+                    <Run Text="{Binding TradeTimeText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                 </TextBlock>
             </StackPanel>
         </Border>
-
     </Grid>
 </Page>

@@ -65,6 +65,64 @@ public sealed class SecurityMasterServiceSnapshotTests
     }
 
     [Fact]
+    public async Task CreateAsync_WhenProjectionWritten_RecordsConflictsAfterUpsert()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var conflictService = Substitute.For<ISecurityMasterConflictService>();
+        var options = new SecurityMasterOptions
+        {
+            SnapshotIntervalVersions = 50,
+            ResolveInactiveByDefault = true
+        };
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            options,
+            NullLogger<SecurityMasterService>.Instance,
+            conflictService);
+
+        await service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "Equity",
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Conflict Recording Security",
+                currency = "USD"
+            }),
+            JsonSerializer.SerializeToElement(new
+            {
+                shareClass = "Common"
+            }),
+            new[]
+            {
+                new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "CRSEC", true, DateTimeOffset.UtcNow.AddDays(-1), null, "polygon")
+            },
+            DateTimeOffset.UtcNow,
+            "test",
+            "codex",
+            null,
+            "create"));
+
+        Received.InOrder(() =>
+        {
+            store.UpsertProjectionAsync(
+                Arg.Is<SecurityProjectionRecord>(projection => projection.SecurityId == securityId),
+                Arg.Any<CancellationToken>());
+            conflictService.RecordConflictsForProjectionAsync(
+                Arg.Is<SecurityProjectionRecord>(projection =>
+                    projection.SecurityId == securityId &&
+                    projection.PrimaryIdentifierValue == "CRSEC"),
+                Arg.Any<CancellationToken>());
+        });
+    }
+
+    [Fact]
     public async Task DeactivateAsync_RebuildsFromSnapshotAndTailEvents_WhenProjectionStoreIsMissing()
     {
         var securityId = Guid.NewGuid();

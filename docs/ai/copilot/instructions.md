@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # Meridian - Copilot Instructions
 
 **Last Updated:** 2026-03-16
@@ -7145,4 +7143,3 @@ For the full conventions reference, see [`CLAUDE.md`](https://github.com/rodoHas
 - **Code review:** [`.github/agents/code-review-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/code-review-agent.md)
 - **Prompt templates:** [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/prompts/README.md)
 - **CI/CD details:** [`docs/ai/claude/CLAUDE.actions.md`](../claude/CLAUDE.actions.md)
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe

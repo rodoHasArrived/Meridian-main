@@ -7,7 +7,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
             <!-- Page Header -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <StackPanel Orientation="Horizontal">
                     <Border Width="44" Height="44" CornerRadius="14"
                             Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"

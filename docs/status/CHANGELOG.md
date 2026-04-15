@@ -1,97 +1,84 @@
 # Changelog
 
 > Auto-generated from git commit history using conventional commits.
-<<<<<<< HEAD
-> Generated: 2026-04-09 06:07:49 UTC
-=======
-> Generated: 2026-03-22 03:10:48 UTC
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+> Generated: 2026-04-14 06:37:40 UTC
 
 ## Summary
 
 | Category | Count |
 |----------|-------|
-<<<<<<< HEAD
-| Features | 5 |
-| Refactoring | 1 |
-| Documentation | 18 |
-| Other | 26 |
+| Features | 2 |
+| Bug Fixes | 6 |
+| Documentation | 15 |
+| Build & CI | 2 |
+| Other | 25 |
 | **Total** | **50** |
 
 ## Features
 
-- **execution:** margin rules and maintenance â€” short-sell margin, margin-call detection, interest accrual ([`d51a075`](https://github.com/rodoHasArrived/Meridian-main/commit/d51a0754d96b1ece79a638ad0597e0779503c8a2))
-- implement Reg T margin account support in PaperTradingPortfolio ([`575e855`](https://github.com/rodoHasArrived/Meridian-main/commit/575e855058180e65e2f4325c08a4b8039830cab6))
-- add backtest equity curve and drawdown visualization ([`1f25ac1`](https://github.com/rodoHasArrived/Meridian-main/commit/1f25ac134b7662dab287f2980bc14fbad510caaf))
-- IB brokerage gateway fixed income (bond/treasury) support ([`910b5a7`](https://github.com/rodoHasArrived/Meridian-main/commit/910b5a75644e8aba0097a7a096c322bcb71f2576))
-- integrate Alpaca fixed income (bond/treasury) trading ([`3eb8fbc`](https://github.com/rodoHasArrived/Meridian-main/commit/3eb8fbc1fc15769f51d751116a8ac330c284202f))
+- implement data availability calendar and live backtest metrics ([`c0ba51f`](https://github.com/rodoHasArrived/Meridian-main/commit/c0ba51f0355e0e952b6364572e8f97e63061b473))
+- implement security master gap-fill (Gaps 1-6) ([`7da64fa`](https://github.com/rodoHasArrived/Meridian-main/commit/7da64fa230bcb27692db5fc722911f156b416ee3))
 
-## Refactoring
+## Bug Fixes
 
-- address code review - clarify IB bond quantity convention and test comments ([`7621fb2`](https://github.com/rodoHasArrived/Meridian-main/commit/7621fb24f05aca35089a0f033e98e0311eedfea3))
+- cast IPosition values to ExecutionPosition in PaperSessionPersistenceService and related files ([`b868da1`](https://github.com/rodoHasArrived/Meridian-main/commit/b868da1d82181b49f7b99fdf12ea83dac9b446b1))
+- address code review feedback - naming, Task.Run removal, fill count wiring, theme colors ([`9c05a46`](https://github.com/rodoHasArrived/Meridian-main/commit/9c05a4645e5ca89aa861684ac25ec8ae9de93a97))
+- update VotingRightsCat/BondSubclass names, add missing helpers and BuildPreferredEquityTermsPatch ([`01e9109`](https://github.com/rodoHasArrived/Meridian-main/commit/01e9109cb11fbd7b90805f15b404a6fb4603c816))
+- resolve missing members - OMS operatorControls, PromotionService ParentRunId, stub stubs for GetConvertibleEquityTermsAsync ([`96f6331`](https://github.com/rodoHasArrived/Meridian-main/commit/96f6331f6f2d63a3ab1406e8be01778812db9311))
+- add EngineMetadata to BacktestResult, add Meridian.Backtesting ref to test project ([`15dcd62`](https://github.com/rodoHasArrived/Meridian-main/commit/15dcd626fefd899a32dac673cb01eb35eb854433))
+- resolve build errors - add missing interface methods, project refs, and type stubs ([`7f523c3`](https://github.com/rodoHasArrived/Meridian-main/commit/7f523c3f6d9982a2862dd3cf36ab207bd6ad1957))
 
 ## Documentation
 
-- sync repository tree ([`d5ab6a6`](https://github.com/rodoHasArrived/Meridian-main/commit/d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3))
-- Add provider API docs catalog and wire-format quick-reference to test-writer agent ([`b4dbbce`](https://github.com/rodoHasArrived/Meridian-main/commit/b4dbbcecda033b16e89055f0486f180c10f2ca37))
-- fix broken link in skills README and remove stale json reference in status README ([`d8c0e7c`](https://github.com/rodoHasArrived/Meridian-main/commit/d8c0e7ce1e553b116fd6c16d42fe43061e14b088))
-- fix incorrect repository links and typos in README files ([`92f596d`](https://github.com/rodoHasArrived/Meridian-main/commit/92f596d39f822d90a33c8020d0cdbab5b647e2ae))
-- sync repository tree ([`3148b21`](https://github.com/rodoHasArrived/Meridian-main/commit/3148b21c827549f51d986dca6921937634e4a61c))
-- consolidated documentation automation updates ([`b66f3bf`](https://github.com/rodoHasArrived/Meridian-main/commit/b66f3bfd7cfe8e45a66b6be392484902613420f4))
-- update TODO documentation [skip ci] ([`ab90dd0`](https://github.com/rodoHasArrived/Meridian-main/commit/ab90dd09765a4a3f12bad3f1b4669c1dbf83cd57))
-- sync repository tree ([`c22ba99`](https://github.com/rodoHasArrived/Meridian-main/commit/c22ba999aacd1a0fe3dab0604b860c3d848452ef))
-- consolidated documentation automation updates ([`05305b3`](https://github.com/rodoHasArrived/Meridian-main/commit/05305b392b4a4d5e58303ba3403d51f4a14f34aa))
-- sync repository tree ([`ddfb955`](https://github.com/rodoHasArrived/Meridian-main/commit/ddfb955010776f37dca7bc7694c5d8cd2dbbaca3))
-- update TODO documentation [skip ci] ([`2cec44b`](https://github.com/rodoHasArrived/Meridian-main/commit/2cec44bd9397707fd724047f02d6d3672a593f85))
-- sync repository tree ([`155ba5b`](https://github.com/rodoHasArrived/Meridian-main/commit/155ba5ba86cb495adf7339ef12b88ab07c0ec120))
-- consolidated documentation automation updates ([`7cf4bc6`](https://github.com/rodoHasArrived/Meridian-main/commit/7cf4bc6637d74535db0ccc5bf7240f498ad51c60))
-- update TODO documentation [skip ci] ([`68207c8`](https://github.com/rodoHasArrived/Meridian-main/commit/68207c802d0de2e7b08127b34d1304351e68a4eb))
-- sync repository tree ([`f74899e`](https://github.com/rodoHasArrived/Meridian-main/commit/f74899e4c8e21cd797540865a526dd92521020da))
-- consolidated documentation automation updates ([`c5240ac`](https://github.com/rodoHasArrived/Meridian-main/commit/c5240ac070c935f6cb665abc5161e76b9a27d3c3))
-- update TODO documentation [skip ci] ([`896d06f`](https://github.com/rodoHasArrived/Meridian-main/commit/896d06faad03857ad3b738488c1f4828e7f03ee5))
-- sync repository tree ([`baee26d`](https://github.com/rodoHasArrived/Meridian-main/commit/baee26d2d343a6351bd05c99481e2f75c812b388))
+- update TODO documentation [skip ci] ([`b396636`](https://github.com/rodoHasArrived/Meridian-main/commit/b39663640d8410b70232c5008f8860a1e82d5cbe))
+- consolidated documentation automation updates ([`5d5b834`](https://github.com/rodoHasArrived/Meridian-main/commit/5d5b834f32c5103291b530aeeb11a58bc78b183b))
+- sync repository tree ([`119a2ff`](https://github.com/rodoHasArrived/Meridian-main/commit/119a2ffb8858991644eed20ce3ed11115b523b33))
+- consolidated documentation automation updates ([`a2d47cd`](https://github.com/rodoHasArrived/Meridian-main/commit/a2d47cdcaf092561926950a904fcaefbce4763d5))
+- update TODO documentation [skip ci] ([`31f0e65`](https://github.com/rodoHasArrived/Meridian-main/commit/31f0e6538992f0050577f0ded1302f63c9d41503))
+- consolidated documentation automation updates ([`934fff9`](https://github.com/rodoHasArrived/Meridian-main/commit/934fff92327e64d5c2b777c9b92b7b000a609397))
+- update TODO documentation [skip ci] ([`24c8602`](https://github.com/rodoHasArrived/Meridian-main/commit/24c8602202a14a14684c3d438764b0c671b6754e))
+- sync repository tree ([`bb9b70e`](https://github.com/rodoHasArrived/Meridian-main/commit/bb9b70e017eb99de83bd3d73d784fbf3a8a395d1))
+- consolidated documentation automation updates ([`4e65280`](https://github.com/rodoHasArrived/Meridian-main/commit/4e65280d1e2f66b12f7ce6dc0da34c3c5c2d3f1a))
+- update TODO documentation [skip ci] ([`e60dd7b`](https://github.com/rodoHasArrived/Meridian-main/commit/e60dd7b9338dc348d85a79c628ade97226cf37ce))
+- sync repository tree ([`0883959`](https://github.com/rodoHasArrived/Meridian-main/commit/088395928afeee7473dcc03736fadf2cfdd64457))
+- consolidated documentation automation updates ([`1507e8f`](https://github.com/rodoHasArrived/Meridian-main/commit/1507e8f30bcc8da3b4f3a9a9fa217e696c75adbe))
+- update TODO documentation [skip ci] ([`058cb72`](https://github.com/rodoHasArrived/Meridian-main/commit/058cb7213741746b90ee0f7d62914027611af28e))
+- sync repository tree ([`119b2ee`](https://github.com/rodoHasArrived/Meridian-main/commit/119b2ee8bcd1c5049e7850dcbeb242d539a15719))
+- sync repository tree ([`41093b5`](https://github.com/rodoHasArrived/Meridian-main/commit/41093b522236dde6f6a7ddb471ce05b903c6827d))
+
+## Build & CI
+
+- update domain invariants and tests ([`1f25f97`](https://github.com/rodoHasArrived/Meridian-main/commit/1f25f97095a73b1f15d9972f1563458e3579cd42))
+- partial merge conflict resolution - F# types, duplicate method, EquityTerms ([`ed075b9`](https://github.com/rodoHasArrived/Meridian-main/commit/ed075b94e370eda83a939af0160aa9edd9173997))
 
 ## Other
 
-- Capture AddProviderWizard workspace state for smoke debugging ([`eabc415`](https://github.com/rodoHasArrived/Meridian-main/commit/eabc415495637c3ab35364e3a6086b8534296bc1))
-- Workstation shell UX: operating contexts & seeds ([`77188b2`](https://github.com/rodoHasArrived/Meridian-main/commit/77188b255faa5925ccf0a49833261e39abbc428a))
-- Add FundStructure features, docs, and tests ([`e5209da`](https://github.com/rodoHasArrived/Meridian-main/commit/e5209dae98e696a80756c67b5dd7db6b510529fb))
-- Merge pull request #678 from rodoHasArrived/copilot/implement-reg-t-margin-account [#678](https://github.com/rodoHasArrived/Meridian-main/issues/678) ([`1d1115f`](https://github.com/rodoHasArrived/Meridian-main/commit/1d1115f97a31b16bdc5e6206602b07e52afa36a0))
-- Merge pull request #677 from rodoHasArrived/copilot/update-test-building-agent [#677](https://github.com/rodoHasArrived/Meridian-main/issues/677) ([`2659345`](https://github.com/rodoHasArrived/Meridian-main/commit/26593452ad06634fba7be54c67d3684ace7a348b))
-- Merge pull request #676 from rodoHasArrived/copilot/research-gate-hub-depot [#676](https://github.com/rodoHasArrived/Meridian-main/issues/676) ([`d71c3b7`](https://github.com/rodoHasArrived/Meridian-main/commit/d71c3b77d03432b56c79cce2fc5396d91bace13a))
-- Merge pull request #675 from rodoHasArrived/copilot/integrate-alpacha-fixed-income [#675](https://github.com/rodoHasArrived/Meridian-main/issues/675) ([`cc003c5`](https://github.com/rodoHasArrived/Meridian-main/commit/cc003c53d0c364b3aa31747e856ecfa8dae99f00))
-- Initial plan ([`00083d3`](https://github.com/rodoHasArrived/Meridian-main/commit/00083d34b2ed304602cd207534ad6648859f57b4))
-- Update test-writer agent/skill: scenario-first market simulation philosophy (v1.2) ([`b8dbacb`](https://github.com/rodoHasArrived/Meridian-main/commit/b8dbacb43e693d02d25b79c6072bbbb381394b9a))
-- Initial plan ([`5e7ef5b`](https://github.com/rodoHasArrived/Meridian-main/commit/5e7ef5bdf029e3f0b677e6883c40c10fd885356a))
-- Initial plan ([`48d5ac8`](https://github.com/rodoHasArrived/Meridian-main/commit/48d5ac8ffc79fbeca3ff3aa7ee828746c3e6a6d2))
-- Initial plan ([`a4f675e`](https://github.com/rodoHasArrived/Meridian-main/commit/a4f675ea4bac567e1356e042309f073bfbe894e8))
-- Merge pull request #674 from rodoHasArrived/copilot/update-readme-files-accuracy [#674](https://github.com/rodoHasArrived/Meridian-main/issues/674) ([`a22ed0c`](https://github.com/rodoHasArrived/Meridian-main/commit/a22ed0c5ae421dcd9727ea08c6709d8b5503c060))
-- Initial plan ([`34f73b8`](https://github.com/rodoHasArrived/Meridian-main/commit/34f73b8cedf96b37aea48344a79ff0a59bcd2685))
-- Updated blueprint documentation with improvements for clarity and structure. ([`6f693e2`](https://github.com/rodoHasArrived/Meridian-main/commit/6f693e29e341777d56786893c83e1a6bcc27081a))
-- Merge pull request #659 from rodoHasArrived/codex/ci-repair-path [#659](https://github.com/rodoHasArrived/Meridian-main/issues/659) ([`7adfbb2`](https://github.com/rodoHasArrived/Meridian-main/commit/7adfbb226f7b2ce2b92b771b2fac505cf2efb184))
-- Merge origin/main: resolve all conflicts, keep review-comment fixes ([`7eeb3ed`](https://github.com/rodoHasArrived/Meridian-main/commit/7eeb3ed620ba8e563d9cf080a22560459ad1b569))
-- Fix Robinhood options flow and workstation session restore ([`42ea8d1`](https://github.com/rodoHasArrived/Meridian-main/commit/42ea8d1245619c9741e1ec856b2b8ff2a6ec19bd))
-- Merge pull request #656 from rodoHasArrived/copilot/merge-recent-updates-into-main [#656](https://github.com/rodoHasArrived/Meridian-main/issues/656) ([`409faa9`](https://github.com/rodoHasArrived/Meridian-main/commit/409faa9df6d83aad627de4b0d1fe84d56e175203))
-- Merge origin/main: resolve all conflicts, keep review-comment fixes ([`11b62d8`](https://github.com/rodoHasArrived/Meridian-main/commit/11b62d8e6dbb789fdf703335dac3ab01f0107b00))
-- Address all review comments: DI fallback, JSON escaping, pillar isolation, HttpClient, underlyingPrice sentinel, test fixes ([`a538862`](https://github.com/rodoHasArrived/Meridian-main/commit/a538862a9771239e40bf8a591b65697d1b366633))
-- Merge pull request #662 from rodoHasArrived/copilot/improve-user-interface-capabilities [#662](https://github.com/rodoHasArrived/Meridian-main/issues/662) ([`9de77cc`](https://github.com/rodoHasArrived/Meridian-main/commit/9de77cc83e37ff50116d895af1c58f0d8ce7b7b4))
-- Merge pull request #655 from rodoHasArrived/copilot/assess-options-functionality-roadmap [#655](https://github.com/rodoHasArrived/Meridian-main/issues/655) ([`2d889e0`](https://github.com/rodoHasArrived/Meridian-main/commit/2d889e0a9664d9618977040a088274c703e82996))
-- Update src/Meridian.Backtesting/Engine/BacktestContext.cs ([`c72ecab`](https://github.com/rodoHasArrived/Meridian-main/commit/c72ecab8f16894df75d5bfa72890c458a05feab0))
-- Merge pull request #669 from rodoHasArrived/copilot/659-audit-codex-ci-repair-path [#669](https://github.com/rodoHasArrived/Meridian-main/issues/669) ([`bb5db8a`](https://github.com/rodoHasArrived/Meridian-main/commit/bb5db8aa1800a61b2f85bd9efbc2085f16bb3d40))
-- Merge pull request #667 from rodoHasArrived/copilot/audit-robinhood-provider-functions [#667](https://github.com/rodoHasArrived/Meridian-main/issues/667) ([`64d7d8c`](https://github.com/rodoHasArrived/Meridian-main/commit/64d7d8cbf4b152ecdcc896fc7ad7aa5d69a17088))
+- Add dotnet-dump tool and update activity feed ([`cd3d65f`](https://github.com/rodoHasArrived/Meridian-main/commit/cd3d65fab22c4387c502c4900d06a9fca150cc2a))
+- WPF UI, provider & backend integration fixes ([`9fbb522`](https://github.com/rodoHasArrived/Meridian-main/commit/9fbb5229149a69825b30b2e7db685897f8ceb14d))
+- Add per-eval repo_root & fixtures; docs/manuals ([`a788985`](https://github.com/rodoHasArrived/Meridian-main/commit/a788985ab54a2ed777a68a195f6ae4a6748cb556))
+- Sync docs, workflows, UI and security master ([`476a6fd`](https://github.com/rodoHasArrived/Meridian-main/commit/476a6fdba697c96ea6001182d5318caaf26ba19e))
+- Merge branch 'main' of https://github.com/rodoHasArrived/Meridian-main ([`e4824e8`](https://github.com/rodoHasArrived/Meridian-main/commit/e4824e8a6591f3d5025c954914bd830efdf5f3e8))
+- Merge pull request #715 from rodoHasArrived/copilot/add-data-availability-calendar [#715](https://github.com/rodoHasArrived/Meridian-main/issues/715) ([`62fd330`](https://github.com/rodoHasArrived/Meridian-main/commit/62fd33055f62b7f4c80c81f2a7c579042dc72a3f))
+- Merge pull request #712 from rodoHasArrived/codex/fix-failing-test-synthetic-options-chain [#712](https://github.com/rodoHasArrived/Meridian-main/issues/712) ([`09e8a3c`](https://github.com/rodoHasArrived/Meridian-main/commit/09e8a3c5af5700a541b6215c6c32dd949d54aa14))
+- Fix synthetic options chain pricing monotonicity ([`ec676bb`](https://github.com/rodoHasArrived/Meridian-main/commit/ec676bbb5a8338c7661f54b457c03d85e28a03e3))
+- Merge pull request #709 from rodoHasArrived/codex/improve-with-fsharp [#709](https://github.com/rodoHasArrived/Meridian-main/issues/709) ([`8e7c88a`](https://github.com/rodoHasArrived/Meridian-main/commit/8e7c88a727bcfd4cf8987cf6f7211c3dd6486eed))
+- Merge branch 'main' into codex/improve-with-fsharp ([`8c683bb`](https://github.com/rodoHasArrived/Meridian-main/commit/8c683bb55cba2caf70214aa174dce96ee8424e70))
+- n/a ([`cde5362`](https://github.com/rodoHasArrived/Meridian-main/commit/cde5362e987d37228d76ea173ba45cc0eea840b7))
+- Merge pull request #615 from rodoHasArrived/claude/expand-asset-properties-GIx99 [#615](https://github.com/rodoHasArrived/Meridian-main/issues/615) ([`f34cba0`](https://github.com/rodoHasArrived/Meridian-main/commit/f34cba03c05f88b23e8e0eb5ead4952c6681116a))
+- Merge branch 'main' into claude/expand-asset-properties-GIx99 ([`fdc4d62`](https://github.com/rodoHasArrived/Meridian-main/commit/fdc4d62dcd14b0039d72ec2852a33b0d77505625))
+- Merge pull request #688 from rodoHasArrived/copilot/fix-github-actions-build [#688](https://github.com/rodoHasArrived/Meridian-main/issues/688) ([`8d62665`](https://github.com/rodoHasArrived/Meridian-main/commit/8d626651e77d6bba4854f555762876980f100150))
+- Fix CS0234: qualify Application.Current as System.Windows.Application in FloatingPageService ([`11364d4`](https://github.com/rodoHasArrived/Meridian-main/commit/11364d4ca97443345622b5da9a9ea51d9459b507))
+- Add canonicalization helpers and property tests ([`559c8c6`](https://github.com/rodoHasArrived/Meridian-main/commit/559c8c6fc7212d2052cef5326a2e2d67c8a362a0))
+- Initial plan ([`854b8bf`](https://github.com/rodoHasArrived/Meridian-main/commit/854b8bf73f63b2eb3b0f695ee65b7cb7d7f28213))
+- resolve merge conflicts: IPosition interface, route constants, duplicate records, ExecutionPosition ([`faed8f2`](https://github.com/rodoHasArrived/Meridian-main/commit/faed8f213daa66870dd3614416eb218c2c01efcb))
+- Merge remote-tracking branch 'origin/main' into claude/expand-asset-properties-GIx99 ([`988dc4b`](https://github.com/rodoHasArrived/Meridian-main/commit/988dc4bd653f9dc2abb7a7b172db068d3cb8882b))
+- Merge pull request #684 from rodoHasArrived/copilot/audit-security-master-gaps-again [#684](https://github.com/rodoHasArrived/Meridian-main/issues/684) ([`9df5f6c`](https://github.com/rodoHasArrived/Meridian-main/commit/9df5f6c589784b0a196aa29b60052a4b19478da0))
+- Merge pull request #685 from rodoHasArrived/copilot/update-desktop-ui-backtesting-engine [#685](https://github.com/rodoHasArrived/Meridian-main/issues/685) ([`639f3e0`](https://github.com/rodoHasArrived/Meridian-main/commit/639f3e0af5e0fd28ddb9fbd6993fa14c3feaf7c3))
+- Merge pull request #549 from rodoHasArrived/copilot/update-screenshot-workflow-again [#549](https://github.com/rodoHasArrived/Meridian-main/issues/549) ([`1203186`](https://github.com/rodoHasArrived/Meridian-main/commit/12031862d5999b79b90e8393795e48c8361abe8a))
+- Merge branch 'main' into copilot/update-screenshot-workflow-again ([`9838124`](https://github.com/rodoHasArrived/Meridian-main/commit/9838124e8d913dc712234e23d3a86fddc4ec2957))
+- Bind active filter count, row checkboxes, and AllRowsSelected to ViewModel ([`5483c52`](https://github.com/rodoHasArrived/Meridian-main/commit/5483c52b79ca028453875b53e78ce99dcd1621b3))
+- Redesign DataBrowserPage, SymbolsPage, LiveDataViewerPage to match reference UI ([`1f56a73`](https://github.com/rodoHasArrived/Meridian-main/commit/1f56a73d1c56759cc086e01908d064657f5cc582))
 
 ---
 
 *50 commits processed.*
-=======
-| Other | 1 |
-| **Total** | **1** |
-
-## Other
-
-- Initial commit (`753b0b5`)
-
----
-
-*1 commits processed.*
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe

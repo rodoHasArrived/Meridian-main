@@ -235,7 +235,11 @@ public partial class ResearchWorkspaceShellPage : Page
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            _navigationService.NavigateTo(pageTag, parameter);
+            ResearchDockManager.LoadPage(
+                BuildPageKey(pageTag, parameter),
+                GetPageTitle(pageTag),
+                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
+                NormalizeDockAction(action));
         }
     }
 
@@ -255,7 +259,11 @@ public partial class ResearchWorkspaceShellPage : Page
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError($"[ResearchWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            _navigationService.NavigateTo(pageTag, parameter);
+            ResearchDockManager.LoadPage(
+                BuildPageKey(pageTag, parameter),
+                GetPageTitle(pageTag),
+                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
+                NormalizeDockAction(action));
         }
     }
 

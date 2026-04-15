@@ -15,6 +15,7 @@ public sealed class SecurityMasterRebuildOrchestrator
     private readonly SecurityMasterProjectionService _projectionService;
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterRebuildOrchestrator> _logger;
+    private readonly ISecurityMasterConflictService? _conflictService;
 
     public SecurityMasterRebuildOrchestrator(
         ISecurityMasterEventStore eventStore,
@@ -23,7 +24,8 @@ public sealed class SecurityMasterRebuildOrchestrator
         SecurityMasterAggregateRebuilder rebuilder,
         SecurityMasterProjectionService projectionService,
         SecurityMasterOptions options,
-        ILogger<SecurityMasterRebuildOrchestrator> logger)
+        ILogger<SecurityMasterRebuildOrchestrator> logger,
+        ISecurityMasterConflictService? conflictService = null)
     {
         _eventStore = eventStore;
         _store = store;
@@ -32,6 +34,7 @@ public sealed class SecurityMasterRebuildOrchestrator
         _projectionService = projectionService;
         _options = options;
         _logger = logger;
+        _conflictService = conflictService;
     }
 
     public async Task RebuildAsync(CancellationToken ct = default)
@@ -49,6 +52,7 @@ public sealed class SecurityMasterRebuildOrchestrator
         {
             var rebuiltRecords = await _projectionService.BuildWarmSetAsync(ct).ConfigureAwait(false);
             await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, rebuiltRecords, ct).ConfigureAwait(false);
+            await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
             _cache.ReplaceAll(rebuiltRecords);
             _logger.LogInformation(
                 "Security master rebuild performed full warm and checkpointed sequence {Sequence}",
@@ -87,6 +91,7 @@ public sealed class SecurityMasterRebuildOrchestrator
             }
 
             await _store.PersistProjectionBatchAsync(ProjectionName, cursor, rebuiltRecords, ct).ConfigureAwait(false);
+            await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
             foreach (var rebuilt in rebuiltRecords)
             {
                 _cache.Upsert(rebuilt);
@@ -97,5 +102,25 @@ public sealed class SecurityMasterRebuildOrchestrator
             "Security master rebuild replayed events through sequence {Sequence} using batch size {BatchSize}",
             cursor,
             _options.ProjectionReplayBatchSize);
+    }
+
+    private async Task TryRecordConflictsAsync(IReadOnlyList<SecurityProjectionRecord> rebuiltRecords, CancellationToken ct)
+    {
+        if (_conflictService is null || rebuiltRecords.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var rebuilt in rebuiltRecords)
+        {
+            try
+            {
+                await _conflictService.RecordConflictsForProjectionAsync(rebuilt, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Conflict detection failed during projection rebuild for security {SecurityId}", rebuilt.SecurityId);
+            }
+        }
     }
 }

@@ -329,7 +329,11 @@ public partial class GovernanceWorkspaceShellPage : Page
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError($"[GovernanceWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            _navigationService.NavigateTo(pageTag, parameter);
+            GovernanceDockManager.LoadPage(
+                BuildPageKey(pageTag, parameter),
+                GetPageTitle(pageTag),
+                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
+                NormalizeDockAction(action));
         }
     }
 

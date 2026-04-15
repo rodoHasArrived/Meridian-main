@@ -89,14 +89,7 @@ public sealed class WorkspaceService
             return null;
         }
 
-        if (string.Equals(pageTag.Trim(), "EventReplay", StringComparison.OrdinalIgnoreCase))
-        {
-            return "research";
-        }
-
-        return UniquePageWorkspaceOwnership.Value.TryGetValue(pageTag.Trim(), out var workspaceId)
-            ? workspaceId
-            : null;
+        return ShellNavigationCatalog.InferWorkspaceIdForPageTag(pageTag.Trim());
     }
 
     /// <summary>

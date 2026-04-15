@@ -431,18 +431,16 @@ public static class SecurityMasterEndpoints
         // GET /api/security-master/ingest/status
         group.MapGet(UiApiRoutes.SecurityMasterIngestStatus, async (
             AppSecurityMaster.ISecurityMasterConflictService conflictService,
-            ISecurityMasterQueryService queryService,
+            AppSecurityMaster.ISecurityMasterIngestStatusService ingestStatusService,
             CancellationToken ct) =>
         {
             var openConflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
-            return Results.Json(new
-            {
-                OpenConflicts = openConflicts.Count,
-                RetrievedAt = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            var snapshot = ingestStatusService.GetSnapshot();
+            var response = ToIngestStatusResponse(snapshot, openConflicts.Count);
+            return Results.Json(response, jsonOptions);
         })
         .WithName("SecurityMasterIngestStatus")
-        .Produces(StatusCodes.Status200OK);
+        .Produces<SecurityMasterIngestStatusResponse>(StatusCodes.Status200OK);
 
         // PATCH /api/security-master/equities/{securityId}/preferred-terms
         group.MapMethods($"/equities/{{securityId:guid}}/preferred-terms", [HttpMethods.Patch], async (
@@ -462,5 +460,45 @@ public static class SecurityMasterEndpoints
         .WithName("PatchSecurityPreferredTerms")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+    }
+
+    private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(
+        AppSecurityMaster.SecurityMasterIngestStatusSnapshot snapshot,
+        int openConflicts)
+    {
+        return new SecurityMasterIngestStatusResponse
+        {
+            OpenConflicts = openConflicts,
+            IsImportActive = snapshot.ActiveImport is not null,
+            ActiveImport = snapshot.ActiveImport is null
+                ? null
+                : new SecurityMasterActiveImportStatusResponse
+                {
+                    FileExtension = snapshot.ActiveImport.FileExtension,
+                    Total = snapshot.ActiveImport.Total,
+                    Processed = snapshot.ActiveImport.Processed,
+                    Imported = snapshot.ActiveImport.Imported,
+                    Skipped = snapshot.ActiveImport.Skipped,
+                    Failed = snapshot.ActiveImport.Failed,
+                    StartedAtUtc = snapshot.ActiveImport.StartedAtUtc,
+                    UpdatedAtUtc = snapshot.ActiveImport.UpdatedAtUtc
+                },
+            LastCompleted = snapshot.LastCompleted is null
+                ? null
+                : new SecurityMasterCompletedImportStatusResponse
+                {
+                    FileExtension = snapshot.LastCompleted.FileExtension,
+                    Total = snapshot.LastCompleted.Total,
+                    Processed = snapshot.LastCompleted.Processed,
+                    Imported = snapshot.LastCompleted.Imported,
+                    Skipped = snapshot.LastCompleted.Skipped,
+                    Failed = snapshot.LastCompleted.Failed,
+                    ConflictsDetected = snapshot.LastCompleted.ConflictsDetected,
+                    ErrorCount = snapshot.LastCompleted.ErrorCount,
+                    StartedAtUtc = snapshot.LastCompleted.StartedAtUtc,
+                    CompletedAtUtc = snapshot.LastCompleted.CompletedAtUtc
+                },
+            RetrievedAtUtc = DateTimeOffset.UtcNow
+        };
     }
 }

@@ -15,103 +15,17 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class MainPageViewModel : BindableBase, IDisposable
 {
     private const string DefaultWorkspace = "research";
-    private const string DefaultPageTag = "Dashboard";
-
-    private static readonly IReadOnlyDictionary<string, WorkspaceContent> WorkspaceData =
-        new Dictionary<string, WorkspaceContent>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["research"] = new("Research", "Runs, charts, replay, and analysis flows.", "Focus on model exploration and investigation."),
-            ["trading"] = new("Trading", "Live monitoring, order flow, and execution tools.", "Focus on live market posture and execution."),
-            ["data-operations"] = new("Data Operations", "Providers, symbols, backfills, and storage.", "Focus on data health and ingestion operations."),
-            ["governance"] = new("Governance", "Quality, diagnostics, and policy controls.", "Focus on controls, diagnostics, and trust.")
-        };
-
-    private static readonly IReadOnlyDictionary<string, string> WorkspaceHomePageTags =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["research"] = "ResearchShell",
-            ["trading"] = "TradingShell",
-            ["data-operations"] = "DataOperationsShell",
-            ["governance"] = "GovernanceShell"
-        };
-
-    private static readonly IReadOnlyDictionary<string, PageContent> PageData =
-        new Dictionary<string, PageContent>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Dashboard"] = new("Dashboard", "High-trust operator view with live posture, alerts, and action shortcuts."),
-            ["Watchlist"] = new("Watchlist", "Track symbols, shortlist trade ideas, and stage new monitoring targets."),
-            ["StrategyRuns"] = new("Strategy Runs", "Browse recorded runs and drill into outcomes across research workflows."),
-            ["RunDetail"] = new("Run Detail", "Inspect the selected strategy run, diagnostics, and final execution state."),
-            ["RunPortfolio"] = new("Run Portfolio", "Review portfolio holdings, exposure, and position detail for the selected run."),
-            ["RunLedger"] = new("Run Ledger", "Inspect ledger entries, postings, and financial reconciliation for the selected run."),
-            ["RunCashFlow"] = new("Run Cash Flow", "Review cash movement, projections, and funding impact for the selected run."),
-            ["Charts"] = new("Charts", "Visualize price action, overlays, and investigation snapshots."),
-            ["QuantScript"] = new("Quant Script", "Prototype research logic and iterate on calculations inside the workstation."),
-            ["Backtest"] = new("Backtest", "Configure strategy runs and launch new simulations."),
-            ["BatchBacktest"] = new("Batch Backtest", "Run batched research jobs and inspect multi-run outcomes."),
-            ["TradingHours"] = new("Trading Hours", "Check venue schedules, sessions, and trading-calendar coverage."),
-            ["Provider"] = new("Providers", "Manage provider integrations, health, and operational posture."),
-            ["ProviderHealth"] = new("Provider Health", "Inspect provider reachability, degraded states, and recovery guidance."),
-            ["DataSources"] = new("Data Sources", "Audit source connectivity, feed coverage, and ingestion readiness."),
-            ["LiveData"] = new("Live Data", "Monitor live market traffic, streaming payloads, and flow health."),
-            ["Symbols"] = new("Symbols", "Search, add, and curate the symbols your workflows depend on."),
-            ["SymbolMapping"] = new("Symbol Mapping", "Align vendor symbols and canonical Meridian identifiers."),
-            ["SymbolStorage"] = new("Symbol Storage", "Inspect symbol persistence and storage layout."),
-            ["Storage"] = new("Storage", "Review storage posture, capacity, and persistence health."),
-            ["Backfill"] = new("Backfill", "Fill historical gaps and supervise long-running data collection jobs."),
-            ["PortfolioImport"] = new("Portfolio Import", "Bring external portfolio snapshots into Meridian."),
-            ["IndexSubscription"] = new("Index Subscription", "Manage derived index subscriptions and related feed coverage."),
-            ["Schedules"] = new("Schedules", "Coordinate scheduled workstation and maintenance jobs."),
-            ["DataQuality"] = new("Data Quality", "Track validation signals, integrity issues, and remediation status."),
-            ["CollectionSessions"] = new("Collection Sessions", "Inspect collection lifecycle state and recent ingest sessions."),
-            ["ArchiveHealth"] = new("Archive Health", "Review archive integrity, gaps, and storage reliability."),
-            ["ServiceManager"] = new("Service Manager", "Inspect background services, logs, and operational control surfaces."),
-            ["SystemHealth"] = new("System Health", "Track host health, dependency state, and workstation readiness."),
-            ["Diagnostics"] = new("Diagnostics", "Run checks, inspect latency, and troubleshoot operator issues."),
-            ["DataExport"] = new("Data Export", "Package and export research datasets for downstream use."),
-            ["DataSampling"] = new("Data Sampling", "Inspect slices of stored data and validate sample quality."),
-            ["TimeSeriesAlignment"] = new("Time Series Alignment", "Compare feed alignment and reconcile time-series mismatches."),
-            ["ExportPresets"] = new("Export Presets", "Save and reuse export configurations across workflows."),
-            ["AnalysisExport"] = new("Analysis Export", "Generate analysis packages and handoff artifacts."),
-            ["AnalysisExportWizard"] = new("Analysis Export Wizard", "Step through guided export setup for analysis workflows."),
-            ["EventReplay"] = new("Event Replay", "Replay captured event streams to inspect sequencing and outcomes."),
-            ["PackageManager"] = new("Package Manager", "Inspect packages, dependencies, and installed workstation content."),
-            ["AdvancedAnalytics"] = new("Advanced Analytics", "Explore richer analysis surfaces and higher-order metrics."),
-            ["DataCalendar"] = new("Data Calendar", "Inspect calendar coverage, data days, and schedule gaps."),
-            ["StorageOptimization"] = new("Storage Optimization", "Tune footprint, retention, and storage efficiency."),
-            ["RetentionAssurance"] = new("Retention Assurance", "Validate retention policy adherence and lifecycle posture."),
-            ["AdminMaintenance"] = new("Admin", "Execute privileged maintenance tasks and governance operations."),
-            ["LeanIntegration"] = new("Lean Integration", "Manage Lean connectivity, synchronization, and integration checks."),
-            ["MessagingHub"] = new("Messaging Hub", "Inspect internal messaging pathways and operator notifications."),
-            ["NotificationCenter"] = new("Notification Center", "Review active notifications, alerts, and workstation events."),
-            ["ResearchShell"] = new("Research Workspace", "Operate the research workstation with docked run, portfolio, and promotion workflows."),
-            ["TradingShell"] = new("Trading Workspace", "Operate live and paper posture from the trading cockpit."),
-            ["DataOperationsShell"] = new("Data Operations Workspace", "Operate provider, storage, and ingestion work from a docked data workstation."),
-            ["GovernanceShell"] = new("Governance Workspace", "Review fund operations, accounting, reconciliation, and audit surfaces together."),
-            ["Help"] = new("Help and Support", "Access support resources, guidance, and workstation documentation."),
-            ["Welcome"] = new("Welcome", "Review workstation onboarding and first-run guidance."),
-            ["Settings"] = new("Settings", "Adjust workstation preferences, connections, and operator defaults."),
-            ["CredentialManagement"] = new("Credential Management", "Manage provider credentials and validate secure access."),
-            ["KeyboardShortcuts"] = new("Keyboard Shortcuts", "Review accelerator keys and workstation shortcuts."),
-            ["SetupWizard"] = new("Setup Wizard", "Complete initial workstation setup and guided configuration."),
-            ["ActivityLog"] = new("Activity Log", "Review recent workstation actions, notifications, and state changes."),
-            ["FundAccounts"] = new("Fund Accounts", "Inspect account-level balances, routing, and reconciliation posture."),
-            ["FundBanking"] = new("Fund Banking", "Review banking posture and account cash detail."),
-            ["FundPortfolio"] = new("Fund Portfolio", "Inspect fund-scoped position and exposure posture."),
-            ["FundCashFinancing"] = new("Fund Cash and Financing", "Review fund cash, exposure, and financing metrics."),
-            ["FundLedger"] = new("Fund Operations", "Inspect journal, account, and governance operations posture."),
-            ["FundTrialBalance"] = new("Fund Trial Balance", "Review trial-balance and accounting detail for the active fund."),
-            ["FundReconciliation"] = new("Fund Reconciliation", "Inspect reconciliation runs, breaks, and exception detail."),
-            ["FundAuditTrail"] = new("Fund Audit Trail", "Inspect approvals, audit references, and governance history."),
-            ["SecurityMaster"] = new("Security Master", "Inspect reference data, listings, and security lifecycle state."),
-            ["DirectLending"] = new("Direct Lending", "Review direct lending operations and portfolio workflows.")
-        };
+    private const string DefaultPageTag = "ResearchShell";
 
     private readonly INavigationService _navigationService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
-    private readonly ObservableCollection<string> _commandPalettePages = [];
+    private readonly ObservableCollection<ShellCommandPaletteEntry> _commandPalettePages = [];
+    private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
+    private readonly ObservableCollection<ShellNavigationItem> _secondaryNavigationItems = [];
+    private readonly ObservableCollection<ShellNavigationItem> _overflowNavigationItems = [];
+    private readonly ObservableCollection<ShellNavigationItem> _relatedWorkflowItems = [];
     private readonly ObservableCollection<RecentPageEntry> _recentPages = [];
     private readonly ObservableCollection<WorkstationOperatingContext> _operatingContexts = [];
     private readonly ObservableCollection<BoundedWindowMode> _windowModes =
@@ -120,18 +34,19 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         BoundedWindowMode.DockFloat,
         BoundedWindowMode.WorkbenchPreset
     ];
+
     private bool _suppressNavigation;
     private bool _suppressOperatingContextSelection;
     private bool _suppressWindowModeSelection;
 
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
-    private string _currentPageTitle = "Dashboard";
-    private string _currentPageSubtitle = "High-trust operator view with live posture, alerts, and action shortcuts.";
+    private string _currentPageTitle = "Research Workspace";
+    private string _currentPageSubtitle = "Backtest studio shell with active run context, compare lanes, and promotion rails.";
     private bool _tickerStripVisible;
     private Visibility _commandPaletteVisibility = Visibility.Collapsed;
     private string _commandPaletteQuery = string.Empty;
-    private string? _selectedCommandPalettePage;
+    private ShellCommandPaletteEntry? _selectedCommandPalettePage;
     private Visibility _backButtonVisibility = Visibility.Collapsed;
     private Visibility _recentPagesEmptyVisibility = Visibility.Visible;
     private Visibility _fixtureModeBannerVisibility = Visibility.Collapsed;
@@ -154,7 +69,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _operatingContextService = operatingContextService;
 
         SplitPane = new SplitPaneViewModel();
-        CommandPalettePages = new ReadOnlyObservableCollection<string>(_commandPalettePages);
+        CommandPalettePages = new ReadOnlyObservableCollection<ShellCommandPaletteEntry>(_commandPalettePages);
+        PrimaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_primaryNavigationItems);
+        SecondaryNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_secondaryNavigationItems);
+        OverflowNavigationItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_overflowNavigationItems);
+        RelatedWorkflowItems = new ReadOnlyObservableCollection<ShellNavigationItem>(_relatedWorkflowItems);
         RecentPages = new ReadOnlyObservableCollection<RecentPageEntry>(_recentPages);
         OperatingContexts = new ReadOnlyObservableCollection<WorkstationOperatingContext>(_operatingContexts);
         WindowModes = new ReadOnlyObservableCollection<BoundedWindowMode>(_windowModes);
@@ -183,7 +102,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
 
         var initialPage = _navigationService.GetBreadcrumbs().FirstOrDefault()?.PageTag ?? DefaultPageTag;
-        ApplyCurrentPage(initialPage);
+        InitializeCurrentPageState(initialPage);
         RefreshCommandPalettePages();
         RefreshRecentPages();
         SyncNavigationState();
@@ -197,7 +116,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     public SplitPaneViewModel SplitPane { get; }
 
-    public ReadOnlyObservableCollection<string> CommandPalettePages { get; }
+    public ReadOnlyObservableCollection<ShellCommandPaletteEntry> CommandPalettePages { get; }
+
+    public ReadOnlyObservableCollection<ShellNavigationItem> PrimaryNavigationItems { get; }
+
+    public ReadOnlyObservableCollection<ShellNavigationItem> SecondaryNavigationItems { get; }
+
+    public ReadOnlyObservableCollection<ShellNavigationItem> OverflowNavigationItems { get; }
+
+    public ReadOnlyObservableCollection<ShellNavigationItem> RelatedWorkflowItems { get; }
 
     public ReadOnlyObservableCollection<RecentPageEntry> RecentPages { get; }
 
@@ -272,23 +199,29 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         set => SelectWorkspace(value);
     }
 
-    public string WorkspaceHeading => WorkspaceData[_currentWorkspace].Heading;
+    public string WorkspaceHeading => CurrentWorkspaceDescriptor.Title;
 
-    public string WorkspaceDescription => WorkspaceData[_currentWorkspace].Description;
+    public string WorkspaceDescription => CurrentWorkspaceDescriptor.Description;
 
-    public string WorkspaceSummary => WorkspaceData[_currentWorkspace].Summary;
+    public string WorkspaceSummary => CurrentWorkspaceDescriptor.Summary;
 
     public string ActiveNavigationLabel => $"{WorkspaceHeading} Navigation";
 
-    public string RecentPagesHintText => $"Recent {WorkspaceHeading.ToLowerInvariant()} pages.";
+    public string RecentPagesHintText => $"Recent {WorkspaceHeading.ToLowerInvariant()} workflows.";
 
-    public bool IsResearchWorkspaceActive => _currentWorkspace == "research";
+    public bool IsResearchWorkspaceActive => string.Equals(_currentWorkspace, "research", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsTradingWorkspaceActive => _currentWorkspace == "trading";
+    public bool IsTradingWorkspaceActive => string.Equals(_currentWorkspace, "trading", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsDataOperationsWorkspaceActive => _currentWorkspace == "data-operations";
+    public bool IsDataOperationsWorkspaceActive => string.Equals(_currentWorkspace, "data-operations", StringComparison.OrdinalIgnoreCase);
 
-    public bool IsGovernanceWorkspaceActive => _currentWorkspace == "governance";
+    public bool IsGovernanceWorkspaceActive => string.Equals(_currentWorkspace, "governance", StringComparison.OrdinalIgnoreCase);
+
+    public bool HasSecondaryNavigation => _secondaryNavigationItems.Count > 0;
+
+    public bool HasOverflowNavigation => _overflowNavigationItems.Count > 0;
+
+    public bool HasRelatedWorkflows => _relatedWorkflowItems.Count > 0;
 
     public string CurrentPageTag
     {
@@ -302,6 +235,13 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             }
 
             UpdateCurrentPageContent(normalized);
+            if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
+            {
+                SelectWorkspace(inferredWorkspace);
+            }
+
+            RefreshShellNavigation();
+            RefreshCommandPalettePages();
 
             if (!_suppressNavigation)
             {
@@ -354,7 +294,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
     }
 
-    public string? SelectedCommandPalettePage
+    public ShellCommandPaletteEntry? SelectedCommandPalettePage
     {
         get => _selectedCommandPalettePage;
         set
@@ -412,7 +352,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         if (_navigationService.GetBreadcrumbs().Count == 0)
         {
-            NavigateToPage(CurrentPageTag);
+            ApplyCurrentPage(CurrentPageTag);
+            _navigationService.NavigateTo(CurrentPageTag);
+            SyncNavigationState();
             return;
         }
 
@@ -438,6 +380,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
     }
 
+    private WorkspaceShellDescriptor CurrentWorkspaceDescriptor =>
+        ShellNavigationCatalog.GetWorkspace(_currentWorkspace) ?? ShellNavigationCatalog.GetDefaultWorkspace();
+
     private void OnNavigated(object? sender, NavigationEventArgs e)
     {
         _suppressNavigation = true;
@@ -446,7 +391,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ApplyCurrentPage(e.PageTag);
             var inferredWorkspace = InferWorkspaceFromPage(e.PageTag);
             if (inferredWorkspace is not null)
+            {
                 SelectWorkspace(inferredWorkspace);
+            }
         }
         finally
         {
@@ -489,9 +436,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void SelectWorkspace(string? workspace, bool navigateToHome = false)
     {
-        var normalized = workspace is not null && WorkspaceData.ContainsKey(workspace)
-            ? workspace
-            : DefaultWorkspace;
+        var normalized = ShellNavigationCatalog.GetWorkspace(workspace)?.Id ?? DefaultWorkspace;
 
         if (SetProperty(ref _currentWorkspace, normalized))
         {
@@ -504,6 +449,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
             RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
             RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
+            RefreshShellNavigation();
+            RefreshCommandPalettePages();
         }
 
         if (navigateToHome && !_suppressNavigation)
@@ -516,39 +463,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
     }
 
-    private static string? InferWorkspaceFromPage(string? pageTag) => pageTag switch
-    {
-        _ when !string.IsNullOrWhiteSpace(WorkspaceService.InferWorkspaceIdForPageTag(pageTag))
-            => WorkspaceService.InferWorkspaceIdForPageTag(pageTag),
-
-        "Backtest" or "BatchBacktest" or "RunMat" or "Charts" or "QuantScript"
-            or "LeanIntegration" or "AdvancedAnalytics" or "ResearchShell"
-            or "Watchlist" or "StrategyRuns" or "RunDetail"
-            or "RunCashFlow" or "RunPortfolio"
-            => "research",
-
-        "LiveData" or "TradingShell" or "TradingHours" or "OrderBook"
-            or "PositionBlotter" or "RunRisk" or "RunLedger"
-            => "trading",
-
-        "Provider" or "DataSources" or "Symbols" or "Backfill" or "Storage"
-            or "DataExport" or "PackageManager" or "Schedules" or "DataBrowser"
-            or "DataCalendar" or "DataSampling" or "TimeSeriesAlignment"
-            or "ExportPresets" or "IndexSubscription" or "SymbolMapping" or "SymbolStorage"
-            or "Options" or "EventReplay" or "AnalysisExport" or "AnalysisExportWizard"
-            or "PortfolioImport"
-            => "data-operations",
-
-        "DataQuality" or "ProviderHealth" or "SystemHealth" or "Diagnostics"
-            or "Settings" or "AdminMaintenance" or "RetentionAssurance"
-            or "NotificationCenter" or "Help" or "ArchiveHealth"
-            or "ServiceManager" or "CollectionSessions" or "StorageOptimization"
-            or "ActivityLog" or "MessagingHub" or "SecurityMaster" or "DirectLending"
-            or "CredentialManagement" or "SetupWizard" or "KeyboardShortcuts"
-            => "governance",
-
-        _ => null  // Dashboard, Welcome, Workspaces — stay in current workspace
-    };
+    private static string? InferWorkspaceFromPage(string? pageTag)
+        => ShellNavigationCatalog.InferWorkspaceIdForPageTag(pageTag);
 
     private void NavigateToPage(string? pageTag)
     {
@@ -572,16 +488,16 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     private bool CanOpenSelectedCommandPalettePage()
-        => !string.IsNullOrWhiteSpace(SelectedCommandPalettePage);
+        => SelectedCommandPalettePage is not null;
 
     private void OpenSelectedCommandPalettePage()
     {
-        if (string.IsNullOrWhiteSpace(SelectedCommandPalettePage))
+        if (SelectedCommandPalettePage is null)
         {
             return;
         }
 
-        NavigateToPage(SelectedCommandPalettePage);
+        NavigateToPage(SelectedCommandPalettePage.PageTag);
         HideCommandPalette();
     }
 
@@ -608,17 +524,30 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void ApplyCurrentPage(string pageTag)
     {
-        CurrentPageTag = pageTag;
-        UpdateCurrentPageContent(pageTag);
+        var normalized = NormalizePageTag(pageTag);
+        if (string.Equals(_currentPageTag, normalized, StringComparison.Ordinal))
+        {
+            UpdateCurrentPageContent(normalized);
+            if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
+            {
+                SelectWorkspace(inferredWorkspace);
+            }
+
+            RefreshShellNavigation();
+            RefreshCommandPalettePages();
+            return;
+        }
+
+        CurrentPageTag = normalized;
     }
 
     private void UpdateCurrentPageContent(string pageTag)
     {
         var normalized = NormalizePageTag(pageTag);
-        if (PageData.TryGetValue(normalized, out var pageContent))
+        if (ShellNavigationCatalog.GetPage(normalized) is { } descriptor)
         {
-            CurrentPageTitle = pageContent.Title;
-            CurrentPageSubtitle = pageContent.Subtitle;
+            CurrentPageTitle = descriptor.Title;
+            CurrentPageSubtitle = descriptor.Subtitle;
             return;
         }
 
@@ -626,20 +555,78 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         CurrentPageSubtitle = "Operator surface for this workstation page.";
     }
 
+    private void InitializeCurrentPageState(string pageTag)
+    {
+        var normalized = NormalizePageTag(pageTag);
+        _currentPageTag = normalized;
+        UpdateCurrentPageContent(normalized);
+
+        if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
+        {
+            SelectWorkspace(inferredWorkspace);
+        }
+        else
+        {
+            RefreshShellNavigation();
+        }
+    }
+
+    private void RefreshShellNavigation()
+    {
+        var workspacePages = ShellNavigationCatalog.GetPagesForWorkspace(_currentWorkspace)
+            .Where(page => _navigationService.IsPageRegistered(page.PageTag))
+            .ToArray();
+
+        ReplaceCollection(
+            _primaryNavigationItems,
+            workspacePages
+                .Where(page => page.VisibilityTier == ShellNavigationVisibilityTier.Primary)
+                .Select(page => ToNavigationItem(page))
+                .ToArray());
+
+        ReplaceCollection(
+            _secondaryNavigationItems,
+            workspacePages
+                .Where(page => page.VisibilityTier == ShellNavigationVisibilityTier.Secondary)
+                .Select(page => ToNavigationItem(page, includeVisibilityLabel: true))
+                .ToArray());
+
+        ReplaceCollection(
+            _overflowNavigationItems,
+            workspacePages
+                .Where(page => page.VisibilityTier == ShellNavigationVisibilityTier.Overflow)
+                .Select(page => ToNavigationItem(page, includeVisibilityLabel: true))
+                .ToArray());
+
+        ReplaceCollection(
+            _relatedWorkflowItems,
+            ShellNavigationCatalog.GetRelatedPages(CurrentPageTag)
+                .Where(page => _navigationService.IsPageRegistered(page.PageTag))
+                .Where(page => !string.Equals(page.PageTag, CurrentPageTag, StringComparison.OrdinalIgnoreCase))
+                .Select(page => ToNavigationItem(page, includeVisibilityLabel: true))
+                .ToArray());
+
+        RaisePropertyChanged(nameof(HasSecondaryNavigation));
+        RaisePropertyChanged(nameof(HasOverflowNavigation));
+        RaisePropertyChanged(nameof(HasRelatedWorkflows));
+    }
+
     private void RefreshCommandPalettePages()
     {
         var query = CommandPaletteQuery.Trim();
-        var pages = _navigationService.GetRegisteredPages()
-            .Where(page => string.IsNullOrWhiteSpace(query) || page.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(page => page, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var descriptors = _navigationService.GetRegisteredPages()
+            .Select(pageTag => ShellNavigationCatalog.GetPage(pageTag))
+            .Where(static descriptor => descriptor is not null)
+            .Select(static descriptor => descriptor!)
+            .Where(page => string.IsNullOrWhiteSpace(query)
+                ? !page.HideFromDefaultPalette
+                : MatchesPaletteQuery(page, query))
+            .OrderBy(page => GetPaletteRank(page, query))
+            .ThenBy(page => page.Title, StringComparer.OrdinalIgnoreCase)
+            .Select(page => ToCommandPaletteEntry(page, includeVisibilityLabel: page.VisibilityTier != ShellNavigationVisibilityTier.Primary))
+            .ToArray();
 
-        _commandPalettePages.Clear();
-        foreach (var page in pages)
-        {
-            _commandPalettePages.Add(page);
-        }
-
+        ReplaceCollection(_commandPalettePages, descriptors);
         SelectedCommandPalettePage = _commandPalettePages.FirstOrDefault();
     }
 
@@ -652,14 +639,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             .Where(pageTag => !string.Equals(pageTag, CurrentPageTag, StringComparison.OrdinalIgnoreCase))
             .Take(6)
             .Select(pageTag => new RecentPageEntry(pageTag!, GetPageDisplayName(pageTag!)))
-            .ToList();
+            .ToArray();
 
-        _recentPages.Clear();
-        foreach (var item in recent)
-        {
-            _recentPages.Add(item);
-        }
-
+        ReplaceCollection(_recentPages, recent);
         RecentPagesEmptyVisibility = _recentPages.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -766,27 +748,66 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RaisePropertyChanged(nameof(CurrentModeName));
     }
 
-    private static int GetCommandPaletteSortBucket(string pageTag)
-        => pageTag switch
+    private static bool MatchesPaletteQuery(ShellPageDescriptor descriptor, string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
         {
-            "ResearchShell" => 0,
-            "TradingShell" => 1,
-            "DataOperationsShell" => 2,
-            "GovernanceShell" => 3,
-            "Provider" => 4,
-            "DataQuality" => 5,
-            "Dashboard" => 98,
-            _ => 7
-        };
+            return true;
+        }
 
-    private static bool ShouldHideFromDefaultPalette(string pageTag, string query)
-        => string.IsNullOrWhiteSpace(query)
-           && pageTag is "Dashboard" or "Workspaces" or "Welcome";
+        var workspaceTitle = ShellNavigationCatalog.GetWorkspace(descriptor.WorkspaceId)?.Title ?? descriptor.WorkspaceId;
+        return GetPaletteSearchFields(descriptor, workspaceTitle)
+            .Any(field => field.Contains(query, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private int GetPaletteRank(ShellPageDescriptor descriptor, string query)
+    {
+        var workspacePenalty = string.Equals(descriptor.WorkspaceId, _currentWorkspace, StringComparison.OrdinalIgnoreCase) ? 0 : 100;
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            var homeBonus = descriptor.PageTag.EndsWith("Shell", StringComparison.OrdinalIgnoreCase) ? -20 : 0;
+            return workspacePenalty
+                   + homeBonus
+                   + ((int)descriptor.VisibilityTier * 10)
+                   + descriptor.Order;
+        }
+
+        var title = descriptor.Title;
+        var pageTag = descriptor.PageTag;
+        var workspaceTitle = ShellNavigationCatalog.GetWorkspace(descriptor.WorkspaceId)?.Title ?? descriptor.WorkspaceId;
+
+        var matchRank = title.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 0
+            : pageTag.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 1
+            : title.Contains(query, StringComparison.OrdinalIgnoreCase) ? 2
+            : descriptor.SearchKeywords.Any(keyword => keyword.StartsWith(query, StringComparison.OrdinalIgnoreCase)) ? 3
+            : pageTag.Contains(query, StringComparison.OrdinalIgnoreCase) ? 4
+            : workspaceTitle.Contains(query, StringComparison.OrdinalIgnoreCase) ? 5
+            : descriptor.SectionLabel.Contains(query, StringComparison.OrdinalIgnoreCase) ? 6
+            : descriptor.Subtitle.Contains(query, StringComparison.OrdinalIgnoreCase) ? 7
+            : 8;
+
+        return (matchRank * 1000)
+               + workspacePenalty
+               + ((int)descriptor.VisibilityTier * 10)
+               + descriptor.Order;
+    }
+
+    private static IEnumerable<string> GetPaletteSearchFields(ShellPageDescriptor descriptor, string workspaceTitle)
+    {
+        yield return descriptor.PageTag;
+        yield return descriptor.Title;
+        yield return descriptor.Subtitle;
+        yield return descriptor.SectionLabel;
+        yield return workspaceTitle;
+
+        foreach (var keyword in descriptor.SearchKeywords)
+        {
+            yield return keyword;
+        }
+    }
 
     private static string GetWorkspaceHomePageTag(string workspace)
-        => WorkspaceHomePageTags.TryGetValue(workspace, out var pageTag)
-            ? pageTag
-            : DefaultPageTag;
+        => ShellNavigationCatalog.GetWorkspace(workspace)?.HomePageTag ?? DefaultPageTag;
 
     private string NormalizePageTag(string? pageTag)
     {
@@ -801,9 +822,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     private static string GetPageDisplayName(string pageTag)
-        => PageData.TryGetValue(pageTag, out var page)
-            ? page.Title
-            : HumanizePageTag(pageTag);
+        => ShellNavigationCatalog.GetPage(pageTag)?.Title ?? HumanizePageTag(pageTag);
 
     private static string HumanizePageTag(string pageTag)
     {
@@ -827,9 +846,49 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         return buffer.ToString();
     }
 
-    private sealed record WorkspaceContent(string Heading, string Description, string Summary);
+    private static ShellNavigationItem ToNavigationItem(ShellPageDescriptor descriptor, bool includeVisibilityLabel = false)
+    {
+        var workspaceTitle = ShellNavigationCatalog.GetWorkspace(descriptor.WorkspaceId)?.Title ?? descriptor.WorkspaceId;
+        return new ShellNavigationItem(
+            PageTag: descriptor.PageTag,
+            Title: descriptor.Title,
+            Subtitle: descriptor.Subtitle,
+            WorkspaceTitle: workspaceTitle,
+            SectionLabel: descriptor.SectionLabel,
+            Glyph: descriptor.Glyph,
+            VisibilityLabel: includeVisibilityLabel ? GetVisibilityLabel(descriptor.VisibilityTier) : string.Empty);
+    }
 
-    private sealed record PageContent(string Title, string Subtitle);
+    private static ShellCommandPaletteEntry ToCommandPaletteEntry(ShellPageDescriptor descriptor, bool includeVisibilityLabel)
+    {
+        var workspaceTitle = ShellNavigationCatalog.GetWorkspace(descriptor.WorkspaceId)?.Title ?? descriptor.WorkspaceId;
+        return new ShellCommandPaletteEntry(
+            PageTag: descriptor.PageTag,
+            Title: descriptor.Title,
+            Subtitle: descriptor.Subtitle,
+            WorkspaceTitle: workspaceTitle,
+            SectionLabel: descriptor.SectionLabel,
+            Glyph: descriptor.Glyph,
+            VisibilityLabel: includeVisibilityLabel ? GetVisibilityLabel(descriptor.VisibilityTier) : string.Empty);
+    }
+
+    private static string GetVisibilityLabel(ShellNavigationVisibilityTier visibilityTier)
+        => visibilityTier switch
+        {
+            ShellNavigationVisibilityTier.Primary => "Primary",
+            ShellNavigationVisibilityTier.Secondary => "Secondary",
+            ShellNavigationVisibilityTier.Overflow => "Overflow",
+            _ => string.Empty
+        };
+
+    private static void ReplaceCollection<T>(ObservableCollection<T> target, IReadOnlyCollection<T> items)
+    {
+        target.Clear();
+        foreach (var item in items)
+        {
+            target.Add(item);
+        }
+    }
 
     public sealed record RecentPageEntry(string PageTag, string DisplayName);
 }

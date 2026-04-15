@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Services;
@@ -183,38 +184,34 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// Creates page content without mutating the frame navigation stack.
     /// Used by workstation shells when embedding pages into dock panes.
     /// </summary>
-    public FrameworkElement CreatePageContent(string pageTag, object? parameter = null)
+    public FrameworkElement CreatePageContent(
+        string pageTag,
+        object? parameter = null,
+        WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked)
     {
         var pageType = GetPageType(pageTag)
             ?? throw new InvalidOperationException($"Unknown page tag '{pageTag}'.");
 
-        var page = CreatePage(pageType);
         var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
-        ApplyNavigationParameter(page, effectiveParameter);
-
-        return page as FrameworkElement
-            ?? throw new InvalidOperationException($"Page '{pageType.Name}' is not a FrameworkElement.");
+        return CreatePageContentCore(pageTag, pageType, effectiveParameter, presentationMode);
     }
 
     /// <inheritdoc />
-    protected override bool NavigateToPageCore(Type pageType, object? parameter)
+    protected override bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     {
         if (_frame == null) return false;
 
         try
         {
-            var page = CreatePage(pageType);
-            ApplyNavigationParameter(page, parameter);
-
-            var result = _frame.Navigate(page);
+            var content = CreatePageContentCore(pageTag, pageType, parameter, WorkspaceChromePresentationMode.Standalone);
+            var result = _frame.Navigate(content);
 
             if (result)
             {
                 // Trigger onboarding tour for the navigated page if applicable
-                var currentTag = GetCurrentPageTag();
-                if (currentTag != null)
+                if (!string.IsNullOrWhiteSpace(pageTag))
                 {
-                    CheckOnboardingTourForPage(currentTag);
+                    CheckOnboardingTourForPage(pageTag);
                 }
             }
 
@@ -311,6 +308,51 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// (e.g. in unit tests), a placeholder <see cref="Page"/> is returned so that navigation
     /// orchestration (history tracking, event raising) can still be validated.
     /// </summary>
+    private FrameworkElement CreatePageContentCore(
+        string pageTag,
+        Type pageType,
+        object? parameter,
+        WorkspaceChromePresentationMode presentationMode)
+    {
+        var page = CreatePage(pageType);
+        ApplyNavigationParameter(page, parameter);
+
+        if (page is not FrameworkElement element)
+        {
+            throw new InvalidOperationException($"Page '{pageType.Name}' is not a FrameworkElement.");
+        }
+
+        if (_serviceProvider is not null &&
+            page is Page wpfPage &&
+            ShouldWrapWithWorkspaceChrome(pageTag, pageType))
+        {
+            return new WorkspaceDeepPageHostPage(
+                this,
+                _serviceProvider?.GetService<WorkspaceShellContextService>(),
+                pageTag,
+                wpfPage,
+                parameter,
+                presentationMode);
+        }
+
+        return element;
+    }
+
+    private static bool ShouldWrapWithWorkspaceChrome(string pageTag, Type pageType)
+    {
+        if (pageType == typeof(WorkspaceDeepPageHostPage))
+        {
+            return false;
+        }
+
+        if (pageTag is "ResearchShell" or "TradingShell" or "DataOperationsShell" or "GovernanceShell")
+        {
+            return false;
+        }
+
+        return ShellNavigationCatalog.GetPage(pageTag) is not null;
+    }
+
     private object CreatePage(Type pageType)
     {
         if (_serviceProvider != null)

@@ -1,10 +1,6 @@
 # Meridian - Improvement Tracking
 
-<<<<<<< HEAD
-**Last Updated:** 2026-04-08
-=======
-**Last Updated:** 2026-03-31
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+**Last Updated:** 2026-04-14
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
@@ -62,12 +58,8 @@ Legacy `ROADMAP:` labels below retain their original milestone wording for trace
 - **Completion ratio:** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
 - **Core improvement themes A-G are closed** for the current platform baseline.
 - **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
-<<<<<<< HEAD
-- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization) are complete — Security Master now flows through WPF plus Research, Trading, Portfolio, Ledger, Reconciliation, and Governance surfaces as one authoritative instrument seam. K1, K2, and K3 remain active.
-- **Recommended focus:** provider-confidence hardening (Polygon, Robinhood, IB, NYSE, StockSharp plus checkpoint and Parquet evidence closure), hardening the existing paper-trading cockpit (Wave 2), WPF page-level MVVM extraction (K1 continuation), and governance/fund-operations productization on top of Security Master (K2).
-=======
-- **Recommended focus:** provider-confidence hardening, H2 multi-instance coordination design, Security Master productization, account/entity and trade-management productization, reconciliation/reporting productization, and Theme K workstation delivery on top of the now-shared run / portfolio / ledger baseline.
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the shell-first workstation baseline is now validated in code through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, DI fixes, and registered-page sweep coverage.
+- **Recommended focus:** provider-confidence hardening (Polygon, Robinhood, IB, NYSE, StockSharp plus checkpoint and Parquet evidence closure), hardening the existing paper-trading cockpit (Wave 2), deeper workflow-native inspectors and page-body harmonization on top of the delivered shell host, and governance/fund-operations productization on top of the delivered Security Master baseline (K2).
 
 ### Backlog Inputs
 
@@ -95,12 +87,9 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 | 6 | C1/C2, H1, H4, I1 | Provider registration unified under DI; per-provider backfill rate limiting; degradation scoring; test harness | ✅ Done |
 | 7 | C3 remainder, B3 tranche 2 | NYSE shared-lifecycle bridge lands; IB + Alpaca provider tests expand | ✅ Done |
 | 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection/reporting land | ✅ Done |
-<<<<<<< HEAD
 | 9 | K0, route/health reliability | WPF Fluent theme, SVG icons, LiveCharts2 charting, Synthetic provider default, workflow guide, CI screenshots, duplicate route/registration fixes | ✅ Done |
-| 10 | K1 page-level redesign, Wave 1 provider confidence | High-traffic WPF page redesign (Live Data, Provider, Backfill, Data Quality); Polygon/Robinhood/IB/NYSE/StockSharp replay/runtime validation plus backfill checkpoint and Parquet L2 evidence closure | 🔄 Active |
+| 10 | K1 shell consolidation, page-level redesign, Wave 1 provider confidence | `ShellNavigationCatalog`, workspace shell pages, and current WPF shell consolidation plus high-traffic page redesign (Live Data, Provider, Backfill, Data Quality); Polygon/Robinhood/IB/NYSE/StockSharp replay/runtime validation plus backfill checkpoint and Parquet L2 evidence closure | 🔄 Active |
 | 11 | Wave 2 cockpit hardening, governance/reporting follow-ons | Existing web paper-trading cockpit hardened across positions, orders, fills, P&L, risk, replay, sessions, and promotion; governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 📝 Planned |
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 ---
 
@@ -1378,11 +1367,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-<<<<<<< HEAD
-**Last Updated:** 2026-04-07
-=======
-**Last Updated:** 2026-03-21
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+**Last Updated:** 2026-04-14
 **Maintainer:** Project Team
 **Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K delivery active
 **Next Review:** Weekly engineering sync (or immediately after any status change)
@@ -1402,6 +1387,15 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - Consolidate top-level UX into `Research`, `Trading`, `Data Operations`, and `Governance` workspaces
 - Ensure all major capabilities are reachable from primary navigation and command palette
 - Add workflow-level entry points instead of orphan feature pages
+
+**Current signal:**
+- `ShellNavigationCatalog`, workspace shell pages, richer command-palette routing, governance aliases, and shell smoke/full-sweep coverage are now in the validated baseline
+- duplicate title chrome on many legacy deep pages now compacts away automatically when those pages are hosted inside `WorkspaceDeepPageHostPage`
+- action-heavy legacy headers on `MessagingHub`, `NotificationCenter`, `SecurityMaster`, `ServiceManager`, and `PositionBlotter` now compact correctly inside the shared host while keeping their page-specific command and trust bands
+- `PositionBlotter`, `SecurityMaster`, and `ServiceManager` now expose richer page-body workbenches and workflow-native inspector rails instead of only inheriting the shared host chrome
+- the mixed `MainPageUiWorkflowTests` bundle is stable again through isolated workspace persistence in the automation facade and shell-contract assertions that avoid unrelated singleton drift
+- `MainPageSmokeTests`, `MainPageUiWorkflowTests`, `RunMatUiSmokeTests`, `NavigationPageSmokeTests`, `WorkstationPageSmokeTests`, `NavigationServiceTests`, and `FullNavigationSweepTests` now run under `NavigationServiceSerialCollection`, keeping the mixed shell bundle deterministic while still validating full registered-page reachability
+- remaining K1 work is now concentrated in untouched high-traffic page-body harmonization and broader workstation refinements on pages such as `OrderBook`, `DataQuality`, and `LiveDataViewer`, rather than shell-foundation plumbing or the three newly harmonized workbenches
 
 **ROADMAP:** Phase 11
 
@@ -1435,19 +1429,22 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-### K2A. 📝 Security Master Productization
+### K2A. ✅ Security Master Productization Baseline
 
-**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** ✅ COMPLETE (baseline delivered; downstream governance follow-ons remain active)
 
-**Problem:** Security Master implementation now exists in contracts, services, storage, migrations, and F# domain models, but it is still underrepresented in the active product roadmap and not yet treated as a first-class platform capability for workstation workflows.
+**Problem solved:** Security Master needed to move from a backend capability into an explicit product/platform seam for workstation workflows.
 
-**Planned Solution:**
-- elevate Security Master into an explicit product/platform track
-- use Security Master as the authoritative instrument-definition layer for research, portfolio, ledger, and governance experiences
-- connect security identifiers, classifications, and economic definitions to downstream cash-flow and multi-ledger workflows
-- use Security Master metadata to improve reconciliation matching quality and reporting classification
+**Delivered baseline:**
+- Security Master now acts as the authoritative instrument-definition layer across research, trading, portfolio, ledger, reconciliation, governance, and WPF drill-ins
+- workstation/read-model propagation is in place through shared `WorkstationSecurityReference` coverage and provenance
+- WPF, shared DTOs, conflict handling, corporate actions, trading parameters, and ingest seams are materially in code
 
-**ROADMAP:** Phase 12A
+**Remaining follow-on work:**
+- deepen governance and fund-operations workflows built on top of the delivered baseline through K2 and Wave 4 work
+- reuse Security Master metadata in account/entity, cash-flow, multi-ledger, reconciliation, and reporting workflows instead of creating a parallel governance seam
+
+**ROADMAP:** Phase 12A baseline delivered; follow-ons continue in Phase 12 / Wave 4
 
 ---
 
@@ -1462,7 +1459,6 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - Harden the existing paper-trading infrastructure into a real trading cockpit
 - Add explicit promotion flow from Backtest → Paper → Live with safety guardrails
 
-<<<<<<< HEAD
 **Current baseline:**
 - Paper trading gateway, risk rules, order abstractions, and brokerage gateway framework are implemented
 - REST endpoints for account, orders, sessions, health, and promotion are wired
@@ -1472,7 +1468,4 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - Web dashboard: live positions, open orders, fills, P&L, and risk state panels wired to brokerage gateways
 - `Backtest → Paper` promotion: explicit lifecycle step, audit trail, and safety gate
 - Paper session persistence and replay
-
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 **ROADMAP:** Phase 13

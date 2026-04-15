@@ -28,6 +28,7 @@ internal static class WpfTestThread
             }
         });
 
+        DrainDispatcher();
         captured?.Throw();
     }
 
@@ -35,6 +36,7 @@ internal static class WpfTestThread
     {
         EnsureStarted();
         _dispatcher!.InvokeAsync(action).Task.Unwrap().GetAwaiter().GetResult();
+        DrainDispatcher();
     }
 
     private static void EnsureStarted()
@@ -67,5 +69,11 @@ internal static class WpfTestThread
             _thread.Start();
             Ready.Wait();
         }
+    }
+
+    private static void DrainDispatcher()
+    {
+        _dispatcher!.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+        _dispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
     }
 }

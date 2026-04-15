@@ -201,18 +201,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
 
-        // Ingest-time conflict detection — best-effort, never blocks the create
-        if (_conflictService is not null)
-        {
-            try
-            {
-                await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Conflict detection failed for new security {SecurityId}", request.SecurityId);
-            }
-        }
+        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action backfill for the newly-created security so
         // that historical corp action data is available immediately for backtesting.

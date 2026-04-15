@@ -27,13 +27,14 @@ user growth strategy, or technical debt ideation.
 
 ## Context: What This Project Is
 
-Meridian is a high-throughput .NET 9 / C# 13 system (with F# 8.0 domain models) that
-captures real-time market microstructure data (trades, quotes, L2 order books) from multiple
-providers (Alpaca, Polygon, Interactive Brokers, StockSharp, NYSE) and persists it via a
-backpressured pipeline to JSONL/Parquet storage with WAL durability. It supports historical backfill
-from 10+ providers with automatic failover. It has a WPF desktop app and a web dashboard.
+Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. It already
+spans provider ingestion and backfill, tiered storage, replay, backtesting, execution and risk
+seams, shared run, portfolio, and ledger models, QuantScript, MCP, and a desktop-first workstation
+shell. The current delivery focus is turning that breadth into one cohesive operator product across
+Research, Trading, Data Operations, and Governance.
 
-**Key statistics:** 732+ source files, 252 test files, 13 main projects, 27 CI/CD workflows.
+**Use current repo docs as authoritative context:** rely on `README.md`, `docs/status/ROADMAP.md`,
+and `.claude/skills/_shared/project-context.md` instead of fixed file-count snapshots.
 
 ---
 

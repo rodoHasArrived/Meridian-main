@@ -85,6 +85,7 @@ public sealed class PortfolioImportService
     {
         var config = _configStore.Load();
         var ibConfig = config.IB;
+        var clientPortalConfig = config.IBClientPortal;
 
         if (ibConfig is null)
         {
@@ -92,9 +93,15 @@ public sealed class PortfolioImportService
                 new[] { "Interactive Brokers configuration not found. Please configure IB gateway connection." });
         }
 
+        if (clientPortalConfig is null || !clientPortalConfig.Enabled)
+        {
+            return new PortfolioImportResult(false, "ib", 0, 0, 0, Array.Empty<string>(),
+                new[] { "Interactive Brokers Client Portal is not enabled. Configure IBClientPortal for portfolio import." });
+        }
+
         try
         {
-            var portfolio = await FetchInteractiveBrokersPortfolioAsync(ibConfig, ct);
+            var portfolio = await FetchInteractiveBrokersPortfolioAsync(clientPortalConfig, ct);
             return await ProcessPortfolioAsync(portfolio, options, ct);
         }
         catch (Exception ex)
@@ -148,7 +155,7 @@ public sealed class PortfolioImportService
         return broker.ToLowerInvariant() switch
         {
             "alpaca" when config.Alpaca is not null => await FetchAlpacaPortfolioAsync(config.Alpaca, ct),
-            "ib" or "interactivebrokers" when config.IB is not null => await FetchInteractiveBrokersPortfolioAsync(config.IB, ct),
+            "ib" or "interactivebrokers" when config.IBClientPortal is { Enabled: true } => await FetchInteractiveBrokersPortfolioAsync(config.IBClientPortal, ct),
             _ => null
         };
     }
@@ -164,7 +171,7 @@ public sealed class PortfolioImportService
         if (config.Alpaca is not null)
             brokers.Add("alpaca");
 
-        if (config.IB is not null)
+        if (config.IB is not null && config.IBClientPortal is { Enabled: true })
             brokers.Add("interactivebrokers");
 
         return brokers;
@@ -231,27 +238,28 @@ public sealed class PortfolioImportService
     /// with Client Portal enabled. For fully automated integration, consider using IBAutomater
     /// or the official TWS API with the EnhancedIBConnectionManager.
     /// </remarks>
-    private async Task<PortfolioSummary> FetchInteractiveBrokersPortfolioAsync(IBOptions ibConfig, CancellationToken ct)
+    private async Task<PortfolioSummary> FetchInteractiveBrokersPortfolioAsync(IBClientPortalOptions clientPortalConfig, CancellationToken ct)
     {
-        // IB Client Portal API or TWS API integration
-        // For now, return a stub that indicates IB requires TWS connection
-        // In production, this would use the IBAutomater or Client Portal API
+        var clientPortalUrl = clientPortalConfig.BaseUrl.TrimEnd('/');
 
-        // Check if Client Portal is running (typically on port 5000)
-        var clientPortalUrl = $"https://localhost:{ibConfig.Port}";
+        if (!Uri.TryCreate(clientPortalUrl, UriKind.Absolute, out var baseUri))
+        {
+            throw new InvalidOperationException("IB Client Portal BaseUrl is invalid. Use an absolute HTTP or HTTPS URL.");
+        }
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{clientPortalUrl}/v1/api/portfolio/accounts");
+            using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(baseUri, "/v1/api/portfolio/accounts"));
 
-            // Use the named IB Client Portal client configured with SSL bypass for self-signed certs
-            var ibClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.IBClientPortal);
+            var ibClient = clientPortalConfig.AllowSelfSignedCertificates
+                ? HttpClientFactoryProvider.CreateClient(HttpClientNames.IBClientPortal)
+                : _httpClient;
             var response = await ibClient.SendAsync(request, ct);
 
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException(
-                    "IB Client Portal not available. Please ensure IB Gateway or TWS is running with Client Portal enabled.");
+                    $"IB Client Portal not available at {clientPortalUrl}. Please ensure IB Gateway or TWS is running with Client Portal enabled.");
             }
 
             var accounts = await response.Content.ReadFromJsonAsync<IbAccount[]>(
@@ -266,9 +274,10 @@ public sealed class PortfolioImportService
 
             // Get positions
             using var posRequest = new HttpRequestMessage(HttpMethod.Get,
-                $"{clientPortalUrl}/v1/api/portfolio/{accountId}/positions/0");
+                new Uri(baseUri, $"/v1/api/portfolio/{accountId}/positions/0"));
 
             var posResponse = await ibClient.SendAsync(posRequest, ct);
+            posResponse.EnsureSuccessStatusCode();
             var ibPositions = await posResponse.Content.ReadFromJsonAsync<IbPosition[]>(
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
 
@@ -301,7 +310,7 @@ public sealed class PortfolioImportService
         catch (HttpRequestException)
         {
             throw new InvalidOperationException(
-                "Unable to connect to IB Client Portal. Please ensure IB Gateway or TWS is running with API enabled.");
+                $"Unable to connect to IB Client Portal at {clientPortalUrl}. Please ensure IB Gateway or TWS is running with Client Portal enabled.");
         }
     }
 

@@ -4187,10 +4187,7 @@ Meridian-main
 │   │   │   ├── Meridian.yml
 │   │   │   └── toc.yml
 │   │   ├── docfx-log.json
-<<<<<<< HEAD
-=======
 │   │   ├── docfx.json
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 │   │   ├── filterConfig.yml
 │   │   ├── README.md
 │   │   └── temp-metadata-only.json
@@ -4472,10 +4469,7 @@ Meridian-main
 │   │   ├── diagnose-uwp-xaml.ps1
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── install-git-hooks.sh
-<<<<<<< HEAD
 │   │   ├── robinhood-options-smoke.ps1
-=======
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 │   │   ├── run-desktop-workflow.ps1
 │   │   └── run-desktop.ps1
 │   ├── lib
@@ -5806,8 +5800,6 @@ Meridian-main
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   └── Meridian.Strategies.csproj
-<<<<<<< HEAD
-=======
 │   ├── Meridian.Ui
 │   │   ├── dashboard
 │   │   │   ├── src
@@ -5883,7 +5875,6 @@ Meridian-main
 │   │   ├── app.manifest
 │   │   ├── Meridian.Ui.csproj
 │   │   └── Program.cs
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
 │   │   │   ├── BoundedObservableCollection.cs

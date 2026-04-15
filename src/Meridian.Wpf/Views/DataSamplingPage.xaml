@@ -6,13 +6,15 @@
       AutomationProperties.Name="Data Sampling">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
         <StackPanel MaxWidth="1200">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Data Sampling" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
+            <StackPanel Margin="0,0,0,20" Style="{StaticResource EmbeddedShellHeaderStackPanelStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="&#xE9D9;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="Data Sampling" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="Create curated data subsets for testing, research, and analytics."
+                           Style="{StaticResource PageSubtitleStyle}" />
             </StackPanel>
-            <TextBlock Text="Create curated data subsets for testing, research, and analytics."
-                       Style="{StaticResource PageSubtitleStyle}" Margin="0,0,0,20" />
 
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
                 <StackPanel>

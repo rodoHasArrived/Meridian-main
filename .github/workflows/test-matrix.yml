@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # Multi-Platform Test Matrix Workflow
 # Runs tests across multiple operating systems and generates coverage reports.
 # On PRs, only ubuntu tests run to reduce billing costs. Full matrix runs on pushes to main.
@@ -319,19 +317,5 @@ jobs:
             skipped) DB_LABEL="⏭️ Skipped (PR)" ;;
             *) DB_LABEL="❌ Failed" ;;
           esac
-<<<<<<< HEAD
-
-          {
-            echo "# Test Matrix Summary"
-            echo ""
-            echo "| Platform | Status |"
-            echo "|----------|--------|"
-            echo "| Linux | $LINUX_LABEL |"
-            echo "| Windows | $WIN_LABEL |"
-            echo "| macOS | $MAC_LABEL |"
-            echo "| PostgreSQL | $DB_LABEL |"
-          } >> "$GITHUB_STEP_SUMMARY"
->>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3
-=======
           echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+          echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY

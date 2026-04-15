@@ -223,7 +223,11 @@ public partial class DataOperationsWorkspaceShellPage : Page
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError($"[DataOperationsWorkspaceShell] Failed to open '{pageTag}': {ex.Message}");
-            _navigationService.NavigateTo(pageTag, parameter);
+            DataOperationsDockManager.LoadPage(
+                BuildPageKey(pageTag, parameter),
+                GetPageTitle(pageTag),
+                WorkspaceShellFallbackContentFactory.CreateDockFailureContent(GetPageTitle(pageTag), ex),
+                NormalizeDockAction(action));
         }
     }
 

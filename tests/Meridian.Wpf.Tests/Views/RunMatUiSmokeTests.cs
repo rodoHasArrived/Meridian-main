@@ -1,15 +1,12 @@
 using System.IO;
 using System.Windows.Automation;
-using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
-using Meridian.Ui.Services;
-using Meridian.Wpf.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
-using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
 
+[Collection("NavigationServiceSerialCollection")]
 public sealed class RunMatUiSmokeTests
 {
     [Fact]
@@ -17,41 +14,31 @@ public sealed class RunMatUiSmokeTests
     {
         WpfTestThread.Run(() =>
         {
-            RunMatUiAutomationFacade.EnsureApplicationResources();
+            using var facade = new MainPageUiAutomationFacade();
 
-            var navigationService = NavigationService.Instance;
-            var serviceProvider = RunMatUiAutomationFacade.CreateMainPageServiceProvider();
-            navigationService.SetServiceProvider(serviceProvider);
-            var page = serviceProvider.GetRequiredService<MainPage>();
+            AutomationProperties.GetAutomationId(facade.Page).Should().Be("MainPage");
+            AutomationProperties.GetAutomationId(facade.CommandPaletteTextBox).Should().Be("CommandPaletteInput");
+            AutomationProperties.GetAutomationId(facade.CommandPaletteResults).Should().Be("CommandPaletteResults");
+            AutomationProperties.GetAutomationId(facade.ContentFrame).Should().Be("ContentFrame");
 
-            RunMatUiAutomationFacade.InvokeMainPageLoaded(page);
+            var initialDescriptor = ShellNavigationCatalog.GetPage(facade.ShellAutomationStateText.Text);
+            initialDescriptor.Should().NotBeNull();
+            facade.ViewModel.CurrentPageTitle.Should().Be(initialDescriptor!.Title);
 
-            var commandPaletteInput = page.FindName("CommandPaletteTextBox").Should().BeOfType<TextBox>().Subject;
-            var commandPaletteResults = page.FindName("CommandPaletteResults").Should().BeOfType<ListBox>().Subject;
-            var researchNavList = page.FindName("ResearchNavList").Should().BeOfType<ListBox>().Subject;
-            var contentFrame = page.FindName("ContentFrame").Should().BeOfType<Frame>().Subject;
-            var shellAutomationState = page.FindName("ShellAutomationStateText").Should().BeOfType<TextBlock>().Subject;
-            var viewModel = page.DataContext.Should().BeOfType<MainPageViewModel>().Subject;
+            facade.ViewModel.CommandPalettePages
+                .Select(item => item.PageTag)
+                .Should()
+                .Contain("RunMat");
 
-            AutomationProperties.GetAutomationId(page).Should().Be("MainPage");
-            AutomationProperties.GetAutomationId(commandPaletteInput).Should().Be("CommandPaletteInput");
-            AutomationProperties.GetAutomationId(commandPaletteResults).Should().Be("CommandPaletteResults");
-            AutomationProperties.GetAutomationId(contentFrame).Should().Be("ContentFrame");
-            shellAutomationState.Text.Should().Be("Dashboard");
-            viewModel.CurrentPageTitle.Should().Be("Dashboard");
+            facade.ShowCommandPalette();
+            facade.SetText(facade.CommandPaletteTextBox, "mat");
+            facade.SelectCommandPalettePage("RunMat");
+            facade.OpenSelectedCommandPalettePage();
 
-            var runMatNavItem = researchNavList.Items
-                .OfType<ListBoxItem>()
-                .Single(item => string.Equals(item.Tag as string, "RunMat", StringComparison.Ordinal));
-
-            AutomationProperties.GetAutomationId(runMatNavItem).Should().Be("ResearchNavRunMat");
-            AutomationProperties.GetName(runMatNavItem).Should().Be("RunMat Lab Navigation");
-
-            RunMatUiAutomationFacade.InvokeNavigateToPage(page, "RunMat");
-
-            contentFrame.Content.Should().BeOfType<RunMatPage>();
-            shellAutomationState.Text.Should().Be("RunMat");
-            viewModel.CurrentPageTitle.Should().Be("Run Mat");
+            facade.ContentFrame.Content.Should().BeOfType<WorkspaceDeepPageHostPage>();
+            NavigationHostInspector.ResolveInnermostPage(facade.ContentFrame.Content).Should().BeOfType<RunMatPage>();
+            facade.ShellAutomationStateText.Text.Should().Be("RunMat");
+            facade.ViewModel.CurrentPageTitle.Should().Be("Run Mat");
 
             var runMatXaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunMatPage.xaml"));
             runMatXaml.Should().Contain("AutomationProperties.AutomationId=\"RunMatPageTitle\"");

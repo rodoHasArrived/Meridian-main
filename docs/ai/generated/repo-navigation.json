@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "generatedAt": "2026-04-09T07:29:06Z",
-=======
-  "generatedAt": "2026-04-10T21:25:21Z",
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+  "generatedAt": "2026-04-14T08:00:42Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "C:/Users/Andrew James Rowden/OneDrive/Documents/OneDrive/Documents/Desktop/Meridian-main",
   "subsystems": [
@@ -433,9 +429,7 @@
         "src/Meridian/Program.cs"
       ],
       "projectReferences": [
-<<<<<<< HEAD
         "Meridian.Application",
-        "Meridian.Backtesting",
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Domain",
@@ -444,17 +438,6 @@
         "Meridian.ProviderSdk",
         "Meridian.Storage",
         "Meridian.Ui.Shared"
-=======
-        "..\\Meridian.Application\\Meridian.Application",
-        "..\\Meridian.Contracts\\Meridian.Contracts",
-        "..\\Meridian.Core\\Meridian.Core",
-        "..\\Meridian.Domain\\Meridian.Domain",
-        "..\\Meridian.Infrastructure.CppTrader\\Meridian.Infrastructure.CppTrader",
-        "..\\Meridian.Infrastructure\\Meridian.Infrastructure",
-        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk",
-        "..\\Meridian.Storage\\Meridian.Storage",
-        "..\\Meridian.Ui.Shared\\Meridian.Ui.Shared"
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
       ],
       "relatedDocs": []
     },
@@ -552,14 +535,8 @@
         "src/Meridian.Backtesting.Sdk"
       ],
       "projectReferences": [
-<<<<<<< HEAD
         "Meridian.Contracts",
-        "Meridian.Execution.Sdk",
         "Meridian.Ledger"
-=======
-        "..\\Meridian.Contracts\\Meridian.Contracts",
-        "..\\Meridian.Ledger\\Meridian.Ledger"
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
       ],
       "relatedDocs": []
     },
@@ -675,20 +652,11 @@
         "src/Meridian.Execution/Interfaces/IOrderGateway.cs"
       ],
       "projectReferences": [
-<<<<<<< HEAD
         "Meridian.Application",
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Execution.Sdk",
-        "Meridian.Ledger",
-        "Meridian.Storage"
-=======
-        "..\\Meridian.Application\\Meridian.Application",
-        "..\\Meridian.Contracts\\Meridian.Contracts",
-        "..\\Meridian.Core\\Meridian.Core",
-        "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
-        "..\\Meridian.Ledger\\Meridian.Ledger"
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+        "Meridian.Ledger"
       ],
       "relatedDocs": []
     },
@@ -1654,11 +1622,6 @@
     },
     {
       "from": "Meridian",
-      "to": "Meridian.Backtesting",
-      "reason": "Meridian references Meridian.Backtesting directly via project reference."
-    },
-    {
-      "from": "Meridian",
       "to": "Meridian.Contracts",
       "reason": "Meridian references Meridian.Contracts directly via project reference."
     },
@@ -1769,11 +1732,6 @@
     },
     {
       "from": "Meridian.Backtesting.Sdk",
-      "to": "Meridian.Execution.Sdk",
-      "reason": "Meridian.Backtesting.Sdk references Meridian.Execution.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Backtesting.Sdk",
       "to": "Meridian.Ledger",
       "reason": "Meridian.Backtesting.Sdk references Meridian.Ledger directly via project reference."
     },
@@ -1826,11 +1784,6 @@
       "from": "Meridian.Execution",
       "to": "Meridian.Ledger",
       "reason": "Meridian.Execution references Meridian.Ledger directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.Execution references Meridian.Storage directly via project reference."
     },
     {
       "from": "Meridian.Execution.Sdk",

@@ -1,11 +1,7 @@
 # ADR-015: Platform Restructuring — Meridian → Meridian
 
 ## Status
-<<<<<<< HEAD:archive/docs/migrations/ADR-015-platform-restructuring.md
 Superseded by [ADR-015: Strategy Execution Contract](../../docs/adr/015-strategy-execution-contract.md) and [ADR-016: Platform Architecture Migration Mandate](../../docs/adr/016-platform-architecture-migration.md)
-=======
-Accepted
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe:docs/adr/ADR-015-platform-restructuring.md
 
 ## Date
 2026-03-18
@@ -23,7 +19,6 @@ The Meridian project has outgrown its original name and scope. What started as a
 - F# domain models with C# interop
 - QuantConnect Lean Engine integration
 
-<<<<<<< HEAD:archive/docs/migrations/ADR-015-platform-restructuring.md
 - **[ADR-015: Strategy Execution Contract](../../docs/adr/015-strategy-execution-contract.md)** —
   defines `IOrderGateway`, `IExecutionContext`, and the paper-first execution model.
 - **[ADR-016: Platform Architecture Migration Mandate](../../docs/adr/016-platform-architecture-migration.md)** —
@@ -35,9 +30,6 @@ assembly and namespace names remain `Meridian.*` to preserve CI/CD pipelines, Nu
 references, and existing documentation. ADR-016 documents this naming decision.
 
 This document is retained for historical context only.
-=======
-The platform needs to expand further to include **live strategy execution** (order management, execution gateways, risk management). The name "Meridian" no longer represents the system's capabilities.
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe:docs/adr/ADR-015-platform-restructuring.md
 
 ## Decision
 

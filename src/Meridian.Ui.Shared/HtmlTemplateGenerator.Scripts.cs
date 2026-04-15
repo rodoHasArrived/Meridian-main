@@ -182,9 +182,9 @@ function clearDsForm() {{
 
   // IB defaults
   document.getElementById('dsIbHost').value = '127.0.0.1';
-  document.getElementById('dsIbPort').value = '7496';
-  document.getElementById('dsIbClientId').value = '0';
-  document.getElementById('dsIbPaper').checked = false;
+    document.getElementById('dsIbPort').value = '7497';
+    document.getElementById('dsIbClientId').value = '1';
+    document.getElementById('dsIbPaper').checked = true;
   document.getElementById('dsIbDepth').checked = true;
   document.getElementById('dsIbTick').checked = true;
 
@@ -218,8 +218,8 @@ function editDataSource(id) {{
 
   if (ds.ib) {{
     document.getElementById('dsIbHost').value = ds.ib.host || '127.0.0.1';
-    document.getElementById('dsIbPort').value = ds.ib.port || 7496;
-    document.getElementById('dsIbClientId').value = ds.ib.clientId || 0;
+      document.getElementById('dsIbPort').value = ds.ib.port || 7497;
+      document.getElementById('dsIbClientId').value = ds.ib.clientId || 1;
     document.getElementById('dsIbPaper').checked = ds.ib.usePaperTrading || false;
     document.getElementById('dsIbDepth').checked = ds.ib.subscribeDepth !== false;
     document.getElementById('dsIbTick').checked = ds.ib.tickByTick !== false;
@@ -270,8 +270,8 @@ async function saveDataSource() {{
   if (provider === 'IB') {{
     payload.ib = {{
       host: document.getElementById('dsIbHost').value || '127.0.0.1',
-      port: parseInt(document.getElementById('dsIbPort').value) || 7496,
-      clientId: parseInt(document.getElementById('dsIbClientId').value) || 0,
+        port: parseInt(document.getElementById('dsIbPort').value) || 7497,
+        clientId: parseInt(document.getElementById('dsIbClientId').value) || 1,
       usePaperTrading: document.getElementById('dsIbPaper').checked,
       subscribeDepth: document.getElementById('dsIbDepth').checked,
       tickByTick: document.getElementById('dsIbTick').checked

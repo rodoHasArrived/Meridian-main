@@ -1,14 +1,6 @@
 # Architecture Decision Records
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-> Auto-generated on 2026-04-08 03:35:15 UTC
-=======
-> Auto-generated on 2026-04-08 03:00:16 UTC
->>>>>>> Stashed changes
-=======
-> Auto-generated on 2026-04-10 21:25:21 UTC
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+> Auto-generated on 2026-04-14 08:00:42 UTC
 
 | ADR | Title | Status |
 |-----|-------|--------|

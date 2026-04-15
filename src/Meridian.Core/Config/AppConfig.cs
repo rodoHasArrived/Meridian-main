@@ -17,6 +17,7 @@ namespace Meridian.Application.Config;
 /// </param>
 /// <param name="Alpaca">Alpaca provider options (required if DataSource == DataSourceKind.Alpaca).</param>
 /// <param name="IB">Interactive Brokers provider options (required if DataSource == DataSourceKind.IB).</param>
+/// <param name="IBClientPortal">Interactive Brokers Client Portal HTTP settings for portfolio/account import.</param>
 /// <param name="Polygon">Polygon provider options (required if DataSource == DataSourceKind.Polygon).</param>
 /// <param name="StockSharp">StockSharp connector configuration (required if DataSource == DataSourceKind.StockSharp).</param>
 /// <param name="Synthetic">Synthetic market-data provider configuration for offline/backtest development.</param>
@@ -40,6 +41,7 @@ public sealed record AppConfig(
     [property: JsonConverter(typeof(DataSourceKindConverter))] DataSourceKind DataSource = DataSourceKind.Synthetic,
     AlpacaOptions? Alpaca = null,
     IBOptions? IB = null,
+    IBClientPortalOptions? IBClientPortal = null,
     PolygonOptions? Polygon = null,
     StockSharpConfig? StockSharp = null,
     SyntheticMarketDataConfig? Synthetic = null,

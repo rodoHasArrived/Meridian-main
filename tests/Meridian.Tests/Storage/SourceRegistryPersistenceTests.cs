@@ -29,50 +29,27 @@ public sealed class SourceRegistryPersistenceTests : IDisposable
         var persistencePath = Path.Combine(_tempRoot, "registry.json");
         await File.WriteAllTextAsync(persistencePath, "{\"Sources\":[],\"Symbols\":[]}");
 
-        using var watcher = new FileSystemWatcher(_tempRoot, Path.GetFileName(persistencePath))
-        {
-            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
-            EnableRaisingEvents = true
-        };
+        var registry = new SourceRegistry(persistencePath);
+        registry.RegisterSymbol(new SymbolInfo(
+            Symbol: "MSFT",
+            Canonical: "MSFT",
+            Aliases: ["MSFT.OQ"],
+            AssetClass: "equity",
+            Exchange: "XNAS",
+            Currency: "USD"));
 
-        var saveObserved = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var persisted = await File.ReadAllTextAsync(persistencePath);
+        using var document = JsonDocument.Parse(persisted);
+        document.RootElement.GetProperty("Symbols").EnumerateArray()
+            .Any(entry => entry.GetProperty("Symbol").GetString() == "MSFT")
+            .Should().BeTrue();
 
-        FileSystemEventHandler onChange = (_, args) =>
-        {
-            if (string.Equals(args.FullPath, persistencePath, StringComparison.OrdinalIgnoreCase))
-            {
-                saveObserved.TrySetResult(true);
-            }
-        };
+        var reloaded = new SourceRegistry(persistencePath);
+        var symbol = reloaded.GetSymbolInfo("MSFT");
 
-        watcher.Created += onChange;
-        watcher.Changed += onChange;
-
-        try
-        {
-            var registry = new SourceRegistry(persistencePath);
-            registry.RegisterSymbol(new SymbolInfo(
-                Symbol: "MSFT",
-                Canonical: "MSFT",
-                Aliases: ["MSFT.OQ"],
-                AssetClass: "equity",
-                Exchange: "XNAS",
-                Currency: "USD"));
-
-            await saveObserved.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-            var reloaded = new SourceRegistry(persistencePath);
-            var symbol = reloaded.GetSymbolInfo("MSFT");
-
-            symbol.Should().NotBeNull();
-            symbol!.Exchange.Should().Be("XNAS");
-            reloaded.ResolveSymbolAlias("MSFT.OQ").Should().Be("MSFT");
-        }
-        finally
-        {
-            watcher.Created -= onChange;
-            watcher.Changed -= onChange;
-        }
+        symbol.Should().NotBeNull();
+        symbol!.Exchange.Should().Be("XNAS");
+        reloaded.ResolveSymbolAlias("MSFT.OQ").Should().Be("MSFT");
     }
 
     [Fact]
@@ -81,51 +58,53 @@ public sealed class SourceRegistryPersistenceTests : IDisposable
         var persistencePath = Path.Combine(_tempRoot, "sources.json");
         await File.WriteAllTextAsync(persistencePath, "{\"Sources\":[],\"Symbols\":[]}");
 
-        using var watcher = new FileSystemWatcher(_tempRoot, Path.GetFileName(persistencePath))
-        {
-            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
-            EnableRaisingEvents = true
-        };
+        var registry = new SourceRegistry(persistencePath);
+        registry.RegisterSource(new SourceInfo(
+            Id: "test-feed",
+            Name: "Test Feed",
+            Type: SourceType.Live,
+            Priority: 7,
+            Enabled: true));
 
-        var saveObserved = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var persisted = await File.ReadAllTextAsync(persistencePath);
+        using var document = JsonDocument.Parse(persisted);
+        document.RootElement.GetProperty("Sources").EnumerateArray()
+            .Any(entry => entry.GetProperty("Id").GetString() == "test-feed")
+            .Should().BeTrue();
 
-        FileSystemEventHandler onChange = (_, args) =>
-        {
-            if (string.Equals(args.FullPath, persistencePath, StringComparison.OrdinalIgnoreCase))
-            {
-                saveObserved.TrySetResult(true);
-            }
-        };
+        var reloaded = new SourceRegistry(persistencePath);
+        reloaded.GetSourceInfo("test-feed").Should().NotBeNull();
+        reloaded.GetSourcePriorityOrder().Should().Contain("test-feed");
+    }
 
-        watcher.Created += onChange;
-        watcher.Changed += onChange;
+    [Fact]
+    public void Constructor_WhenInitialPersistenceWriteFails_KeepsDefaultsInMemory()
+    {
+        var persistencePath = Path.Combine(_tempRoot, "registry-directory");
+        Directory.CreateDirectory(persistencePath);
 
-        try
-        {
-            var registry = new SourceRegistry(persistencePath);
-            registry.RegisterSource(new SourceInfo(
-                Id: "test-feed",
-                Name: "Test Feed",
-                Type: SourceType.Live,
-                Priority: 7,
-                Enabled: true));
+        var registry = new SourceRegistry(persistencePath);
 
-            await saveObserved.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        registry.GetSourceInfo("alpaca").Should().NotBeNull();
+        registry.GetSourcePriorityOrder().Should().Contain("alpaca");
+    }
 
-            var persisted = await File.ReadAllTextAsync(persistencePath);
-            using var document = JsonDocument.Parse(persisted);
-            document.RootElement.GetProperty("Sources").EnumerateArray()
-                .Any(entry => entry.GetProperty("Id").GetString() == "test-feed")
-                .Should().BeTrue();
+    [Fact]
+    public async Task RegisterSource_WhenPersistenceWriteFails_Throws()
+    {
+        var persistencePath = Path.Combine(_tempRoot, "broken.json");
+        await File.WriteAllTextAsync(persistencePath, "{\"Sources\":[],\"Symbols\":[]}");
 
-            var reloaded = new SourceRegistry(persistencePath);
-            reloaded.GetSourceInfo("test-feed").Should().NotBeNull();
-            reloaded.GetSourcePriorityOrder().Should().Contain("test-feed");
-        }
-        finally
-        {
-            watcher.Created -= onChange;
-            watcher.Changed -= onChange;
-        }
+        var registry = new SourceRegistry(persistencePath);
+        File.Delete(persistencePath);
+        Directory.CreateDirectory(persistencePath);
+
+        var act = () => registry.RegisterSource(new SourceInfo(
+            Id: "broken-feed",
+            Name: "Broken Feed",
+            Type: SourceType.Live));
+
+        var exception = act.Should().Throw<Exception>().Which;
+        (exception is IOException || exception is UnauthorizedAccessException).Should().BeTrue();
     }
 }

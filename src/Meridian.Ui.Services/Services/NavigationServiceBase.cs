@@ -42,7 +42,7 @@ public abstract class NavigationServiceBase
         }
 
         var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
-        var result = NavigateToPageCore(pageType, effectiveParameter);
+        var result = NavigateToPageCore(pageTag, pageType, effectiveParameter);
 
         if (result)
         {
@@ -69,7 +69,8 @@ public abstract class NavigationServiceBase
     /// </summary>
     public bool NavigateTo(Type pageType, object? parameter = null)
     {
-        return NavigateToPageCore(pageType, parameter);
+        var pageTag = ResolvePageTag(pageType);
+        return NavigateToPageCore(pageTag, pageType, parameter);
     }
 
     /// <summary>
@@ -150,10 +151,11 @@ public abstract class NavigationServiceBase
     /// <summary>
     /// When overridden, performs the platform-specific navigation to a page type.
     /// </summary>
+    /// <param name="pageTag">The registered navigation tag used for metadata-aware routing.</param>
     /// <param name="pageType">The Type of the page to navigate to.</param>
     /// <param name="parameter">Optional navigation parameter.</param>
     /// <returns>True if navigation succeeded.</returns>
-    protected abstract bool NavigateToPageCore(Type pageType, object? parameter);
+    protected abstract bool NavigateToPageCore(string pageTag, Type pageType, object? parameter);
 
     /// <summary>
     /// When overridden, performs the platform-specific back navigation.
@@ -177,5 +179,18 @@ public abstract class NavigationServiceBase
     /// </summary>
     protected virtual void OnNavigationFailed(string pageTag)
     {
+    }
+
+    private string ResolvePageTag(Type pageType)
+    {
+        foreach (var entry in _pageRegistry)
+        {
+            if (entry.Value == pageType)
+            {
+                return entry.Key;
+            }
+        }
+
+        return pageType.Name;
     }
 }

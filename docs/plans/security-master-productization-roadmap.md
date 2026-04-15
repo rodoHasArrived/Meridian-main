@@ -1,12 +1,7 @@
 # Security Master Productization Roadmap
 
-<<<<<<< HEAD
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-13
 **Status:** Delivered baseline with active Wave 4 governance and fund-operations follow-ons
-=======
-**Last Updated:** 2026-03-30
-**Status:** In Progress — Wave 6 delivery
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 **Owner:** Platform team
 **Audience:** Architecture, API, UI, and data contributors
 
@@ -35,15 +30,11 @@ All new F# types and C# DTOs introduced by this roadmap must follow the
 
 ## Summary
 
-<<<<<<< HEAD
-Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap captured the mechanics that established Security Master as a platform layer, and now records the delivered workstation/read-model productization plus the remaining Wave 4 governance and fund-operations follow-on work that builds on that shipped baseline.
-=======
-Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap captures six prioritized ideas that together move Security Master from a backend capability to a first-class platform layer.
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+Meridian's Security Master has contracts, Postgres-backed services, F# domain modules, and REST endpoints. This roadmap originally captured six prioritized ideas that moved Security Master from a backend capability into a first-class platform layer. It now records the delivered workstation/read-model productization plus the remaining Wave 4 governance and fund-operations follow-on work that builds on that shipped baseline.
 
 Security Master is no longer a future roadmap wave. In the canonical roadmap it is a delivered baseline feeding the active governance productization path.
 
-**Delivered mechanics snapshot (as of 2026-03-26):**
+**Delivered mechanics snapshot (as of 2026-04-13):**
 
 | # | Idea | Status |
 |---|------|--------|
@@ -73,7 +64,7 @@ The following capabilities were implemented as foundational work for this wave a
 
 ## Idea 1 — Corporate Action Events
 
-**Status: 🔶 Partial**
+**Status: ✅ Delivered**
 
 ### What Was Delivered
 
@@ -176,16 +167,15 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 - **`SecurityMasterImportService` / `ISecurityMasterImportService`** — orchestrates CSV/JSON bulk import with per-row error handling, duplicate detection (skips on "already exists"), and `IProgress<SecurityMasterImportProgress>` reporting.
 - **`SecurityMasterCommands`** — `--security-master-ingest <file.csv|file.json>` CLI command wired through `CommandDispatcher`; prints per-row progress and final summary.
 - **`POST /api/security-master/import`** endpoint — accepts `SecurityMasterImportRequest` (file content + extension) and streams import results.
+- **`PolygonSecurityMasterIngestProvider`** — bulk reference ingest provider for Polygon-backed exchange listing imports.
+- **`GET /api/security-master/ingest/status`** — typed ingest-status endpoint backed by `ISecurityMasterIngestStatusService`, including active import, last completed import, and unresolved conflict count for dashboard polling.
 
-### Remaining Work
+### Acceptance Criteria — Status
 
-- **`PolygonSecurityMasterIngestProvider`** — pages through Polygon `/v3/reference/tickers` and maps responses to `CreateSecurityRequest`; enables `--security-master-ingest --provider polygon --exchange XNAS`.
-- **Ingest status endpoint** — `GET /api/security-master/ingest/status` for dashboard polling.
-
-### Acceptance Criteria (remaining)
-
-- Polygon provider ingests a full exchange listing without manual CSV export.
-- `GET /api/security-master/ingest/status` returns in-progress and last-completed ingest summary.
+| Criterion | Status |
+|---|---|
+| Polygon provider ingests a full exchange listing without manual CSV export. | ✅ Done |
+| `GET /api/security-master/ingest/status` returns in-progress and last-completed ingest summary. | ✅ Done |
 
 ---
 
@@ -199,16 +189,22 @@ All modules are optional fields on `SecurityTermModules`, so equities continue t
 - **`ISecurityMasterConflictService` / `SecurityMasterConflictService`** — on-demand identifier-ambiguity detection scanning all projections; `GetOpenConflictsAsync`, `GetConflictAsync`, `ResolveAsync` (marks as Resolved or Dismissed); uses a deterministic stable `ConflictId` (MD5 of identifier tuple) so re-detection yields the same ID.
 - **`ResolveConflictRequest`** DTO — `ConflictId`, `Resolution`, `ResolvedBy`, optional `Reason`.
 - **REST endpoints** — `GET /api/security-master/conflicts` and `POST /api/security-master/conflicts/{id}/resolve` in `SecurityMasterEndpoints.cs`.
+- **Automatic conflict recording** — create, amend, import, and projection-write flows now record conflicts through `ISecurityMasterConflictService` instead of silently overwriting conflicting projection values.
 
 ### Remaining Work
 
-- **Automatic conflict detection on ingest** — `SecurityMasterProjectionService` should detect and record a `SecurityMasterConflict` when two providers contribute conflicting field values for the same FIGI/ISIN rather than silently overwriting.
 - **Dashboard conflict badge** — surface unresolved conflict count in the web dashboard Security Master panel.
 
 ### Acceptance Criteria (remaining)
 
-- Two providers with differing `DisplayName` for the same FIGI trigger an automatic `SecurityMasterConflict` record during ingest.
 - Unresolved conflict count is surfaced in the Security Master dashboard panel.
+
+### Acceptance Criteria — Status
+
+| Criterion | Status |
+|---|---|
+| Two providers with differing `DisplayName` for the same FIGI trigger an automatic `SecurityMasterConflict` record during ingest. | ✅ Done |
+| Unresolved conflict count is surfaced in the Security Master dashboard panel. | ⏳ Remaining |
 
 ---
 

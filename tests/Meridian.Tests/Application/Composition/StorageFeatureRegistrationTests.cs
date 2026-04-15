@@ -46,6 +46,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().NotContain(sd => sd.ServiceType == typeof(SecurityMasterOptions));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IValidateOptions<SecurityMasterOptions>));
         services.Should().NotContain(sd => sd.ServiceType == typeof(ISecurityMasterStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterIngestStatusService));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IPolygonCorporateActionFetcher));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingStateStore));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IDirectLendingService));
@@ -72,6 +73,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(SecurityMasterOptions));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IValidateOptions<SecurityMasterOptions>));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(ISecurityMasterIngestStatusService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IPolygonCorporateActionFetcher));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(DirectLendingOptions));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IDirectLendingStateStore));

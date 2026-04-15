@@ -52,9 +52,9 @@ public sealed class DataSourcesViewModel : BindableBase
 
     // ── IB settings ─────────────────────────────────────────────────────
     private string _ibHost = "127.0.0.1";
-    private string _ibPort = "7496";
-    private string _ibClientId = "0";
-    private bool _ibPaperTrading;
+    private string _ibPort = "7497";
+    private string _ibClientId = "1";
+    private bool _ibPaperTrading = true;
     private bool _ibSubscribeDepth = true;
     private bool _ibTickByTick = true;
 
@@ -543,8 +543,8 @@ public sealed class DataSourcesViewModel : BindableBase
                 source.IB = new IBOptionsDto
                 {
                     Host = IBHost,
-                    Port = int.TryParse(IBPort, out var port) ? port : 7496,
-                    ClientId = int.TryParse(IBClientId, out var cid) ? cid : 0,
+                    Port = int.TryParse(IBPort, out var port) ? port : 7497,
+                    ClientId = int.TryParse(IBClientId, out var cid) ? cid : 1,
                     UsePaperTrading = IBPaperTrading,
                     SubscribeDepth = IBSubscribeDepth,
                     TickByTick = IBTickByTick
@@ -622,9 +622,9 @@ public sealed class DataSourcesViewModel : BindableBase
         SymbolsText = string.Empty;
 
         IBHost = "127.0.0.1";
-        IBPort = "7496";
-        IBClientId = "0";
-        IBPaperTrading = false;
+        IBPort = "7497";
+        IBClientId = "1";
+        IBPaperTrading = true;
         IBSubscribeDepth = true;
         IBTickByTick = true;
 

@@ -72,8 +72,16 @@ public partial class MeridianDockingManager : UserControl
     /// </summary>
     public void LoadPage(string pageKey, string title, FrameworkElement content, PaneDropAction action)
     {
+        var documentContent = NormalizeDocumentContent(content);
+
         if (_openDocuments.TryGetValue(pageKey, out var existing))
         {
+            if (WorkspaceShellFallbackContentFactory.IsFallbackContent(existing.Document.Content))
+            {
+                existing.Document.Title = title;
+                existing.Document.Content = documentContent;
+            }
+
             existing.Document.IsActive = true;
             existing.Action = action;
             return;
@@ -87,7 +95,7 @@ public partial class MeridianDockingManager : UserControl
         var document = new LayoutDocument
         {
             Title = title,
-            Content = content,
+            Content = documentContent,
             CanClose = true,
             IsActive = true
         };
@@ -227,6 +235,23 @@ public partial class MeridianDockingManager : UserControl
     {
         var separatorIndex = pageKey.IndexOf(':');
         return separatorIndex >= 0 ? pageKey[..separatorIndex] : pageKey;
+    }
+
+    private static FrameworkElement NormalizeDocumentContent(FrameworkElement content)
+    {
+        if (content is not Page page)
+        {
+            return content;
+        }
+
+        var frame = new Frame
+        {
+            NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden,
+            Focusable = false
+        };
+
+        frame.Navigate(page);
+        return frame;
     }
 
     private static string ToDockZone(PaneDropAction action) => action switch

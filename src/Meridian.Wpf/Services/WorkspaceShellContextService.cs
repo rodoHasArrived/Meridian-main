@@ -21,51 +21,8 @@ public sealed class WorkspaceShellContextService
         FundContextService fundContextService,
         FixtureModeDetector fixtureModeDetector,
         NotificationService notificationService,
-        IStatusService statusService)
-        : this(
-            fundContextService,
-            fixtureModeDetector,
-            notificationService,
-            ct => MapStatusAsync(statusService, ct),
-            operatingContextService: null)
-    {
-    }
-
-    public WorkspaceShellContextService(
-        FundContextService fundContextService,
-        FixtureModeDetector fixtureModeDetector,
-        NotificationService notificationService,
         IStatusService statusService,
-        WorkstationOperatingContextService? operatingContextService)
-        : this(
-            fundContextService,
-            fixtureModeDetector,
-            notificationService,
-            ct => MapStatusAsync(statusService, ct),
-            operatingContextService)
-    {
-    }
-
-    public WorkspaceShellContextService(
-        FundContextService fundContextService,
-        FixtureModeDetector fixtureModeDetector,
-        NotificationService notificationService,
-        StatusService statusService)
-        : this(
-            fundContextService,
-            fixtureModeDetector,
-            notificationService,
-            ct => MapStatusAsync(statusService, ct),
-            operatingContextService: null)
-    {
-    }
-
-    public WorkspaceShellContextService(
-        FundContextService fundContextService,
-        FixtureModeDetector fixtureModeDetector,
-        NotificationService notificationService,
-        StatusService statusService,
-        WorkstationOperatingContextService? operatingContextService)
+        WorkstationOperatingContextService? operatingContextService = null)
         : this(
             fundContextService,
             fixtureModeDetector,
@@ -312,22 +269,25 @@ public sealed class WorkspaceShellContextService
 
     private static async Task<WorkspaceStatusSnapshot?> MapStatusAsync(IStatusService statusService, CancellationToken ct)
     {
-        var status = await statusService.GetStatusAsync(ct).ConfigureAwait(false);
-        return status is null
-            ? null
-            : new WorkspaceStatusSnapshot(
-                status.IsConnected,
-                status.Metrics?.IsStale ?? false);
-    }
-
-    private static async Task<WorkspaceStatusSnapshot?> MapStatusAsync(StatusService statusService, CancellationToken ct)
-    {
-        var status = await statusService.GetStatusAsync(ct).ConfigureAwait(false);
-        return status is null
-            ? null
-            : new WorkspaceStatusSnapshot(
-                status.Provider?.IsConnected == true,
-                status.IsStale);
+        try
+        {
+            var status = await statusService.GetStatusAsync(ct).ConfigureAwait(false);
+            return status is null
+                ? null
+                : new WorkspaceStatusSnapshot(
+                    status.IsConnected,
+                    status.Metrics?.IsStale ?? false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch
+        {
+            // Shell headers should degrade to a pending/offline trust state when backend
+            // status is temporarily unavailable instead of failing the whole workspace.
+            return null;
+        }
     }
 
     private sealed record WorkspaceStatusSnapshot(bool IsConnected, bool IsStale);

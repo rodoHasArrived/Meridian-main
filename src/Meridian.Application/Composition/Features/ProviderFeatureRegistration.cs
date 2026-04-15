@@ -130,8 +130,15 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var publisher = sp.GetRequiredService<IMarketEventPublisher>();
             var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
             var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
+            var quoteCollector = sp.GetService<QuoteCollector>();
+            var optionCollector = sp.GetService<OptionDataCollector>();
             return new Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient(
-                publisher, tradeCollector, depthCollector);
+                publisher,
+                tradeCollector,
+                depthCollector,
+                quoteCollector,
+                optionCollector,
+                config.IB ?? new IBOptions());
         });
 
         registry.RegisterStreamingFactory("alpaca", () =>

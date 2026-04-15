@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Blueprint"
+  short_description: "Create code-ready Meridian design specs"
+  default_prompt: "Use $meridian-blueprint to turn this Meridian feature into a code-ready design grounded in the current workstation and fund-ops architecture."

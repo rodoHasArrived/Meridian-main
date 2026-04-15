@@ -40,7 +40,7 @@ All core domain primitives for options are implemented and production-ready:
 |----------|------|--------|
 | `SyntheticOptionsChainProvider` | `Meridian.Infrastructure/Adapters/Synthetic/` | ✅ **New** — deterministic BSM-priced options for offline dev/test/backtest |
 | `PolygonOptionsChainProvider` | `Meridian.Infrastructure/Adapters/Polygon/` | 🟡 **New scaffold** — HTTP client wired, JSON DTOs defined, parsing not yet validated against live API |
-| `AlpacaOptionsChainProvider` | `Meridian.Infrastructure/Adapters/Alpaca/` | 🟡 **New scaffold** — HTTP client wired, JSON DTOs defined, parsing not yet validated against live API |
+| `AlpacaOptionsChainProvider` | `Meridian.Infrastructure/Adapters/Alpaca/` | 🟡 **New scaffold** — HTTP client wired and JSON DTOs defined, but current chain mapping still cannot materialize a domain-valid `OptionChainSnapshot` because the mapper does not yet enrich a non-zero underlying spot price and still needs live-response validation |
 
 ### 1.4 Backtesting Engine Options Support
 
@@ -65,6 +65,8 @@ All core domain primitives for options are implemented and production-ready:
 1. **AlpacaOptionsChainProvider** (requires `ALPACA_KEY_ID` + `ALPACA_SECRET_KEY`)
 2. **PolygonOptionsChainProvider** (requires `POLYGON_API_KEY`)
 3. **SyntheticOptionsChainProvider** (always available — fallback)
+
+`OptionsChainService.FetchConfiguredChainsAsync(...)` already knows how to walk `DerivativesConfig.Underlyings`, expiration filters, and strike-range settings. However, there is not yet a hosted/background collector that invokes it on `ChainSnapshotIntervalSeconds`, so configured underlyings are not polled unless a caller manually triggers refresh/fetch flows.
 
 ### 1.7 REST API Endpoints
 
@@ -101,6 +103,8 @@ All core domain primitives for options are implemented and production-ready:
 - [ ] **P1.2** Write integration tests for `AlpacaOptionsChainProvider` using recorded HTTP fixtures
 - [ ] **P1.3** Validate Polygon v3 snapshot response shape against `PolygonSnapshotResult` DTO — map all fields
 - [ ] **P1.4** Validate Alpaca v1beta1 snapshot response shape against `AlpacaSnapshotResult` DTO — map all fields
+- [ ] **P1.4a** Fix Alpaca chain snapshot construction so `OptionChainSnapshot` can be created with a domain-valid `UnderlyingPrice` instead of the current hard-coded `0m`
+- [ ] **P1.4b** Replace the naive Alpaca OCC ticker decoding in `MapToChainSnapshot` with deterministic contract parsing so calls/puts and strikes are reconstructed correctly for all underlyings
 - [ ] **P1.5** Map Greek fields correctly (Polygon: `greeks.delta`, Alpaca: `greeks.delta`)
 - [ ] **P1.6** Handle Polygon pagination (`next_url` cursor) in `GetChainSnapshotAsync` for large chains
 - [ ] **P1.7** Handle Alpaca next-page token in `GetChainSnapshotAsync`
@@ -140,6 +144,8 @@ All core domain primitives for options are implemented and production-ready:
 - [ ] **P4.4** Add `OptionDataCollector` processing for live quote events (currently exists but may not receive WS events)
 - [ ] **P4.5** Publish `OptionQuote` events through `EventPipeline` to storage sinks (JSONL + Parquet)
 - [ ] **P4.6** Add live IV calculation service that maintains per-symbol IV surface from streaming quotes
+- [ ] **P4.7** Add a hosted/background options chain collector that polls `OptionsChainService.FetchConfiguredChainsAsync(...)` on `DerivativesConfig.ChainSnapshotIntervalSeconds`
+- [ ] **P4.8** Wire background polling to `DerivativesConfig.Enabled`, `CaptureChainSnapshots`, configured `Underlyings`, and hot-reload so cached chains and tracked underlyings populate without manual refresh calls
 
 ### Phase 5 — Symbol / Chain Discovery Improvements (Low, ~0.5 sprint)
 
@@ -192,6 +198,14 @@ SyntheticOptionsChainProvider (Priority=200, always available)
 `OptionsChainService` (Application layer) uses `GetService<IOptionsChainProvider>()` which resolves the **first** registration — currently `AlpacaOptionsChainProvider`. When credentials are absent, the live provider will throw or return empty results; the intent is that `OptionsChainService` falls back to the `Synthetic` provider if the live provider fails.
 
 **TODO:** Implement explicit fallback chain in `OptionsChainService` using `IEnumerable<IOptionsChainProvider>` (registered in DI for all three) with health-check gating.
+
+### Current Collection Gap
+
+`OptionsChainService.FetchConfiguredChainsAsync(...)` is present, but there is no host-level scheduler/collector invoking it today. As a result:
+
+- `/api/options/underlyings` only reflects symbols that have already been fetched manually
+- `/api/options/chains/{underlyingSymbol}` returns cached data only after an explicit refresh/fetch path populates the collector
+- `DerivativesConfig.CaptureChainSnapshots` and `ChainSnapshotIntervalSeconds` describe intended behavior that is not yet wired into a running background loop
 
 ### Backtesting Integration
 

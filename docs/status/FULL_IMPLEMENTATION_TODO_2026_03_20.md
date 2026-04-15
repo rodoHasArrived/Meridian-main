@@ -1,10 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-<<<<<<< HEAD
-**Last Updated:** 2026-04-08
-=======
-**Last Updated:** 2026-04-03
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+**Last Updated:** 2026-04-13
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -46,6 +42,7 @@ Closed platform work:
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
+- current working-tree WPF shell consolidation should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
 - delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
@@ -77,21 +74,14 @@ Every major provider has documented replay/runtime evidence and passes its valid
 
 ### Track B / Wave 2: Paper-trading cockpit hardening
 
-Goal: harden the existing execution primitives, brokerage adapters, and wired REST/dashboard flows into a dependable operator cockpit in the web dashboard.
+Goal: harden the existing execution primitives, brokerage adapters, and wired REST/dashboard flows into a dependable operator cockpit in the web workstation.
 
 Open work:
 
-<<<<<<< HEAD
 - tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
 - expose promotion evaluation result, approval controls, session state, and execution-control state with clearer acceptance criteria in the dashboard
 - verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
 - extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
-=======
-- build live positions, open orders, fills, P&L, and risk state panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result and approval controls in the dashboard
-- add paper-trading session persistence and replay from persisted order history
-- validate brokerage gateway adapters against real vendor APIs (Alpaca, IB, StockSharp)
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 
 Primary anchors:
 
@@ -102,7 +92,7 @@ Primary anchors:
 
 Exit signal:
 
-A strategy researched in backtest can be promoted to paper trading through one connected workflow in the web dashboard, with live positions and fills visible.
+A strategy researched in backtest can be promoted to paper trading through one connected workflow in the web workstation, with live positions and fills visible.
 
 ### Track C / Wave 3: Shared run / portfolio / ledger continuity
 

@@ -16,7 +16,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />

@@ -1,12 +1,5 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 name: "Workflow Results - {workflow_name}"
 description: "Address issues found in the {workflow_name} workflow run"
-=======
-name: Workflow Results - {workflow_name}
-description: Address issues found in the {workflow_name} workflow run
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 # Auto-generated prompt from workflow run analysis
 # Generated: {now}
 # Source: {run_url}
@@ -25,8 +18,8 @@ messages:
       - 14 main projects, 105 test files
 
       ## Findings from Workflow Run
-{findings_text}
-{test_section}{code_section}
+      {findings_text}
+      {test_section}{code_section}
       ## Resolution Guidelines
       1. Prioritize failures by severity (errors > warnings)
       2. Check docs/ai/ai-known-errors.md for recurring patterns
@@ -48,4 +41,3 @@ messages:
       2. Prioritized fix plan
       3. Code changes needed (with file paths)
       4. Verification steps
->>>>>>> d5ab6a6bf3983ec9a9f290c5b8296eeb2fbc46a3

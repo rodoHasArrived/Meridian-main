@@ -135,19 +135,19 @@ public sealed record IBOptions(
     string Host = "127.0.0.1",
 
     // <summary>
-    // TWS/Gateway port (7496 for live, 7497 for paper).
+    // TWS/Gateway port (paper-safe default is 7497).
     // </summary>
-    int Port = 7496,
+    int Port = 7497,
 
     // <summary>
     // Client ID for the IB connection.
     // </summary>
-    int ClientId = 0,
+    int ClientId = 1,
 
     // <summary>
     // Whether to use paper trading account.
     // </summary>
-    bool UsePaperTrading = false,
+    bool UsePaperTrading = true,
 
     // <summary>
     // Subscribe to Level 2 market depth.
@@ -163,6 +163,27 @@ public sealed record IBOptions(
     // Whether to request tick-by-tick data.
     // </summary>
     bool TickByTick = true
+);
+
+/// <summary>
+/// Interactive Brokers Client Portal HTTP configuration.
+/// Kept separate from the socket/TWS connection used for market data, historical data, and order routing.
+/// </summary>
+public sealed record IBClientPortalOptions(
+    // <summary>
+    // Whether Client Portal integration is enabled for portfolio/account HTTP endpoints.
+    // </summary>
+    bool Enabled = false,
+
+    // <summary>
+    // Base URL for the IB Client Portal API.
+    // </summary>
+    string BaseUrl = "https://localhost:5000",
+
+    // <summary>
+    // Whether Meridian should allow the self-signed certificate typically used by local Client Portal sessions.
+    // </summary>
+    bool AllowSelfSignedCertificates = true
 );
 
 /// <summary>

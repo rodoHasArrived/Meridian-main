@@ -56,6 +56,22 @@ public sealed class EClientSocket
         IList<TagValue>? chartOptions) { }
 
     public void cancelHistoricalData(int reqId) { }
+
+    public void reqIds(int numIds) { }
+
+    public void placeOrder(int orderId, Contract contract, Order order) { }
+
+    public void cancelOrder(int orderId, OrderCancel orderCancel) { }
+
+    public void reqAccountSummary(int reqId, string groupName, string tags) { }
+
+    public void cancelAccountSummary(int reqId) { }
+
+    public void reqPositions() { }
+
+    public void cancelPositions() { }
+
+    public void reqOpenOrders() { }
 }
 
 public sealed class EReader
@@ -83,6 +99,49 @@ public sealed class Contract
     public string? Right { get; set; }                    // "C" or "P"
     public string? LastTradeDateOrContractMonth { get; set; }
     public string? Multiplier { get; set; }
+}
+
+public sealed class Order
+{
+    public int OrderId { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public decimal TotalQuantity { get; set; }
+    public string OrderType { get; set; } = string.Empty;
+    public double LmtPrice { get; set; }
+    public double AuxPrice { get; set; }
+    public string Tif { get; set; } = string.Empty;
+    public bool Transmit { get; set; }
+    public string OrderRef { get; set; } = string.Empty;
+    public bool OutsideRth { get; set; }
+    public string Account { get; set; } = string.Empty;
+}
+
+public sealed class OrderState
+{
+    public string Status { get; set; } = string.Empty;
+    public double CommissionAndFees { get; set; }
+    public string RejectReason { get; set; } = string.Empty;
+}
+
+public sealed class Execution
+{
+    public int OrderId { get; set; }
+    public int ClientId { get; set; }
+    public string ExecId { get; set; } = string.Empty;
+    public string Time { get; set; } = string.Empty;
+    public string AcctNumber { get; set; } = string.Empty;
+    public string Exchange { get; set; } = string.Empty;
+    public string Side { get; set; } = string.Empty;
+    public decimal Shares { get; set; }
+    public double Price { get; set; }
+    public long PermId { get; set; }
+    public decimal CumQty { get; set; }
+    public double AvgPrice { get; set; }
+    public string OrderRef { get; set; } = string.Empty;
+}
+
+public sealed class OrderCancel
+{
 }
 
 public sealed class Bar

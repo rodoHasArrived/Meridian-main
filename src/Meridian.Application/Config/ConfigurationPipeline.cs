@@ -844,6 +844,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
             Symbols = overlay.Symbols?.Length > 0 ? overlay.Symbols : baseConfig.Symbols,
             Alpaca = overlay.Alpaca ?? baseConfig.Alpaca,
             IB = overlay.IB ?? baseConfig.IB,
+            IBClientPortal = overlay.IBClientPortal ?? baseConfig.IBClientPortal,
             Polygon = overlay.Polygon ?? baseConfig.Polygon,
             Storage = overlay.Storage ?? baseConfig.Storage,
             Backfill = overlay.Backfill ?? baseConfig.Backfill

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Simulated User Panel"
+  short_description: "Run manifest-driven, multi-mode user panels"
+  default_prompt: "Use $meridian-simulated-user-panel with a review manifest to critique this Meridian artifact in design_partner, release_gate, or usability_lab mode and return rubric-backed owner actions."

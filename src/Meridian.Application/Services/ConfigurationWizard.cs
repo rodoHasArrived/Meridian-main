@@ -326,4 +326,5 @@ public sealed class DataSourceSelection
     public AlpacaOptions? Alpaca { get; set; }
     public PolygonOptions? Polygon { get; set; }
     public IBOptions? IB { get; set; }
+    public IBClientPortalOptions? IBClientPortal { get; set; }
 }

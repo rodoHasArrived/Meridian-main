@@ -18,8 +18,9 @@ public sealed class MainShellViewModelTests
         WorkstationOperatingContextService? operatingContextService = null)
     {
         var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
-        navigationService.ClearHistory();
+        WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
@@ -31,8 +32,9 @@ public sealed class MainShellViewModelTests
     private static MainWindowViewModel CreateMainWindowViewModel()
     {
         var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
-        navigationService.ClearHistory();
+        WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
         fixtureModeDetector.SetFixtureMode(false);
@@ -50,7 +52,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToDashboard()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToResearchWorkspace()
     {
         WpfTestThread.Run(() =>
         {
@@ -58,8 +60,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("Dashboard");
-            vm.CurrentPageTitle.Should().Be("Dashboard");
+            vm.CurrentPageTag.Should().Be("ResearchShell");
+            vm.CurrentPageTitle.Should().Be("Research Workspace");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -73,10 +75,42 @@ public sealed class MainShellViewModelTests
 
             vm.CommandPaletteQuery = "sym";
 
-            vm.CommandPalettePages.Should().Contain("Symbols");
-            vm.CommandPalettePages.Should().Contain("SymbolMapping");
-            vm.CommandPalettePages.Should().NotContain("Dashboard");
-            vm.SelectedCommandPalettePage.Should().Be("SymbolMapping");
+            vm.CommandPalettePages.Select(page => page.PageTag).Should().Contain("Symbols");
+            vm.CommandPalettePages.Select(page => page.PageTag).Should().Contain("SymbolMapping");
+            vm.CommandPalettePages.Select(page => page.PageTag).Should().NotContain("Dashboard");
+            vm.SelectedCommandPalettePage.Should().NotBeNull();
+            vm.SelectedCommandPalettePage!.PageTag.Should().Be("Symbols");
+        });
+    }
+
+    [Fact]
+    public void ShellNavigationCatalog_CoversEveryRegisteredPage()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            var registeredPages = NavigationService.Instance.GetRegisteredPages().ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var catalogPages = ShellNavigationCatalog.Pages.Select(page => page.PageTag).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            registeredPages.Should().BeSubsetOf(catalogPages);
+        });
+    }
+
+    [Fact]
+    public void WorkspaceSelection_RefreshesPrimaryOverflowAndRelatedNavigation()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.SelectWorkspaceCommand.Execute("governance");
+
+            vm.CurrentWorkspace.Should().Be("governance");
+            vm.CurrentPageTag.Should().Be("GovernanceShell");
+            vm.PrimaryNavigationItems.Select(item => item.PageTag).Should().Contain(["GovernanceShell", "FundLedger", "FundReconciliation"]);
+            vm.OverflowNavigationItems.Select(item => item.PageTag).Should().Contain("Settings");
+            vm.RelatedWorkflowItems.Select(item => item.PageTag).Should().Contain(["FundLedger", "FundReconciliation", "SecurityMaster"]);
         });
     }
 
@@ -146,6 +180,8 @@ public sealed class MainShellViewModelTests
     {
         WpfTestThread.Run(() =>
         {
+            NavigationService.Instance.ResetForTests();
+            WorkspaceService.Instance.ResetForTests();
             var detector = FixtureModeDetector.Instance;
             detector.SetFixtureMode(false);
             detector.UpdateBackendReachability(true);

@@ -9,6 +9,7 @@ using Meridian.Wpf.Views;
 
 namespace Meridian.Wpf.Tests.Views;
 
+[Collection("NavigationServiceSerialCollection")]
 public sealed class MainPageSmokeTests
 {
     [Fact]
@@ -19,6 +20,7 @@ public sealed class MainPageSmokeTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            NavigationService.Instance.ResetForTests();
             NavigationService.Instance.SetServiceProvider(services);
 
             MainPage? page = null;
@@ -49,6 +51,7 @@ public sealed class MainPageSmokeTests
             ThemeService.Instance.Initialize(new Window());
 
             using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            NavigationService.Instance.ResetForTests();
             NavigationService.Instance.SetServiceProvider(services);
 
             MainPage? page = null;
@@ -78,6 +81,7 @@ public sealed class MainPageSmokeTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            NavigationService.Instance.ResetForTests();
             NavigationService.Instance.SetServiceProvider(services);
 
             var page = services.GetRequiredService<MainPage>();
@@ -111,6 +115,7 @@ public sealed class MainPageSmokeTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
 
             using var services = (ServiceProvider)RunMatUiAutomationFacade.CreateMainPageServiceProvider();
+            NavigationService.Instance.ResetForTests();
             NavigationService.Instance.SetServiceProvider(services);
 
             var page = services.GetRequiredService<MainPage>();

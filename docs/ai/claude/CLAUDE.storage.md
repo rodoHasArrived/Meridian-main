@@ -78,6 +78,8 @@ The storage system comprises **61 files** across multiple subsystems.
 | `Storage/Services/SymbolRegistryService.cs` | Symbol registry management |
 | `Storage/Services/TierMigrationService.cs` | Hot/warm/cold tier migration |
 
+Persistence note: `Storage/Services/SourceRegistry.cs`, `Storage/Services/MetadataTagService.cs`, and `Storage/Services/DataLineageService.cs` must finish their atomic disk write before a mutating call returns. Do not reintroduce fire-and-forget saves for these lifecycle-sensitive metadata stores, and keep their on-disk JSON wired through source-generated `JsonSerializerContext` implementations for ADR-014 compliance.
+
 ### Export System (10 files)
 | File | Purpose |
 |------|---------|

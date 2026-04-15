@@ -37,6 +37,20 @@ public sealed class ConfigEnvironmentOverride
         ["MDC_ALPACA_SANDBOX"] = "Alpaca:UseSandbox",
         ["MDC_ALPACA_QUOTES"] = "Alpaca:SubscribeQuotes",
 
+        // Interactive Brokers socket settings
+        ["MDC_IB_HOST"] = "IB:Host",
+        ["MDC_IB_PORT"] = "IB:Port",
+        ["MDC_IB_CLIENT_ID"] = "IB:ClientId",
+        ["MDC_IB_PAPER"] = "IB:UsePaperTrading",
+        ["MDC_IB_SUBSCRIBE_DEPTH"] = "IB:SubscribeDepth",
+        ["MDC_IB_DEPTH_LEVELS"] = "IB:DepthLevels",
+        ["MDC_IB_TICK_BY_TICK"] = "IB:TickByTick",
+
+        // Interactive Brokers Client Portal settings
+        ["MDC_IB_CLIENT_PORTAL_ENABLED"] = "IBClientPortal:Enabled",
+        ["MDC_IB_CLIENT_PORTAL_BASE_URL"] = "IBClientPortal:BaseUrl",
+        ["MDC_IB_CLIENT_PORTAL_ALLOW_SELF_SIGNED"] = "IBClientPortal:AllowSelfSignedCertificates",
+
         // Legacy Alpaca env vars (without MDC_ prefix)
         ["ALPACA_KEY_ID"] = "Alpaca:KeyId",
         ["ALPACA_SECRET_KEY"] = "Alpaca:SecretKey",
@@ -229,6 +243,8 @@ public sealed class ConfigEnvironmentOverride
             "DataSource" => config with { DataSource = ParseDataSource(value) },
             "Synthetic" => ApplySyntheticOverride(config, parts.Skip(1).ToArray(), value),
             "Alpaca" => ApplyAlpacaOverride(config, parts.Skip(1).ToArray(), value),
+            "IB" => ApplyIbOverride(config, parts.Skip(1).ToArray(), value),
+            "IBClientPortal" => ApplyIbClientPortalOverride(config, parts.Skip(1).ToArray(), value),
             "StockSharp" => ApplyStockSharpOverride(config, parts.Skip(1).ToArray(), value),
             "Storage" => ApplyStorageOverride(config, parts.Skip(1).ToArray(), value),
             "Backfill" => ApplyBackfillOverride(config, parts.Skip(1).ToArray(), value),
@@ -280,6 +296,46 @@ public sealed class ConfigEnvironmentOverride
         };
 
         return config with { Alpaca = alpaca };
+    }
+
+    private AppConfig ApplyIbOverride(AppConfig config, string[] path, string value)
+    {
+        var ib = config.IB ?? new IBOptions();
+
+        if (path.Length == 0)
+            return config;
+
+        ib = path[0] switch
+        {
+            "Host" => ib with { Host = value },
+            "Port" => ib with { Port = ParseInt(value) ?? ib.Port },
+            "ClientId" => ib with { ClientId = ParseInt(value) ?? ib.ClientId },
+            "UsePaperTrading" => ib with { UsePaperTrading = ParseBool(value) },
+            "SubscribeDepth" => ib with { SubscribeDepth = ParseBool(value) },
+            "DepthLevels" => ib with { DepthLevels = ParseInt(value) ?? ib.DepthLevels },
+            "TickByTick" => ib with { TickByTick = ParseBool(value) },
+            _ => ib
+        };
+
+        return config with { IB = ib };
+    }
+
+    private AppConfig ApplyIbClientPortalOverride(AppConfig config, string[] path, string value)
+    {
+        var clientPortal = config.IBClientPortal ?? new IBClientPortalOptions();
+
+        if (path.Length == 0)
+            return config;
+
+        clientPortal = path[0] switch
+        {
+            "Enabled" => clientPortal with { Enabled = ParseBool(value) },
+            "BaseUrl" => clientPortal with { BaseUrl = value },
+            "AllowSelfSignedCertificates" => clientPortal with { AllowSelfSignedCertificates = ParseBool(value) },
+            _ => clientPortal
+        };
+
+        return config with { IBClientPortal = clientPortal };
     }
 
     private AppConfig ApplyStorageOverride(AppConfig config, string[] path, string value)
@@ -478,6 +534,10 @@ public sealed class ConfigEnvironmentOverride
     {
         if (envVar.StartsWith("MDC_ALPACA") || envVar.StartsWith("ALPACA"))
             return "Alpaca Configuration";
+        if (envVar.StartsWith("MDC_IB_CLIENT_PORTAL"))
+            return "Interactive Brokers Client Portal";
+        if (envVar.StartsWith("MDC_IB"))
+            return "Interactive Brokers";
         if (envVar.StartsWith("MDC_STOCKSHARP"))
             return "StockSharp Configuration";
         if (envVar.StartsWith("MDC_STORAGE"))
@@ -500,6 +560,11 @@ public sealed class ConfigEnvironmentOverride
             "MDC_DATASOURCE" => "Data source provider (IB, Alpaca, Polygon, StockSharp, NYSE, Synthetic)",
             "MDC_SYNTHETIC_MODE" => "Enable the built-in synthetic/offline market data provider",
             "MDC_ALPACA_FEED" => "Alpaca data feed (iex or sip)",
+            "MDC_IB_HOST" => "Interactive Brokers TWS/Gateway host",
+            "MDC_IB_PORT" => "Interactive Brokers TWS/Gateway socket port",
+            "MDC_IB_CLIENT_ID" => "Interactive Brokers API client id",
+            "MDC_IB_PAPER" => "Whether to target Interactive Brokers paper trading",
+            "MDC_IB_CLIENT_PORTAL_BASE_URL" => "Interactive Brokers Client Portal base URL",
             "MDC_STOCKSHARP_CONNECTOR" => "StockSharp connector type (Rithmic, IQFeed, CQG, InteractiveBrokers, Custom)",
             "MDC_STOCKSHARP_ADAPTER_TYPE" => "StockSharp adapter type for custom connectors",
             "MDC_STOCKSHARP_ADAPTER_ASSEMBLY" => "StockSharp adapter assembly name for custom connectors",

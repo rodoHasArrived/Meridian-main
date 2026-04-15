@@ -26,6 +26,14 @@ public sealed class IBEndpointTests
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+
+        await using var body = await response.Content.ReadAsStreamAsync();
+        using var json = await JsonDocument.ParseAsync(body);
+
+        json.RootElement.GetProperty("buildMode").GetString().Should().NotBeNullOrWhiteSpace();
+        json.RootElement.GetProperty("runtimeTarget").GetString().Should().BeOneOf("paper", "live");
+        json.RootElement.GetProperty("socket").GetProperty("configured").ValueKind.Should().BeOneOf(JsonValueKind.True, JsonValueKind.False);
+        json.RootElement.GetProperty("clientPortal").GetProperty("enabled").ValueKind.Should().BeOneOf(JsonValueKind.True, JsonValueKind.False);
     }
 
     [Fact]

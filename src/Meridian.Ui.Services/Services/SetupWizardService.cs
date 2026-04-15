@@ -197,7 +197,7 @@ public sealed class SetupWizardService
         var result = new ProviderTestResult { Provider = "Interactive Brokers" };
 
         var host = credentials.GetValueOrDefault("host", "127.0.0.1");
-        var portStr = credentials.GetValueOrDefault("port", "7496");
+        var portStr = credentials.GetValueOrDefault("port", "7497");
 
         if (!int.TryParse(portStr, out var port))
         {
@@ -253,7 +253,7 @@ public sealed class SetupWizardService
                 return await TestTcpEndpointAsync(
                     "StockSharp Interactive Brokers",
                     credentials.GetValueOrDefault("ibHost", "127.0.0.1"),
-                    credentials.GetValueOrDefault("ibPort", "7496"),
+                    credentials.GetValueOrDefault("ibPort", "7497"),
                     ct);
             case "IQFeed":
                 return await TestTcpEndpointAsync(

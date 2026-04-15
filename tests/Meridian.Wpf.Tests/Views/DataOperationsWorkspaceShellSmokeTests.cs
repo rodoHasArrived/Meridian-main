@@ -24,8 +24,7 @@ public sealed class DataOperationsWorkspaceShellSmokeTests
             using var serviceProvider = services.BuildServiceProvider();
 
             var exception = Record.Exception(() =>
-                serviceProvider.GetService<DataOperationsWorkspaceShellPage>()
-                ?? ActivatorUtilities.CreateInstance<DataOperationsWorkspaceShellPage>(serviceProvider));
+                serviceProvider.GetRequiredService<DataOperationsWorkspaceShellPage>());
 
             exception.Should().BeNull();
         });

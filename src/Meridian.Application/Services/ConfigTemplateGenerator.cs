@@ -32,6 +32,22 @@ public sealed class ConfigTemplateGenerator
             DataRoot = "data",
             Compress = false,
             DataSource = "IB",
+            IB = new
+            {
+                Host = "127.0.0.1",
+                Port = 7497,
+                ClientId = 1,
+                UsePaperTrading = true,
+                SubscribeDepth = true,
+                DepthLevels = 10,
+                TickByTick = true
+            },
+            IBClientPortal = new
+            {
+                Enabled = false,
+                BaseUrl = "https://localhost:5000",
+                AllowSelfSignedCertificates = true
+            },
             Symbols = new[]
             {
                 new { Symbol = "SPY", SubscribeTrades = true, SubscribeDepth = true, DepthLevels = 10 }
@@ -61,6 +77,20 @@ public sealed class ConfigTemplateGenerator
                 SecretKey: "YOUR_ALPACA_SECRET_KEY",
                 Feed: "iex",
                 UseSandbox: false
+            ),
+            IB: new IBOptions(
+                Host: "127.0.0.1",
+                Port: 7497,
+                ClientId: 1,
+                UsePaperTrading: true,
+                SubscribeDepth: true,
+                DepthLevels: 10,
+                TickByTick: true
+            ),
+            IBClientPortal: new IBClientPortalOptions(
+                Enabled: false,
+                BaseUrl: "https://localhost:5000",
+                AllowSelfSignedCertificates: true
             ),
             Storage: new StorageConfig(
                 NamingConvention: "BySymbol",
@@ -207,6 +237,22 @@ public sealed class ConfigTemplateGenerator
             DataRoot = "data/historical",
             Compress = true,
             DataSource = "IB",
+            IB = new
+            {
+                Host = "127.0.0.1",
+                Port = 7497,
+                ClientId = 1,
+                UsePaperTrading = true,
+                SubscribeDepth = false,
+                DepthLevels = 10,
+                TickByTick = false
+            },
+            IBClientPortal = new
+            {
+                Enabled = false,
+                BaseUrl = "https://localhost:5000",
+                AllowSelfSignedCertificates = true
+            },
             Backfill = new
             {
                 Enabled = true,

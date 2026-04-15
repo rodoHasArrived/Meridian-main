@@ -81,6 +81,12 @@ Desktop launch restore now accepts both legacy raw fund profile keys such as `al
 - For backward compatibility, smoke helpers may still write the raw fund profile alias during transition periods
 - If you are targeting a fund-scoped workstation page like `Options` or `AddProviderWizard`, make sure the seeded session points at the `data-operations` workspace so launch restore does not legitimately fall back to the fund profile's default governance route
 
+The Robinhood/options smoke harness is now self-contained:
+
+- Run `pwsh -File scripts/dev/robinhood-options-smoke.ps1` from the repo root for the default push-button flow
+- The harness seeds from `scripts/dev/fixtures/robinhood-options-smoke.seed.json` and restores the user's `%LocalAppData%\Meridian` files afterward
+- Failure runs capture both a screenshot and a UI automation name dump under `artifacts/desktop-workflows/robinhood-options-smoke/`
+
 ## Test Projects
 
 ### Meridian.Tests (cross-platform backend + host topology)
@@ -176,14 +182,31 @@ Tests for WPF-specific behavior that genuinely depends on WPF types (`System.Win
 
 5. **MainPageUiWorkflowTests** (3 tests)
    - Command palette filtering and page-open workflow
-   - Workspace tile navigation across workstation home surfaces
+   - Workspace launch-tile automation and command wiring across the four workstation homes
    - Fixture banner dismissal and ticker-strip toggle behavior
+   - Uses an isolated `workspace-data.json` override so mixed-suite shell runs do not inherit persisted workstation state from neighboring tests
+
+6. **Shell-first workstation regressions** (focused slices)
+   - `AppServiceRegistrationTests` verifies DI coverage for the shell pages and shell-linked deep pages
+   - `WorkspaceShellPageSmokeTests`, `DataOperationsWorkspaceShellSmokeTests`, and `GovernanceWorkspaceShellSmokeTests` verify the four workspace home pages construct from DI
+   - `WorkstationPageSmokeTests` and `RunMatUiSmokeTests` verify that deep-page navigation now lands inside `WorkspaceDeepPageHostPage` and still exposes the expected hosted inner page
+   - `NavigationPageSmokeTests` verifies the dock host wraps WPF `Page` content inside `Frame` containers and can replace shell fallback content on retry
+   - `WorkspaceDeepPageChromeTests` verifies the host toggles embedded-shell state on hosted pages and that representative legacy pages, including action-heavy surfaces such as `MessagingHub`, `NotificationCenter`, `SecurityMaster`, `ServiceManager`, and `PositionBlotter`, opt into the shared compact-host styles without losing page-specific command bands
+   - The same chrome tests also assert the new workflow-native inspector surfaces for `SecurityMaster`, `ServiceManager`, and `PositionBlotter` through automation IDs such as `SecurityMasterRuntimeInspector`, `ServiceManagerRuntimeInspector`, and `PositionBlotterSelectionInspector`
+   - `MainPageSmokeTests`, `MainPageUiWorkflowTests`, `RunMatUiSmokeTests`, `NavigationPageSmokeTests`, `WorkstationPageSmokeTests`, `NavigationServiceTests`, and `FullNavigationSweepTests` share `NavigationServiceSerialCollection` so mixed-suite runs keep singleton navigation state deterministic instead of racing across frame-hosted tests
+   - `FullNavigationSweepTests` verifies every registered page tag remains reachable after shell-catalog or route changes
 
 **Running WPF Tests:**
 
 ```bash
 # Windows only
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj
+
+# Focused shell-first regression slice
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests|FullyQualifiedName~WorkspaceShellPageSmokeTests|FullyQualifiedName~GovernanceWorkspaceShellSmokeTests|FullyQualifiedName~DataOperationsWorkspaceShellSmokeTests|FullyQualifiedName~MainPageUiWorkflowTests|FullyQualifiedName~RunMatUiSmokeTests|FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~NavigationPageSmokeTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~WorkstationPageSmokeTests|FullyQualifiedName~FullNavigationSweepTests|FullyQualifiedName~NavigationServiceTests"
+
+# Broader mixed shell-workflow bundle
+dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests|FullyQualifiedName~WorkspaceShellPageSmokeTests|FullyQualifiedName~GovernanceWorkspaceShellSmokeTests|FullyQualifiedName~DataOperationsWorkspaceShellSmokeTests|FullyQualifiedName~MainPageSmokeTests|FullyQualifiedName~MainPageUiWorkflowTests|FullyQualifiedName~RunMatUiSmokeTests|FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~NavigationPageSmokeTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~WorkstationPageSmokeTests|FullyQualifiedName~FullNavigationSweepTests|FullyQualifiedName~NavigationServiceTests"
 ```
 
 On non-Windows platforms, these tests will be skipped automatically by the Makefile target.
@@ -285,7 +308,7 @@ The harness is intended to be push-button and deterministic:
 - It always restores the user's original local files after the run finishes.
 - It writes screenshots, seeded session files, per-case post-run workspace snapshots, and `robinhood-options-smoke-results.json` under `output/manual-captures/`.
 
-For compatibility with older notes and artifacts, `output/manual-captures/robinhood-options-smoke.ps1` is a thin wrapper that forwards to the canonical script in `scripts/dev/`.
+Older notes may still mention `output/manual-captures/robinhood-options-smoke.ps1`, but the canonical entry point is `scripts/dev/robinhood-options-smoke.ps1`.
 
 ## Common Issues and Solutions
 

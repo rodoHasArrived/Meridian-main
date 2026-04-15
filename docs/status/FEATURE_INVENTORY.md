@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.2
-**Date:** 2026-04-08
+**Date:** 2026-04-14
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -246,10 +246,19 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ### Shell & Navigation (Complete baseline)
 
 - Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
-- Command palette (`Ctrl+K`), keyboard shortcuts
+- Main workstation shell is metadata-driven through `ShellNavigationCatalog`, with workspace home pages, primary/secondary/overflow navigation tiers, recent pages, command-palette search keywords, and related-workflow links.
+- Workspace home pages now act as shell-first operator launchpads (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`) instead of a long page-directory entry model.
+- Command palette (`Ctrl+K`), keyboard shortcuts, workspace-tile switching, and governance/fund-ops aliases keep low-frequency pages reachable without promoting them to top-level roots.
+- Workspace shell context strips now standardize scope, environment, freshness, review-state, alert, and currency cues across the four workstation shells.
+- Legacy deep pages now route through `WorkspaceDeepPageHostPage` in both standalone and docked presentations, so direct navigation and workspace docks share the same workspace title, reachability metadata, related-workflow chrome, and trust-state posture without removing the underlying page functionality.
+- Legacy deep pages can now suppress duplicate inner hero/title chrome through `WorkspaceShellChromeState` plus embedded-shell styles (`EmbeddedShellHeroCardStyle`, `EmbeddedShellHeaderGridStyle`, and `EmbeddedShellHeaderStackPanelStyle`), tightening density when pages are already hosted inside the shared workstation shell.
+- Action-heavy hosted pages including `MessagingHubPage`, `NotificationCenterPage`, `SecurityMasterPage`, `ServiceManagerPage`, and `PositionBlotterPage` now collapse decorative identity chrome while preserving their page-specific commands, status badges, and trust signals inside the shared shell host.
+- `PositionBlotterPage`, `SecurityMasterPage`, and `ServiceManagerPage` now go beyond top-band cleanup and render as workflow-native workbenches with persistent inspector rails for selection state, filters/runtime posture, and operator actions while preserving their existing commands and service integrations.
+- Dock-hosted workspace pages are wrapped in `Frame` containers so WPF page content can be embedded safely inside the workstation docking surface.
 - Theme switching, notification center, info bar
 - Offline indicator (single notification + warning on backend unreachable)
 - Session state persistence (active workspace, last page, window bounds)
+- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
 
 ### Pages with live service connections (Implemented)
 
@@ -280,7 +289,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | SetupWizardPage | SetupWizardService | First-run onboarding |
 | PackageManagerPage | PortablePackagerService | Create/import packages |
 | ScheduleManagerPage | ScheduleManagerService | Backfill schedules |
-| ServiceManagerPage | BackendServiceManagerBase | Backend service status |
+| ServiceManagerPage | BackendServiceManagerBase | Backend service status with control-lane and runtime inspector |
 | StorageOptimizationPage | StorageOptimizationAdvisorService | Storage optimization advice |
 | ArchiveHealthPage | ArchiveHealthService | Archive integrity status |
 | SystemHealthPage | SystemHealthService | Comprehensive health view |
@@ -514,18 +523,14 @@ This section inventories the workflow-centric product model that now sits above 
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
 | Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
 | Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, and Security Master coverage issue detection now exist; broader break queues and non-run workflows remain |
-<<<<<<< HEAD
 | Security Master platform baseline | Complete | The current Security Master mechanics are delivered and workstation productization is live: hardened WPF activation, canonical `WorkstationSecurityReference` coverage/provenance, and shared research/trading/governance/portfolio/ledger propagation |
-=======
-| Security Master platform baseline | Partial | Contracts, services, storage, migrations, and F# domain modules exist; Wave 6 delivers the six productization items below |
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 | Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
 | Security Master — trading parameters | ✅ | Per-instrument lot size, tick size; `PaperTradingGateway` lot-size validation and `BacktestEngine` tick-size rounding wired; `GET /api/security-master/{id}/trading-parameters` |
 | Security Master — corporate action events | ✅ | `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption` domain events; `CorporateActionAdjustmentService` applies split-adjusted bar prices in backtest replay; `GET /api/security-master/{id}/corporate-actions` |
 | Security Master — exchange bulk ingest | ✅ | CSV + JSON bulk-ingest via `SecurityMasterImportService`; idempotent dedup; CLI `--security-master-ingest`; `POST /api/security-master/import` endpoint |
 | Security Master — EDGAR ingest provider | ✅ | `EdgarSecurityMasterIngestProvider`; SEC company-ticker and submission enrichment flow with provenance capture and SEC rate-limit-aware ingest behavior |
 | Security Master — golden record conflict resolution | ✅ | `SecurityMasterConflictService` detects identifier-ambiguity conflicts; `GET /api/security-master/conflicts` list + `POST /api/security-master/conflicts/{id}/resolve` |
-| Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, detail panel, corporate action timeline, trading params |
+| Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, results/detail/inspector workbench, corporate action timeline, trading params, import/backfill posture |
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
@@ -606,11 +611,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 - `Research`, `Trading`, `Data Operations`, and `Governance` should operate as durable product surfaces, not only naming conventions.
 - Backtests, paper sessions, and live-facing history should share one recognizable run model with first-class portfolio and ledger drill-ins.
 - Account, entity, strategy-implementation, and trade-management workflows should be part of the same connected product surface.
-<<<<<<< HEAD
 - Security Master now serves as the authoritative instrument-definition layer across research, trading, governance, portfolio, and ledger workflows; the current repo already delivers that baseline.
-=======
-- Security Master should serve as the authoritative instrument-definition layer across research, governance, portfolio, and ledger workflows; Wave 6 delivers bond terms, trading parameters, corporate actions, bulk ingest, conflict resolution, and a WPF browser.
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
 - Governance should expose cash-flow modeling, trial-balance analysis, and multi-ledger tracking as first-class capabilities.
 - Governance should include a reconciliation engine comparable to fund-operations tooling, plus report generation tools for audit, investor, and compliance outputs.
 - Provider, replay, storage, diagnostics, and observability capabilities should support that operator workflow end to end.
@@ -628,7 +629,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-04-08*
+*Last Updated: 2026-04-13*
 
 
 

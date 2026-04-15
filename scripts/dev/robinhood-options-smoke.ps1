@@ -1,12 +1,35 @@
+#!/usr/bin/env pwsh
+[CmdletBinding()]
 param(
-    [string]$ExecutablePath = "C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\publish\sessionfix\win-x64\desktop\Meridian.Desktop.exe",
-    [string]$OutputDirectory = "C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\output\manual-captures",
-    [string]$SeedWorkspacePath = "C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\output\manual-captures\workspace-data.after-fix-smoke.json",
+    [string]$ProjectPath = "src/Meridian.Wpf/Meridian.Wpf.csproj",
+    [string]$Configuration = "Release",
+    [string]$Framework = "net9.0-windows10.0.19041.0",
+    [string]$ExecutablePath = "",
+    [string]$OutputDirectory = "artifacts/desktop-workflows/robinhood-options-smoke",
+    [string]$SeedWorkspacePath = "scripts/dev/fixtures/robinhood-options-smoke.seed.json",
+    [switch]$SkipBuild,
+    [switch]$KeepAppOpen,
     [bool]$FixtureMode = $true
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+$RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../.."))
+
+function Resolve-RepoPath {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) {
+        return $RepoRoot
+    }
+
+    if ([System.IO.Path]::IsPathRooted($Path)) {
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $Path))
+}
 
 if ($PSVersionTable.PSVersion.Major -lt 7) {
     $pwsh = (Get-Command -Name "pwsh" -ErrorAction SilentlyContinue)?.Source
@@ -19,14 +42,42 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
         "-File", $PSCommandPath,
+        "-ProjectPath", $ProjectPath,
+        "-Configuration", $Configuration,
+        "-Framework", $Framework,
         "-ExecutablePath", $ExecutablePath,
         "-OutputDirectory", $OutputDirectory,
         "-SeedWorkspacePath", $SeedWorkspacePath,
         "-FixtureMode", $FixtureMode.ToString()
     )
 
+    if ($SkipBuild.IsPresent) {
+        $argList += "-SkipBuild"
+    }
+
+    if ($KeepAppOpen.IsPresent) {
+        $argList += "-KeepAppOpen"
+    }
+
     & $pwsh @argList
     exit $LASTEXITCODE
+}
+
+if (-not ($IsWindows -or $env:OS -eq "Windows_NT")) {
+    throw "Desktop smoke automation requires Windows."
+}
+
+Set-Location $RepoRoot
+
+$ResolvedProjectPath = Resolve-RepoPath $ProjectPath
+$ResolvedOutputDirectory = Resolve-RepoPath $OutputDirectory
+$ResolvedSeedWorkspacePath = Resolve-RepoPath $SeedWorkspacePath
+$ResolvedExecutablePath = if ([string]::IsNullOrWhiteSpace($ExecutablePath)) {
+    $projectDirectory = Split-Path -Parent $ResolvedProjectPath
+    [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "bin/$Configuration/$Framework/Meridian.Desktop.exe"))
+}
+else {
+    Resolve-RepoPath $ExecutablePath
 }
 
 Add-Type -AssemblyName UIAutomationClient
@@ -200,11 +251,6 @@ function Write-Log {
     Write-Host "[smoke $timestamp] $Message"
 }
 
-function Read-JsonHashtable {
-    param([string]$Path)
-    return (Get-Content -Path $Path -Raw | ConvertFrom-Json -AsHashtable -Depth 100)
-}
-
 function Write-Utf8File {
     param(
         [string]$Path,
@@ -219,7 +265,6 @@ function Write-Utf8File {
     $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
     [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
 }
-
 function Save-JsonHashtable {
     param(
         [string]$Path,
@@ -242,7 +287,8 @@ function Stop-MeridianProcesses {
                 $null = $process.CloseMainWindow()
                 Start-Sleep -Milliseconds 700
             }
-        } catch {
+        }
+        catch {
         }
 
         if (-not $process.HasExited) {
@@ -274,6 +320,20 @@ function Wait-Until {
     throw $FailureMessage
 }
 
+function Invoke-DesktopBuild {
+    param(
+        [string]$ProjectPath,
+        [string]$Configuration,
+        [string]$Framework
+    )
+
+    Write-Log "Building desktop project $ProjectPath ($Configuration, $Framework)."
+    & dotnet build $ProjectPath -c $Configuration -p:TargetFramework=$Framework /p:EnableFullWpfBuild=true -nologo --verbosity minimal
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet build failed for $ProjectPath"
+    }
+}
+
 function Get-WindowAutomationRoot {
     param([System.Diagnostics.Process]$Process)
 
@@ -290,7 +350,8 @@ function Get-WindowAutomationRoot {
 
             [MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle) | Out-Null
             return [System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)
-        } catch {
+        }
+        catch {
             return $null
         }
     }
@@ -354,6 +415,79 @@ function Find-FirstElementByAutomationIds {
     return $null
 }
 
+function Find-FirstElementByPartialNames {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [string[]]$Patterns
+    )
+
+    $allElements = $Root.FindAll(
+        [System.Windows.Automation.TreeScope]::Descendants,
+        [System.Windows.Automation.Condition]::TrueCondition)
+
+    foreach ($element in $allElements) {
+        try {
+            $name = $element.Current.Name
+            if ([string]::IsNullOrWhiteSpace($name)) {
+                continue
+            }
+
+            foreach ($pattern in $Patterns) {
+                if ($name.IndexOf($pattern, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                    return $element
+                }
+            }
+        }
+        catch {
+        }
+    }
+
+    return $null
+}
+
+function Get-ElementNameSnapshot {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [int]$MaxCount = 80
+    )
+
+    $names = New-Object System.Collections.Generic.List[string]
+    $allElements = $Root.FindAll(
+        [System.Windows.Automation.TreeScope]::Descendants,
+        [System.Windows.Automation.Condition]::TrueCondition)
+
+    foreach ($element in $allElements) {
+        try {
+            $name = $element.Current.Name
+            if ([string]::IsNullOrWhiteSpace($name)) {
+                continue
+            }
+
+            $trimmed = $name.Trim()
+            if (-not $names.Contains($trimmed)) {
+                $names.Add($trimmed)
+                if ($names.Count -ge $MaxCount) {
+                    break
+                }
+            }
+        }
+        catch {
+        }
+    }
+
+    return @($names)
+}
+
+function Write-UiSnapshot {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [string]$Path
+    )
+
+    $names = Get-ElementNameSnapshot -Root $Root
+    Write-Utf8File -Path $Path -Content ($names -join [Environment]::NewLine)
+}
+
 function Wait-ForElementByNames {
     param(
         [System.Windows.Automation.AutomationElement]$Root,
@@ -366,7 +500,6 @@ function Wait-ForElementByNames {
         return Find-FirstElementByNames -Root $Root -Names $Names
     }
 }
-
 function Get-ParentElement {
     param([System.Windows.Automation.AutomationElement]$Element)
     return [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($Element)
@@ -389,7 +522,7 @@ function Invoke-OrClickElement {
             return
         }
 
-        [System.Windows.Point]$clickPoint = [System.Windows.Point]::new()
+        [System.Windows.Point]$clickPoint = New-Object System.Windows.Point -ArgumentList 0, 0
         if ($current.TryGetClickablePoint([ref]$clickPoint)) {
             [MeridianSmokeNative]::SetCursorPos([int]$clickPoint.X, [int]$clickPoint.Y) | Out-Null
             Start-Sleep -Milliseconds 120
@@ -464,6 +597,9 @@ function Save-WindowScreenshot {
         [string]$Path
     )
 
+    [MeridianSmokeNative]::SetForegroundWindow($WindowHandle) | Out-Null
+    Start-Sleep -Milliseconds 200
+
     $rect = New-Object MeridianSmokeNative+RECT
     if (-not [MeridianSmokeNative]::GetWindowRect($WindowHandle, [ref]$rect)) {
         throw "Unable to capture window bounds."
@@ -480,7 +616,8 @@ function Save-WindowScreenshot {
     try {
         $graphics.CopyFromScreen($rect.Left, $rect.Top, 0, 0, $bitmap.Size)
         $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
-    } finally {
+    }
+    finally {
         $graphics.Dispose()
         $bitmap.Dispose()
     }
@@ -514,11 +651,35 @@ function Save-OperatingContextState {
 
     $state = [ordered]@{
         LastSelectedOperatingContextKey = $OperatingContextKey
-        WindowMode                    = 0
-        CurrentLayoutPresetId         = $null
+        WindowMode                      = 0
+        CurrentLayoutPresetId           = $null
     }
 
     Save-JsonHashtable -Path $Path -Value $state
+}
+
+function Invoke-ForwardedLaunch {
+    param(
+        [string]$ExecutablePath,
+        [string[]]$Arguments
+    )
+
+    $process = Start-Process `
+        -FilePath $ExecutablePath `
+        -ArgumentList $Arguments `
+        -WorkingDirectory (Split-Path -Parent $ExecutablePath) `
+        -PassThru `
+        -WindowStyle Hidden
+
+    $null = $process.WaitForExit(10000)
+    if (-not $process.HasExited) {
+        Write-Log "Secondary launcher stayed open longer than expected for args: $($Arguments -join ' ')"
+        return
+    }
+
+    if ($process.ExitCode -ne 0) {
+        Write-Log "Secondary launcher returned exit code $($process.ExitCode) for args: $($Arguments -join ' ')"
+    }
 }
 
 function Invoke-EnterWorkstation {
@@ -537,7 +698,8 @@ function Invoke-EnterWorkstation {
 
             return Find-FirstElementByNames -Root $Root -Names @("Enter Workstation", "Enter Fund")
         }
-    } catch {
+    }
+    catch {
         $enterButton = $null
     }
 
@@ -549,6 +711,103 @@ function Invoke-EnterWorkstation {
     Send-WindowKeys -Process $Process -Keys "{ENTER}"
 }
 
+function Get-WorkspaceShellMarker {
+    param([string]$WorkspaceId)
+
+    switch ($WorkspaceId) {
+        "trading" { return "Trading Workspace" }
+        "data-operations" { return "Data Operations Workspace" }
+        "governance" { return "Governance Workspace" }
+        default { return "Research Workspace" }
+    }
+}
+
+function Get-WorkspaceTileNames {
+    param([string]$WorkspaceId)
+
+    switch ($WorkspaceId) {
+        "trading" { return @("Trading") }
+        "data-operations" { return @("Data Ops", "Data Operations") }
+        "governance" { return @("Governance") }
+        default { return @("Research") }
+    }
+}
+function Wait-ForShellReady {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [System.Diagnostics.Process]$Process,
+        [string[]]$PageMarkers,
+        [int]$TimeoutSeconds = 45
+    )
+
+    $selectionMarkers = @("Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
+    $shellMarkers = @("Research Workspace", "Trading Workspace", "Data Operations Workspace", "Governance Workspace")
+    $initialMarkers = $selectionMarkers + $shellMarkers + $PageMarkers
+
+    $state = Wait-Until -TimeoutSeconds $TimeoutSeconds -FailureMessage "Timed out waiting for Meridian startup." -Condition {
+        $failure = Find-FirstElementByPartialNames -Root $Root -Patterns @("Unable to open", "Object reference not set to an instance")
+        if ($null -ne $failure) {
+            throw "Desktop surfaced a page-load error during startup: $($failure.Current.Name)"
+        }
+
+        $match = Find-FirstElementByNames -Root $Root -Names $initialMarkers
+        if ($null -ne $match) {
+            return $match
+        }
+
+        return $null
+    }
+
+    if ($state.Current.Name -in $selectionMarkers) {
+        Write-Log "Operating context selection detected. Entering the preselected workstation context."
+        Invoke-EnterWorkstation -Root $Root -Process $Process
+
+        Wait-Until -TimeoutSeconds $TimeoutSeconds -FailureMessage "Timed out waiting for the workstation shell after context selection." -Condition {
+            $failure = Find-FirstElementByPartialNames -Root $Root -Patterns @("Unable to open", "Object reference not set to an instance")
+            if ($null -ne $failure) {
+                throw "Desktop surfaced a page-load error after context selection: $($failure.Current.Name)"
+            }
+
+            return Find-FirstElementByNames -Root $Root -Names ($shellMarkers + $PageMarkers)
+        } | Out-Null
+    }
+}
+
+function Wait-ForCasePage {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [hashtable]$Case,
+        [int]$TimeoutSeconds
+    )
+
+    return Wait-Until -TimeoutSeconds $TimeoutSeconds -FailureMessage "Timed out waiting for the $($Case.Name) page to load." -Condition {
+        $failure = Find-FirstElementByPartialNames -Root $Root -Patterns @("Unable to open", "Object reference not set to an instance")
+        if ($null -ne $failure) {
+            throw "Desktop surfaced a page-load error while loading $($Case.PageTag): $($failure.Current.Name)"
+        }
+
+        return Find-FirstElementByNames -Root $Root -Names $Case.ReadyMarkers
+    }
+}
+
+function Try-ActivateWorkspaceShell {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [string]$WorkspaceId
+    )
+
+    $tile = Find-FirstElementByNames -Root $Root -Names (Get-WorkspaceTileNames -WorkspaceId $WorkspaceId)
+    if ($null -eq $tile) {
+        return $false
+    }
+
+    Invoke-OrClickElement -Element $tile
+
+    $shellMarker = Get-WorkspaceShellMarker -WorkspaceId $WorkspaceId
+    Wait-ForElementByNames -Root $Root -Names @($shellMarker) -TimeoutSeconds 10 -FailureMessage "Timed out waiting for the $WorkspaceId shell after selecting the workspace tile." | Out-Null
+    return $true
+}
+
 function Invoke-SmokeCase {
     param(
         [string]$BaseWorkspaceJson,
@@ -556,7 +815,10 @@ function Invoke-SmokeCase {
         [string]$OperatingContextPath,
         [string]$FundProfileId,
         [string]$OperatingContextKey,
-        [hashtable]$Case
+        [hashtable]$Case,
+        [string]$ExecutablePath,
+        [string]$OutputDirectory,
+        [bool]$FixtureMode
     )
 
     Write-Log "Preparing session for $($Case.Name) ($($Case.PageTag))."
@@ -573,10 +835,9 @@ function Invoke-SmokeCase {
     Write-Utf8File -Path $WorkspaceDataPath -Content $seededJson
     Save-OperatingContextState -Path $OperatingContextPath -OperatingContextKey $OperatingContextKey
 
-    Write-Log "Launching published desktop executable for $($Case.Name)."
+    Write-Log "Launching desktop app for $($Case.Name)."
     $startProcessArgs = @{
         FilePath         = $ExecutablePath
-        ArgumentList     = @("--page=$($Case.PageTag)")
         PassThru         = $true
         WorkingDirectory = (Split-Path -Parent $ExecutablePath)
     }
@@ -586,20 +847,29 @@ function Invoke-SmokeCase {
     }
 
     $process = Start-Process @startProcessArgs
+    $root = $null
 
     try {
         $root = Get-WindowAutomationRoot -Process $process
+        $startupTimeoutSeconds = if ($Case.ContainsKey("StartupTimeoutSeconds")) { [int]$Case.StartupTimeoutSeconds } else { 45 }
+        Wait-ForShellReady -Root $root -Process $process -PageMarkers $Case.ReadyMarkers -TimeoutSeconds $startupTimeoutSeconds
 
-        $selectionMarkers = @("Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
-        $initialMarkers = $selectionMarkers + @($Case.ReadyMarkers)
-        $initialElement = Wait-ForElementByNames -Root $root -TimeoutSeconds 18 -Names $initialMarkers -FailureMessage "Timed out waiting for operating context selection or target page."
-
-        if ($initialElement.Current.Name -in $selectionMarkers) {
-            Write-Log "Operating context selection detected. Entering the preselected workstation context."
-            Invoke-EnterWorkstation -Root $root -Process $process
+        $pageReady = $null
+        try {
+            $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 6
+        }
+        catch {
+            $pageReady = $null
         }
 
-        $pageReady = Wait-ForElementByNames -Root $root -Names $Case.ReadyMarkers -TimeoutSeconds 25 -FailureMessage "Timed out waiting for the $($Case.Name) page to load."
+        if ($null -eq $pageReady) {
+            Write-Log "$($Case.Name) was not visible immediately after startup. Activating workspace shell and forwarding page navigation."
+            $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
+            Invoke-ForwardedLaunch -ExecutablePath $ExecutablePath -Arguments @("--page=$($Case.PageTag)")
+            Start-Sleep -Milliseconds 1200
+            $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
+        }
+
         Write-Log "$($Case.Name) page is visible via '$($pageReady.Current.Name)'."
 
         if ($Case.ContainsKey("Action") -and $Case["Action"] -is [scriptblock]) {
@@ -626,31 +896,48 @@ function Invoke-SmokeCase {
             readyMarker  = $pageReady.Current.Name
             markersFound = $markersFound
         }
-    } catch {
+    }
+    catch {
         $debugScreenshotPath = Join-Path $OutputDirectory ("debug-" + $Case.ScreenshotName)
+        $debugUiPath = Join-Path $OutputDirectory ("debug-" + $Case.Name + "-uia.txt")
+
         try {
             if ($process.MainWindowHandle -ne 0) {
                 Save-WindowScreenshot -WindowHandle $process.MainWindowHandle -Path $debugScreenshotPath
                 Write-Log "Saved failure screenshot to $debugScreenshotPath"
             }
-        } catch {
+        }
+        catch {
+        }
+
+        try {
+            if ($null -ne $root) {
+                Write-UiSnapshot -Root $root -Path $debugUiPath
+                Write-Log "Saved UI automation snapshot to $debugUiPath"
+            }
+        }
+        catch {
         }
 
         throw
-    } finally {
-        try {
-            if (-not $process.HasExited) {
-                $null = $process.CloseMainWindow()
-                Start-Sleep -Seconds 1
+    }
+    finally {
+        if (-not $KeepAppOpen.IsPresent) {
+            try {
+                if (-not $process.HasExited) {
+                    $null = $process.CloseMainWindow()
+                    Start-Sleep -Seconds 1
+                }
             }
-        } catch {
-        }
+            catch {
+            }
 
-        if (-not $process.HasExited) {
-            Stop-Process -Id $process.Id -Force
-        }
+            if (-not $process.HasExited) {
+                Stop-Process -Id $process.Id -Force
+            }
 
-        Start-Sleep -Milliseconds 500
+            Start-Sleep -Milliseconds 500
+        }
 
         if (Test-Path -LiteralPath $WorkspaceDataPath) {
             $postRunWorkspacePath = Join-Path $OutputDirectory ("workspace-after-" + $Case.Name + ".json")
@@ -658,30 +945,39 @@ function Invoke-SmokeCase {
         }
     }
 }
-
-if (-not (Test-Path -LiteralPath $ExecutablePath)) {
-    throw "Published desktop executable was not found at $ExecutablePath"
+if (-not (Test-Path -LiteralPath $ResolvedProjectPath)) {
+    throw "Desktop project was not found at $ResolvedProjectPath"
 }
 
-if (-not (Test-Path -LiteralPath $SeedWorkspacePath)) {
-    throw "Seed workspace file was not found at $SeedWorkspacePath"
+if (-not (Test-Path -LiteralPath $ResolvedSeedWorkspacePath)) {
+    throw "Seed workspace file was not found at $ResolvedSeedWorkspacePath"
 }
 
-New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
+if (-not $SkipBuild.IsPresent) {
+    Invoke-DesktopBuild -ProjectPath $ResolvedProjectPath -Configuration $Configuration -Framework $Framework
+}
+
+if (-not (Test-Path -LiteralPath $ResolvedExecutablePath)) {
+    throw "Desktop executable was not found at $ResolvedExecutablePath"
+}
+
+New-Item -ItemType Directory -Force -Path $ResolvedOutputDirectory | Out-Null
 
 $workspaceDataPath = Join-Path $env:LOCALAPPDATA "Meridian\workspace-data.json"
-$workspaceDataBackupPath = Join-Path $OutputDirectory "workspace-data.pre-robinhood-options-smoke-live.json"
+$workspaceDataBackupPath = Join-Path $ResolvedOutputDirectory "workspace-data.pre-robinhood-options-smoke-live.json"
 $workspaceDataOriginal = if (Test-Path -LiteralPath $workspaceDataPath) {
     Get-Content -Path $workspaceDataPath -Raw
-} else {
+}
+else {
     $null
 }
 
 $operatingContextPath = Join-Path $env:LOCALAPPDATA "Meridian\workstation-operating-context.json"
-$operatingContextBackupPath = Join-Path $OutputDirectory "workstation-operating-context.pre-robinhood-options-smoke-live.json"
+$operatingContextBackupPath = Join-Path $ResolvedOutputDirectory "workstation-operating-context.pre-robinhood-options-smoke-live.json"
 $operatingContextOriginal = if (Test-Path -LiteralPath $operatingContextPath) {
     Get-Content -Path $operatingContextPath -Raw
-} else {
+}
+else {
     $null
 }
 
@@ -695,24 +991,21 @@ if ($null -ne $operatingContextOriginal) {
     Write-Log "Backed up the current operating context file to $operatingContextBackupPath"
 }
 
-$baseWorkspaceJson = if ($null -ne $workspaceDataOriginal) {
-    $workspaceDataOriginal
-} else {
-    Get-Content -Path $SeedWorkspacePath -Raw
-}
-
+$baseWorkspaceJson = Get-Content -Path $ResolvedSeedWorkspacePath -Raw
 $baseWorkspaceData = $baseWorkspaceJson | ConvertFrom-Json -AsHashtable -Depth 100
 
 $rawSelectionValue = if ($baseWorkspaceData.ContainsKey("lastSelectedFundProfileId") -and -not [string]::IsNullOrWhiteSpace([string]$baseWorkspaceData["lastSelectedFundProfileId"])) {
     [string]$baseWorkspaceData["lastSelectedFundProfileId"]
-} else {
-    "alpha-credit"
+}
+else {
+    "Fund:alpha-credit"
 }
 
 if ($rawSelectionValue.StartsWith("Fund:", [System.StringComparison]::OrdinalIgnoreCase)) {
     $fundProfileId = $rawSelectionValue.Substring(5)
     $operatingContextKey = $rawSelectionValue
-} else {
+}
+else {
     $fundProfileId = $rawSelectionValue
     $operatingContextKey = "Fund:$fundProfileId"
 }
@@ -728,9 +1021,17 @@ $cases = @(
         ScreenshotName = "meridian-robinhood-provider-smoke.png"
         Action = {
             param($root, $process)
-            $robinhoodText = Wait-ForElementByNames -Root $root -Names @("Robinhood") -TimeoutSeconds 10 -FailureMessage "Robinhood provider card text was not found."
-            Invoke-OrClickElement -Element $robinhoodText
-            Wait-ForElementByNames -Root $root -Names @("Robinhood Access Token") -TimeoutSeconds 10 -FailureMessage "Robinhood credential prompt did not appear after selecting the provider card." | Out-Null
+            $robinhoodCard = Wait-Until -TimeoutSeconds 10 -FailureMessage "Robinhood provider card was not found." -Condition {
+                $byAutomationId = Find-FirstElementByAutomationIds -Root $root -AutomationIds @("ProviderCard_robinhood")
+                if ($null -ne $byAutomationId) {
+                    return $byAutomationId
+                }
+
+                return Find-FirstElementByNames -Root $root -Names @("Provider Robinhood", "Robinhood")
+            }
+
+            Invoke-OrClickElement -Element $robinhoodCard
+            Wait-ForElementByNames -Root $root -Names @("Robinhood Access Token") -TimeoutSeconds 15 -FailureMessage "Robinhood credential prompt did not appear after selecting the provider card." | Out-Null
         }
     },
     @{
@@ -738,6 +1039,7 @@ $cases = @(
         WorkspaceId = "data-operations"
         PageTag = "Options"
         PageTitle = "Options / Derivatives"
+        StartupTimeoutSeconds = 45
         ReadyMarkers = @("Options", "Options Chain")
         ExpectMarkers = @("Options Chain", "Options Summary", "Option Chain Lookup", "Tracked Underlyings", "Load Expirations", "Refresh")
         ScreenshotName = "meridian-options-smoke.png"
@@ -757,8 +1059,9 @@ $cases = @(
         WorkspaceId = "trading"
         PageTag = "PositionBlotter"
         PageTitle = "Position Blotter"
+        StartupTimeoutSeconds = 60
         ReadyMarkers = @("Position Blotter")
-        ExpectMarkers = @("Position Blotter", "Upsize", "Close", "Refresh")
+        ExpectMarkers = @("Position Blotter", "Upsize", "Terminate", "Refresh")
         ScreenshotName = "meridian-position-blotter-smoke.png"
     }
 )
@@ -775,15 +1078,22 @@ try {
             -OperatingContextPath $operatingContextPath `
             -FundProfileId $fundProfileId `
             -OperatingContextKey $operatingContextKey `
-            -Case $case
+            -Case $case `
+            -ExecutablePath $ResolvedExecutablePath `
+            -OutputDirectory $ResolvedOutputDirectory `
+            -FixtureMode $FixtureMode
     }
-} finally {
-    Stop-MeridianProcesses
+}
+finally {
+    if (-not $KeepAppOpen.IsPresent) {
+        Stop-MeridianProcesses
+    }
 
     if ($null -ne $workspaceDataOriginal) {
         Write-Utf8File -Path $workspaceDataPath -Content $workspaceDataOriginal
         Write-Log "Restored the user's original workspace-data.json."
-    } elseif (Test-Path -LiteralPath $workspaceDataPath) {
+    }
+    elseif (Test-Path -LiteralPath $workspaceDataPath) {
         Remove-Item -LiteralPath $workspaceDataPath -Force
         Write-Log "Removed the temporary workspace-data.json created for smoke testing."
     }
@@ -791,14 +1101,13 @@ try {
     if ($null -ne $operatingContextOriginal) {
         Write-Utf8File -Path $operatingContextPath -Content $operatingContextOriginal
         Write-Log "Restored the user's original workstation-operating-context.json."
-    } elseif (Test-Path -LiteralPath $operatingContextPath) {
+    }
+    elseif (Test-Path -LiteralPath $operatingContextPath) {
         Remove-Item -LiteralPath $operatingContextPath -Force
         Write-Log "Removed the temporary workstation-operating-context.json created for smoke testing."
     }
 }
 
-$resultsPath = Join-Path $OutputDirectory "robinhood-options-smoke-results.json"
+$resultsPath = Join-Path $ResolvedOutputDirectory "robinhood-options-smoke-results.json"
 Save-JsonHashtable -Path $resultsPath -Value $results
 Write-Log "Wrote smoke results to $resultsPath"
-
-

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -29,52 +30,65 @@ public sealed class DataLineageService : IDataLineageService
     /// <inheritdoc />
     public void RecordIngestion(string filePath, IngestionRecord record)
     {
-        var graph = _graphs.GetOrAdd(filePath, _ => new LineageGraph { FilePath = filePath });
-        graph.Ingestions.Add(record);
-        graph.LastUpdatedUtc = DateTime.UtcNow;
-        ScheduleSave();
+        PersistChange(() =>
+        {
+            var graph = _graphs.GetOrAdd(filePath, _ => new LineageGraph { FilePath = filePath });
+            graph.Ingestions.Add(record);
+            graph.LastUpdatedUtc = DateTime.UtcNow;
+            return true;
+        });
     }
 
     /// <inheritdoc />
     public void RecordTransformation(string sourceFilePath, string targetFilePath, TransformationRecord record)
     {
-        // Link source to target
-        var sourceGraph = _graphs.GetOrAdd(sourceFilePath, _ => new LineageGraph { FilePath = sourceFilePath });
-        sourceGraph.Downstream.Add(targetFilePath);
-        sourceGraph.LastUpdatedUtc = DateTime.UtcNow;
+        PersistChange(() =>
+        {
+            // Link source to target
+            var sourceGraph = _graphs.GetOrAdd(sourceFilePath, _ => new LineageGraph { FilePath = sourceFilePath });
+            sourceGraph.Downstream.Add(targetFilePath);
+            sourceGraph.LastUpdatedUtc = DateTime.UtcNow;
 
-        var targetGraph = _graphs.GetOrAdd(targetFilePath, _ => new LineageGraph { FilePath = targetFilePath });
-        targetGraph.Upstream.Add(sourceFilePath);
-        targetGraph.Transformations.Add(record);
-        targetGraph.LastUpdatedUtc = DateTime.UtcNow;
-
-        ScheduleSave();
+            var targetGraph = _graphs.GetOrAdd(targetFilePath, _ => new LineageGraph { FilePath = targetFilePath });
+            targetGraph.Upstream.Add(sourceFilePath);
+            targetGraph.Transformations.Add(record);
+            targetGraph.LastUpdatedUtc = DateTime.UtcNow;
+            return true;
+        });
     }
 
     /// <inheritdoc />
     public void RecordMigration(string sourceFilePath, string targetFilePath, MigrationRecord record)
     {
-        var sourceGraph = _graphs.GetOrAdd(sourceFilePath, _ => new LineageGraph { FilePath = sourceFilePath });
-        sourceGraph.Migrations.Add(record);
-        sourceGraph.Downstream.Add(targetFilePath);
-        sourceGraph.LastUpdatedUtc = DateTime.UtcNow;
+        PersistChange(() =>
+        {
+            var sourceGraph = _graphs.GetOrAdd(sourceFilePath, _ => new LineageGraph { FilePath = sourceFilePath });
+            sourceGraph.Migrations.Add(record);
+            sourceGraph.Downstream.Add(targetFilePath);
+            sourceGraph.LastUpdatedUtc = DateTime.UtcNow;
 
-        var targetGraph = _graphs.GetOrAdd(targetFilePath, _ => new LineageGraph { FilePath = targetFilePath });
-        targetGraph.Upstream.Add(sourceFilePath);
-        targetGraph.LastUpdatedUtc = DateTime.UtcNow;
-
-        ScheduleSave();
+            var targetGraph = _graphs.GetOrAdd(targetFilePath, _ => new LineageGraph { FilePath = targetFilePath });
+            targetGraph.Upstream.Add(sourceFilePath);
+            targetGraph.LastUpdatedUtc = DateTime.UtcNow;
+            return true;
+        });
     }
 
     /// <inheritdoc />
     public void RecordDeletion(string filePath, string reason)
     {
-        if (_graphs.TryGetValue(filePath, out var graph))
+        PersistChange(() =>
         {
+            if (!_graphs.TryGetValue(filePath, out var graph))
+            {
+                return false;
+            }
+
             graph.DeletedAtUtc = DateTime.UtcNow;
             graph.DeletionReason = reason;
-        }
-        ScheduleSave();
+            graph.LastUpdatedUtc = DateTime.UtcNow;
+            return true;
+        });
     }
 
     /// <inheritdoc />
@@ -136,26 +150,10 @@ public sealed class DataLineageService : IDataLineageService
     /// <inheritdoc />
     public async Task SaveAsync(CancellationToken ct = default)
     {
-        await _saveLock.WaitAsync(ct);
+        await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var dir = Path.GetDirectoryName(_lineageStorePath);
-            if (!string.IsNullOrEmpty(dir))
-                Directory.CreateDirectory(dir);
-
-            var data = new LineageStore
-            {
-                Version = "1.0.0",
-                UpdatedAtUtc = DateTime.UtcNow,
-                Graphs = _graphs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
-            };
-
-            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-            await AtomicFileWriter.WriteAsync(_lineageStorePath, json, ct);
+            await SaveToDiskAsync(ct).ConfigureAwait(false);
         }
         finally
         {
@@ -199,10 +197,7 @@ public sealed class DataLineageService : IDataLineageService
                 return;
 
             var json = File.ReadAllText(_lineageStorePath);
-            var data = JsonSerializer.Deserialize<LineageStore>(json, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var data = JsonSerializer.Deserialize(json, DataLineageServiceJsonContext.Default.LineageStore);
 
             if (data?.Graphs != null)
             {
@@ -218,20 +213,55 @@ public sealed class DataLineageService : IDataLineageService
         }
     }
 
-    private void ScheduleSave()
+    private void PersistChange(Func<bool> mutate)
     {
-        _ = SaveInBackgroundAsync();
-    }
-
-    private async Task SaveInBackgroundAsync(CancellationToken ct = default)
-    {
+        _saveLock.Wait();
         try
-        { await SaveAsync(); }
-        catch (IOException) { /* Background save failure is non-critical */ }
-        catch (UnauthorizedAccessException) { /* Permission issues during background save */ }
+        {
+            if (!mutate())
+            {
+                return;
+            }
+
+            SaveToDisk();
+        }
+        finally
+        {
+            _saveLock.Release();
+        }
     }
 
-    private sealed class LineageStore
+    private LineageStore CreateStoreSnapshot()
+    {
+        return new LineageStore
+        {
+            Version = "1.0.0",
+            UpdatedAtUtc = DateTime.UtcNow,
+            Graphs = _graphs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+        };
+    }
+
+    private void SaveToDisk()
+    {
+        var dir = Path.GetDirectoryName(_lineageStorePath);
+        if (!string.IsNullOrEmpty(dir))
+            Directory.CreateDirectory(dir);
+
+        var json = JsonSerializer.Serialize(CreateStoreSnapshot(), DataLineageServiceJsonContext.Default.LineageStore);
+        AtomicFileWriter.Write(_lineageStorePath, json);
+    }
+
+    private async Task SaveToDiskAsync(CancellationToken ct)
+    {
+        var dir = Path.GetDirectoryName(_lineageStorePath);
+        if (!string.IsNullOrEmpty(dir))
+            Directory.CreateDirectory(dir);
+
+        var json = JsonSerializer.Serialize(CreateStoreSnapshot(), DataLineageServiceJsonContext.Default.LineageStore);
+        await AtomicFileWriter.WriteAsync(_lineageStorePath, json, ct).ConfigureAwait(false);
+    }
+
+    internal sealed class LineageStore
     {
         public string Version { get; set; } = "1.0.0";
         public DateTime UpdatedAtUtc { get; set; }
@@ -306,3 +336,23 @@ public sealed record LineageReport(
     int TotalMigrations,
     Dictionary<string, int> SourceDistribution,
     Dictionary<string, int> TransformationTypes);
+
+[JsonSourceGenerationOptions(
+    WriteIndented = true,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    PropertyNameCaseInsensitive = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(DataLineageService.LineageStore))]
+[JsonSerializable(typeof(LineageGraph))]
+[JsonSerializable(typeof(Dictionary<string, LineageGraph>))]
+[JsonSerializable(typeof(List<string>))]
+[JsonSerializable(typeof(IngestionRecord))]
+[JsonSerializable(typeof(List<IngestionRecord>))]
+[JsonSerializable(typeof(TransformationRecord))]
+[JsonSerializable(typeof(List<TransformationRecord>))]
+[JsonSerializable(typeof(MigrationRecord))]
+[JsonSerializable(typeof(List<MigrationRecord>))]
+[JsonSerializable(typeof(Dictionary<string, string>))]
+internal sealed partial class DataLineageServiceJsonContext : JsonSerializerContext
+{
+}

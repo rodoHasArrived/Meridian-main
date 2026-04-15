@@ -19,6 +19,49 @@ public static partial class AtomicFileWriter
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
     /// </summary>
+    public static void Write(string destinationPath, string content)
+    {
+        var directory = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var tempPath = GetTempPath(destinationPath);
+
+        try
+        {
+            using (var stream = new FileStream(
+                tempPath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 65536,
+                FileOptions.None))
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            {
+                writer.Write(content);
+                writer.Flush();
+                stream.Flush(flushToDisk: true);
+            }
+
+            File.Move(tempPath, destinationPath, overwrite: true);
+            SyncDirectory(directory!);
+
+            Log.Debug("Atomically wrote {Bytes} bytes to {Path}",
+                Encoding.UTF8.GetByteCount(content), destinationPath);
+        }
+        catch
+        {
+            TryDeleteFile(tempPath);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Atomically writes content to a file.
+    /// Uses a temporary file with rename to ensure atomicity.
+    /// </summary>
     public static async Task WriteAsync(
         string destinationPath,
         string content,
@@ -407,6 +450,13 @@ public static partial class AtomicFileWriter
 
     private static Task SyncDirectoryAsync(string directory, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+        SyncDirectory(directory);
+        return Task.CompletedTask;
+    }
+
+    private static void SyncDirectory(string directory)
+    {
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
@@ -415,7 +465,7 @@ public static partial class AtomicFileWriter
         if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
         {
             // On Windows, NTFS journals directory metadata changes automatically.
-            return Task.CompletedTask;
+            return;
         }
 
         // On POSIX systems, fsync the directory file descriptor to ensure
@@ -425,7 +475,7 @@ public static partial class AtomicFileWriter
         {
             Log.Warning("Unable to open directory for fsync: {Directory} (errno {Errno})",
                 directory, Marshal.GetLastPInvokeError());
-            return Task.CompletedTask;
+            return;
         }
 
         try
@@ -440,8 +490,6 @@ public static partial class AtomicFileWriter
         {
             PosixInterop.close(fd);
         }
-
-        return Task.CompletedTask;
     }
 
     private static partial class PosixInterop

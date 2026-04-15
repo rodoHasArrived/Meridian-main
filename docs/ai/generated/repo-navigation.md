@@ -1,10 +1,6 @@
 # Meridian AI Repo Navigation
 
-<<<<<<< HEAD
-> Auto-generated on 2026-04-09T07:29:06Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
-=======
-> Auto-generated on 2026-04-10T21:25:21Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
->>>>>>> b39663640d8410b70232c5008f8860a1e82d5cbe
+> Auto-generated on 2026-04-14T08:00:42Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -110,7 +106,6 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | From | To | Why it matters |
 |---|---|---|
 | `Meridian` | `Meridian.Application` | Meridian references Meridian.Application directly via project reference. |
-| `Meridian` | `Meridian.Backtesting` | Meridian references Meridian.Backtesting directly via project reference. |
 | `Meridian` | `Meridian.Contracts` | Meridian references Meridian.Contracts directly via project reference. |
 | `Meridian` | `Meridian.Core` | Meridian references Meridian.Core directly via project reference. |
 | `Meridian` | `Meridian.Domain` | Meridian references Meridian.Domain directly via project reference. |
@@ -129,4 +124,5 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 | `Meridian.Application` | `Meridian.ProviderSdk` | Meridian.Application references Meridian.ProviderSdk directly via project reference. |
 | `Meridian.Application` | `Meridian.Storage` | Meridian.Application references Meridian.Storage directly via project reference. |
 | `Meridian.Backtesting` | `Meridian.Application` | Meridian.Backtesting references Meridian.Application directly via project reference. |
+| `Meridian.Backtesting` | `Meridian.Backtesting.Sdk` | Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference. |
 

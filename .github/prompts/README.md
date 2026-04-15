@@ -17,6 +17,11 @@ This directory contains reusable prompt templates for AI assistants (Claude, Cop
 | [configure-deployment.prompt.yml](configure-deployment.prompt.yml) | Deployment configuration help | Setting up environments |
 | [add-export-format.prompt.yml](add-export-format.prompt.yml) | Export format implementation | Adding new export types |
 | [wpf-debug-improve.prompt.yml](wpf-debug-improve.prompt.yml) | WPF debugging and improvement guide | Fixing or completing WPF UI work |
+| [simulate-user-panel.prompt.yml](simulate-user-panel.prompt.yml) | Generic manifest-driven user-panel review | Running any simulated-user-panel mode from a review manifest |
+| [simulate-user-panel-design-partner.prompt.yml](simulate-user-panel-design-partner.prompt.yml) | Product-shaping critique for early ideas and surfaces | Roadmap review, owner feedback, and design-partner critique |
+| [simulate-user-panel-release-gate.prompt.yml](simulate-user-panel-release-gate.prompt.yml) | Near-ship release gate for workflows and screens | Calling ship blockers, caveats, and trust gaps |
+| [simulate-user-panel-usability-lab.prompt.yml](simulate-user-panel-usability-lab.prompt.yml) | Benchmark-oriented user-panel review | Clustering repeated complaints and comparing runs |
+| [simulate-user-panel-choose-mode.prompt.yml](simulate-user-panel-choose-mode.prompt.yml) | Route artifacts to the right user-panel mode first | When the artifact is clear but the mode is not |
 
 ## How to Use
 
@@ -65,6 +70,11 @@ messages:
 - **New export format**: `add-export-format.prompt.yml`
 - **Write tests**: `write-unit-tests.prompt.yml`
 - **Code review**: `code-review.prompt.yml`
+- **Simulated user testing**: `simulate-user-panel.prompt.yml`
+- **Design-partner critique**: `simulate-user-panel-design-partner.prompt.yml`
+- **Release gate**: `simulate-user-panel-release-gate.prompt.yml`
+- **Usability lab**: `simulate-user-panel-usability-lab.prompt.yml`
+- **Choose mode first**: `simulate-user-panel-choose-mode.prompt.yml`
 
 ### Understanding & Troubleshooting
 
@@ -150,4 +160,4 @@ Auto-generated prompts are created via the Prompt Generation workflow. To add su
 
 ---
 
-**Last Updated**: 2026-03-25
+**Last Updated**: 2026-04-14

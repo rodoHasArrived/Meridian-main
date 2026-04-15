@@ -1,0 +1,39 @@
+{
+  "_comment": "Accepted baseline pass rates per eval. Update after a verified strong run of the simulated-user-panel skill.",
+  "_schema_version": "2026-04-14",
+  "_last_updated": "2026-04-14",
+  "baselines": [
+    {
+      "eval_id": 1,
+      "description": "Welcome onboarding design-partner review",
+      "accepted_pass_rate": 0.80
+    },
+    {
+      "eval_id": 2,
+      "description": "Screenshot-backed WPF provider onboarding release gate",
+      "accepted_pass_rate": 0.85
+    },
+    {
+      "eval_id": 3,
+      "description": "Governance and accounting controls review",
+      "accepted_pass_rate": 0.85
+    },
+    {
+      "eval_id": 4,
+      "description": "Research export power-user depth review",
+      "accepted_pass_rate": 0.80
+    },
+    {
+      "eval_id": 5,
+      "description": "Research-to-live roadmap critique",
+      "accepted_pass_rate": 0.80
+    },
+    {
+      "eval_id": 6,
+      "description": "Provider health usability-lab comparison",
+      "accepted_pass_rate": 0.85
+    }
+  ],
+  "regression_threshold_pp": 10.0,
+  "overall_minimum_pass_rate": 0.80
+}
