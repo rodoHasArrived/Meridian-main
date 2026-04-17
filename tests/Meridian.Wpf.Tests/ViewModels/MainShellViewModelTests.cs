@@ -21,6 +21,7 @@ public sealed class MainShellViewModelTests
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
         WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
@@ -35,6 +36,7 @@ public sealed class MainShellViewModelTests
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
         navigationService.Initialize(new Frame());
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
         WorkspaceService.Instance.ResetForTests();
 
         var fixtureModeDetector = FixtureModeDetector.Instance;
@@ -204,6 +206,7 @@ public sealed class MainShellViewModelTests
         WpfTestThread.Run(() =>
         {
             NavigationService.Instance.ResetForTests();
+            WorkspaceService.SetSettingsFilePathOverrideForTests(null);
             WorkspaceService.Instance.ResetForTests();
             var detector = FixtureModeDetector.Instance;
             detector.SetFixtureMode(false);
@@ -329,12 +332,12 @@ public sealed class MainShellViewModelTests
             var operatingContextService = await CreateOperatingContextServiceAsync(fundContext);
             using var vm = CreateMainPageViewModel(fundContext, operatingContextService);
 
-            await Task.Run(() => operatingContextService.SetWindowModeAsync(BoundedWindowMode.WorkbenchPreset, "accounting-review"));
+            await Task.Run(() => operatingContextService.SetWindowModeAsync(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset, "accounting-review"));
             await WaitForConditionAsync(
-                () => vm.SelectedWindowMode == BoundedWindowMode.WorkbenchPreset
+                () => vm.SelectedWindowMode == Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset
                       && vm.CurrentModeName.Contains("Accounting Review", StringComparison.Ordinal));
 
-            vm.SelectedWindowMode.Should().Be(BoundedWindowMode.WorkbenchPreset);
+            vm.SelectedWindowMode.Should().Be(Meridian.Ui.Services.BoundedWindowMode.WorkbenchPreset);
             vm.CurrentModeName.Should().Contain("Accounting Review");
         });
     }

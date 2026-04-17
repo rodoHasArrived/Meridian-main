@@ -15,6 +15,8 @@ namespace Meridian.Wpf.Views;
 /// </summary>
 public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 {
+    internal readonly record struct TradingPortfolioNavigationTarget(string PageTag, PaneDropAction Action, string? RunId);
+
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
@@ -207,6 +209,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             case "PositionBlotter":
                 OpenBlotter_Click(sender, new RoutedEventArgs());
                 break;
+            case "RunPortfolio":
+                OpenPortfolio_Click(sender, new RoutedEventArgs());
+                break;
             case "RunRisk":
                 OpenRiskRail_Click(sender, new RoutedEventArgs());
                 break;
@@ -264,8 +269,11 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private void OpenBlotter_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage(TradingDockManager, "PositionBlotter", PaneDropAction.SplitRight);
 
-    private void OpenPortfolio_Click(object sender, RoutedEventArgs e)
-        => NavigationService.NavigateTo("RunPortfolio");
+    private async void OpenPortfolio_Click(object sender, RoutedEventArgs e)
+    {
+        var target = ResolvePortfolioNavigationTarget(await _runService.GetActiveRunContextAsync().ConfigureAwait(true));
+        OpenWorkspacePage(TradingDockManager, target.PageTag, target.Action, target.RunId);
+    }
 
     private void ImportPositions_Click(object sender, RoutedEventArgs e)
         => NavigationService.NavigateTo("PortfolioImport");
@@ -353,6 +361,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 new WorkspaceCommandItem { Id = "CancelAll", Label = "Cancel All", Description = "Cancel staged orders", Glyph = "\uE711" },
                 new WorkspaceCommandItem { Id = "AcknowledgeRisk", Label = "Acknowledge Risk", Description = "Acknowledge current risk posture", Glyph = "\uE73E" },
                 new WorkspaceCommandItem { Id = "LiveData", Label = "Live Data", Description = "Open live data", Glyph = "\uE9D2" },
+                new WorkspaceCommandItem { Id = "RunPortfolio", Label = "Portfolio", Description = "Open run or account portfolio", Glyph = "\uE8B5" },
                 new WorkspaceCommandItem { Id = "PositionBlotter", Label = "Blotter", Description = "Open position blotter", Glyph = "\uE8A5" },
                 new WorkspaceCommandItem { Id = "RunRisk", Label = "Risk Rail", Description = "Open risk rail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting consequences", Glyph = "\uE9D9" },
@@ -362,4 +371,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 new WorkspaceCommandItem { Id = "TradingHours", Label = "Trading Hours", Description = "Open trading hours", Glyph = "\uE823" }
             ]
         };
+
+    internal static TradingPortfolioNavigationTarget ResolvePortfolioNavigationTarget(ActiveRunContext? activeRun)
+        => activeRun is null
+            ? new TradingPortfolioNavigationTarget("AccountPortfolio", PaneDropAction.Replace, null)
+            : new TradingPortfolioNavigationTarget("RunPortfolio", PaneDropAction.SplitLeft, activeRun.RunId);
 }

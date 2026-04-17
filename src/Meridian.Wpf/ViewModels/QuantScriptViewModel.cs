@@ -89,6 +89,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(CanDeleteCell));
             NotifyCommandStateChanged();
         };
+
+        InitializeDefaultDocument();
     }
 
     public string AssetSymbol { get => _assetSymbol; set => SetProperty(ref _assetSymbol, value); }
@@ -563,6 +565,20 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             NotebookCells.Add(viewModel);
         }
         SelectedCell = NotebookCells.FirstOrDefault();
+    }
+
+    private void InitializeDefaultDocument()
+    {
+        if (NotebookCells.Count > 0)
+        {
+            return;
+        }
+
+        LoadInMemoryDocument(
+            "Untitled Script",
+            string.Empty,
+            QuantScriptDocumentKind.LegacyScript,
+            [new QuantScriptNotebookCellDocument(Guid.NewGuid().ToString("N"), "// New QuantScript\n")]);
     }
 
     private void SyncScriptSourceFromCell()
