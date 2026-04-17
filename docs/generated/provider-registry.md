@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-17 04:53:09 UTC. Do not edit manually.
+> Auto-generated on 2026-04-17 09:49:51 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -42,6 +42,7 @@
 | `src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs` |
+| `src/Meridian.Infrastructure/Adapters/Core/IHistoricalAggregateBarProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs` |
 | `src/Meridian.Infrastructure/Adapters/Core/ProviderBehaviorBuilder.cs` |

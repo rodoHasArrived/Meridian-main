@@ -5619,6 +5619,7 @@ Meridian-main
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
 │   │   │   │   ├── ICorporateActionProvider.cs
+│   │   │   │   ├── IHistoricalAggregateBarProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
 │   │   │   │   ├── ProviderBehaviorBuilder.cs
@@ -6365,6 +6366,7 @@ Meridian-main
 │       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
+│       │   ├── FundLedgerDimensionView.cs
 │       │   ├── FundProfileModels.cs
 │       │   ├── FundReconciliationWorkbenchModels.cs
 │       │   ├── LeanModels.cs
@@ -6407,6 +6409,7 @@ Meridian-main
 │       │   ├── ConnectionService.cs
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
+│       │   ├── DataOperationsWorkspacePresentationBuilder.cs
 │       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
@@ -6545,6 +6548,7 @@ Meridian-main
 │       │   ├── TradingHoursViewModel.cs
 │       │   ├── WatchlistViewModel.cs
 │       │   ├── WelcomePageViewModel.cs
+│       │   ├── WorkspacePageViewModel.cs
 │       │   └── WorkspaceShellViewModelBase.cs
 │       ├── Views
 │       │   ├── AccountPortfolioPage.xaml
@@ -6835,7 +6839,8 @@ Meridian-main
 │   │   │   │   ├── PriorityBackfillQueueTests.cs
 │   │   │   │   ├── RateLimiterTests.cs
 │   │   │   │   ├── ScheduledBackfillTests.cs
-│   │   │   │   └── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   │   ├── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   │   └── YahooFinanceIntradayContractTests.cs
 │   │   │   ├── Backtesting
 │   │   │   │   └── BacktestStudioRunOrchestratorTests.cs
 │   │   │   ├── Canonicalization
@@ -7319,6 +7324,7 @@ Meridian-main
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
 │   │   │   ├── ConfigServiceTests.cs
 │   │   │   ├── ConnectionServiceTests.cs
+│   │   │   ├── DataOperationsWorkspacePresentationBuilderTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
@@ -7361,7 +7367,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
-│   │   │   └── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   └── WorkspacePageViewModelTests.cs
 │   │   ├── Views
 │   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── DataOperationsWorkspaceShellSmokeTests.cs
