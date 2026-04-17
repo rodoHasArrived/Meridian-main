@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -28,14 +29,19 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly ITradingParametersBackfillService _backfillService;
     private readonly ISecurityMasterImportService _importService;
     private readonly ISecurityMasterRuntimeStatus _securityMasterRuntimeStatus;
+    private readonly WpfServices.ISecurityMasterOperatorWorkflowClient _workflowClient;
+    private readonly WpfServices.NavigationService _navigationService;
     private readonly ISmQueryService _queryService;
     private readonly ISmService _service;
     private readonly bool _hasPolygonApiKey;
     private CancellationTokenSource? _cts;
+    private CancellationTokenSource? _workflowCts;
+    private Task? _workflowPollingTask;
 
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<SecurityMasterWorkstationDto> Results { get; } = new();
     public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
+    public ObservableCollection<SecurityMasterConflict> OpenConflicts { get; } = new();
 
     /// <summary>
     /// Static list of corporate action types available for recording.
@@ -310,6 +316,72 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
+    private string _importSessionSummary = "No import activity recorded by the workstation service.";
+    public string ImportSessionSummary
+    {
+        get => _importSessionSummary;
+        private set
+        {
+            if (SetProperty(ref _importSessionSummary, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
+    }
+
+    private string _workflowStatusText = "Polling Security Master ingest and conflict posture.";
+    public string WorkflowStatusText
+    {
+        get => _workflowStatusText;
+        private set
+        {
+            if (SetProperty(ref _workflowStatusText, value))
+            {
+                RaisePropertyChanged(nameof(RuntimeStatusDetail));
+            }
+        }
+    }
+
+    private string _workflowRetrievedAtText = "-";
+    public string WorkflowRetrievedAtText
+    {
+        get => _workflowRetrievedAtText;
+        private set => SetProperty(ref _workflowRetrievedAtText, value);
+    }
+
+    private string _conflictOperatorText = "desktop-user";
+    public string ConflictOperatorText
+    {
+        get => _conflictOperatorText;
+        set
+        {
+            if (SetProperty(ref _conflictOperatorText, value))
+            {
+                NotifyConflictWorkflowCommandsChanged();
+            }
+        }
+    }
+
+    private string _conflictNoteText = string.Empty;
+    public string ConflictNoteText
+    {
+        get => _conflictNoteText;
+        set => SetProperty(ref _conflictNoteText, value);
+    }
+
+    private SecurityMasterConflict? _selectedConflict;
+    public SecurityMasterConflict? SelectedConflict
+    {
+        get => _selectedConflict;
+        set
+        {
+            if (SetProperty(ref _selectedConflict, value))
+            {
+                NotifyConflictWorkflowCommandsChanged();
+            }
+        }
+    }
+
     // ── Derived display helpers ─────────────────────────────────────────────
     public bool HasSelectedSecurity => SelectedSecurity is not null;
 
@@ -341,9 +413,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string RuntimeStatusDetail => IsBackfillingTradingParams
         ? BackfillStatus
-        : _hasPolygonApiKey
-            ? "API key present. Trading-parameter enrichment and data backfill are available from this workstation."
-            : "POLYGON_API_KEY is not set. Securities can still be managed, but enrichment remains manual.";
+        : $"{_securityMasterRuntimeStatus.AvailabilityDescription} {WorkflowStatusText}".Trim();
 
     public string ConflictSummaryText => HasOpenConflicts
         ? $"{OpenConflictCount} identifier conflict{(OpenConflictCount == 1 ? string.Empty : "s")} require review."
@@ -381,9 +451,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string ImportSessionText => IsImporting
         ? ImportStatus
-        : ImportTotal > 0 || IsImportResultVisible
-            ? $"Last import session: {ImportImported} imported • {ImportFailed} failed."
-            : "No import activity in this session.";
+        : ImportSessionSummary;
+
+    public string SelectedConflictSummaryText => SelectedConflict is null
+        ? "Select a conflict to review the ingest-time mismatch and choose a resolution."
+        : $"{SelectedConflict.FieldPath} • {SelectedConflict.ProviderA} vs {SelectedConflict.ProviderB}";
 
     // ── Commands ────────────────────────────────────────────────────────────
     public IRelayCommand CreateNewCommand { get; }
@@ -397,6 +469,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand ImportFromFileCommand { get; }
     public IRelayCommand CloseImportResultCommand { get; }
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
+    public IAsyncRelayCommand RefreshWorkflowCommand { get; }
+    public IAsyncRelayCommand AcceptPrimaryConflictCommand { get; }
+    public IAsyncRelayCommand AcceptSecondaryConflictCommand { get; }
+    public IAsyncRelayCommand DismissConflictCommand { get; }
+    public IRelayCommand OpenFundPortfolioCommand { get; }
+    public IRelayCommand OpenFundLedgerCommand { get; }
+    public IRelayCommand OpenFundReconciliationCommand { get; }
+    public IRelayCommand OpenFundCashFlowCommand { get; }
+    public IRelayCommand OpenFundReportPackCommand { get; }
 
     // ── Conflict badge ───────────────────────────────────────────────────────
     private int _openConflictCount;
@@ -417,6 +498,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     /// <summary>True when at least one open conflict exists. Drives badge visibility.</summary>
     public bool HasOpenConflicts => _openConflictCount > 0;
 
+    public bool CanResolveSelectedConflict =>
+        SelectedConflict is not null &&
+        !string.IsNullOrWhiteSpace(ConflictOperatorText);
+
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterViewModel(
         WpfServices.LoggingService loggingService,
@@ -424,6 +509,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ITradingParametersBackfillService backfillService,
         ISecurityMasterImportService importService,
         ISecurityMasterRuntimeStatus securityMasterRuntimeStatus,
+        WpfServices.ISecurityMasterOperatorWorkflowClient workflowClient,
+        WpfServices.NavigationService navigationService,
         ISmQueryService queryService,
         ISmService service)
     {
@@ -432,6 +519,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _backfillService = backfillService;
         _importService = importService;
         _securityMasterRuntimeStatus = securityMasterRuntimeStatus ?? throw new ArgumentNullException(nameof(securityMasterRuntimeStatus));
+        _workflowClient = workflowClient ?? throw new ArgumentNullException(nameof(workflowClient));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
@@ -447,12 +536,25 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
+        RefreshWorkflowCommand = new AsyncRelayCommand(RefreshOperatorWorkflowAsync);
+        AcceptPrimaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptA", ct), () => CanResolveSelectedConflict);
+        AcceptSecondaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptB", ct), () => CanResolveSelectedConflict);
+        DismissConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("Dismiss", ct), () => CanResolveSelectedConflict);
+        OpenFundPortfolioCommand = new RelayCommand(() => _navigationService.NavigateTo("FundPortfolio"));
+        OpenFundLedgerCommand = new RelayCommand(() => _navigationService.NavigateTo("FundLedger"));
+        OpenFundReconciliationCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReconciliation"));
+        OpenFundCashFlowCommand = new RelayCommand(() => _navigationService.NavigateTo("FundCashFinancing"));
+        OpenFundReportPackCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReportPack"));
 
         Results.CollectionChanged += (_, _) => RaiseSearchDerivedStateChanged();
         CorporateActions.CollectionChanged += (_, _) => RaiseSelectionDerivedStateChanged();
+        OpenConflicts.CollectionChanged += (_, _) =>
+        {
+            RaisePropertyChanged(nameof(ConflictSummaryText));
+            RaisePropertyChanged(nameof(SelectedConflictSummaryText));
+        };
 
-        // Fire-and-forget initial conflict count load; failures are suppressed
-        _ = RefreshConflictCountAsync();
+        StartWorkflowPolling();
     }
 
     private void OnCreateNew()
@@ -546,6 +648,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         DeactivateSelectedCommand.NotifyCanExecuteChanged();
         LoadCorporateActionsCommand.NotifyCanExecuteChanged();
         ShowRecordCorpActionCommand.NotifyCanExecuteChanged();
+    }
+
+    private void NotifyConflictWorkflowCommandsChanged()
+    {
+        RaisePropertyChanged(nameof(SelectedConflictSummaryText));
+        RaisePropertyChanged(nameof(CanResolveSelectedConflict));
+        AcceptPrimaryConflictCommand.NotifyCanExecuteChanged();
+        AcceptSecondaryConflictCommand.NotifyCanExecuteChanged();
+        DismissConflictCommand.NotifyCanExecuteChanged();
     }
 
     private void WireEditVmEvents()
@@ -648,6 +759,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
+
+        _workflowCts?.Cancel();
+        _workflowCts?.Dispose();
+        _workflowCts = null;
+        _workflowPollingTask = null;
     }
 
     // ── Search ──────────────────────────────────────────────────────────────
@@ -912,18 +1028,148 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     // ── Conflict badge ───────────────────────────────────────────────────────
     private async Task RefreshConflictCountAsync(CancellationToken ct = default)
     {
+        await RefreshOperatorWorkflowAsync(ct).ConfigureAwait(false);
+    }
+
+    private void StartWorkflowPolling()
+    {
+        _workflowCts?.Cancel();
+        _workflowCts?.Dispose();
+        _workflowCts = new CancellationTokenSource();
+        var token = _workflowCts.Token;
+
+        _workflowPollingTask = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await RefreshOperatorWorkflowAsync(token).ConfigureAwait(false);
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+        }, token);
+    }
+
+    private async Task RefreshOperatorWorkflowAsync(CancellationToken ct = default)
+    {
         try
         {
-            var conflicts = await ApiClientService.Instance
-                .GetAsync<SecurityMasterConflict[]>("/api/security-master/conflicts", ct)
-                .ConfigureAwait(false);
+            var statusTask = _workflowClient.GetIngestStatusAsync(ct);
+            var conflictsTask = _workflowClient.GetOpenConflictsAsync(ct);
+            await Task.WhenAll(statusTask, conflictsTask).ConfigureAwait(false);
 
-            var count = conflicts?.Length ?? 0;
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => OpenConflictCount = count);
+            var status = await statusTask.ConfigureAwait(false);
+            var conflicts = await conflictsTask.ConfigureAwait(false);
+
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                OpenConflictCount = conflicts.Count;
+                OpenConflicts.Clear();
+                foreach (var conflict in conflicts.OrderBy(conflict => conflict.DetectedAt))
+                {
+                    OpenConflicts.Add(conflict);
+                }
+
+                SelectedConflict ??= OpenConflicts.FirstOrDefault();
+                if (SelectedConflict is not null)
+                {
+                    SelectedConflict = OpenConflicts.FirstOrDefault(conflict => conflict.ConflictId == SelectedConflict.ConflictId)
+                        ?? OpenConflicts.FirstOrDefault();
+                }
+
+                ApplyIngestStatus(status);
+                NotifyConflictWorkflowCommandsChanged();
+            });
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception ex)
         {
-            _loggingService.LogError("Failed to load Security Master conflict count", ex);
+            _loggingService.LogError("Failed to refresh Security Master operator workflow status", ex);
+
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                WorkflowStatusText = "Operator workflow polling surface is unavailable.";
+                WorkflowRetrievedAtText = "-";
+            });
+        }
+    }
+
+    private void ApplyIngestStatus(SecurityMasterIngestStatusResponse? status)
+    {
+        if (status is null)
+        {
+            WorkflowStatusText = "Ingest polling surface unavailable.";
+            WorkflowRetrievedAtText = "-";
+            ImportSessionSummary = "Security Master ingest status is unavailable from the workstation service.";
+            return;
+        }
+
+        WorkflowRetrievedAtText = status.RetrievedAtUtc.LocalDateTime.ToString("g");
+        if (status.IsImportActive && status.ActiveImport is not null)
+        {
+            WorkflowStatusText = $"Active ingest {status.ActiveImport.Processed}/{status.ActiveImport.Total} via {status.ActiveImport.FileExtension}.";
+            ImportSessionSummary =
+                $"Active ingest: {status.ActiveImport.Processed}/{status.ActiveImport.Total} processed • {status.ActiveImport.Imported} imported • {status.ActiveImport.Skipped} skipped • {status.ActiveImport.Failed} failed.";
+            return;
+        }
+
+        if (status.LastCompleted is not null)
+        {
+            WorkflowStatusText = $"Last ingest completed {status.LastCompleted.CompletedAtUtc.LocalDateTime:g}.";
+            ImportSessionSummary =
+                $"Last ingest: {status.LastCompleted.Imported} imported • {status.LastCompleted.Skipped} skipped • {status.LastCompleted.Failed} failed • {status.LastCompleted.ConflictsDetected} conflicts.";
+            return;
+        }
+
+        WorkflowStatusText = "No ingest activity has been recorded yet.";
+        ImportSessionSummary = "No Security Master ingest has completed yet.";
+    }
+
+    private async Task ResolveSelectedConflictAsync(string resolution, CancellationToken ct = default)
+    {
+        if (SelectedConflict is null || string.IsNullOrWhiteSpace(ConflictOperatorText))
+        {
+            return;
+        }
+
+        try
+        {
+            var updated = await _workflowClient
+                .ResolveConflictAsync(
+                    SelectedConflict.ConflictId,
+                    resolution,
+                    ConflictOperatorText.Trim(),
+                    string.IsNullOrWhiteSpace(ConflictNoteText) ? null : ConflictNoteText.Trim(),
+                    ct)
+                .ConfigureAwait(false);
+
+            if (updated is null)
+            {
+                _notificationService.ShowNotification("Security Master", "Conflict no longer exists.", NotificationType.Warning);
+                return;
+            }
+
+            ConflictNoteText = string.Empty;
+            await RefreshOperatorWorkflowAsync(ct).ConfigureAwait(false);
+            _notificationService.ShowNotification(
+                "Security Master",
+                resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
+                    ? "Conflict dismissed."
+                    : "Conflict marked resolved.",
+                NotificationType.Success);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to resolve Security Master conflict", ex);
+            _notificationService.ShowNotification("Security Master", "Conflict resolution failed.", NotificationType.Error);
         }
     }
 
@@ -992,6 +1238,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
             // Refresh search results
             _ = SearchAsync();
+            _ = RefreshOperatorWorkflowAsync();
         }
         catch (OperationCanceledException)
         {

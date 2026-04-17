@@ -3,10 +3,13 @@
 ## Meridian — Structure Review & Improvement Plan
 
 **Date:** 2026-02-13
-**Status:** Proposed
+**Last Reviewed:** 2026-03-19
+**Status:** Reference assessment with follow-up; infrastructure complete, UI workflow in progress
 **Author:** Architecture Review
 
 ---
+
+> Use this file for the provider-configurability rationale and phased implementation shape. For broader desktop delivery status, pair it with `desktop-platform-improvements-implementation-guide.md` and `../status/ROADMAP.md`.
 
 ## 1) Current structure (what is good, what is limiting)
 

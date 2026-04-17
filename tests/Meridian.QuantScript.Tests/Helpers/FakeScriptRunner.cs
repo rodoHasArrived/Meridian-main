@@ -39,6 +39,13 @@ public sealed class FakeScriptRunner : IScriptRunner
         return Task.FromResult(_result ?? BuildDefault(source));
     }
 
+    public Task<ScriptRunResult> ContinueWithAsync(
+        string source,
+        ScriptExecutionCheckpoint checkpoint,
+        IReadOnlyDictionary<string, object?> parameters,
+        CancellationToken ct = default)
+        => RunAsync(source, parameters, ct);
+
     private static ScriptRunResult BuildDefault(string source) => new(
         Success: true,
         Elapsed: TimeSpan.FromMilliseconds(50),

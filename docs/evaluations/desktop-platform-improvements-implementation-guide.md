@@ -2,7 +2,10 @@
 
 **Version**: 2.0
 **Date**: 2026-02-20
-**Status**: Complete — All 6 priorities implemented
+**Last Updated**: 2026-03-19
+**Status**: Reference guide — original 6 priorities complete; extended follow-up continues in this file and the roadmap
+
+> This document remains the detailed implementation reference for the desktop improvement program. For current sequencing and ownership, defer to `../status/ROADMAP.md`.
 
 ## Executive Summary
 

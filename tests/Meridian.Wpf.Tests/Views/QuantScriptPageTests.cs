@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -44,6 +45,7 @@ public sealed class QuantScriptPageTests
             new Meridian.Wpf.Tests.Support.FakeQuantScriptCompiler(),
             new PlotQueue(),
             new StubLayoutService(),
+            new QuantScriptNotebookStore(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
             Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
             NullLogger<QuantScriptViewModel>.Instance);
 

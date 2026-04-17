@@ -13,6 +13,37 @@
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="FontFamily" Value="Consolas" />
         </Style>
+        <Style x:Key="MetricLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+        </Style>
+        <Style x:Key="MetricValueStyle" TargetType="TextBlock" BasedOn="{StaticResource CardHeaderStyle}">
+            <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
+        <Style x:Key="MetricValueMonoStyle" TargetType="TextBlock" BasedOn="{StaticResource MetricValueStyle}">
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style x:Key="WorkbenchMetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+            <Setter Property="Padding" Value="16" />
+        </Style>
+        <Style x:Key="WorkbenchDataGridStyle" TargetType="DataGrid">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderSubtleBrush}" />
+            <Setter Property="VerticalGridLinesBrush" Value="{StaticResource BorderSubtleBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
+            <Setter Property="RowBackground" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+            <Setter Property="RowHeaderWidth" Value="0" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="SelectionMode" Value="Extended" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+        </Style>
         <Style x:Key="HighlightedReconciliationRowStyle" TargetType="DataGridRow">
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
@@ -28,9 +59,14 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="460" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
+                    <Grid Grid.Column="0" Margin="0,0,20,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal">
                             <Border Width="44" Height="44" CornerRadius="14"
                                     Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
@@ -43,103 +79,281 @@
                                 <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
                             </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="Governance Home" Command="{Binding OpenGovernanceCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Accounts" Command="{Binding OpenAccountsCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Banking" Command="{Binding OpenBankingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Cash &amp; Financing" Command="{Binding OpenCashFinancingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Reconciliation" Command="{Binding OpenReconciliationCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Switch Fund" Command="{Binding SwitchFundCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryButtonStyle}" />
-                    </StackPanel>
+                        <Border Grid.Row="1"
+                                Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14"
+                                Margin="0,16,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Operator Brief" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding OverviewStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding SecurityCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,10,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                        <WrapPanel Grid.Row="2" Margin="0,16,0,0">
+                            <Button Content="Governance Home" Command="{Binding OpenGovernanceCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Accounts" Command="{Binding OpenAccountsCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Banking" Command="{Binding OpenBankingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Cash &amp; Financing" Command="{Binding OpenCashFinancingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Report Pack" Command="{Binding OpenReportPackCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Reconciliation" Command="{Binding OpenReconciliationCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Switch Fund" Command="{Binding SwitchFundCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
+                            <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,0,8" />
+                        </WrapPanel>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <UniformGrid Columns="2" Margin="0,0,0,12">
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
+                                <StackPanel>
+                                    <TextBlock Text="Ledger As Of" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding AsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <TextBlock Text="Workspace As Of" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding WorkspaceAsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Open Breaks" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding OpenBreaksText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Reconciliation Runs" Style="{StaticResource MetricLabelStyle}" />
+                                    <TextBlock Text="{Binding ReconciliationRunsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                        <Border Grid.Row="1"
+                                Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                BorderBrush="{StaticResource BorderSubtleBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="14">
+                            <StackPanel>
+                                <TextBlock Text="Review Posture" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Keep fund scope, ledger timing, and exception counts visible before drilling into journals or reconciliation detail." Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
                 </Grid>
             </Border>
 
             <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Overview">
-                    <StackPanel Margin="0,16,0,0">
-                        <UniformGrid Columns="4" Margin="0,0,0,20">
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2.15*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="1.2*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
-                                    <TextBlock Text="Workspace As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding WorkspaceAsOfText}" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Balance Sheet Posture" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Treat this panel as the operator's first look at liquidity, exposure, and ledger scale before moving into detailed review." Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <UniformGrid Columns="4" Margin="0,16,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Total Cash" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Gross Exposure" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding GrossExposureText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Net Exposure" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding NetExposureText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Total Equity" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding TotalEquityText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
-                                    <TextBlock Text="Accounts" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding TotalAccountsText}" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Ledger Exposure Mix" Style="{StaticResource CardHeaderStyle}" />
+                                    <UniformGrid Columns="4" Margin="0,16,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Assets" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding AssetBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Equity" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding EquityBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Revenue" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding RevenueBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Expense" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding ExpenseBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Open Breaks" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding OpenBreaksText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
+
                             <Border Style="{StaticResource CardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="Reconciliation Runs" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding ReconciliationRunsText}" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Current Briefing" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding OverviewStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding SecurityCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,10,0,0" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
-                        </UniformGrid>
+                        </StackPanel>
 
-                        <UniformGrid Columns="4" Margin="0,0,0,20">
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
-                                    <TextBlock Text="Total Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Operational Scope" Style="{StaticResource CardHeaderStyle}" />
+                                    <UniformGrid Columns="2" Margin="0,16,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Accounts" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding TotalAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Bank" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding BankAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Brokerage" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding BrokerageAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Custody" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding CustodyAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
-                                    <TextBlock Text="Gross Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding GrossExposureText}" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Ledger Scale" Style="{StaticResource CardHeaderStyle}" />
+                                    <UniformGrid Columns="2" Margin="0,16,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Journals" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding JournalEntriesText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Ledger Entries" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding LedgerEntriesText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Entities" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding EntityCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Sleeves" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding SleeveCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Net Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding NetExposureText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
+
                             <Border Style="{StaticResource CardStyle}">
                                 <StackPanel>
-                                    <TextBlock Text="Total Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding TotalEquityText}" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Vehicle Footprint" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding VehicleCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                    <TextBlock Text="Monitor the vehicle count alongside entity and sleeve totals so operators can spot scope drift before reconciliation starts." Style="{StaticResource CardDescriptionStyle}" Margin="0,10,0,0" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
-                        </UniformGrid>
-
-                        <Border Style="{StaticResource CardStyle}">
-                            <StackPanel>
-                                <TextBlock Text="Overview" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
-                                <TextBlock Text="{Binding OverviewStatusText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding SecurityCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
+                        </StackPanel>
+                    </Grid>
                 </TabItem>
 
                 <TabItem Header="Accounts">
                     <StackPanel Margin="0,16,0,0">
-                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                            <DockPanel>
-                                <TextBlock Text="Account-first drill-throughs for banking, portfolio, and ledger review." Style="{StaticResource CardDescriptionStyle}" />
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <DockPanel LastChildFill="False">
+                                <StackPanel DockPanel.Dock="Left">
+                                    <TextBlock Text="Account-first drill-throughs for banking, portfolio, and ledger review." Style="{StaticResource CardDescriptionStyle}" />
+                                    <UniformGrid Columns="4" Margin="0,14,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Total Accounts" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding TotalAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Bank" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding BankAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Brokerage" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding BrokerageAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Custody" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding CustodyAccountsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                </StackPanel>
                                 <Button DockPanel.Dock="Right" Content="Open Account Portfolio"
                                         Command="{Binding OpenSelectedAccountPortfolioCommand}"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Margin="16,0,0,0" />
                             </DockPanel>
                         </Border>
                         <DataGrid ItemsSource="{Binding Accounts}"
                                   SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                                  Style="{StaticResource WorkbenchDataGridStyle}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  BorderThickness="0"
-                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                  FrozenColumnCount="3">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*" />
                                 <DataGridTextColumn Header="Code" Binding="{Binding AccountCode}" Width="130" />
@@ -147,11 +361,11 @@
                                 <DataGridTextColumn Header="Institution" Binding="{Binding Institution}" Width="170" />
                                 <DataGridTextColumn Header="Structure" Binding="{Binding StructureLabel}" Width="220" />
                                 <DataGridTextColumn Header="Workflow" Binding="{Binding WorkflowLabel}" Width="240" />
-                                <DataGridTextColumn Header="Cash" Binding="{Binding CashBalance, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="Securities" Binding="{Binding SecuritiesMarketValue, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="NAV" Binding="{Binding NetAssetValue, StringFormat={}{0:C2}}" Width="120" />
+                                <DataGridTextColumn Header="Cash" Binding="{Binding CashBalance, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Securities" Binding="{Binding SecuritiesMarketValue, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="NAV" Binding="{Binding NetAssetValue, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                 <DataGridTextColumn Header="Last Snapshot" Binding="{Binding LastSnapshotDate}" Width="110" />
-                                <DataGridTextColumn Header="Open Breaks" Binding="{Binding OpenBreaks}" Width="90" />
+                                <DataGridTextColumn Header="Open Breaks" Binding="{Binding OpenBreaks}" Width="90" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
@@ -159,24 +373,51 @@
 
                 <TabItem Header="Banking">
                     <StackPanel Margin="0,16,0,0">
-                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                            <TextBlock Text="{Binding BankingStatusText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{Binding BankingStatusText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                                <UniformGrid Columns="4" Margin="0,14,0,0">
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Total Cash" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Pending Settlement" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding PendingSettlementText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Financing Cost" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding FinancingCostText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Workspace As Of" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding WorkspaceAsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
                         </Border>
                         <DataGrid ItemsSource="{Binding BankSnapshots}"
+                                  Style="{StaticResource WorkbenchDataGridStyle}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  BorderThickness="0"
-                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                  FrozenColumnCount="2">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Account" Binding="{Binding DisplayName}" Width="*" />
                                 <DataGridTextColumn Header="Code" Binding="{Binding AccountCode}" Width="120" />
                                 <DataGridTextColumn Header="Bank" Binding="{Binding BankName}" Width="160" />
                                 <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="90" />
-                                <DataGridTextColumn Header="Balance" Binding="{Binding CurrentBalance, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="Pending Settlement" Binding="{Binding PendingSettlement, StringFormat={}{0:C2}}" Width="140" />
+                                <DataGridTextColumn Header="Balance" Binding="{Binding CurrentBalance, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Pending Settlement" Binding="{Binding PendingSettlement, StringFormat={}{0:C2}}" Width="140" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                 <DataGridTextColumn Header="Last Statement" Binding="{Binding LastStatementDate}" Width="110" />
-                                <DataGridTextColumn Header="Lines" Binding="{Binding StatementLineCount}" Width="70" />
+                                <DataGridTextColumn Header="Lines" Binding="{Binding StatementLineCount}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                 <DataGridTextColumn Header="Latest Txn" Binding="{Binding LatestTransactionType}" Width="120" />
                             </DataGrid.Columns>
                         </DataGrid>
@@ -185,62 +426,62 @@
 
                 <TabItem Header="Portfolio">
                     <StackPanel Margin="0,16,0,0">
-                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
-                            <DockPanel>
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <DockPanel LastChildFill="False">
                                 <StackPanel>
                                     <TextBlock Text="{Binding PortfolioStatusText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding SecurityCoverageText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <UniformGrid Columns="4" Margin="0,14,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Gross Exposure" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding GrossExposureText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Net Exposure" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding NetExposureText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Total Equity" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding TotalEquityText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Total Cash" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
                                 </StackPanel>
                                 <Button DockPanel.Dock="Right"
                                         Content="Open Security Master"
                                         Command="{Binding OpenSelectedPortfolioSecurityCommand}"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Margin="16,0,0,0" />
                             </DockPanel>
                         </Border>
-                        <UniformGrid Columns="4" Margin="0,0,0,16">
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Gross Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding GrossExposureText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Net Exposure" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding NetExposureText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Total Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding TotalEquityText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="Total Cash" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding TotalCashText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
                         <DataGrid ItemsSource="{Binding PortfolioPositions}"
                                   SelectedItem="{Binding SelectedPortfolioPosition, Mode=TwoWay}"
+                                  Style="{StaticResource WorkbenchDataGridStyle}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  BorderThickness="0"
-                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                  FrozenColumnCount="2">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="*" />
                                 <DataGridTextColumn Header="Security" Binding="{Binding SecurityDisplayName}" Width="200" />
                                 <DataGridTextColumn Header="Asset Class" Binding="{Binding AssetClass}" Width="120" />
                                 <DataGridTextColumn Header="Coverage" Binding="{Binding CoverageLabel}" Width="100" />
-                                <DataGridTextColumn Header="Net Qty" Binding="{Binding NetQuantity}" Width="100" />
-                                <DataGridTextColumn Header="Avg Cost" Binding="{Binding WeightedAverageCostBasis, StringFormat={}{0:C4}}" Width="120" />
-                                <DataGridTextColumn Header="Realized P&amp;L" Binding="{Binding RealizedPnl, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="Unrealized P&amp;L" Binding="{Binding UnrealizedPnl, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="Runs" Binding="{Binding ContributingRuns}" Width="80" />
-                                <DataGridTextColumn Header="Linked Accounts" Binding="{Binding LinkedAccounts}" Width="110" />
+                                <DataGridTextColumn Header="Net Qty" Binding="{Binding NetQuantity}" Width="100" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Avg Cost" Binding="{Binding WeightedAverageCostBasis, StringFormat={}{0:C4}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Realized P&amp;L" Binding="{Binding RealizedPnl, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Unrealized P&amp;L" Binding="{Binding UnrealizedPnl, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Runs" Binding="{Binding ContributingRuns}" Width="80" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Linked Accounts" Binding="{Binding LinkedAccounts}" Width="110" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
@@ -291,50 +532,61 @@
 
                 <TabItem Header="Journal">
                     <StackPanel Margin="0,16,0,0">
-                        <UniformGrid Columns="5" Margin="0,0,0,20">
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding AsOfText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Journal Entries" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding JournalEntriesText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Assets" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding AssetBalanceText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
-                                <StackPanel>
-                                    <TextBlock Text="Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding EquityBalanceText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                            <Border Style="{StaticResource CardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="Revenue" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                    <TextBlock Text="{Binding RevenueBalanceText}" Style="{StaticResource CardHeaderStyle}" />
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Journal Review" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Use this journal table for read-only inspection. Draft and posting actions stay separated from booked history so reviewers do not confuse state." Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                <UniformGrid Columns="6" Margin="0,16,0,0">
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="As Of" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding AsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Journals" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding JournalEntriesText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Assets" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding AssetBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Equity" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding EquityBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Revenue" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding RevenueBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Expense" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding ExpenseBalanceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
                         <DataGrid ItemsSource="{Binding Journal}"
+                                  Style="{StaticResource WorkbenchDataGridStyle}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  BorderThickness="0"
-                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                  FrozenColumnCount="2">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
                                 <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
-                                <DataGridTextColumn Header="Debits" Binding="{Binding TotalDebits, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="Credits" Binding="{Binding TotalCredits, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="Lines" Binding="{Binding LineCount}" Width="70" />
+                                <DataGridTextColumn Header="Debits" Binding="{Binding TotalDebits, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Credits" Binding="{Binding TotalCredits, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Lines" Binding="{Binding LineCount}" Width="70" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
@@ -342,19 +594,56 @@
 
                 <TabItem Header="Trial Balance">
                     <StackPanel Margin="0,16,0,0">
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Trial Balance" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Account balances stay adjacent to line counts so reviewers can validate material balances without leaving the ledger context." Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                <UniformGrid Columns="5" Margin="0,16,0,0">
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Ledger Entries" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding LedgerEntriesText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Entities" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding EntityCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Sleeves" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding SleeveCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                        <StackPanel>
+                                            <TextBlock Text="Vehicles" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding VehicleCountText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Workspace As Of" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding WorkspaceAsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
                         <DataGrid ItemsSource="{Binding TrialBalance}"
+                                  Style="{StaticResource WorkbenchDataGridStyle}"
                                   AutoGenerateColumns="False"
                                   IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  BorderThickness="0"
-                                  Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                  FrozenColumnCount="2">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
                                 <DataGridTextColumn Header="Type" Binding="{Binding AccountType}" Width="110" />
                                 <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="110" />
                                 <DataGridTextColumn Header="Financial Account" Binding="{Binding FinancialAccountId}" Width="180" />
-                                <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat={}{0:C2}}" Width="120" />
-                                <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="80" />
+                                <DataGridTextColumn Header="Balance" Binding="{Binding Balance, StringFormat={}{0:C2}}" Width="120" ElementStyle="{StaticResource RightAlignedCellStyle}" />
+                                <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="80" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
@@ -841,6 +1130,129 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>
+                </TabItem>
+
+                <TabItem Header="Report Pack">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.6*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Governance Report-Pack Preview" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="{Binding ReportPackStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ComboBox Grid.Column="1"
+                                                  Width="190"
+                                                  Margin="16,0,8,0"
+                                                  SelectedIndex="{Binding SelectedReportKindIndex, Mode=TwoWay}">
+                                            <ComboBoxItem Content="Trial Balance" />
+                                            <ComboBoxItem Content="NAV Summary" />
+                                            <ComboBoxItem Content="Asset Allocation" />
+                                            <ComboBoxItem Content="Reconciliation Pack" />
+                                        </ComboBox>
+                                        <Button Grid.Column="2"
+                                                Content="Refresh Preview"
+                                                Command="{Binding RefreshReportPackCommand}"
+                                                Style="{StaticResource SecondaryButtonStyle}" />
+                                    </Grid>
+
+                                    <UniformGrid Columns="4" Margin="0,16,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Report Kind" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding ReportPackKindText}" Style="{StaticResource MetricValueStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="As Of" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding ReportPackAsOfText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Net Assets" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding ReportPackNetAssetsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Generated At" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding ReportPackGeneratedAtText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Asset-Class Sections" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                                    <DataGrid ItemsSource="{Binding ReportPackAssetSections}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Asset Class" Binding="{Binding AssetClass}" Width="*" />
+                                            <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat={}{0:C2}}" Width="160" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Handoff Readiness" Style="{StaticResource CardHeaderStyle}" />
+                                    <UniformGrid Columns="2" Margin="0,16,0,0">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Trial-Balance Lines" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding ReportPackTrialBalanceLinesText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="Asset Sections" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding ReportPackAssetSectionsText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                    <TextBlock Text="Use this preview as the operator handoff checkpoint before board, investor, compliance, or fund-ops packs leave the governance workspace."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Workflow Links" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Keep the report pack adjacent to the cash, accounting, and audit tabs so approvals are grounded in the same fund context."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,8,0,14"
+                                               TextWrapping="Wrap" />
+                                    <Button Content="Open Cash &amp; Financing" Command="{Binding OpenCashFinancingCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,0,8" />
+                                    <Button Content="Open Trial Balance" Command="{Binding OpenTrialBalanceCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,0,8" />
+                                    <Button Content="Open Audit Trail" Command="{Binding OpenAuditTrailCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </StackPanel>

@@ -145,6 +145,10 @@
                     </WrapPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                        <Button Content="Refresh Workflow"
+                                Command="{Binding RefreshWorkflowCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,8,8" />
                         <Button Content="Backfill Trading Parameters"
                                 Command="{Binding BackfillTradingParamsCommand}"
                                 IsEnabled="{Binding IsBackfillingTradingParams, Converter={StaticResource InvertBoolConverter}}"
@@ -482,6 +486,68 @@
                                     </StackPanel>
                                 </TabItem>
 
+                                <TabItem Header="Conflict Queue">
+                                    <Grid Margin="12">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Text="{Binding SelectedConflictSummaryText}"
+                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                   TextWrapping="Wrap" />
+
+                                        <Grid Grid.Row="1" Margin="0,12,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="190" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                <TextBlock Text="Resolved By" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                                <TextBox Text="{Binding ConflictOperatorText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                                <TextBlock Text="Resolution Note" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                                <TextBox Text="{Binding ConflictNoteText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                                <Button Content="Accept A"
+                                                        Command="{Binding AcceptPrimaryConflictCommand}"
+                                                        Style="{StaticResource GhostButtonStyle}"
+                                                        Margin="0,0,8,0" />
+                                                <Button Content="Accept B"
+                                                        Command="{Binding AcceptSecondaryConflictCommand}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Margin="0,0,8,0" />
+                                                <Button Content="Dismiss"
+                                                        Command="{Binding DismissConflictCommand}"
+                                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <DataGrid Grid.Row="2"
+                                                  ItemsSource="{Binding OpenConflicts}"
+                                                  SelectedItem="{Binding SelectedConflict, Mode=TwoWay}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  Background="Transparent"
+                                                  BorderThickness="0">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Field" Binding="{Binding FieldPath}" Width="150" />
+                                                <DataGridTextColumn Header="Provider A" Binding="{Binding ProviderA}" Width="120" />
+                                                <DataGridTextColumn Header="Value A" Binding="{Binding ValueA}" Width="*" />
+                                                <DataGridTextColumn Header="Provider B" Binding="{Binding ProviderB}" Width="120" />
+                                                <DataGridTextColumn Header="Value B" Binding="{Binding ValueB}" Width="*" />
+                                                <DataGridTextColumn Header="Detected" Binding="{Binding DetectedAt, StringFormat='{}{0:g}'}" Width="130" />
+                                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+
                                 <TabItem Header="Corporate Actions">
                                     <DockPanel Margin="12">
                                         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
@@ -616,6 +682,7 @@
                             <TextBlock Text="Runtime &amp; Conflict Posture" Style="{StaticResource CardHeaderStyle}" />
                             <TextBlock Text="{Binding RuntimeStatusLabel}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
                             <TextBlock Text="{Binding RuntimeStatusDetail}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding WorkflowRetrievedAtText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
                             <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="0,14,0,14" />
                             <TextBlock Text="{Binding ConflictSummaryText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
                             <TextBlock Text="{Binding ImportSessionText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
@@ -639,10 +706,15 @@
                             AutomationProperties.AutomationId="SecurityMasterActionInspector">
                         <StackPanel>
                             <TextBlock Text="Operator Next Steps" Style="{StaticResource CardHeaderStyle}" />
-                            <TextBlock Text="Use the selected-security commands for edits and deactivation, then keep the history and corporate-action tabs nearby for audit confirmation."
+                            <TextBlock Text="Promote conflicts, fund review, and report-pack work into explicit operator paths from the Security Master surface."
                                        Style="{StaticResource CardDescriptionStyle}"
                                        Margin="0,8,0,14"
                                        TextWrapping="Wrap" />
+                            <Button Content="Open Fund Portfolio" Command="{Binding OpenFundPortfolioCommand}" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Fund Ledger" Command="{Binding OpenFundLedgerCommand}" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Reconciliation Queue" Command="{Binding OpenFundReconciliationCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Cash &amp; Financing" Command="{Binding OpenFundCashFlowCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Report Pack" Command="{Binding OpenFundReportPackCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
                             <Button Content="Edit Selected Security" Command="{Binding EditSelectedCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
                             <Button Content="Deactivate Selected Security" Command="{Binding DeactivateSelectedCommand}" Style="{StaticResource DangerButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
                             <Button Content="Backfill Trading Parameters" Command="{Binding BackfillTradingParamsCommand}" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Stretch" />

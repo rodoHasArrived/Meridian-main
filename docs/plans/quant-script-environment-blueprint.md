@@ -2,14 +2,14 @@
 
 **Owner:** Desktop / Research Engineering
 **Audience:** Research, desktop, and backtesting contributors
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-16
 **Status:** Implemented baseline with optional post-core follow-ons
 
 ---
 
 ## Summary
 
-QuantScript is Meridian's interactive C# research scripting environment inside the desktop workstation. The core project, WPF page, compiler and runner path, tests, and sample-script baseline are already implemented. This document now serves as the high-level product-placement and architecture-intent reference, while [`quant-script-page-implementation-guide.md`](quant-script-page-implementation-guide.md) carries the detailed screen, service, and implementation guidance.
+QuantScript is Meridian's interactive C# research scripting environment inside the desktop workstation. The core project, WPF page, compiler and runner path, tests, sample-script baseline, and notebook-style cell execution workflow are now implemented. This document now serves as the high-level product-placement and architecture-intent reference, while [`quant-script-page-implementation-guide.md`](quant-script-page-implementation-guide.md) carries the detailed screen, service, and implementation guidance.
 
 QuantScript is not part of the default Wave 1-6 core operator-readiness path. Treat it as an optional research-product track unless a specific roadmap decision pulls it forward.
 
@@ -20,8 +20,9 @@ QuantScript is not part of the default Wave 1-6 core operator-readiness path. Tr
 The current repository already includes:
 
 - `src/Meridian.QuantScript/` with the scripting engine, data access surface, statistics vocabulary, portfolio helpers, and plotting infrastructure
-- `src/Meridian.Wpf/Views/QuantScriptPage.xaml` and `src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs` for the desktop scripting surface
-- `tests/Meridian.QuantScript.Tests/` covering compiler, runner, statistics, plot queue, and portfolio-builder behavior
+- `src/Meridian.Wpf/Views/QuantScriptPage.xaml` and `src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs` for the desktop scripting surface, including notebook document browsing, cell selection, and checkpointed replay
+- `src/Meridian.QuantScript/Documents/` and `src/Meridian.QuantScript/Compilation/NotebookExecutionSession.cs` for notebook persistence and stale-cell replay control
+- `tests/Meridian.QuantScript.Tests/` covering compiler, runner, checkpoint continuation, notebook session state, statistics, plot queue, and portfolio-builder behavior
 - sample-script and research-surface integration that make QuantScript a real workstation capability rather than a blueprint-only concept
 
 ---
@@ -40,7 +41,7 @@ The current repository already includes:
 ### In scope
 
 - interactive C# scripting in the WPF workstation
-- script browser, parameter inputs, console output, charts, metrics, and diagnostics
+- script and notebook document browsing, cell-based execution, parameter inputs, console output, charts, metrics, and diagnostics
 - access to existing Meridian data, analytics, and backtesting services through explicit runner abstractions
 - persisted local scripts and repeatable research workflows
 

@@ -210,66 +210,83 @@ public sealed class CollectorModeRunner
             return errorCode.ToExitCode();
         }
 
-        var subscriptionManager = hostStartup.CreateSubscriptionOrchestrator(dataClient, ctx.Config.DataSource.ToString());
-        var runtimeCfg = SharedStartupHelpers.EnsureDefaultSymbols(ctx.Config);
-        await subscriptionManager.ApplyAsync(runtimeCfg, ct);
-        var symbols = runtimeCfg.Symbols ?? Array.Empty<SymbolConfig>();
-
-        if (ctx.Deployment.HotReloadEnabled)
+        try
         {
-            watcher = ctx.ConfigurationService.StartHotReload(ctx.ConfigPath, newCfg =>
+            var subscriptionManager = hostStartup.CreateSubscriptionOrchestrator(dataClient, ctx.Config.DataSource.ToString());
+            var runtimeCfg = SharedStartupHelpers.EnsureDefaultSymbols(ctx.Config);
+            await subscriptionManager.ApplyAsync(runtimeCfg, ct);
+            var symbols = runtimeCfg.Symbols ?? Array.Empty<SymbolConfig>();
+
+            if (ctx.Deployment.HotReloadEnabled)
             {
-                try
+                watcher = ctx.ConfigurationService.StartHotReload(ctx.ConfigPath, newCfg =>
                 {
-                    var nextCfg = SharedStartupHelpers.EnsureDefaultSymbols(newCfg);
-                    subscriptionManager.ApplyAsync(nextCfg).GetAwaiter().GetResult();
-                    _ = statusWriter.WriteOnceAsync();
-                    _log.Information("Applied hot-reloaded configuration: {Count} symbols", nextCfg.Symbols?.Length ?? 0);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error(ex, "Failed to apply hot-reloaded configuration");
-                }
-            }, ex => _log.Error(ex, "Configuration watcher error"));
+                    try
+                    {
+                        var nextCfg = SharedStartupHelpers.EnsureDefaultSymbols(newCfg);
+                        subscriptionManager.ApplyAsync(nextCfg).GetAwaiter().GetResult();
+                        _ = statusWriter.WriteOnceAsync();
+                        _log.Information("Applied hot-reloaded configuration: {Count} symbols", nextCfg.Symbols?.Length ?? 0);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "Failed to apply hot-reloaded configuration");
+                    }
+                }, ex => _log.Error(ex, "Configuration watcher error"));
 
-            _log.Information("Watching {ConfigPath} for subscription changes", ctx.ConfigPath);
+                _log.Information("Watching {ConfigPath} for subscription changes", ctx.ConfigPath);
+            }
+
+            if (ctx.CliArgs.SimulateFeed)
+            {
+                var now = DateTimeOffset.UtcNow;
+                var sym = symbols[0].Symbol;
+
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.24m, 300m, "MM1"));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.26m, 250m, "MM2"));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Update, OrderBookSide.Bid, 500.24m, 350m, "MM1"));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 3, DepthOperation.Update, OrderBookSide.Ask, 500.30m, 100m, "MMX"));
+                depthCollector.ResetSymbolStream(sym);
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.20m, 100m, "MM3"));
+                depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.22m, 90m, "MM4"));
+
+                tradeCollector.OnTrade(new MarketTradeUpdate(now, sym, 500.21m, 100, AggressorSide.Buy, SequenceNumber: 1, StreamId: "SIM", Venue: "TEST"));
+
+                await Task.Delay(200, ct);
+            }
+
+            await statusWriter.WriteOnceAsync();
+            _log.Information("Collector ready at {StoragePath}; waiting for shutdown", storageOpt.RootPath);
+
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
         }
-
-        if (ctx.CliArgs.SimulateFeed)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            var now = DateTimeOffset.UtcNow;
-            var sym = symbols[0].Symbol;
-
-            depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.24m, 300m, "MM1"));
-            depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.26m, 250m, "MM2"));
-            depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Update, OrderBookSide.Bid, 500.24m, 350m, "MM1"));
-            depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 3, DepthOperation.Update, OrderBookSide.Ask, 500.30m, 100m, "MMX"));
-            depthCollector.ResetSymbolStream(sym);
-            depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Bid, 500.20m, 100m, "MM3"));
-            depthCollector.OnDepth(new MarketDepthUpdate(now, sym, 0, DepthOperation.Insert, OrderBookSide.Ask, 500.22m, 90m, "MM4"));
-
-            tradeCollector.OnTrade(new MarketTradeUpdate(now, sym, 500.21m, 100, AggressorSide.Buy, SequenceNumber: 1, StreamId: "SIM", Venue: "TEST"));
-
-            await Task.Delay(200, ct);
+            _log.Information("Shutdown requested; disconnecting from data provider...");
         }
+        finally
+        {
+            watcher?.Dispose();
 
-        _log.Information("Wrote MarketEvents to {StoragePath}", storageOpt.RootPath);
-        var pipelineMetrics = pipeline.EventMetrics;
-        _log.Information(
-            "Metrics: published={Published}, integrity={Integrity}, dropped={Dropped}",
-            pipelineMetrics.Published,
-            pipelineMetrics.Integrity,
-            pipelineMetrics.Dropped);
+            try
+            {
+                await dataClient.DisconnectAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Data provider disconnect raised an error during shutdown");
+            }
 
-        _log.Information("Disconnecting from data provider...");
-        await dataClient.DisconnectAsync();
+            failoverService?.Dispose();
+            healthMonitor?.Dispose();
 
-        failoverService?.Dispose();
-        healthMonitor?.Dispose();
-
-        _log.Information("Shutdown complete");
-
-        watcher?.Dispose();
+            var pipelineMetrics = pipeline.EventMetrics;
+            _log.Information(
+                "Shutdown complete. Metrics: published={Published}, integrity={Integrity}, dropped={Dropped}",
+                pipelineMetrics.Published,
+                pipelineMetrics.Integrity,
+                pipelineMetrics.Dropped);
+        }
 
         return 0;
     }

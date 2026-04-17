@@ -103,7 +103,7 @@ function Publish-Project {
         [string]$OutputSubDir
     )
 
-    $outputPath = Join-Path $OutputDir $RuntimeId $OutputSubDir
+    $outputPath = Join-Path (Join-Path $OutputDir $RuntimeId) $OutputSubDir
 
     Write-Info "Publishing $ProjectName for $RuntimeId..."
 
@@ -135,7 +135,7 @@ function Publish-Project {
 function Publish-DesktopApp {
     param([string]$RuntimeId)
 
-    $outputPath = Join-Path $OutputDir $RuntimeId "desktop"
+    $outputPath = Join-Path (Join-Path $OutputDir $RuntimeId) "desktop"
     $platform = if ($RuntimeId -eq "win-arm64") { "ARM64" } else { "x64" }
 
     Write-Info "Publishing Meridian Desktop (WPF) for $RuntimeId..."

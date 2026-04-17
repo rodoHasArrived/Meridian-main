@@ -31,7 +31,9 @@ bld/
 # Publish output
 # Why: Published binaries are deployment artifacts, not source code.
 # They should be regenerated via `dotnet publish` for each deployment.
+# The repo publish script defaults to `./dist`, so both locations stay ignored.
 /publish/
+/dist/
 
 # Roslyn compiler cache
 # Why: IDE/compiler cache files that speed up compilation but are
@@ -53,6 +55,7 @@ bld/
 
 # Visual Studio
 .vs/
+.vscode/
 *.sln.DotSettings.user
 desktop.ini
 

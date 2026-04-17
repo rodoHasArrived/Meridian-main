@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Ui.Shared.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -14,6 +15,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly FundAccountReadService _fundAccountReadService;
     private readonly CashFinancingReadService _cashFinancingReadService;
     private readonly IFundReconciliationWorkbenchService _fundReconciliationWorkbenchService;
+    private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
 
     private string _title = "Fund Operations";
@@ -46,9 +48,19 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _pendingSettlementText = "-";
     private string _openBreaksText = "0";
     private string _reconciliationRunsText = "0";
+    private string _reportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
+    private string _reportPackKindText = GovernanceReportKindDto.TrialBalance.ToString();
+    private string _reportPackAsOfText = "-";
+    private string _reportPackNetAssetsText = "-";
+    private string _reportPackTrialBalanceLinesText = "0";
+    private string _reportPackAssetSectionsText = "0";
+    private string _reportPackGeneratedAtText = "-";
+    private bool _isReportPackLoading;
+    private GovernanceReportKindDto _selectedReportKind = GovernanceReportKindDto.TrialBalance;
     private int _selectedTabIndex;
     private FundAccountSummary? _selectedAccount;
     private FundPortfolioPosition? _selectedPortfolioPosition;
+    private FundReportPackPreviewDto? _reportPackPreview;
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -57,6 +69,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         FundAccountReadService fundAccountReadService,
         CashFinancingReadService cashFinancingReadService,
         IFundReconciliationWorkbenchService fundReconciliationWorkbenchService,
+        FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         StrategyRunWorkspaceService runWorkspaceService)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
@@ -65,6 +78,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _fundAccountReadService = fundAccountReadService ?? throw new ArgumentNullException(nameof(fundAccountReadService));
         _cashFinancingReadService = cashFinancingReadService ?? throw new ArgumentNullException(nameof(cashFinancingReadService));
         _fundReconciliationWorkbenchService = fundReconciliationWorkbenchService ?? throw new ArgumentNullException(nameof(fundReconciliationWorkbenchService));
+        _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService ?? throw new ArgumentNullException(nameof(fundOperationsWorkspaceReadService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
 
         TrialBalance = [];
@@ -75,6 +89,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReconciliationRuns = [];
         CashFinancingHighlights = [];
         AuditTrail = [];
+        ReportPackAssetSections = [];
 
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         OpenGovernanceCommand = new RelayCommand(() => _navigationService.NavigateTo("GovernanceShell"));
@@ -87,6 +102,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         OpenTrialBalanceCommand = new RelayCommand(() => _navigationService.NavigateTo("FundTrialBalance"));
         OpenReconciliationCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReconciliation"));
         OpenAuditTrailCommand = new RelayCommand(() => _navigationService.NavigateTo("FundAuditTrail"));
+        OpenReportPackCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReportPack"));
+        RefreshReportPackCommand = new AsyncRelayCommand(RefreshReportPackPreviewAsync);
         OpenSelectedAccountPortfolioCommand = new RelayCommand(OpenSelectedAccountPortfolio, () => SelectedAccount is not null);
         OpenSelectedPortfolioSecurityCommand = new RelayCommand(OpenSelectedPortfolioSecurity, () => SelectedPortfolioPosition is not null);
 
@@ -125,6 +142,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public ObservableCollection<FundAuditEntry> AuditTrail { get; }
 
+    public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; }
+
     public IAsyncRelayCommand RefreshCommand { get; }
 
     public IRelayCommand OpenGovernanceCommand { get; }
@@ -146,6 +165,10 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public IRelayCommand OpenReconciliationCommand { get; }
 
     public IRelayCommand OpenAuditTrailCommand { get; }
+
+    public IRelayCommand OpenReportPackCommand { get; }
+
+    public IAsyncRelayCommand RefreshReportPackCommand { get; }
 
     public IRelayCommand OpenSelectedAccountPortfolioCommand { get; }
 
@@ -331,6 +354,70 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _reconciliationRunsText, value);
     }
 
+    public string ReportPackStatusText
+    {
+        get => _reportPackStatusText;
+        private set => SetProperty(ref _reportPackStatusText, value);
+    }
+
+    public string ReportPackKindText
+    {
+        get => _reportPackKindText;
+        private set => SetProperty(ref _reportPackKindText, value);
+    }
+
+    public string ReportPackAsOfText
+    {
+        get => _reportPackAsOfText;
+        private set => SetProperty(ref _reportPackAsOfText, value);
+    }
+
+    public string ReportPackNetAssetsText
+    {
+        get => _reportPackNetAssetsText;
+        private set => SetProperty(ref _reportPackNetAssetsText, value);
+    }
+
+    public string ReportPackTrialBalanceLinesText
+    {
+        get => _reportPackTrialBalanceLinesText;
+        private set => SetProperty(ref _reportPackTrialBalanceLinesText, value);
+    }
+
+    public string ReportPackAssetSectionsText
+    {
+        get => _reportPackAssetSectionsText;
+        private set => SetProperty(ref _reportPackAssetSectionsText, value);
+    }
+
+    public string ReportPackGeneratedAtText
+    {
+        get => _reportPackGeneratedAtText;
+        private set => SetProperty(ref _reportPackGeneratedAtText, value);
+    }
+
+    public bool IsReportPackLoading
+    {
+        get => _isReportPackLoading;
+        private set => SetProperty(ref _isReportPackLoading, value);
+    }
+
+    public int SelectedReportKindIndex
+    {
+        get => (int)_selectedReportKind;
+        set
+        {
+            var normalized = Enum.IsDefined(typeof(GovernanceReportKindDto), value)
+                ? (GovernanceReportKindDto)value
+                : GovernanceReportKindDto.TrialBalance;
+
+            if (SetProperty(ref _selectedReportKind, normalized))
+            {
+                _ = RefreshReportPackPreviewAsync();
+            }
+        }
+    }
+
     public int SelectedTabIndex
     {
         get => _selectedTabIndex;
@@ -408,6 +495,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         await ApplyReconciliationWorkbenchAsync(activeFund, reconciliationSnapshot, ct);
         BuildWorkspaceSummary(activeFund, ledger, accounts, cashSummary, reconciliationSnapshot.Summary);
         BuildAuditTrail(ledger, reconciliationSnapshot.Summary);
+        await RefreshReportPackPreviewAsync(ct);
     }
 
     public void Dispose()
@@ -472,6 +560,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         ReconciliationRuns.Clear();
         CashFinancingHighlights.Clear();
         AuditTrail.Clear();
+        ReportPackAssetSections.Clear();
+        _reportPackPreview = null;
+        ReportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
+        ReportPackKindText = GovernanceReportKindDto.TrialBalance.ToString();
+        ReportPackAsOfText = "-";
+        ReportPackNetAssetsText = "-";
+        ReportPackTrialBalanceLinesText = "0";
+        ReportPackAssetSectionsText = "0";
+        ReportPackGeneratedAtText = "-";
         ResetReconciliationWorkbenchState();
     }
 
@@ -841,6 +938,59 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         }
     }
 
+    public async Task RefreshReportPackPreviewAsync(CancellationToken ct = default)
+    {
+        var activeFund = _fundContextService.CurrentFundProfile;
+        if (activeFund is null)
+        {
+            ReportPackStatusText = "Select a fund profile to build a governance report-pack preview.";
+            ReportPackAssetSections.Clear();
+            return;
+        }
+
+        IsReportPackLoading = true;
+        try
+        {
+            var preview = await _fundOperationsWorkspaceReadService
+                .PreviewReportPackAsync(
+                    new FundReportPackPreviewRequestDto(
+                        FundProfileId: activeFund.FundProfileId,
+                        ReportKind: _selectedReportKind,
+                        AsOf: DateTimeOffset.UtcNow,
+                        Currency: activeFund.BaseCurrency),
+                    ct)
+                .ConfigureAwait(false);
+
+            _reportPackPreview = preview;
+            ReportPackKindText = preview.ReportKind.ToString();
+            ReportPackAsOfText = preview.AsOf.LocalDateTime.ToString("g");
+            ReportPackNetAssetsText = preview.TotalNetAssets.ToString("C2");
+            ReportPackTrialBalanceLinesText = preview.TrialBalanceLineCount.ToString("N0");
+            ReportPackAssetSectionsText = preview.AssetClassSectionCount.ToString("N0");
+            ReportPackGeneratedAtText = preview.GeneratedAt.LocalDateTime.ToString("g");
+            ReportPackStatusText = $"{preview.DisplayName} {preview.ReportKind} preview is ready for operator handoff.";
+
+            ReportPackAssetSections.Clear();
+            foreach (var section in preview.AssetClassSections.OrderByDescending(static section => section.Total))
+            {
+                ReportPackAssetSections.Add(section);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            ReportPackStatusText = "Report-pack preview refresh cancelled.";
+        }
+        catch (Exception ex)
+        {
+            ReportPackStatusText = $"Unable to build report-pack preview: {ex.Message}";
+            ReportPackAssetSections.Clear();
+        }
+        finally
+        {
+            IsReportPackLoading = false;
+        }
+    }
+
     private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
         await LoadAsync();
@@ -856,6 +1006,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         "FundTrialBalance" => (int)FundOperationsTab.TrialBalance,
         "FundReconciliation" => (int)FundOperationsTab.Reconciliation,
         "FundAuditTrail" => (int)FundOperationsTab.AuditTrail,
+        "FundReportPack" => (int)FundOperationsTab.ReportPack,
         _ => (int)FundOperationsTab.Overview
     };
 

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Plotting;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
@@ -40,6 +41,24 @@ public sealed class ScriptRunner : IScriptRunner
         string source,
         IReadOnlyDictionary<string, object?> parameters,
         CancellationToken ct = default)
+        => await ExecuteAsync(source, parameters, checkpoint: null, ct).ConfigureAwait(false);
+
+    /// <inheritdoc/>
+    public async Task<ScriptRunResult> ContinueWithAsync(
+        string source,
+        ScriptExecutionCheckpoint checkpoint,
+        IReadOnlyDictionary<string, object?> parameters,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(checkpoint);
+        return await ExecuteAsync(source, parameters, checkpoint, ct).ConfigureAwait(false);
+    }
+
+    private async Task<ScriptRunResult> ExecuteAsync(
+        string source,
+        IReadOnlyDictionary<string, object?> parameters,
+        ScriptExecutionCheckpoint? checkpoint,
+        CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         parameters ??= new Dictionary<string, object?>();
@@ -47,7 +66,6 @@ public sealed class ScriptRunner : IScriptRunner
         var wallClock = Stopwatch.StartNew();
         var memBefore = GC.GetTotalMemory(false);
 
-        // Step 1 — Compile (uses SHA-256 cache in RoslynScriptCompiler)
         var compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
 
         if (!compilationResult.Success)
@@ -62,47 +80,61 @@ public sealed class ScriptRunner : IScriptRunner
                 ConsoleOutput: string.Empty,
                 Metrics: Array.Empty<KeyValuePair<string, string>>(),
                 Plots: Array.Empty<PlotRequest>(),
-                TradesSummary: Array.Empty<string>());
+                TradesSummary: Array.Empty<string>(),
+                Checkpoint: checkpoint);
         }
 
-        // Step 2 — Apply per-run timeout
         using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         runCts.CancelAfter(TimeSpan.FromSeconds(_options.RunTimeoutSeconds));
         var runCt = runCts.Token;
-
-        // Step 3 — Get compiled Script<object> (from cache if available, avoids recompilation)
-        Script<object>? script = null;
-        if (_compiler is RoslynScriptCompiler rsc)
-            script = rsc.GetCachedScript(source) ?? rsc.BuildScript(source);
-        else
-        {
-            // Fallback: create a temporary RoslynScriptCompiler to build the script
-            var tmp = new RoslynScriptCompiler(
-                Microsoft.Extensions.Options.Options.Create(_options),
-                Microsoft.Extensions.Logging.Abstractions.NullLogger<RoslynScriptCompiler>.Instance);
-            script = tmp.BuildScript(source);
-        }
-
-        // Step 4 — Set up per-run globals
         var ctProvider = () => runCt;
         var dataProxy = new DataProxy(_dataContext, ctProvider);
         var backtestProxy = new BacktestProxy(_backtestEngine, _options);
-        var globals = new QuantScriptGlobals(dataProxy, backtestProxy, runCt, parameters);
+        var globals = checkpoint?.Globals ?? new QuantScriptGlobals(dataProxy, backtestProxy, ctProvider, parameters);
+        globals.UpdateExecutionContext(parameters, ctProvider);
 
-        // Step 5 — Run on a thread-pool thread so blocking data calls don't deadlock the UI
+        Script<object>? script = null;
+        if (checkpoint is null)
+        {
+            if (_compiler is RoslynScriptCompiler rsc)
+                script = rsc.GetCachedScript(source) ?? rsc.BuildScript(source);
+            else
+            {
+                var tmp = new RoslynScriptCompiler(
+                    Microsoft.Extensions.Options.Options.Create(_options),
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<RoslynScriptCompiler>.Instance);
+                script = tmp.BuildScript(source);
+            }
+        }
+
         string? runtimeError = null;
+        IReadOnlyList<ScriptDiagnostic> continuationDiagnostics = Array.Empty<ScriptDiagnostic>();
+        ScriptExecutionCheckpoint? nextCheckpoint = checkpoint;
         var runPlotQueue = _plotQueue;
 
         await Task.Run(async () =>
         {
-            // Set the ambient plot queue so that ReturnSeries.Plot() / PriceSeries.Plot()
-            // can enqueue without needing an explicit dependency injection.
             ScriptContext.PlotQueue = runPlotQueue;
             try
             {
                 _logger.LogInformation(
-                    "Executing QuantScript (timeout {Timeout}s)", _options.RunTimeoutSeconds);
-                await script.RunAsync(globals, runCt).ConfigureAwait(false);
+                    "Executing QuantScript (timeout {Timeout}s, mode {Mode})",
+                    _options.RunTimeoutSeconds,
+                    checkpoint is null ? "fresh" : "continue");
+
+                ScriptState<object> scriptState;
+                if (checkpoint is null)
+                {
+                    scriptState = await script!.RunAsync(globals, runCt).ConfigureAwait(false);
+                }
+                else
+                {
+                    scriptState = await checkpoint.ScriptState
+                        .ContinueWithAsync(source, cancellationToken: runCt)
+                        .ConfigureAwait(false);
+                }
+
+                nextCheckpoint = new ScriptExecutionCheckpoint(scriptState, globals);
             }
             catch (OperationCanceledException)
             {
@@ -110,6 +142,14 @@ public sealed class ScriptRunner : IScriptRunner
                     ? "Script cancelled by user."
                     : "Script timed out.";
                 _logger.LogWarning("Script run terminated: {Reason}", runtimeError);
+            }
+            catch (CompilationErrorException ex)
+            {
+                continuationDiagnostics = ex.Diagnostics
+                    .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                    .Select(MapDiagnostic)
+                    .ToList();
+                _logger.LogWarning("QuantScript continuation failed with {Count} compilation error(s)", continuationDiagnostics.Count);
             }
             catch (Exception ex)
             {
@@ -119,7 +159,6 @@ public sealed class ScriptRunner : IScriptRunner
             finally
             {
                 runPlotQueue.Complete();
-                // Clear the ambient reference so thread-pool threads are not polluted across runs.
                 ScriptContext.PlotQueue = null;
             }
         }, ct).ConfigureAwait(false);
@@ -127,17 +166,29 @@ public sealed class ScriptRunner : IScriptRunner
         wallClock.Stop();
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
         var plots = runPlotQueue.DrainRemaining();
+        var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0;
 
         return new ScriptRunResult(
-            Success: runtimeError is null,
+            Success: resultSuccess,
             Elapsed: wallClock.Elapsed,
             CompileTime: compilationResult.CompilationTime,
             PeakMemoryBytes: peakMemory,
-            CompilationErrors: Array.Empty<ScriptDiagnostic>(),
+            CompilationErrors: continuationDiagnostics,
             RuntimeError: runtimeError,
-            ConsoleOutput: globals.GetConsoleOutput(),
-            Metrics: globals.GetMetrics(),
+            ConsoleOutput: globals.DrainConsoleOutput(),
+            Metrics: globals.DrainMetrics(),
             Plots: plots,
-            TradesSummary: Array.Empty<string>());
+            TradesSummary: Array.Empty<string>(),
+            Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
+    }
+
+    private static ScriptDiagnostic MapDiagnostic(Diagnostic diagnostic)
+    {
+        var lineSpan = diagnostic.Location.GetLineSpan();
+        return new ScriptDiagnostic(
+            "Error",
+            diagnostic.GetMessage(),
+            lineSpan.StartLinePosition.Line + 1,
+            lineSpan.StartLinePosition.Character + 1);
     }
 }

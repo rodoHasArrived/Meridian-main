@@ -1,107 +1,106 @@
 # Development Guides
 
 **Owner:** Core Team
-**Scope:** Engineering — Developer-Facing
-**Review Cadence:** As features and tooling evolve
+**Scope:** Engineering and contributor-facing guidance
+**Last Reviewed:** 2026-04-16
+**Review Cadence:** As tooling, workflows, or implementation conventions evolve
 
----
+This directory is the working index for Meridian developer guidance. Use it when you need to understand how the repository is organized, how to extend or test the platform, how desktop development works, or which automation and CI documents are authoritative.
 
-## Purpose
+## Start Here
 
-This directory contains guides for developers contributing to or extending the Meridian. It covers project conventions, tooling, CI/CD, testing, and how to add new capabilities.
+If you are new to the repository, read these in order:
 
----
+1. [Repository Organization Guide](repository-organization-guide.md) for folder placement, naming, and doc location rules.
+2. [Repository Rule Set](repository-rule-set.md) for repository-wide contribution and quality expectations.
+3. [Documentation Contribution Guide](documentation-contribution-guide.md) if your change adds, moves, or retires docs.
+
+For a broader docs map, return to the main [docs index](../README.md).
 
 ## What Belongs Here
 
-- Developer onboarding and project organization guides
-- Provider implementation patterns and how-to guides
-- Build tooling, CI/CD pipeline documentation
-- Desktop (WPF) development guides
-- Refactoring maps and cleanup plans
-- Documentation standards and contribution guidelines
-- Script development and extension guides
-- Feature-specific implementation notes (e.g., backfill, offline mode)
+- Contributor onboarding and repository conventions
+- Developer workflow, testing, CI, and build guidance
+- Desktop and WPF implementation and fixture-mode guides
+- Provider implementation and extension guidance
+- Documentation tooling, script expansion, and custom rule authoring
+- Engineering policies, refactor maps, and workflow backlog material
 
-## What Does NOT Belong Here
+## What Does Not Belong Here
 
-- Architecture rationale → use `architecture/`
-- Operational deployment procedures → use `operations/`
-- High-level evaluations or brainstorms → use `evaluations/`
-- Active tracking of project status → use `status/`
+- Architecture narratives and rationale belong in [architecture/](../architecture/README.md)
+- Operational runbooks and deployment steps belong in [operations/](../operations/README.md)
+- Evaluations, proposals, and option analysis belong in [evaluations/](../evaluations/README.md)
+- Active roadmap and delivery tracking belong in [status/](../status/README.md)
 
----
+## Guide Map
 
-## Contents
+### Repository And Contribution Foundations
 
-### Getting Started
+| Document | Use it when you need to... |
+|----------|-----------------------------|
+| [Repository Organization Guide](repository-organization-guide.md) | place code, docs, assets, or new project files in the right location |
+| [Repository Rule Set](repository-rule-set.md) | understand non-negotiable contribution, quality, and repo hygiene rules |
+| [Documentation Contribution Guide](documentation-contribution-guide.md) | add, review, archive, or reorganize documentation correctly |
+| [Central Package Management](central-package-management.md) | update NuGet dependencies through `Directory.Packages.props` |
+| [F# Decision Rule](fsharp-decision-rule.md) | decide whether a new subsystem should stay in C# or move to F# |
 
-| Document | Description |
-|----------|-------------|
-| [Repository Organization Guide](repository-organization-guide.md) | **START HERE** — Project layout and conventions |
-| [Repository Rule Set](repository-rule-set.md) | Repository-wide contribution and quality rules |
-| [Documentation Contribution Guide](documentation-contribution-guide.md) | Writing and maintaining docs |
+### Providers, Extension Points, And Refactors
 
-### Building & Extending
+| Document | Use it when you need to... |
+|----------|-----------------------------|
+| [Provider Implementation Guide](provider-implementation.md) | add or extend streaming, historical, or symbol-search providers |
+| [Refactor Map](refactor-map.md) | understand the current dependency-safe refactor opportunities |
+| [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | review proposed contributor-workflow and automation cleanup themes |
 
-| Document | Description |
-|----------|-------------|
-| [Provider Implementation Guide](provider-implementation.md) | How to add new data providers |
-| [Adding Custom Rules](adding-custom-rules.md) | Build system rule customization |
-| [Expanding Scripts](expanding-scripts.md) | Script development patterns |
-| [Central Package Management](central-package-management.md) | NuGet version management (CPM) |
+### Desktop And WPF Development
 
-### Testing
+| Document | Use it when you need to... |
+|----------|-----------------------------|
+| [WPF Implementation Notes](wpf-implementation-notes.md) | understand the current desktop shell, workspace model, and implementation shape |
+| [Desktop Development Testing Guide](desktop-testing-guide.md) | bootstrap, build, and validate the WPF desktop surface locally |
+| [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | run the desktop UI with deterministic offline data |
+| [Desktop Workflow Automation](desktop-workflow-automation.md) | drive scripted desktop flows, screenshots, and manual-generation workflows |
+| [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
 
-| Document | Description |
-|----------|-------------|
-| [Desktop Testing Guide](desktop-testing-guide.md) | Testing desktop (WPF) services |
-| [GitHub Actions Testing](github-actions-testing.md) | Testing CI/CD workflows locally |
+### CI, Build, And Observability
 
-### CI/CD & Build
+| Document | Use it when you need to... |
+|----------|-----------------------------|
+| [GitHub Actions Summary](github-actions-summary.md) | get the short reference for the repo's core workflows |
+| [GitHub Actions Testing Checklist](github-actions-testing.md) | validate workflow changes before or after editing GitHub Actions |
+| [Build Observability System](build-observability.md) | capture structured build telemetry, metrics, and diagnostics |
+| [OTLP Trace Visualization](otlp-trace-visualization.md) | inspect Meridian traces and metrics in a local telemetry UI |
+| [Git Hooks](git-hooks.md) | install the repo-managed local quality gate before committing |
 
-| Document | Description |
-|----------|-------------|
-| [GitHub Actions Summary](github-actions-summary.md) | CI/CD pipeline overview |
-| [Build Observability](build-observability.md) | Build metrics and diagnostics |
-| [Git Hooks](git-hooks.md) | Local pre-commit quality checks (`dotnet format`) |
-| [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | Prioritized cleanup plan for repo automation |
+### Documentation Tooling And Automation
 
-### Desktop Development
+| Document | Use it when you need to... |
+|----------|-----------------------------|
+| [Documentation Automation Guide](documentation-automation.md) | run or understand the documentation workflow and generated outputs |
+| [Expanding Documentation Scripts](expanding-scripts.md) | add new scripts under `build/scripts/docs/` using existing conventions |
+| [Adding Custom Documentation Rules](adding-custom-rules.md) | extend `build/rules/doc-rules.yaml` and the rules engine safely |
 
-| Document | Description |
-|----------|-------------|
-| [WPF Implementation Notes](wpf-implementation-notes.md) | WPF desktop app development |
-| [UI Fixture Mode Guide](ui-fixture-mode-guide.md) | Offline development with mock data |
+## Authoritative Neighbors
 
-> **Desktop improvement evaluations** (executive summary, quick reference, implementation guide) have been moved to [`evaluations/`](../evaluations/README.md) where strategic assessments are maintained.
+Some topics in this folder have deeper source material outside `docs/development/`:
 
-### Documentation Automation
+- [`.github/workflows/README.md`](../../.github/workflows/README.md) is the authoritative workflow inventory referenced by the GitHub Actions summary.
+- [`build/scripts/docs/README.md`](../../build/scripts/docs/README.md) is the script-level companion to the documentation automation guides.
+- [`scripts/dev/`](../../scripts/dev/) contains the PowerShell runners and workflow catalogs referenced by the desktop workflow guides.
 
-| Document | Description |
-|----------|-------------|
-| [Documentation Automation](documentation-automation.md) | Auto-generation scripts and pipelines |
+## Maintenance Notes
 
-### Policies
+When you add, remove, or supersede a guide in this folder:
 
-| Document | Description |
-|----------|-------------|
-| [Desktop Support Policy](policies/desktop-support-policy.md) | Desktop support and maintenance policy |
-
-### Planning & Cleanup
-
-| Document | Description |
-|----------|-------------|
-| [Refactor Map](refactor-map.md) | Code areas earmarked for refactoring |
-
----
+1. Update this index in the same change.
+2. Prefer linking to the most authoritative guide instead of duplicating process details here.
+3. Move historical or superseded material to `archive/docs/` rather than leaving stale duplicates in place.
+4. Check the root [docs index](../README.md) if the change affects repo-wide navigation.
 
 ## Related
 
-- [Architecture Documentation](../architecture/README.md) — System design and ADRs
-- [Operations Documentation](../operations/README.md) — Deployment and maintenance guides
-- [Evaluations](../evaluations/README.md) — Technology and architecture evaluations
-
----
-
-*Development guides are maintained by the core team and updated as tooling and conventions evolve.*
+- [Architecture Documentation](../architecture/README.md)
+- [Operations Documentation](../operations/README.md)
+- [Evaluations](../evaluations/README.md)
+- [Status Docs](../status/README.md)

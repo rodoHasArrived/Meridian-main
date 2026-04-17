@@ -11,6 +11,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     private readonly NavigationService _navigationService;
     private string? _runId;
     private object? _parameter;
+    private PortfolioPositionSummary? _selectedPosition;
 
     public object? Parameter
     {
@@ -25,6 +26,18 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     }
 
     public ObservableCollection<PortfolioPositionSummary> Positions { get; } = [];
+
+    public PortfolioPositionSummary? SelectedPosition
+    {
+        get => _selectedPosition;
+        set
+        {
+            if (SetProperty(ref _selectedPosition, value))
+            {
+                OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
     private string _title = "Portfolio Drill-In";
     public string Title
@@ -114,6 +127,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
     public IRelayCommand OpenCashFlowCommand { get; }
+    public IRelayCommand OpenSelectedSecurityCommand { get; }
 
     internal StrategyRunPortfolioViewModel(
         StrategyRunWorkspaceService runService,
@@ -125,6 +139,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenLedgerCommand = new RelayCommand(OpenLedger, () => !string.IsNullOrWhiteSpace(_runId));
         OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => !string.IsNullOrWhiteSpace(_runId));
+        OpenSelectedSecurityCommand = new RelayCommand(OpenSelectedSecurity, () => SelectedPosition is not null);
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -165,9 +180,12 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
             Positions.Add(position);
         }
 
+        SelectedPosition = Positions.FirstOrDefault();
+
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenLedgerCommand.NotifyCanExecuteChanged();
         OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
     }
 
     private void OpenRunDetail()
@@ -191,6 +209,20 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         if (!string.IsNullOrWhiteSpace(_runId))
         {
             _navigationService.NavigateTo("RunCashFlow", _runId);
+        }
+    }
+
+    private void OpenSelectedSecurity()
+    {
+        if (SelectedPosition?.Security?.SecurityId is Guid securityId)
+        {
+            _navigationService.NavigateTo("SecurityMaster", securityId);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedPosition?.Symbol))
+        {
+            _navigationService.NavigateTo("SecurityMaster", SelectedPosition.Symbol);
         }
     }
 }

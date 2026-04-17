@@ -405,6 +405,9 @@ public partial class App : System.Windows.Application
                               Meridian.QuantScript.Compilation.RoslynScriptCompiler>();
         services.AddSingleton<Meridian.QuantScript.Compilation.IScriptRunner,
                               Meridian.QuantScript.Compilation.ScriptRunner>();
+        services.AddSingleton<Meridian.QuantScript.Documents.IQuantScriptNotebookStore>(sp =>
+            new Meridian.QuantScript.Documents.QuantScriptNotebookStore(
+                sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>().Value));
         services.AddSingleton<WpfServices.IQuantScriptLayoutService,
                               WpfServices.QuantScriptLayoutService>();
         services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
@@ -490,6 +493,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<NavAttributionService>();
         services.AddSingleton<ReportGenerationService>();
         services.AddSingleton<FundOperationsWorkspaceReadService>();
+        services.AddSingleton<ISecurityMasterOperatorWorkflowClient, SecurityMasterOperatorWorkflowClient>();
         services.AddSingleton<WpfServices.StrategyRunWorkspaceService>(sp =>
         {
             var service = new WpfServices.StrategyRunWorkspaceService(

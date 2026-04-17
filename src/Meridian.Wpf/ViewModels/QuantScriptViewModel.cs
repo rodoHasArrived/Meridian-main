@@ -1,12 +1,12 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.Ui.Services.Collections;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
+using Meridian.Ui.Services.Collections;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Microsoft.Extensions.Logging;
@@ -14,217 +14,197 @@ using Microsoft.Extensions.Options;
 
 namespace Meridian.Wpf.ViewModels;
 
-/// <summary>
-/// ViewModel for the QuantScript interactive C# scripting environment.
-/// Drives a three-column layout: script browser / editor / results tabs.
-/// </summary>
 public sealed class QuantScriptViewModel : BindableBase, IDisposable
 {
     private readonly IScriptRunner _runner;
     private readonly IQuantScriptCompiler _compiler;
     private readonly PlotQueue _plotQueue;
     private readonly IQuantScriptLayoutService _layoutService;
+    private readonly IQuantScriptNotebookStore _notebookStore;
     private readonly QuantScriptOptions _options;
     private readonly ILogger<QuantScriptViewModel> _logger;
-
+    private readonly NotebookExecutionSession _session = new();
     private DispatcherTimer? _elapsedTimer;
     private System.Diagnostics.Stopwatch? _runStopwatch;
     private FileSystemWatcher? _fileWatcher;
     private bool _disposed;
-
-    // ── Asset / date context ─────────────────────────────────────────────────
-
+    private bool _suppressCellSync;
+    private bool _loadingDocument;
+    private string _currentDocumentPath = string.Empty;
+    private QuantScriptDocumentKind _currentDocumentKind = QuantScriptDocumentKind.LegacyScript;
+    private string _currentDocumentTitle = "Untitled Script";
     private string _assetSymbol = string.Empty;
-    public string AssetSymbol { get => _assetSymbol; set => SetProperty(ref _assetSymbol, value); }
-
     private DateTime _fromDate = DateTime.Today.AddYears(-1);
-    public DateTime FromDate { get => _fromDate; set => SetProperty(ref _fromDate, value); }
-
     private DateTime _toDate = DateTime.Today;
-    public DateTime ToDate { get => _toDate; set => SetProperty(ref _toDate, value); }
-
     private string _selectedInterval = "Daily (Custom)";
-    public string SelectedInterval { get => _selectedInterval; set => SetProperty(ref _selectedInterval, value); }
-
-    public static IReadOnlyList<string> Intervals { get; } =
-        ["Daily", "Daily (Custom)", "Weekly", "Monthly"];
-
-    // ── Primary chart (shown in top chart area) ──────────────────────────────
-
-    /// <summary>The <see cref="PlotRequest"/> of the first chart result, or <c>null</c> when no charts exist.</summary>
-    public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
-
-    /// <summary>Title of the first chart result, or empty when no charts exist.</summary>
-    public string PrimaryChartTitle => Charts.Count > 0 ? Charts[0].Title : string.Empty;
-
-    /// <summary>True once the script has produced at least one chart.</summary>
-    public bool HasChart => Charts.Count > 0;
-
-    /// <summary>True when no chart result exists — drives empty-state placeholder visibility.</summary>
-    public bool HasNoChart => Charts.Count == 0;
-
-    /// <summary>True when the primary chart has at least one named legend entry.</summary>
-    public bool HasLegend => LegendEntries.Count > 0;
-
-    // Series palette matching PlotRenderBehavior so legend colors stay in sync.
-    private static readonly System.Windows.Media.Color[] _legendPalette =
-    [
-        System.Windows.Media.Color.FromRgb(66,  153, 225),  // ChartPrimary   blue
-        System.Windows.Media.Color.FromRgb(159, 122, 234),  // ChartSecondary purple
-        System.Windows.Media.Color.FromRgb(56,  178, 172),  // ChartTertiary  teal
-        System.Windows.Media.Color.FromRgb(72,  187, 120),  // ChartPositive  green
-        System.Windows.Media.Color.FromRgb(245, 101, 101),  // ChartNegative  red
-    ];
-
-    /// <summary>Legend entries extracted from the first chart result.</summary>
-    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
-
-
-
     private string _scriptSource = string.Empty;
-    public string ScriptSource
-    {
-        get => _scriptSource;
-        set
-        {
-            if (SetProperty(ref _scriptSource, value))
-                UpdateParameters(value);
-        }
-    }
-
-    // ── Script browser ───────────────────────────────────────────────────────
-
-    public ObservableCollection<ScriptFileEntry> ScriptFiles { get; } = [];
-
-    private ScriptFileEntry? _selectedScript;
-    public ScriptFileEntry? SelectedScript
-    {
-        get => _selectedScript;
-        set
-        {
-            if (SetProperty(ref _selectedScript, value) && value != null)
-                LoadScriptFile(value.FullPath);
-        }
-    }
-
-    // ── Parameters ───────────────────────────────────────────────────────────
-
-    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
-
-    // ── Results ──────────────────────────────────────────────────────────────
-
-    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; } =
-        new BoundedObservableCollection<ConsoleEntry>(10_000);
-
-    public ObservableCollection<PlotViewModel> Charts { get; } = [];
-    public ObservableCollection<MetricEntry> Metrics { get; } = [];
-    public ObservableCollection<TradeEntry> Trades { get; } = [];
-    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = [];
-
-    // ── Tab headers ──────────────────────────────────────────────────────────
-
-    public string ConsoleTabHeader
-        => ConsoleOutput.Count > 0 ? $"Console ({ConsoleOutput.Count})" : "Console";
-
-    public string ChartsTabHeader
-        => Charts.Count > 0 ? $"Charts ({Charts.Count})" : "Charts";
-
-    public string MetricsTabHeader
-        => Metrics.Count > 0 ? $"Metrics ({Metrics.Count})" : "Metrics";
-
-    public string TradesTabHeader
-        => Trades.Count > 0 ? $"Trades ({Trades.Count})" : "Trades";
-
-    public string DiagnosticsTabHeader
-        => Diagnostics.Count > 0 ? $"Diagnostics ({Diagnostics.Count})" : "Diagnostics";
-
-    // ── Status ───────────────────────────────────────────────────────────────
-
+    private ScriptDocumentEntry? _selectedDocument;
+    private NotebookCellViewModel? _selectedCell;
     private bool _isRunning;
-    public bool IsRunning
-    {
-        get => _isRunning;
-        private set
-        {
-            if (SetProperty(ref _isRunning, value))
-            {
-                RaisePropertyChanged(nameof(CanRun));
-                RunScriptCommand.NotifyCanExecuteChanged();
-                StopCommand.NotifyCanExecuteChanged();
-            }
-        }
-    }
-
     private double _progressFraction;
-    public double ProgressFraction { get => _progressFraction; private set => SetProperty(ref _progressFraction, value); }
-
     private string _statusText = "Ready";
-    public string StatusText { get => _statusText; private set => SetProperty(ref _statusText, value); }
-
     private string _elapsedText = "--";
-    public string ElapsedText { get => _elapsedText; private set => SetProperty(ref _elapsedText, value); }
-
     private string _memoryText = "--";
-    public string MemoryText { get => _memoryText; private set => SetProperty(ref _memoryText, value); }
-
-    public bool CanRun => !_isRunning;
-
     private int _activeResultsTab;
-    public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
-
-    // ── Commands ─────────────────────────────────────────────────────────────
-
-    public IAsyncRelayCommand RunScriptCommand { get; }
-    public IRelayCommand StopCommand { get; }
-    public IRelayCommand NewScriptCommand { get; }
-    public IAsyncRelayCommand SaveScriptCommand { get; }
-    public IRelayCommand RefreshScriptsCommand { get; }
-    public IRelayCommand ClearConsoleCommand { get; }
 
     public QuantScriptViewModel(
         IScriptRunner runner,
         IQuantScriptCompiler compiler,
         PlotQueue plotQueue,
         IQuantScriptLayoutService layoutService,
+        IQuantScriptNotebookStore notebookStore,
         IOptions<QuantScriptOptions> options,
         ILogger<QuantScriptViewModel> logger)
     {
-        _runner = runner ?? throw new ArgumentNullException(nameof(runner));
-        _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
-        _plotQueue = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue));
-        _layoutService = layoutService ?? throw new ArgumentNullException(nameof(layoutService));
+        _runner = runner;
+        _compiler = compiler;
+        _plotQueue = plotQueue;
+        _layoutService = layoutService;
+        _notebookStore = notebookStore;
         _options = options?.Value ?? new QuantScriptOptions();
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger;
 
-        RunScriptCommand = new AsyncRelayCommand(RunAsync, () => CanRun);
-        StopCommand = new RelayCommand(() => RunScriptCommand.Cancel(), () => IsRunning);
-        NewScriptCommand = new RelayCommand(NewScript);
-        SaveScriptCommand = new AsyncRelayCommand(SaveScriptAsync);
-        RefreshScriptsCommand = new RelayCommand(RefreshScripts);
-        ClearConsoleCommand = new RelayCommand(ClearConsole);
+        RunScriptCommand = new AsyncRelayCommand(RunCurrentCellAsync, () => CanRun);
+        RunAllCommand = new AsyncRelayCommand(RunAllAsync, () => CanRun && NotebookCells.Count > 0);
+        RunAndAdvanceCommand = new AsyncRelayCommand(RunAndAdvanceAsync, () => CanRun);
+        StopCommand = new RelayCommand(StopRunning, () => IsRunning);
+        NewScriptCommand = new RelayCommand(NewScript, () => !IsRunning);
+        NewNotebookCommand = new RelayCommand(NewNotebook, () => !IsRunning);
+        SaveScriptCommand = new AsyncRelayCommand(SaveScriptAsync, () => !IsRunning && NotebookCells.Count > 0);
+        RefreshScriptsCommand = new RelayCommand(RefreshScripts, () => !IsRunning);
+        ClearConsoleCommand = new RelayCommand(() => ConsoleOutput.Clear());
+        AddCellCommand = new RelayCommand(AddCell, () => !IsRunning);
+        DeleteCellCommand = new RelayCommand(DeleteSelectedCell, () => !IsRunning && NotebookCells.Count > 1);
 
         ConsoleOutput.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(ConsoleTabHeader));
-        Charts.CollectionChanged += (_, _) =>
-        {
-            RaisePropertyChanged(nameof(ChartsTabHeader));
-            UpdatePrimaryChart();
-        };
+        Charts.CollectionChanged += (_, _) => { RaisePropertyChanged(nameof(ChartsTabHeader)); UpdatePrimaryChart(); };
         Metrics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(MetricsTabHeader));
         Trades.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(TradesTabHeader));
         Diagnostics.CollectionChanged += (_, _) => RaisePropertyChanged(nameof(DiagnosticsTabHeader));
+        NotebookCells.CollectionChanged += (_, _) =>
+        {
+            UpdateCellOrdinals();
+            RefreshParameters();
+            RaisePropertyChanged(nameof(HasNotebookCells));
+            RaisePropertyChanged(nameof(CanDeleteCell));
+            NotifyCommandStateChanged();
+        };
     }
 
-    // ── Lifecycle ────────────────────────────────────────────────────────────
+    public string AssetSymbol { get => _assetSymbol; set => SetProperty(ref _assetSymbol, value); }
+    public DateTime FromDate { get => _fromDate; set => SetProperty(ref _fromDate, value); }
+    public DateTime ToDate { get => _toDate; set => SetProperty(ref _toDate, value); }
+    public string SelectedInterval { get => _selectedInterval; set => SetProperty(ref _selectedInterval, value); }
+    public static IReadOnlyList<string> Intervals { get; } = ["Daily", "Daily (Custom)", "Weekly", "Monthly"];
+    public PlotRequest? PrimaryChartRequest => Charts.Count > 0 ? Charts[0].Request : null;
+    public string PrimaryChartTitle => Charts.Count > 0 ? Charts[0].Title : string.Empty;
+    public bool HasChart => Charts.Count > 0;
+    public bool HasNoChart => Charts.Count == 0;
+    public bool HasLegend => LegendEntries.Count > 0;
+    private static readonly System.Windows.Media.Color[] LegendPalette =
+    [
+        System.Windows.Media.Color.FromRgb(66, 153, 225),
+        System.Windows.Media.Color.FromRgb(159, 122, 234),
+        System.Windows.Media.Color.FromRgb(56, 178, 172),
+        System.Windows.Media.Color.FromRgb(72, 187, 120),
+        System.Windows.Media.Color.FromRgb(245, 101, 101),
+    ];
+    public ObservableCollection<ChartLegendEntry> LegendEntries { get; } = [];
 
-    /// <summary>
-    /// Called from code-behind on every page load. Returns the persisted row heights so
-    /// the view can apply them to its Grid — the ViewModel must not touch UI elements directly.
-    /// </summary>
+    public string ScriptSource
+    {
+        get => _scriptSource;
+        set
+        {
+            if (!SetProperty(ref _scriptSource, value))
+                return;
+            if (!_suppressCellSync && SelectedCell is not null && SelectedCell.Source != value)
+                SelectedCell.Source = value;
+            RefreshParameters();
+        }
+    }
+
+    public ObservableCollection<ScriptDocumentEntry> Documents { get; } = [];
+    public ScriptDocumentEntry? SelectedDocument
+    {
+        get => _selectedDocument;
+        set
+        {
+            if (!SetProperty(ref _selectedDocument, value) || value is null)
+                return;
+            LoadDocumentAsync(value);
+        }
+    }
+
+    public ObservableCollection<NotebookCellViewModel> NotebookCells { get; } = [];
+    public NotebookCellViewModel? SelectedCell
+    {
+        get => _selectedCell;
+        set
+        {
+            if (!SetProperty(ref _selectedCell, value))
+                return;
+            SyncScriptSourceFromCell();
+            RaisePropertyChanged(nameof(CurrentCellTitle));
+            RaisePropertyChanged(nameof(CurrentCellStatus));
+            NotifyCommandStateChanged();
+        }
+    }
+
+    public bool HasNotebookCells => NotebookCells.Count > 0;
+    public string CurrentDocumentTitle { get => _currentDocumentTitle; private set => SetProperty(ref _currentDocumentTitle, value); }
+    public string CurrentDocumentKindText => ResolveSaveKind() == QuantScriptDocumentKind.Notebook ? "Notebook" : "Script";
+    public string CurrentCellTitle => SelectedCell?.Title ?? "Cell";
+    public string CurrentCellStatus => SelectedCell?.StatusText ?? "Idle";
+    public bool CanDeleteCell => NotebookCells.Count > 1 && !IsRunning;
+    public ObservableCollection<ParameterViewModel> Parameters { get; } = [];
+    public BoundedObservableCollection<ConsoleEntry> ConsoleOutput { get; } = new(10_000);
+    public ObservableCollection<PlotViewModel> Charts { get; } = [];
+    public ObservableCollection<MetricEntry> Metrics { get; } = [];
+    public ObservableCollection<TradeEntry> Trades { get; } = [];
+    public ObservableCollection<DiagnosticEntry> Diagnostics { get; } = [];
+    public string ConsoleTabHeader => ConsoleOutput.Count > 0 ? $"Console ({ConsoleOutput.Count})" : "Console";
+    public string ChartsTabHeader => Charts.Count > 0 ? $"Charts ({Charts.Count})" : "Charts";
+    public string MetricsTabHeader => Metrics.Count > 0 ? $"Metrics ({Metrics.Count})" : "Metrics";
+    public string TradesTabHeader => Trades.Count > 0 ? $"Trades ({Trades.Count})" : "Trades";
+    public string DiagnosticsTabHeader => Diagnostics.Count > 0 ? $"Diagnostics ({Diagnostics.Count})" : "Diagnostics";
+
+    public bool IsRunning
+    {
+        get => _isRunning;
+        private set
+        {
+            if (!SetProperty(ref _isRunning, value))
+                return;
+            RaisePropertyChanged(nameof(CanRun));
+            RaisePropertyChanged(nameof(CanDeleteCell));
+            NotifyCommandStateChanged();
+        }
+    }
+
+    public double ProgressFraction { get => _progressFraction; private set => SetProperty(ref _progressFraction, value); }
+    public string StatusText { get => _statusText; private set => SetProperty(ref _statusText, value); }
+    public string ElapsedText { get => _elapsedText; private set => SetProperty(ref _elapsedText, value); }
+    public string MemoryText { get => _memoryText; private set => SetProperty(ref _memoryText, value); }
+    public bool CanRun => !IsRunning && SelectedCell is not null;
+    public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
+
+    public IAsyncRelayCommand RunScriptCommand { get; }
+    public IAsyncRelayCommand RunAllCommand { get; }
+    public IAsyncRelayCommand RunAndAdvanceCommand { get; }
+    public IRelayCommand StopCommand { get; }
+    public IRelayCommand NewScriptCommand { get; }
+    public IRelayCommand NewNotebookCommand { get; }
+    public IAsyncRelayCommand SaveScriptCommand { get; }
+    public IRelayCommand RefreshScriptsCommand { get; }
+    public IRelayCommand ClearConsoleCommand { get; }
+    public IRelayCommand AddCellCommand { get; }
+    public IRelayCommand DeleteCellCommand { get; }
+
     internal (double ChartHeight, double EditorHeight) OnActivated()
     {
         var (chartHeight, editorHeight) = _layoutService.LoadRowHeights();
         ActiveResultsTab = _layoutService.LoadLastActiveTab();
-
         if (_elapsedTimer is null)
         {
             _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
@@ -234,9 +214,12 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
                     ElapsedText = $"{_runStopwatch.Elapsed.TotalSeconds:F1}s";
             };
         }
-
         SetupFileWatcher();
         RefreshScripts();
+        if (Documents.Count > 0 && SelectedDocument is null)
+            SelectedDocument = Documents[0];
+        else if (NotebookCells.Count == 0)
+            NewScript();
         return (chartHeight, editorHeight);
     }
 
@@ -248,69 +231,132 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
-
         _elapsedTimer?.Stop();
         _fileWatcher?.Dispose();
         _plotQueue.Complete();
-
-        if (IsRunning) RunScriptCommand.Cancel();
+        if (IsRunning)
+            StopRunning();
     }
 
-    // ── Script execution ─────────────────────────────────────────────────────
-
-    private async Task RunAsync(CancellationToken ct)
+    private async Task RunCurrentCellAsync(CancellationToken ct)
     {
+        if (SelectedCell is null)
+            return;
+        var targetIndex = NotebookCells.IndexOf(SelectedCell);
+        if (targetIndex < 0)
+            return;
+        var identities = GetCellIdentities();
+        await ExecuteCellsAsync(_session.GetReplayStartIndex(identities, targetIndex), targetIndex, false, ct);
+    }
+
+    private async Task RunAllAsync(CancellationToken ct)
+    {
+        if (NotebookCells.Count == 0)
+            return;
+        _session.Reset();
+        foreach (var cell in NotebookCells)
+        {
+            cell.State = NotebookCellExecutionState.Stale;
+            cell.StatusText = "Pending";
+        }
+        await ExecuteCellsAsync(0, NotebookCells.Count - 1, false, ct);
+    }
+
+    private async Task RunAndAdvanceAsync(CancellationToken ct)
+    {
+        if (SelectedCell is null)
+            return;
+        var targetIndex = NotebookCells.IndexOf(SelectedCell);
+        if (targetIndex < 0)
+            return;
+        var identities = GetCellIdentities();
+        await ExecuteCellsAsync(_session.GetReplayStartIndex(identities, targetIndex), targetIndex, true, ct);
+    }
+
+    private async Task<bool> ExecuteCellsAsync(int startIndex, int endIndex, bool advanceSelection, CancellationToken ct)
+    {
+        if (startIndex < 0 || endIndex < startIndex || endIndex >= NotebookCells.Count)
+            return false;
+
         ClearResults();
         IsRunning = true;
-        StatusText = "Compiling\u2026";
-        ProgressFraction = 0.0;
+        StatusText = startIndex == endIndex ? $"Running {NotebookCells[endIndex].Title.ToLowerInvariant()}..." : $"Running cells {startIndex + 1}-{endIndex + 1}...";
         _runStopwatch = System.Diagnostics.Stopwatch.StartNew();
         _elapsedTimer?.Start();
+        var identities = GetCellIdentities();
+        var parameters = BuildParameterDictionary();
+        var checkpoint = startIndex > 0 ? _session.GetPreviousCheckpoint(identities, startIndex) : null;
+        var currentIndex = startIndex;
+        var succeeded = true;
 
         try
         {
-            var paramDict = Parameters.ToDictionary(
-                p => p.Name,
-                p => p.ParsedValue,
-                StringComparer.OrdinalIgnoreCase);
+            for (var index = startIndex; index <= endIndex; index++)
+            {
+                currentIndex = index;
+                var cell = NotebookCells[index];
+                cell.State = NotebookCellExecutionState.Running;
+                cell.StatusText = "Running";
+                if (endIndex > startIndex || startIndex > 0)
+                    AppendConsole($"# {cell.Title}", ConsoleEntryKind.Separator);
 
-            StatusText = "Running\u2026";
+                var result = checkpoint is null
+                    ? await _runner.RunAsync(cell.Source, parameters, ct)
+                    : await _runner.ContinueWithAsync(cell.Source, checkpoint, parameters, ct);
 
-            var result = await Task.Run(
-                () => _runner.RunAsync(_scriptSource, paramDict, ct), ct)
-                .ConfigureAwait(false);
+                ApplyResult(result);
+                if (result.Success && result.Checkpoint is not null)
+                {
+                    checkpoint = result.Checkpoint;
+                    _session.RecordSuccessfulRun(identities[index], result.Checkpoint);
+                    cell.State = NotebookCellExecutionState.Done;
+                    cell.StatusText = $"{result.Elapsed.TotalSeconds:F1}s";
+                }
+                else
+                {
+                    succeeded = false;
+                    _session.RecordFailedRun(identities, index);
+                    cell.State = NotebookCellExecutionState.Error;
+                    cell.StatusText = result.CompilationErrors.Count > 0 ? $"{result.CompilationErrors.Count} error(s)" : "Failed";
+                    MarkCellsStaleFrom(index + 1);
+                    break;
+                }
 
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-                ApplyResult(result), DispatcherPriority.Normal);
+                ProgressFraction = (double)(index - startIndex + 1) / (endIndex - startIndex + 1);
+            }
+
+            if (succeeded)
+            {
+                StatusText = endIndex > startIndex ? $"Completed {endIndex - startIndex + 1} cells" : $"Completed {NotebookCells[endIndex].Title.ToLowerInvariant()}";
+                if (advanceSelection)
+                    AdvanceSelectionAfterRun();
+            }
+            return succeeded;
         }
         catch (OperationCanceledException)
         {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                StatusText = "Cancelled";
-                AppendConsole("Script was cancelled.", ConsoleEntryKind.Warning);
-            }, DispatcherPriority.Normal);
+            StatusText = "Cancelled";
+            AppendConsole("Script was cancelled.", ConsoleEntryKind.Warning);
+            MarkCellsStaleFrom(currentIndex);
+            return false;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled error in QuantScript runner");
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                StatusText = "Error";
-                AppendConsole($"Error: {ex.Message}", ConsoleEntryKind.Error);
-            }, DispatcherPriority.Normal);
+            StatusText = "Error";
+            AppendConsole($"Error: {ex.Message}", ConsoleEntryKind.Error);
+            MarkCellsStaleFrom(currentIndex);
+            return false;
         }
         finally
         {
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                _runStopwatch?.Stop();
-                _elapsedTimer?.Stop();
-                IsRunning = false;
-                ProgressFraction = 1.0;
-            }, DispatcherPriority.Normal);
+            _runStopwatch?.Stop();
+            _elapsedTimer?.Stop();
+            IsRunning = false;
+            ProgressFraction = 1.0;
         }
     }
 
@@ -318,107 +364,141 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     {
         if (!string.IsNullOrEmpty(result.ConsoleOutput))
         {
-            foreach (var line in result.ConsoleOutput.Split(Environment.NewLine))
-                AppendConsole(line, ConsoleEntryKind.Output);
+            foreach (var line in result.ConsoleOutput.Split(Environment.NewLine, StringSplitOptions.None))
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                    AppendConsole(line, ConsoleEntryKind.Output);
+            }
         }
-
-        if (result.RuntimeError != null)
+        if (result.RuntimeError is not null)
             AppendConsole($"Error: {result.RuntimeError}", ConsoleEntryKind.Error);
-
-        foreach (var diag in result.CompilationErrors)
-            AppendConsole($"[{diag.Line}:{diag.Column}] {diag.Message}", ConsoleEntryKind.Error);
-
-        foreach (var kv in result.Metrics)
-            Metrics.Add(new MetricEntry(kv.Key, kv.Value));
-
+        foreach (var diagnostic in result.CompilationErrors)
+            AppendConsole($"[{diagnostic.Line}:{diagnostic.Column}] {diagnostic.Message}", ConsoleEntryKind.Error);
+        foreach (var metric in result.Metrics)
+            Metrics.Add(new MetricEntry(metric.Key, metric.Value));
         foreach (var plot in result.Plots)
             Charts.Add(new PlotViewModel(plot.Title, plot));
-
         if (result.Metrics.Count > 0 && result.Plots.Count == 0)
-            ActiveResultsTab = 1; // Data Sheet
+            ActiveResultsTab = 1;
         else if (result.TradesSummary.Count > 0 && result.Plots.Count == 0)
-            ActiveResultsTab = 4; // Backtest Output
-
+            ActiveResultsTab = 4;
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
         Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
         Diagnostics.Add(new DiagnosticEntry("Peak memory", $"{result.PeakMemoryBytes / 1024.0:F0} KB"));
-
-        StatusText = result.Success
-            ? $"Completed in {result.Elapsed.TotalSeconds:F1}s"
-            : result.CompilationErrors.Count > 0
-                ? $"Compilation failed ({result.CompilationErrors.Count} error(s))"
-                : "Failed";
-
         ElapsedText = $"{result.Elapsed.TotalSeconds:F1}s";
         MemoryText = $"{result.PeakMemoryBytes / 1024.0:F0} KB";
     }
 
-    // ── Commands implementation ───────────────────────────────────────────────
+    private void StopRunning()
+    {
+        RunScriptCommand.Cancel();
+        RunAllCommand.Cancel();
+        RunAndAdvanceCommand.Cancel();
+    }
 
     private void NewScript()
     {
-        _selectedScript = null;
-        RaisePropertyChanged(nameof(SelectedScript));
-        ScriptSource = "// New QuantScript\n";
+        LoadInMemoryDocument("Untitled Script", string.Empty, QuantScriptDocumentKind.LegacyScript, [new QuantScriptNotebookCellDocument(Guid.NewGuid().ToString("N"), "// New QuantScript\n")]);
         StatusText = "New script";
+    }
+
+    private void NewNotebook()
+    {
+        LoadInMemoryDocument("QuantScript Notebook", string.Empty, QuantScriptDocumentKind.Notebook, [new QuantScriptNotebookCellDocument(Guid.NewGuid().ToString("N"), "// Notebook cell 1\n")]);
+        StatusText = "New notebook";
     }
 
     private async Task SaveScriptAsync()
     {
-        if (SelectedScript is not null)
+        if (NotebookCells.Count == 0)
+            return;
+
+        if (ResolveSaveKind() == QuantScriptDocumentKind.Notebook)
         {
-            await File.WriteAllTextAsync(SelectedScript.FullPath, _scriptSource).ConfigureAwait(false);
-            _logger.LogInformation("Saved script to {Path}", SelectedScript.FullPath);
-            StatusText = $"Saved {SelectedScript.Name}";
+            var path = !string.IsNullOrWhiteSpace(_currentDocumentPath) && _currentDocumentKind == QuantScriptDocumentKind.Notebook
+                ? _currentDocumentPath
+                : _notebookStore.GetSuggestedNotebookPath(CurrentDocumentTitle);
+            await _notebookStore.SaveNotebookAsync(path, BuildNotebookDocument());
+            _currentDocumentPath = path;
+            _currentDocumentKind = QuantScriptDocumentKind.Notebook;
+            CurrentDocumentTitle = Path.GetFileNameWithoutExtension(path);
+            StatusText = $"Saved {Path.GetFileName(path)}";
         }
         else
         {
-            var dir = _options.ScriptsDirectory;
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            var path = Path.Combine(dir, $"script-{DateTime.Now:yyyyMMddHHmmss}.csx");
-            await File.WriteAllTextAsync(path, _scriptSource).ConfigureAwait(false);
-            _logger.LogInformation("Saved new script to {Path}", path);
-            RefreshScripts();
+            var path = !string.IsNullOrWhiteSpace(_currentDocumentPath) && _currentDocumentKind == QuantScriptDocumentKind.LegacyScript
+                ? _currentDocumentPath
+                : Path.Combine(_options.ScriptsDirectory, $"script-{DateTime.Now:yyyyMMddHHmmss}.csx");
+            Directory.CreateDirectory(Path.GetDirectoryName(path) ?? _options.ScriptsDirectory);
+            await File.WriteAllTextAsync(path, NotebookCells[0].Source);
+            _currentDocumentPath = path;
+            _currentDocumentKind = QuantScriptDocumentKind.LegacyScript;
+            CurrentDocumentTitle = Path.GetFileNameWithoutExtension(path);
+            StatusText = $"Saved {Path.GetFileName(path)}";
         }
+
+        RefreshScripts();
+        RaisePropertyChanged(nameof(CurrentDocumentKindText));
     }
 
     private void RefreshScripts()
     {
-        ScriptFiles.Clear();
-        var dir = _options.ScriptsDirectory;
-        if (!Directory.Exists(dir)) return;
-
-        foreach (var file in Directory.GetFiles(dir, "*.csx", SearchOption.TopDirectoryOnly).OrderBy(f => f))
-            ScriptFiles.Add(new ScriptFileEntry(Path.GetFileName(file), file));
+        var preferredPath = !string.IsNullOrWhiteSpace(_currentDocumentPath) ? _currentDocumentPath : _selectedDocument?.FullPath;
+        var documents = _notebookStore.ListDocuments().Select(static d => new ScriptDocumentEntry(d.Name, d.FullPath, d.Kind)).ToList();
+        Documents.Clear();
+        foreach (var document in documents)
+            Documents.Add(document);
+        _selectedDocument = preferredPath is null ? null : Documents.FirstOrDefault(document => string.Equals(document.FullPath, preferredPath, StringComparison.OrdinalIgnoreCase));
+        RaisePropertyChanged(nameof(SelectedDocument));
     }
 
-    private void ClearConsole() => ConsoleOutput.Clear();
+    private void AddCell()
+    {
+        var cell = new NotebookCellViewModel(Guid.NewGuid().ToString("N"), "// New notebook cell\n");
+        AttachCell(cell);
+        if (SelectedCell is null)
+            NotebookCells.Add(cell);
+        else
+            NotebookCells.Insert(Math.Max(NotebookCells.IndexOf(SelectedCell) + 1, 0), cell);
+        if (_currentDocumentKind == QuantScriptDocumentKind.LegacyScript)
+            _currentDocumentKind = QuantScriptDocumentKind.Notebook;
+        SelectedCell = cell;
+        _session.Reset();
+        MarkCellsStaleFrom(0);
+        RaisePropertyChanged(nameof(CurrentDocumentKindText));
+    }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    private void DeleteSelectedCell()
+    {
+        if (SelectedCell is null || NotebookCells.Count <= 1)
+            return;
+        var index = NotebookCells.IndexOf(SelectedCell);
+        if (index < 0)
+            return;
+        DetachCell(SelectedCell);
+        NotebookCells.RemoveAt(index);
+        _session.Reset();
+        MarkCellsStaleFrom(0);
+        SelectedCell = NotebookCells[Math.Min(index, NotebookCells.Count - 1)];
+    }
 
     private void UpdatePrimaryChart()
     {
         LegendEntries.Clear();
-
         if (Charts.Count > 0)
         {
-            var req = Charts[0].Request;
-
-            if (req.MultiSeries is { Count: > 0 } multi)
+            var request = Charts[0].Request;
+            if (request.MultiSeries is { Count: > 0 } multi)
             {
-                var idx = 0;
+                var index = 0;
                 foreach (var (label, _) in multi)
-                {
-                    LegendEntries.Add(new ChartLegendEntry(label, _legendPalette[idx % _legendPalette.Length]));
-                    idx++;
-                }
+                    LegendEntries.Add(new ChartLegendEntry(label, LegendPalette[index++ % LegendPalette.Length]));
             }
-            else if (req.Series is { Count: > 0 })
+            else if (request.Series is { Count: > 0 })
             {
-                LegendEntries.Add(new ChartLegendEntry(Charts[0].Title, _legendPalette[0]));
+                LegendEntries.Add(new ChartLegendEntry(Charts[0].Title, LegendPalette[0]));
             }
         }
-
         RaisePropertyChanged(nameof(PrimaryChartRequest));
         RaisePropertyChanged(nameof(PrimaryChartTitle));
         RaisePropertyChanged(nameof(HasChart));
@@ -429,7 +509,7 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     private void ClearResults()
     {
         ConsoleOutput.Clear();
-        Charts.Clear(); // triggers UpdatePrimaryChart via CollectionChanged
+        Charts.Clear();
         Metrics.Clear();
         Trades.Clear();
         Diagnostics.Clear();
@@ -439,53 +519,163 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         MemoryText = "--";
     }
 
-    private void AppendConsole(string text, ConsoleEntryKind kind)
-    {
-        ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.Now, text, kind));
-    }
+    private void AppendConsole(string text, ConsoleEntryKind kind) => ConsoleOutput.Add(new ConsoleEntry(DateTimeOffset.Now, text, kind));
 
-    private void LoadScriptFile(string path)
+    private async void LoadDocumentAsync(ScriptDocumentEntry document)
     {
+        if (_loadingDocument)
+            return;
+        _loadingDocument = true;
         try
         {
-            // Set backing field directly to avoid double-triggering UpdateParameters,
-            // then notify and parse parameters once.
-            _scriptSource = File.ReadAllText(path);
-            RaisePropertyChanged(nameof(ScriptSource));
-            UpdateParameters(_scriptSource);
+            var notebook = document.Kind == QuantScriptDocumentKind.Notebook
+                ? await _notebookStore.LoadNotebookAsync(document.FullPath)
+                : await _notebookStore.ImportLegacyScriptAsync(document.FullPath);
+            LoadInMemoryDocument(Path.GetFileNameWithoutExtension(document.FullPath), document.FullPath, document.Kind, notebook.Cells);
+            StatusText = $"Loaded {document.Name}";
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to load script from {Path}", path);
+            _logger.LogError(ex, "Failed to load QuantScript document from {Path}", document.FullPath);
             AppendConsole($"Failed to load: {ex.Message}", ConsoleEntryKind.Error);
+        }
+        finally
+        {
+            _loadingDocument = false;
         }
     }
 
-    private void UpdateParameters(string source)
+    private void LoadInMemoryDocument(string title, string path, QuantScriptDocumentKind kind, IReadOnlyList<QuantScriptNotebookCellDocument> cells)
+    {
+        foreach (var cell in NotebookCells)
+            DetachCell(cell);
+        NotebookCells.Clear();
+        ClearResults();
+        _session.Reset();
+        _currentDocumentPath = path;
+        _currentDocumentKind = kind;
+        CurrentDocumentTitle = title;
+        RaisePropertyChanged(nameof(CurrentDocumentKindText));
+        foreach (var cell in (cells.Count > 0 ? cells : [new QuantScriptNotebookCellDocument(Guid.NewGuid().ToString("N"), "// New QuantScript\n")]))
+        {
+            var viewModel = new NotebookCellViewModel(cell.Id, cell.Source, cell.Collapsed);
+            AttachCell(viewModel);
+            NotebookCells.Add(viewModel);
+        }
+        SelectedCell = NotebookCells.FirstOrDefault();
+    }
+
+    private void SyncScriptSourceFromCell()
+    {
+        _suppressCellSync = true;
+        ScriptSource = SelectedCell?.Source ?? string.Empty;
+        _suppressCellSync = false;
+    }
+
+    private void RefreshParameters()
     {
         Parameters.Clear();
-        var descriptors = _compiler.ExtractParameters(source);
-        foreach (var d in descriptors)
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var cell in NotebookCells)
         {
-            var type = Type.GetType(d.TypeName) ?? typeof(string);
-            Parameters.Add(new ParameterViewModel(d.Name, d.DefaultValue, type));
+            foreach (var descriptor in _compiler.ExtractParameters(cell.Source))
+            {
+                if (!seen.Add(descriptor.Name))
+                    continue;
+                Parameters.Add(new ParameterViewModel(descriptor.Name, descriptor.DefaultValue, ResolveParameterType(descriptor.TypeName)));
+            }
         }
     }
+
+    private static Type ResolveParameterType(string? typeName) => (typeName ?? string.Empty).ToLowerInvariant() switch
+    {
+        "int" => typeof(int),
+        "double" => typeof(double),
+        "decimal" => typeof(decimal),
+        "bool" => typeof(bool),
+        "float" => typeof(float),
+        "long" => typeof(long),
+        _ => typeof(string)
+    };
 
     private void SetupFileWatcher()
     {
-        var dir = _options.ScriptsDirectory;
-        if (!Directory.Exists(dir)) return;
-
+        if (!Directory.Exists(_options.ScriptsDirectory))
+            return;
         _fileWatcher?.Dispose();
-        _fileWatcher = new FileSystemWatcher(dir, "*.csx")
+        _fileWatcher = new FileSystemWatcher(_options.ScriptsDirectory, "*.*")
         {
             NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite,
             EnableRaisingEvents = true
         };
-
         _fileWatcher.Created += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
         _fileWatcher.Deleted += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
         _fileWatcher.Renamed += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
+    }
+
+    private IReadOnlyDictionary<string, object?> BuildParameterDictionary() => Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.ParsedValue, StringComparer.OrdinalIgnoreCase);
+    private List<NotebookCellExecutionIdentity> GetCellIdentities() => NotebookCells.Select(cell => new NotebookCellExecutionIdentity(cell.Id, cell.Revision)).ToList();
+
+    private void UpdateCellOrdinals()
+    {
+        for (var index = 0; index < NotebookCells.Count; index++)
+            NotebookCells[index].Ordinal = index + 1;
+    }
+
+    private void AttachCell(NotebookCellViewModel cell) => cell.PropertyChanged += OnCellPropertyChanged;
+    private void DetachCell(NotebookCellViewModel cell) => cell.PropertyChanged -= OnCellPropertyChanged;
+
+    private void OnCellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (_loadingDocument || sender is not NotebookCellViewModel cell || e.PropertyName != nameof(NotebookCellViewModel.Source))
+            return;
+        var index = NotebookCells.IndexOf(cell);
+        if (index < 0)
+            return;
+        _session.InvalidateFrom(GetCellIdentities(), index);
+        MarkCellsStaleFrom(index);
+        if (ReferenceEquals(cell, SelectedCell))
+            SyncScriptSourceFromCell();
+    }
+
+    private void MarkCellsStaleFrom(int startIndex)
+    {
+        if (startIndex < 0 || startIndex >= NotebookCells.Count)
+            return;
+        for (var index = startIndex; index < NotebookCells.Count; index++)
+        {
+            NotebookCells[index].State = NotebookCellExecutionState.Stale;
+            NotebookCells[index].StatusText = "Stale";
+        }
+    }
+
+    private void AdvanceSelectionAfterRun()
+    {
+        if (SelectedCell is null)
+            return;
+        var index = NotebookCells.IndexOf(SelectedCell);
+        if (index < 0)
+            return;
+        if (index < NotebookCells.Count - 1)
+            SelectedCell = NotebookCells[index + 1];
+        else
+            AddCell();
+    }
+
+    private QuantScriptDocumentKind ResolveSaveKind() => _currentDocumentKind == QuantScriptDocumentKind.Notebook || NotebookCells.Count > 1 ? QuantScriptDocumentKind.Notebook : QuantScriptDocumentKind.LegacyScript;
+    private QuantScriptNotebookDocument BuildNotebookDocument() => new() { Title = CurrentDocumentTitle, Cells = NotebookCells.Select(cell => new QuantScriptNotebookCellDocument(cell.Id, cell.Source, cell.Collapsed)).ToList() };
+
+    private void NotifyCommandStateChanged()
+    {
+        RunScriptCommand.NotifyCanExecuteChanged();
+        RunAllCommand.NotifyCanExecuteChanged();
+        RunAndAdvanceCommand.NotifyCanExecuteChanged();
+        StopCommand.NotifyCanExecuteChanged();
+        NewScriptCommand.NotifyCanExecuteChanged();
+        NewNotebookCommand.NotifyCanExecuteChanged();
+        SaveScriptCommand.NotifyCanExecuteChanged();
+        RefreshScriptsCommand.NotifyCanExecuteChanged();
+        AddCellCommand.NotifyCanExecuteChanged();
+        DeleteCellCommand.NotifyCanExecuteChanged();
     }
 }

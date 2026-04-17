@@ -262,4 +262,30 @@ public sealed class ScriptRunnerTests
 
         result.Success.Should().BeTrue();
     }
+
+    [Fact]
+    public async Task ContinueWithAsync_ReusesPriorScriptState()
+    {
+        var runner = BuildRunner();
+
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+        var second = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+
+        first.Checkpoint.Should().NotBeNull();
+        second.Success.Should().BeTrue();
+        second.ConsoleOutput.Should().Contain("42");
+    }
+
+    [Fact]
+    public async Task ContinueWithAsync_CompilationFailure_PreservesPreviousCheckpoint()
+    {
+        var runner = BuildRunner();
+
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+        var second = await runner.ContinueWithAsync("x = ;", first.Checkpoint!, NoParams);
+
+        second.Success.Should().BeFalse();
+        second.CompilationErrors.Should().NotBeEmpty();
+        second.Checkpoint.Should().BeSameAs(first.Checkpoint);
+    }
 }

@@ -253,6 +253,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
             [
                 new WorkspaceCommandItem { Id = "FundAccounts", Label = "Accounts", Description = "Open account surfaces", Glyph = "\uE8D4" },
                 new WorkspaceCommandItem { Id = "FundCashFinancing", Label = "Reporting", Description = "Open cash and reporting view", Glyph = "\uE8C7" },
+                new WorkspaceCommandItem { Id = "FundReportPack", Label = "Report Pack", Description = "Open governance report-pack preview", Glyph = "\uE8A5" },
                 new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "Diagnostics", Label = "Diagnostics", Description = "Open diagnostics", Glyph = "\uE7BA" },
                 new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Notifications", Description = "Open notifications", Glyph = "\uE7F4" },
@@ -317,7 +318,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         return
         [
             new WorkspaceQueueItem { Title = "Portfolio and cash reporting", Detail = $"Cash, financing, NAV, and portfolio-linked reporting can be reviewed without leaving governance. {reporting.ProfileCount} reporting/export profile(s) are already available through the shared workspace summary.", StatusLabel = "Ready", CountLabel = $"{cash.TotalCash:C0}", Tone = WorkspaceTone.Info, PrimaryActionId = "FundCashFinancing", PrimaryActionLabel = "Open Reporting", SecondaryActionId = "FundPortfolio", SecondaryActionLabel = "Portfolio" },
-            new WorkspaceQueueItem { Title = "Board and operator handoff", Detail = $"Keep reporting, trial-balance, audit references, and {string.Join(", ", reporting.ReportPackTargets)} pack targets together before approvals or exports leave the workstation.", StatusLabel = "Review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundTrialBalance", PrimaryActionLabel = "Accounting", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit" }
+            new WorkspaceQueueItem { Title = "Board and operator handoff", Detail = $"Keep reporting, trial-balance, audit references, and {string.Join(", ", reporting.ReportPackTargets)} pack targets together before approvals or exports leave the workstation.", StatusLabel = "Review", CountLabel = profile.BaseCurrency, Tone = WorkspaceTone.Neutral, PrimaryActionId = "FundReportPack", PrimaryActionLabel = "Open Report Pack", SecondaryActionId = "FundAuditTrail", SecondaryActionLabel = "Audit" }
         ];
     }
 

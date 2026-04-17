@@ -11,6 +11,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
     private readonly NavigationService _navigationService;
     private string? _runId;
     private object? _parameter;
+    private LedgerTrialBalanceLine? _selectedTrialBalanceLine;
 
     public object? Parameter
     {
@@ -26,6 +27,18 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
 
     public ObservableCollection<LedgerTrialBalanceLine> TrialBalance { get; } = [];
     public ObservableCollection<LedgerJournalLine> Journal { get; } = [];
+
+    public LedgerTrialBalanceLine? SelectedTrialBalanceLine
+    {
+        get => _selectedTrialBalanceLine;
+        set
+        {
+            if (SetProperty(ref _selectedTrialBalanceLine, value))
+            {
+                OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
     private string _title = "Ledger Drill-In";
     public string Title
@@ -108,6 +121,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
     public IRelayCommand OpenCashFlowCommand { get; }
+    public IRelayCommand OpenSelectedSecurityCommand { get; }
 
     internal StrategyRunLedgerViewModel(
         StrategyRunWorkspaceService runService,
@@ -119,6 +133,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => !string.IsNullOrWhiteSpace(_runId));
         OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => !string.IsNullOrWhiteSpace(_runId));
+        OpenSelectedSecurityCommand = new RelayCommand(OpenSelectedSecurity, () => SelectedTrialBalanceLine is not null);
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -158,6 +173,8 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
             TrialBalance.Add(line);
         }
 
+        SelectedTrialBalanceLine = TrialBalance.FirstOrDefault();
+
         Journal.Clear();
         foreach (var line in ledger.Journal)
         {
@@ -167,6 +184,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
     }
 
     private void OpenRunDetail()
@@ -190,6 +208,20 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         if (!string.IsNullOrWhiteSpace(_runId))
         {
             _navigationService.NavigateTo("RunCashFlow", _runId);
+        }
+    }
+
+    private void OpenSelectedSecurity()
+    {
+        if (SelectedTrialBalanceLine?.Security?.SecurityId is Guid securityId)
+        {
+            _navigationService.NavigateTo("SecurityMaster", securityId);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(SelectedTrialBalanceLine?.Symbol))
+        {
+            _navigationService.NavigateTo("SecurityMaster", SelectedTrialBalanceLine.Symbol);
         }
     }
 }

@@ -2,9 +2,11 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Windows.Controls;
 using FluentAssertions;
 using Meridian.Application.FundAccounts;
+using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
@@ -14,10 +16,12 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using AppSecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -125,6 +129,11 @@ public sealed class FundLedgerViewModelTests
                     workspaceService,
                     fakeApiClient);
                 var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
 
                 using var viewModel = new FundLedgerViewModel(
                     fundLedgerReadService,
@@ -133,6 +142,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    fundOperationsWorkspaceReadService,
                     workspaceService);
 
                 await viewModel.LoadAsync();
@@ -287,6 +297,11 @@ public sealed class FundLedgerViewModelTests
                     workspaceService,
                     fakeApiClient);
                 var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
 
                 using var viewModel = new FundLedgerViewModel(
                     fundLedgerReadService,
@@ -295,6 +310,7 @@ public sealed class FundLedgerViewModelTests
                     fundAccountReadService,
                     cashFinancingReadService,
                     workbenchService,
+                    fundOperationsWorkspaceReadService,
                     workspaceService);
 
                 await viewModel.LoadAsync();
@@ -331,8 +347,146 @@ public sealed class FundLedgerViewModelTests
         });
     }
 
+    [Fact]
+    public void LoadAsync_ReportPackContext_LoadsPreviewAndSelectsReportPackTab()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                await fundContext.UpsertProfileAsync(new FundProfileDetail(
+                    FundProfileId: "alpha-fund",
+                    DisplayName: "Alpha Fund",
+                    LegalEntityName: "Alpha Fund LP",
+                    BaseCurrency: "USD",
+                    DefaultWorkspaceId: "governance",
+                    DefaultLandingPageTag: "FundLedger",
+                    DefaultLedgerScope: FundLedgerScope.Consolidated,
+                    EntityIds: ["entity-alpha"],
+                    SleeveIds: ["sleeve-credit"],
+                    VehicleIds: ["vehicle-master"],
+                    IsDefault: true));
+                await fundContext.SelectFundProfileAsync("alpha-fund");
+
+                var store = new StrategyRunStore();
+                await store.RecordRunAsync(BuildFundScopedRun("run-report-pack"));
+
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundId = ToFundId("alpha-fund");
+                var entityId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+                var sleeveId = Guid.Parse("88888888-8888-8888-8888-888888888888");
+                var vehicleId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+                var accountId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+
+                await fundAccountService.CreateAccountAsync(new CreateAccountRequest(
+                    AccountId: accountId,
+                    AccountType: AccountTypeDto.Custody,
+                    AccountCode: "CUST-RPT",
+                    DisplayName: "Reporting Custody",
+                    BaseCurrency: "USD",
+                    EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-5),
+                    CreatedBy: "test",
+                    EntityId: entityId,
+                    FundId: fundId,
+                    SleeveId: sleeveId,
+                    VehicleId: vehicleId,
+                    Institution: "Northern Trust"));
+                await fundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+                    AccountId: accountId,
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    Currency: "USD",
+                    CashBalance: 750m,
+                    Source: "test",
+                    RecordedBy: "test",
+                    SecuritiesMarketValue: 250m));
+
+                var portfolioReadService = new PortfolioReadService();
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, new LedgerReadService());
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
+                var reconciliationRepository = new InMemoryReconciliationRunRepository();
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService,
+                    new ReconciliationProjectionService(),
+                    reconciliationRepository);
+                var reconciliationReadService = new ReconciliationReadService(
+                    fundAccountService,
+                    fundAccountReadService,
+                    workspaceService,
+                    strategyReconciliationService);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    new FakeWorkstationReconciliationApiClient([], []));
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
+
+                using var viewModel = new FundLedgerViewModel(
+                    fundLedgerReadService,
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    cashFinancingReadService,
+                    workbenchService,
+                    fundOperationsWorkspaceReadService,
+                    workspaceService);
+
+                await viewModel.LoadAsync(new FundOperationsNavigationContext(
+                    Tab: FundOperationsTab.ReportPack,
+                    FundProfileId: "alpha-fund"));
+                await WaitForConditionAsync(() =>
+                    viewModel.ReportPackAssetSections.Any() &&
+                    viewModel.ReportPackStatusText.Contains("preview is ready", StringComparison.OrdinalIgnoreCase));
+
+                viewModel.SelectedTabIndex.Should().Be((int)FundOperationsTab.ReportPack);
+                viewModel.ReportPackTrialBalanceLinesText.Should().NotBe("0");
+                viewModel.ReportPackGeneratedAtText.Should().NotBe("-");
+                viewModel.ReportPackAssetSections.Should().NotBeEmpty();
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
     private static Guid ToFundId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId.Trim())));
+
+    private static FundOperationsWorkspaceReadService CreateFundOperationsWorkspaceReadService(
+        IFundAccountService fundAccountService,
+        IStrategyRepository strategyRepository,
+        PortfolioReadService portfolioReadService,
+        IReconciliationRunService strategyReconciliationService)
+    {
+        var securityMasterQuery = new StubApplicationSecurityMasterQueryService();
+        return new FundOperationsWorkspaceReadService(
+            fundAccountService,
+            strategyRepository,
+            portfolioReadService,
+            new NavAttributionService(securityMasterQuery),
+            new ReportGenerationService(securityMasterQuery),
+            strategyReconciliationService);
+    }
 
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)
     {
@@ -563,6 +717,63 @@ public sealed class FundLedgerViewModelTests
             _references.TryGetValue(symbol, out var reference);
             return Task.FromResult<WorkstationSecurityReference?>(reference);
         }
+    }
+
+    private sealed class StubApplicationSecurityMasterQueryService : AppSecurityMasterQueryService
+    {
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<SecurityDetailDto?>(null);
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default)
+        {
+            if (string.Equals(identifierValue, "AAPL", StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.FromResult<SecurityDetailDto?>(new SecurityDetailDto(
+                    SecurityId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                    AssetClass: "Equity",
+                    Status: SecurityStatusDto.Active,
+                    DisplayName: "Apple Inc.",
+                    Currency: "USD",
+                    CommonTerms: JsonDocument.Parse("{}").RootElement.Clone(),
+                    AssetSpecificTerms: JsonDocument.Parse("{}").RootElement.Clone(),
+                    Identifiers:
+                    [
+                        new SecurityIdentifierDto(
+                            Kind: SecurityIdentifierKind.Ticker,
+                            Value: "AAPL",
+                            IsPrimary: true,
+                            ValidFrom: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                            Provider: "test")
+                    ],
+                    Aliases: [],
+                    Version: 1,
+                    EffectiveFrom: new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                    EffectiveTo: null));
+            }
+
+            return Task.FromResult<SecurityDetailDto?>(null);
+        }
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
+            => Task.FromResult<TradingParametersDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 }
 #endif

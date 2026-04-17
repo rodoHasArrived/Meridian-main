@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace Meridian.Wpf.Services;
 public sealed class BackendServiceManager : BackendServiceManagerBase
 {
     private static readonly Lazy<BackendServiceManager> _instance = new(() => new BackendServiceManager());
+    private const int DefaultDesktopPort = 8080;
     private readonly HttpClient _httpClient;
 
     public static BackendServiceManager Instance => _instance.Value;
@@ -61,13 +63,35 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
     }
 
     protected override IReadOnlyList<string> GetProcessArguments(string executablePath)
-        => ["--config", FirstRunService.Instance.ConfigFilePath];
+        => BuildProcessArguments(
+            FirstRunService.Instance.ConfigFilePath,
+            ConnectionService.Instance.ServiceUrl);
 
     protected override IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
         => new Dictionary<string, string?>(StringComparer.Ordinal)
         {
             ["MDC_CONFIG_PATH"] = FirstRunService.Instance.ConfigFilePath
         };
+
+    internal static IReadOnlyList<string> BuildProcessArguments(string configPath, string serviceUrl)
+        => [
+            "--mode",
+            "desktop",
+            "--config",
+            configPath,
+            "--http-port",
+            ResolveHttpPort(serviceUrl).ToString(CultureInfo.InvariantCulture)
+        ];
+
+    internal static int ResolveHttpPort(string serviceUrl)
+    {
+        if (Uri.TryCreate(serviceUrl, UriKind.Absolute, out var serviceUri) && serviceUri.Port > 0)
+        {
+            return serviceUri.Port;
+        }
+
+        return DefaultDesktopPort;
+    }
 
     protected override int? StartProcess(
         string executablePath,

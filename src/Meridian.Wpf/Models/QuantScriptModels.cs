@@ -1,3 +1,4 @@
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.ViewModels;
 
@@ -5,8 +6,101 @@ namespace Meridian.Wpf.Models;
 
 // ── Script Browser ────────────────────────────────────────────────────────────
 
-/// <summary>A .csx file entry shown in the script browser.</summary>
-public sealed record ScriptFileEntry(string Name, string FullPath);
+/// <summary>A saved QuantScript document shown in the browser.</summary>
+public sealed record ScriptDocumentEntry(string Name, string FullPath, QuantScriptDocumentKind Kind)
+{
+    public string KindLabel => Kind == QuantScriptDocumentKind.Notebook ? "Notebook" : "Script";
+}
+
+/// <summary>Execution lifecycle for a notebook cell.</summary>
+public enum NotebookCellExecutionState
+{
+    Idle,
+    Running,
+    Done,
+    Error,
+    Stale
+}
+
+/// <summary>
+/// Bindable notebook cell state for the QuantScript editor.
+/// </summary>
+public sealed class NotebookCellViewModel : BindableBase
+{
+    private string _source;
+    private bool _collapsed;
+    private int _revision = 1;
+    private int _ordinal;
+    private NotebookCellExecutionState _state;
+    private string _statusText = "Idle";
+
+    public NotebookCellViewModel(string id, string source, bool collapsed = false)
+    {
+        Id = string.IsNullOrWhiteSpace(id) ? Guid.NewGuid().ToString("N") : id;
+        _source = source ?? string.Empty;
+        _collapsed = collapsed;
+    }
+
+    public string Id { get; }
+
+    public int Revision => _revision;
+
+    public int Ordinal
+    {
+        get => _ordinal;
+        set
+        {
+            if (SetProperty(ref _ordinal, value))
+                RaisePropertyChanged(nameof(Title));
+        }
+    }
+
+    public string Source
+    {
+        get => _source;
+        set
+        {
+            if (!SetProperty(ref _source, value))
+                return;
+
+            _revision++;
+            RaisePropertyChanged(nameof(Revision));
+            RaisePropertyChanged(nameof(Preview));
+        }
+    }
+
+    public bool Collapsed
+    {
+        get => _collapsed;
+        set => SetProperty(ref _collapsed, value);
+    }
+
+    public NotebookCellExecutionState State
+    {
+        get => _state;
+        set => SetProperty(ref _state, value);
+    }
+
+    public string StatusText
+    {
+        get => _statusText;
+        set => SetProperty(ref _statusText, value);
+    }
+
+    public string Title => Ordinal > 0 ? $"Cell {Ordinal}" : "Cell";
+
+    public string Preview
+    {
+        get
+        {
+            var firstLine = _source
+                .Split([Environment.NewLine, "\n"], StringSplitOptions.None)
+                .Select(static line => line.Trim())
+                .FirstOrDefault(static line => !string.IsNullOrWhiteSpace(line));
+            return string.IsNullOrWhiteSpace(firstLine) ? "Empty cell" : firstLine;
+        }
+    }
+}
 
 // ── Console ───────────────────────────────────────────────────────────────────
 

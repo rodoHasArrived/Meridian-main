@@ -199,6 +199,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
             "FundTrialBalance" => new FundOperationsNavigationContext(Tab: FundOperationsTab.TrialBalance),
             "FundReconciliation" => new FundOperationsNavigationContext(Tab: FundOperationsTab.Reconciliation),
             "FundAuditTrail" => new FundOperationsNavigationContext(Tab: FundOperationsTab.AuditTrail),
+            "FundReportPack" => new FundOperationsNavigationContext(Tab: FundOperationsTab.ReportPack),
             _ => parameter
         };
     }

@@ -84,7 +84,7 @@
             Padding="10,7">
       <DockPanel LastChildFill="False">
 
-        <!-- Script selector -->
+        <!-- Document selector -->
         <ComboBox DockPanel.Dock="Left"
                   Width="180"
                   Margin="0,0,8,0"
@@ -92,11 +92,17 @@
                   Background="{StaticResource ConsoleBackgroundLightBrush}"
                   BorderBrush="{StaticResource ConsoleBorderBrush}"
                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                  ItemsSource="{Binding ScriptFiles}"
-                  SelectedItem="{Binding SelectedScript}">
+                  ItemsSource="{Binding Documents}"
+                  SelectedItem="{Binding SelectedDocument}">
           <ComboBox.ItemTemplate>
-            <DataTemplate DataType="{x:Type models:ScriptFileEntry}">
-              <TextBlock FontSize="11" Text="{Binding Name}" />
+            <DataTemplate DataType="{x:Type models:ScriptDocumentEntry}">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock FontSize="11" Text="{Binding Name}" />
+                <TextBlock Margin="6,0,0,0"
+                           FontSize="10"
+                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                           Text="{Binding KindLabel}" />
+              </StackPanel>
             </DataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
@@ -174,6 +180,14 @@
           </StackPanel>
         </Button>
 
+        <Button DockPanel.Dock="Left"
+                Margin="0,0,6,0"
+                Padding="12,6"
+                Command="{Binding RunAllCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Run All" />
+        </Button>
+
         <!-- Stop -->
         <Button DockPanel.Dock="Left"
                 Margin="0,0,6,0"
@@ -197,6 +211,14 @@
         <Button DockPanel.Dock="Left"
                 Margin="0,0,4,0"
                 Padding="10,6"
+                Command="{Binding NewNotebookCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Notebook" />
+        </Button>
+
+        <Button DockPanel.Dock="Left"
+                Margin="0,0,4,0"
+                Padding="10,6"
                 Command="{Binding SaveScriptCommand}"
                 Style="{StaticResource GhostButtonStyle}">
           <TextBlock FontSize="11" Text="Save" />
@@ -207,6 +229,23 @@
                 Command="{Binding RefreshScriptsCommand}"
                 Style="{StaticResource GhostButtonStyle}">
           <TextBlock FontSize="11" Text="Refresh" />
+        </Button>
+
+        <Button DockPanel.Dock="Left"
+                Margin="4,0,0,0"
+                Padding="10,6"
+                Command="{Binding AddCellCommand}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Add Cell" />
+        </Button>
+
+        <Button DockPanel.Dock="Left"
+                Margin="4,0,0,0"
+                Padding="10,6"
+                Command="{Binding DeleteCellCommand}"
+                IsEnabled="{Binding CanDeleteCell}"
+                Style="{StaticResource GhostButtonStyle}">
+          <TextBlock FontSize="11" Text="Delete Cell" />
         </Button>
 
         <!-- Right-anchored status strip -->
@@ -238,6 +277,12 @@
                    FontSize="11"
                    Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                    Text="{Binding StatusText}" />
+        <TextBlock DockPanel.Dock="Right"
+                   Margin="8,0,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="11"
+                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                   Text="{Binding CurrentDocumentKindText}" />
 
       </DockPanel>
     </Border>
@@ -397,6 +442,9 @@
             <avalonEdit:TextEditor x:Name="ScriptEditor"
                                    Grid.Row="0"
                                    Background="#0D1117"
+                                   behaviors:AvalonEditNotebookBehavior.Text="{Binding ScriptSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                   behaviors:AvalonEditNotebookBehavior.RunCommand="{Binding RunScriptCommand}"
+                                   behaviors:AvalonEditNotebookBehavior.RunAndAdvanceCommand="{Binding RunAndAdvanceCommand}"
                                    FontFamily="Cascadia Code, Consolas, Courier New"
                                    FontSize="13"
                                    Foreground="#E6EDF3"
@@ -490,35 +538,78 @@
                          FontSize="11"
                          FontWeight="SemiBold"
                          Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                         Text="SCRIPTS" />
+                         Text="DOCUMENTS" />
               <ListBox Background="{StaticResource ConsoleBackgroundMediumBrush}"
                        BorderBrush="{StaticResource ConsoleBorderBrush}"
                        FontSize="11"
                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                       ItemsSource="{Binding ScriptFiles}"
-                       SelectedItem="{Binding SelectedScript}">
+                       ItemsSource="{Binding Documents}"
+                       SelectedItem="{Binding SelectedDocument}">
                 <ListBox.ItemTemplate>
-                  <DataTemplate DataType="{x:Type models:ScriptFileEntry}">
-                    <TextBlock Padding="4,3"
-                               Text="{Binding Name}"
-                               ToolTip="{Binding FullPath}" />
+                  <DataTemplate DataType="{x:Type models:ScriptDocumentEntry}">
+                    <StackPanel Margin="4,3">
+                      <TextBlock Text="{Binding Name}" ToolTip="{Binding FullPath}" />
+                      <TextBlock FontSize="10"
+                                 Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                 Text="{Binding KindLabel}" />
+                    </StackPanel>
                   </DataTemplate>
                 </ListBox.ItemTemplate>
               </ListBox>
             </DockPanel>
 
-            <DockPanel Grid.Column="2">
-              <TextBlock DockPanel.Dock="Top"
+            <Grid Grid.Column="2">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="140" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+
+              <TextBlock Grid.Row="0"
                          Margin="0,0,0,6"
                          FontSize="11"
                          FontWeight="SemiBold"
                          Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                         Text="CELLS" />
+              <ListBox Grid.Row="1"
+                       Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                       BorderBrush="{StaticResource ConsoleBorderBrush}"
+                       FontSize="11"
+                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                       ItemsSource="{Binding NotebookCells}"
+                       SelectedItem="{Binding SelectedCell}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Margin="4,3">
+                      <DockPanel>
+                        <TextBlock DockPanel.Dock="Left"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Title}" />
+                        <TextBlock DockPanel.Dock="Right"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   Text="{Binding StatusText}" />
+                      </DockPanel>
+                      <TextBlock Margin="0,2,0,0"
+                                 Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                 Text="{Binding Preview}"
+                                 TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+
+              <TextBlock Grid.Row="2"
+                         Margin="0,10,0,6"
+                         FontSize="11"
+                         FontWeight="SemiBold"
+                         Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                          Text="PARAMETERS" />
-              <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Parameters}"
                               ItemTemplateSelector="{StaticResource ParamSelector}" />
               </ScrollViewer>
-            </DockPanel>
+            </Grid>
           </Grid>
         </TabItem>
 

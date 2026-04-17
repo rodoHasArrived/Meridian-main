@@ -20,18 +20,19 @@ public sealed class QuantScriptGlobals
 {
     private readonly List<ConsoleOutputEntry> _output = [];
     private readonly object _outputLock = new();
-    private readonly IReadOnlyDictionary<string, object?> _parameters;
+    private IReadOnlyDictionary<string, object?> _parameters;
+    private Func<CancellationToken> _cancellationTokenProvider;
 
     internal QuantScriptGlobals(
         DataProxy data,
         BacktestProxy backtest,
-        CancellationToken ct,
+        Func<CancellationToken> cancellationTokenProvider,
         IReadOnlyDictionary<string, object?>? parameters = null)
     {
         Data = data;
         Backtest = backtest;
-        CancellationToken = ct;
         _parameters = parameters ?? new Dictionary<string, object?>();
+        _cancellationTokenProvider = cancellationTokenProvider ?? throw new ArgumentNullException(nameof(cancellationTokenProvider));
     }
 
     // ── Primary APIs ─────────────────────────────────────────────────────────
@@ -106,24 +107,40 @@ public sealed class QuantScriptGlobals
     }
 
     // ── Cancellation ─────────────────────────────────────────────────────────
-    public CancellationToken CancellationToken { get; }
+    public CancellationToken CancellationToken => _cancellationTokenProvider();
 
     // ── Internal result access ────────────────────────────────────────────────
 
     /// <summary>Returns all non-metric console lines as a single joined string.</summary>
-    internal string GetConsoleOutput()
+    internal string DrainConsoleOutput()
     {
         lock (_outputLock)
-            return string.Join(Environment.NewLine, _output.Where(e => !e.IsMetric).Select(e => e.Text));
+        {
+            var console = string.Join(Environment.NewLine, _output.Where(e => !e.IsMetric).Select(e => e.Text));
+            _output.RemoveAll(static entry => !entry.IsMetric);
+            return console;
+        }
     }
 
     /// <summary>Returns all metrics recorded via <see cref="PrintMetric"/>.</summary>
-    internal IReadOnlyList<KeyValuePair<string, string>> GetMetrics()
+    internal IReadOnlyList<KeyValuePair<string, string>> DrainMetrics()
     {
         lock (_outputLock)
-            return _output
+        {
+            var metrics = _output
                 .Where(e => e.IsMetric)
                 .Select(e => new KeyValuePair<string, string>(e.MetricLabel ?? "", e.Text))
                 .ToList();
+            _output.RemoveAll(static entry => entry.IsMetric);
+            return metrics;
+        }
+    }
+
+    internal void UpdateExecutionContext(
+        IReadOnlyDictionary<string, object?>? parameters,
+        Func<CancellationToken> cancellationTokenProvider)
+    {
+        _parameters = parameters ?? new Dictionary<string, object?>();
+        _cancellationTokenProvider = cancellationTokenProvider ?? throw new ArgumentNullException(nameof(cancellationTokenProvider));
     }
 }

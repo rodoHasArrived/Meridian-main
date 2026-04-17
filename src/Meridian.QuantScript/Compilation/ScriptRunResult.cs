@@ -15,4 +15,5 @@ public sealed record ScriptRunResult(
     string ConsoleOutput,
     IReadOnlyList<KeyValuePair<string, string>> Metrics,
     IReadOnlyList<PlotRequest> Plots,
-    IReadOnlyList<string> TradesSummary);
+    IReadOnlyList<string> TradesSummary,
+    ScriptExecutionCheckpoint? Checkpoint = null);

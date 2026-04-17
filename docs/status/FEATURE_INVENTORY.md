@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.2
-**Date:** 2026-04-14
+**Date:** 2026-04-16
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -528,10 +528,10 @@ This section inventories the workflow-centric product model that now sits above 
 | Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
 | Security Master — trading parameters | ✅ | Per-instrument lot size, tick size; `PaperTradingGateway` lot-size validation and `BacktestEngine` tick-size rounding wired; `GET /api/security-master/{id}/trading-parameters` |
 | Security Master — corporate action events | ✅ | `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption` domain events; `CorporateActionAdjustmentService` applies split-adjusted bar prices in backtest replay; `GET /api/security-master/{id}/corporate-actions` |
-| Security Master — exchange bulk ingest | ✅ | CSV + JSON bulk-ingest via `SecurityMasterImportService`; idempotent dedup; CLI `--security-master-ingest`; `POST /api/security-master/import` endpoint |
+| Security Master — exchange bulk ingest | ✅ | CSV + JSON bulk-ingest via `SecurityMasterImportService`; idempotent dedup; CLI `--security-master-ingest`; `POST /api/security-master/import`; typed `GET /api/security-master/ingest/status` polling surface |
 | Security Master — EDGAR ingest provider | ✅ | `EdgarSecurityMasterIngestProvider`; SEC company-ticker and submission enrichment flow with provenance capture and SEC rate-limit-aware ingest behavior |
-| Security Master — golden record conflict resolution | ✅ | `SecurityMasterConflictService` detects identifier-ambiguity conflicts; `GET /api/security-master/conflicts` list + `POST /api/security-master/conflicts/{id}/resolve` |
-| Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, results/detail/inspector workbench, corporate action timeline, trading params, import/backfill posture |
+| Security Master — golden record conflict resolution | ✅ | `SecurityMasterConflictService` detects ingest-time identifier conflicts automatically; `GET /api/security-master/conflicts` list + `POST /api/security-master/conflicts/{id}/resolve`; workstation conflict queue and operator resolution path are live |
+| Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, results/detail/inspector workbench, ingest polling, conflict queue, corporate action timeline, trading params, import/backfill posture, and governance drill-ins |
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
@@ -550,6 +550,7 @@ This section inventories the workflow-centric product model that now sits above 
 - Turn taxonomy alignment into true workspace-first shells with quick actions and cross-workflow entry points.
 - Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
 - Elevate Security Master from backend capability to explicit platform/product infrastructure for research and governance (Wave 6 — see [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md)).
+- Treat `docs/plans/security-master-productization-roadmap.md` as canonical for Wave 6 Security Master status, and keep this table synchronized.
 - Expand the current reconciliation seam into explicit break queues, match rules, exception workflows, and non-run governance use cases.
 - Extend the direct-lending slice into governance-grade projections, reconciliation hooks, and reporting outputs.
 - Add report generation tools that package auditable governance outputs for operators and stakeholders.
@@ -630,8 +631,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 
 ---
 
-*Last Updated: 2026-04-14*
-
+*Last Updated: 2026-04-16*
 
 
 
