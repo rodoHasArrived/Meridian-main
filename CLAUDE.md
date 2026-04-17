@@ -579,7 +579,10 @@ Meridian-main
 │       │   ├── 2026-04-09
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-16
+│       │   ├── 2026-04-16
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-17
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -1216,10 +1219,6 @@ Meridian-main
 │   │   │   ├── Meridian.Application.Config.SemanticValidationStage.yml
 │   │   │   ├── Meridian.Application.Config.SensitiveValueMasker.yml
 │   │   │   ├── Meridian.Application.Config.SourceRegistryConfig.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpConfig.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpConfigValidator.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpIBConfig.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpIBConfigValidator.yml
 │   │   │   ├── Meridian.Application.Config.StooqConfig.yml
 │   │   │   ├── Meridian.Application.Config.StorageConfig.yml
 │   │   │   ├── Meridian.Application.Config.StorageConfigExtensions.yml
@@ -2206,8 +2205,6 @@ Meridian-main
 │   │   │   ├── Meridian.Contracts.Configuration.ProviderScopeDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.RithmicOptionsDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.SmartGroupCriteriaDto.yml
-│   │   │   ├── Meridian.Contracts.Configuration.StockSharpIBOptionsDto.yml
-│   │   │   ├── Meridian.Contracts.Configuration.StockSharpOptionsDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.StorageConfigDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.SymbolConfig.yml
 │   │   │   ├── Meridian.Contracts.Configuration.SymbolConfigDto.yml
@@ -2951,19 +2948,6 @@ Meridian-main
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.Converters.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Stooq.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider.yml
@@ -4521,6 +4505,7 @@ Meridian-main
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
+│   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
@@ -4574,8 +4559,7 @@ Meridian-main
 │   │   ├── provider-comparison.md
 │   │   ├── provider-confidence-baseline.md
 │   │   ├── README.md
-│   │   ├── security-master-guide.md
-│   │   └── stocksharp-connectors.md
+│   │   └── security-master-guide.md
 │   ├── reference
 │   │   ├── api-reference.md
 │   │   ├── brand-assets.md
@@ -4741,7 +4725,8 @@ Meridian-main
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
-│   │   └── run-wave1-provider-validation.ps1
+│   │   ├── run-wave1-provider-validation.ps1
+│   │   └── SharedBuild.ps1
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
@@ -5356,7 +5341,6 @@ Meridian-main
 │   │   │   ├── DerivativesConfig.cs
 │   │   │   ├── IConfigurationProvider.cs
 │   │   │   ├── ProviderConnectionsConfig.cs
-│   │   │   ├── StockSharpConfig.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
 │   │   │   └── ValidatedConfig.cs
 │   │   ├── Exceptions
@@ -5634,6 +5618,7 @@ Meridian-main
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
 │   │   │   │   ├── ICorporateActionProvider.cs
+│   │   │   │   ├── IHistoricalAggregateBarProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
 │   │   │   │   ├── ProviderBehaviorBuilder.cs
@@ -5701,16 +5686,6 @@ Meridian-main
 │   │   │   │   ├── RobinhoodOptionsChainProvider.cs
 │   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
-│   │   │   ├── StockSharp
-│   │   │   │   ├── Converters
-│   │   │   │   │   ├── MessageConverter.cs
-│   │   │   │   │   └── SecurityConverter.cs
-│   │   │   │   ├── StockSharpBrokerageGateway.cs
-│   │   │   │   ├── StockSharpConnectorCapabilities.cs
-│   │   │   │   ├── StockSharpConnectorFactory.cs
-│   │   │   │   ├── StockSharpHistoricalDataProvider.cs
-│   │   │   │   ├── StockSharpMarketDataClient.cs
-│   │   │   │   └── StockSharpSymbolSearchProvider.cs
 │   │   │   ├── Stooq
 │   │   │   │   └── StooqHistoricalDataProvider.cs
 │   │   │   ├── Synthetic
@@ -6380,6 +6355,7 @@ Meridian-main
 │       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
+│       │   ├── FundLedgerDimensionView.cs
 │       │   ├── FundProfileModels.cs
 │       │   ├── FundReconciliationWorkbenchModels.cs
 │       │   ├── LeanModels.cs
@@ -6422,6 +6398,7 @@ Meridian-main
 │       │   ├── ConnectionService.cs
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
+│       │   ├── DataOperationsWorkspacePresentationBuilder.cs
 │       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
@@ -6560,6 +6537,7 @@ Meridian-main
 │       │   ├── TradingHoursViewModel.cs
 │       │   ├── WatchlistViewModel.cs
 │       │   ├── WelcomePageViewModel.cs
+│       │   ├── WorkspacePageViewModel.cs
 │       │   └── WorkspaceShellViewModelBase.cs
 │       ├── Views
 │       │   ├── AccountPortfolioPage.xaml
@@ -6840,6 +6818,7 @@ Meridian-main
 │   │   ├── Application
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
+│   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillStatusStoreTests.cs
 │   │   │   │   ├── BackfillWorkerServiceTests.cs
@@ -6850,7 +6829,8 @@ Meridian-main
 │   │   │   │   ├── PriorityBackfillQueueTests.cs
 │   │   │   │   ├── RateLimiterTests.cs
 │   │   │   │   ├── ScheduledBackfillTests.cs
-│   │   │   │   └── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   │   ├── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   │   └── YahooFinanceIntradayContractTests.cs
 │   │   │   ├── Backtesting
 │   │   │   │   └── BacktestStudioRunOrchestratorTests.cs
 │   │   │   ├── Canonicalization
@@ -7097,15 +7077,11 @@ Meridian-main
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodMarketDataClientTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
-│   │   │   │   ├── StockSharpConnectorFactoryTests.cs
-│   │   │   │   ├── StockSharpConverterEdgeCaseTests.cs
-│   │   │   │   ├── StockSharpMessageConversionTests.cs
-│   │   │   │   ├── StockSharpProviderContractTests.cs
-│   │   │   │   ├── StockSharpSubscriptionTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
 │   │   │   │   ├── SyntheticOptionsChainProviderTests.cs
-│   │   │   │   └── WebSocketProviderBaseTests.cs
+│   │   │   │   ├── WebSocketProviderBaseTests.cs
+│   │   │   │   └── YahooFinanceHistoricalDataProviderTests.cs
 │   │   │   ├── Resilience
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
 │   │   │   │   └── WebSocketResiliencePolicyTests.cs
@@ -7334,6 +7310,7 @@ Meridian-main
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
 │   │   │   ├── ConfigServiceTests.cs
 │   │   │   ├── ConnectionServiceTests.cs
+│   │   │   ├── DataOperationsWorkspacePresentationBuilderTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
@@ -7376,7 +7353,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
-│   │   │   └── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   └── WorkspacePageViewModelTests.cs
 │   │   ├── Views
 │   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── DataOperationsWorkspaceShellSmokeTests.cs

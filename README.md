@@ -656,7 +656,10 @@ Use these documents together when planning or implementing new work:
 │       │   ├── 2026-04-09
 │       │   │   ├── wave1-validation-summary.json
 │       │   │   └── wave1-validation-summary.md
-│       │   └── 2026-04-16
+│       │   ├── 2026-04-16
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-17
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -1296,10 +1299,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Application.Config.SemanticValidationStage.yml
 │   │   │   ├── Meridian.Application.Config.SensitiveValueMasker.yml
 │   │   │   ├── Meridian.Application.Config.SourceRegistryConfig.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpConfig.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpConfigValidator.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpIBConfig.yml
-│   │   │   ├── Meridian.Application.Config.StockSharpIBConfigValidator.yml
 │   │   │   ├── Meridian.Application.Config.StooqConfig.yml
 │   │   │   ├── Meridian.Application.Config.StorageConfig.yml
 │   │   │   ├── Meridian.Application.Config.StorageConfigExtensions.yml
@@ -2286,8 +2285,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Contracts.Configuration.ProviderScopeDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.RithmicOptionsDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.SmartGroupCriteriaDto.yml
-│   │   │   ├── Meridian.Contracts.Configuration.StockSharpIBOptionsDto.yml
-│   │   │   ├── Meridian.Contracts.Configuration.StockSharpOptionsDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.StorageConfigDto.yml
 │   │   │   ├── Meridian.Contracts.Configuration.SymbolConfig.yml
 │   │   │   ├── Meridian.Contracts.Configuration.SymbolConfigDto.yml
@@ -3031,19 +3028,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Robinhood.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.ConnectionState.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.ConnectorCapabilities.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.Converters.MessageConverter.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.Converters.SecurityConverter.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.Converters.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.ProviderHealthMetrics.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorCapabilities.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpConnectorFactory.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.SubscriptionType.yml
-│   │   │   ├── Meridian.Infrastructure.Adapters.StockSharp.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Stooq.yml
 │   │   │   ├── Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider.yml
@@ -4602,6 +4586,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── assembly-performance-roadmap.md
 │   │   ├── backtest-studio-unification-blueprint.md
 │   │   ├── backtest-studio-unification-pr-sequenced-roadmap.md
+│   │   ├── brokerage-portfolio-sync-blueprint.md
 │   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── fund-management-module-implementation-backlog.md
 │   │   ├── fund-management-pr-sequenced-roadmap.md
@@ -4654,8 +4639,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── interactive-brokers-setup.md
 │   │   ├── provider-comparison.md
 │   │   ├── provider-confidence-baseline.md
-│   │   ├── security-master-guide.md
-│   │   └── stocksharp-connectors.md
+│   │   └── security-master-guide.md
 │   ├── reference
 │   │   ├── README.md
 │   │   ├── api-reference.md
@@ -4808,6 +4792,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── setup.sh
 │   ├── compare_benchmarks.py
 │   ├── dev
+│   │   ├── SharedBuild.ps1
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── capture-desktop-screenshots.ps1
 │   │   ├── cleanup-generated.ps1
@@ -5435,7 +5420,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DerivativesConfig.cs
 │   │   │   ├── IConfigurationProvider.cs
 │   │   │   ├── ProviderConnectionsConfig.cs
-│   │   │   ├── StockSharpConfig.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
 │   │   │   └── ValidatedConfig.cs
 │   │   ├── Exceptions
@@ -5708,6 +5692,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   ├── DataGapRepair.cs
 │   │   │   │   │   └── DataQualityMonitor.cs
 │   │   │   │   ├── ICorporateActionProvider.cs
+│   │   │   │   ├── IHistoricalAggregateBarProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
 │   │   │   │   ├── ProviderBehaviorBuilder.cs
@@ -5780,16 +5765,6 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RobinhoodOptionsChainProvider.cs
 │   │   │   │   ├── RobinhoodSymbolSearchModels.cs
 │   │   │   │   └── RobinhoodSymbolSearchProvider.cs
-│   │   │   ├── StockSharp
-│   │   │   │   ├── Converters
-│   │   │   │   │   ├── MessageConverter.cs
-│   │   │   │   │   └── SecurityConverter.cs
-│   │   │   │   ├── StockSharpBrokerageGateway.cs
-│   │   │   │   ├── StockSharpConnectorCapabilities.cs
-│   │   │   │   ├── StockSharpConnectorFactory.cs
-│   │   │   │   ├── StockSharpHistoricalDataProvider.cs
-│   │   │   │   ├── StockSharpMarketDataClient.cs
-│   │   │   │   └── StockSharpSymbolSearchProvider.cs
 │   │   │   ├── Stooq
 │   │   │   │   └── StooqHistoricalDataProvider.cs
 │   │   │   ├── Synthetic
@@ -6466,6 +6441,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BlotterModels.cs
 │       │   ├── DashboardModels.cs
 │       │   ├── DataQualityModels.cs
+│       │   ├── FundLedgerDimensionView.cs
 │       │   ├── FundProfileModels.cs
 │       │   ├── FundReconciliationWorkbenchModels.cs
 │       │   ├── LeanModels.cs
@@ -6509,6 +6485,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ConnectionService.cs
 │       │   ├── ContextMenuService.cs
 │       │   ├── CredentialService.cs
+│       │   ├── DataOperationsWorkspacePresentationBuilder.cs
 │       │   ├── DropImportService.cs
 │       │   ├── ExportFormat.cs
 │       │   ├── ExportPresetService.cs
@@ -6647,6 +6624,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TradingHoursViewModel.cs
 │       │   ├── WatchlistViewModel.cs
 │       │   ├── WelcomePageViewModel.cs
+│       │   ├── WorkspacePageViewModel.cs
 │       │   └── WorkspaceShellViewModelBase.cs
 │       └── Views
 │           ├── AccountPortfolioPage.xaml
@@ -6920,6 +6898,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Application
 │   │   │   ├── Backfill
 │   │   │   │   ├── AdditionalProviderContractTests.cs
+│   │   │   │   ├── BackfillCoordinatorPreviewTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillStatusStoreTests.cs
 │   │   │   │   ├── BackfillWorkerServiceTests.cs
@@ -6930,7 +6909,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── PriorityBackfillQueueTests.cs
 │   │   │   │   ├── RateLimiterTests.cs
 │   │   │   │   ├── ScheduledBackfillTests.cs
-│   │   │   │   └── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   │   ├── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   │   └── YahooFinanceIntradayContractTests.cs
 │   │   │   ├── Backtesting
 │   │   │   │   └── BacktestStudioRunOrchestratorTests.cs
 │   │   │   ├── Canonicalization
@@ -7178,15 +7158,11 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodMarketDataClientTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
-│   │   │   │   ├── StockSharpConnectorFactoryTests.cs
-│   │   │   │   ├── StockSharpConverterEdgeCaseTests.cs
-│   │   │   │   ├── StockSharpMessageConversionTests.cs
-│   │   │   │   ├── StockSharpProviderContractTests.cs
-│   │   │   │   ├── StockSharpSubscriptionTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SyntheticMarketDataProviderTests.cs
 │   │   │   │   ├── SyntheticOptionsChainProviderTests.cs
-│   │   │   │   └── WebSocketProviderBaseTests.cs
+│   │   │   │   ├── WebSocketProviderBaseTests.cs
+│   │   │   │   └── YahooFinanceHistoricalDataProviderTests.cs
 │   │   │   ├── Resilience
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
 │   │   │   │   └── WebSocketResiliencePolicyTests.cs
@@ -7416,6 +7392,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
 │   │   │   ├── ConfigServiceTests.cs
 │   │   │   ├── ConnectionServiceTests.cs
+│   │   │   ├── DataOperationsWorkspacePresentationBuilderTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
@@ -7459,7 +7436,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterViewModelTests.cs
 │   │   │   ├── StrategyRunBrowserViewModelTests.cs
 │   │   │   ├── StrategyRunLedgerViewModelTests.cs
-│   │   │   └── StrategyRunPortfolioViewModelTests.cs
+│   │   │   ├── StrategyRunPortfolioViewModelTests.cs
+│   │   │   └── WorkspacePageViewModelTests.cs
 │   │   └── Views
 │   │       ├── DashboardPageSmokeTests.cs
 │   │       ├── DataOperationsWorkspaceShellSmokeTests.cs
@@ -7486,6 +7464,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-603 directories, 6743 files
+602 directories, 6722 files
 ```
 <!-- readme-tree end -->
