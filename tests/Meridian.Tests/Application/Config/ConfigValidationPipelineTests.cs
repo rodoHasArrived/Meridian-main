@@ -305,6 +305,13 @@ public class ConfigValidationPipelineTests
                 SecretKey = "VALIDSECRET123456",
                 Feed = "iex"
             },
+            IB = new IBOptions
+            {
+                Host = "127.0.0.1",
+                Port = 7497,
+                ClientId = 1,
+                UsePaperTrading = true
+            },
             Symbols = new[]
             {
                 new SymbolConfig("SPY", SubscribeTrades: true),

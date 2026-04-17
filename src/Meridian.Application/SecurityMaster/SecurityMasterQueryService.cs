@@ -89,6 +89,14 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         return DateOnly.TryParseExact(prop.GetString(), "yyyy-MM-dd", out var date) ? date : null;
     }
 
+    private static bool IsNullOrUndefined(System.Text.Json.JsonElement element)
+        => element.ValueKind is System.Text.Json.JsonValueKind.Null or System.Text.Json.JsonValueKind.Undefined;
+
+    private static System.Text.Json.JsonElement? ReadObject(System.Text.Json.JsonElement element, string propertyName)
+        => element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == System.Text.Json.JsonValueKind.Object
+            ? prop
+            : null;
+
     public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
         => _eventStore.LoadCorporateActionsAsync(securityId, ct);
 
@@ -99,23 +107,27 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
             return null;
 
         if (!projection.AssetSpecificTerms.TryGetProperty("preferredTerms", out var pt) ||
-            pt.ValueKind == System.Text.Json.JsonValueKind.Null ||
-            pt.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+            IsNullOrUndefined(pt))
             return null;
+
+        var assetSpecific = projection.AssetSpecificTerms;
+        var participation = ReadObject(pt, "participationTerms");
+        var liquidationPreference = ReadObject(pt, "liquidationPreference");
+        var dividendType = ReadString(pt, "dividendType");
 
         return new PreferredEquityTermsDto(
             SecurityId: securityId,
-            Classification: ReadString(pt, "classification"),
+            Classification: ReadString(assetSpecific, "classification") ?? ReadString(pt, "classification"),
             DividendRate: ReadDecimal(pt, "dividendRate"),
-            DividendType: ReadString(pt, "dividendType"),
-            IsCumulative: ReadBool(pt, "isCumulative"),
+            DividendType: dividendType,
+            IsCumulative: ReadBool(pt, "isCumulative") ?? (string.Equals(dividendType, "Cumulative", StringComparison.OrdinalIgnoreCase) ? true : null),
             RedemptionPrice: ReadDecimal(pt, "redemptionPrice"),
             RedemptionDate: ReadDateOnly(pt, "redemptionDate"),
             CallableDate: ReadDateOnly(pt, "callableDate"),
-            ParticipatesInCommonDividends: ReadBool(pt, "participatesInCommonDividends"),
-            AdditionalDividendThreshold: ReadDecimal(pt, "additionalDividendThreshold"),
-            LiquidationPreferenceKind: ReadString(pt, "liquidationPreferenceKind"),
-            LiquidationPreferenceMultiple: ReadDecimal(pt, "liquidationPreferenceMultiple"),
+            ParticipatesInCommonDividends: ReadBool(pt, "participatesInCommonDividends") ?? (participation.HasValue ? ReadBool(participation.Value, "participatesInCommonDividends") : null),
+            AdditionalDividendThreshold: ReadDecimal(pt, "additionalDividendThreshold") ?? (participation.HasValue ? ReadDecimal(participation.Value, "additionalDividendThreshold") : null),
+            LiquidationPreferenceKind: ReadString(pt, "liquidationPreferenceKind") ?? (liquidationPreference.HasValue ? ReadString(liquidationPreference.Value, "kind") : null),
+            LiquidationPreferenceMultiple: ReadDecimal(pt, "liquidationPreferenceMultiple") ?? (liquidationPreference.HasValue ? ReadDecimal(liquidationPreference.Value, "multiple") : null),
             Version: projection.Version);
     }
 
@@ -126,8 +138,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
             return null;
 
         if (!projection.AssetSpecificTerms.TryGetProperty("convertibleTerms", out var convertibleTermsEl) ||
-            convertibleTermsEl.ValueKind == System.Text.Json.JsonValueKind.Null ||
-            convertibleTermsEl.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+            IsNullOrUndefined(convertibleTermsEl))
             return null;
 
         Guid? underlyingId = null;
@@ -139,9 +150,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         }
 
         var assetSpecific = projection.AssetSpecificTerms;
-        string? classification = null;
-        if (assetSpecific.TryGetProperty("preferredTerms", out var ptForClass))
-            classification = ReadString(ptForClass, "classification");
+        var classification = ReadString(assetSpecific, "classification");
 
         return new ConvertibleEquityTermsDto(
             SecurityId: securityId,

@@ -34,7 +34,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterById, async (
             Guid securityId,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -56,7 +56,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterResolve, async (
             ResolveSecurityRequest request,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdentifierAsync(
@@ -92,7 +92,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterSearch, async (
             SecuritySearchRequest request,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
@@ -112,7 +112,7 @@ public static class SecurityMasterEndpoints
         group.MapGet(UiApiRoutes.SecurityMasterHistory, async (
             Guid securityId,
             int? take,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var history = await queryService.GetHistoryAsync(
@@ -138,7 +138,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterCreate, async (
             CreateSecurityRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
@@ -157,7 +157,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAmend, async (
             AmendSecurityTermsRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
@@ -176,7 +176,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterDeactivate, async (
             DeactivateSecurityRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             await service.DeactivateAsync(request, ct).ConfigureAwait(false);
@@ -195,7 +195,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAliasesUpsert, async (
             UpsertSecurityAliasRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
@@ -214,7 +214,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterTradingParameters, async (
             Guid securityId,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var parameters = await queryService
@@ -342,7 +342,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterCorporateActions, async (
             Guid securityId,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var actions = await queryService
@@ -364,7 +364,7 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActions, async (
             Guid securityId,
             CorporateActionDto dto,
-            ISecurityMasterEventStore eventStore,
+            [FromServices] ISecurityMasterEventStore eventStore,
             CancellationToken ct) =>
         {
             if (dto.SecurityId != securityId)
@@ -382,7 +382,7 @@ public static class SecurityMasterEndpoints
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
-            AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
@@ -395,7 +395,7 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterConflictResolve, async (
             Guid conflictId,
             ResolveConflictRequest request,
-            AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
             if (request.ConflictId != conflictId)
@@ -415,7 +415,7 @@ public static class SecurityMasterEndpoints
         // POST /api/security-master/import
         group.MapPost(UiApiRoutes.SecurityMasterImport, async (
             SecurityMasterImportRequest request,
-            AppSecurityMaster.ISecurityMasterImportService importService,
+            [FromServices] AppSecurityMaster.ISecurityMasterImportService importService,
             CancellationToken ct) =>
         {
             var result = await importService.ImportAsync(
@@ -430,8 +430,8 @@ public static class SecurityMasterEndpoints
 
         // GET /api/security-master/ingest/status
         group.MapGet(UiApiRoutes.SecurityMasterIngestStatus, async (
-            AppSecurityMaster.ISecurityMasterConflictService conflictService,
-            AppSecurityMaster.ISecurityMasterIngestStatusService ingestStatusService,
+            [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterIngestStatusService ingestStatusService,
             CancellationToken ct) =>
         {
             var openConflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
@@ -443,11 +443,11 @@ public static class SecurityMasterEndpoints
         .Produces<SecurityMasterIngestStatusResponse>(StatusCodes.Status200OK);
 
         // PATCH /api/security-master/equities/{securityId}/preferred-terms
-        group.MapMethods($"/equities/{{securityId:guid}}/preferred-terms", [HttpMethods.Patch], async (
+        group.MapMethods("/api/security-master/equities/{securityId:guid}/preferred-terms", [HttpMethods.Patch], async (
             Guid securityId,
             AmendPreferredEquityTermsRequest request,
-            ISecurityMasterQueryService queryService,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);

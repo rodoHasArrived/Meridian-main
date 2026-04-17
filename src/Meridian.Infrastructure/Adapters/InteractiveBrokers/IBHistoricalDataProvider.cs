@@ -578,7 +578,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
 
     // IProviderMetadata
     public string ProviderId => "ibkr";
-    public string ProviderDisplayName => "Interactive Brokers";
+    public string ProviderDisplayName => DisplayName;
     public string ProviderDescription => Description;
     public int ProviderPriority => Priority;
 
