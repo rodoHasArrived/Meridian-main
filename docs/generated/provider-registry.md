@@ -1,6 +1,6 @@
 # Provider Registry
 
-> Auto-generated on 2026-04-13 04:10:32 UTC. Do not edit manually.
+> Auto-generated on 2026-04-17 03:02:53 UTC. Do not edit manually.
 
 | Provider Candidate |
 |---|
@@ -92,6 +92,8 @@
 | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs` |
 | `src/Meridian.Wpf/Models/ProviderHealthModels.cs` |
 | `src/Meridian.Wpf/Services/ICommandContextProvider.cs` |
+| `src/Meridian.Wpf/Services/IWorkspaceShellStateProvider.cs` |
+| `src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs` |
 | `src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs` |
 | `src/Meridian.Wpf/ViewModels/FundAccountProviderPanelModels.cs` |
 | `src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs` |

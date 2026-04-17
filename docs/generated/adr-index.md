@@ -1,14 +1,9 @@
 # Architecture Decision Records
 
-<<<<<<< HEAD
-> Auto-generated on 2026-04-14 08:00:42 UTC
-=======
-> Auto-generated on 2026-04-13 04:10:32 UTC
->>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
+> Auto-generated on 2026-04-17 03:02:53 UTC
 
 | ADR | Title | Status |
 |-----|-------|--------|
-| [_template.md](../adr/_template.md) | ADR-XXX: [Title] | Accepted |
 | [001-provider-abstraction.md](../adr/001-provider-abstraction.md) | ADR-001: Provider Abstraction Pattern | Accepted |
 | [002-tiered-storage-architecture.md](../adr/002-tiered-storage-architecture.md) | ADR-002: Tiered Storage Architecture | Accepted |
 | [003-microservices-decomposition.md](../adr/003-microservices-decomposition.md) | ADR-003: Microservices Decomposition | Accepted |
@@ -26,6 +21,7 @@
 | [015-strategy-execution-contract.md](../adr/015-strategy-execution-contract.md) | ADR-015: Strategy Execution Contract | Accepted |
 | [016-platform-architecture-migration.md](../adr/016-platform-architecture-migration.md) | ADR-016: Platform Architecture Migration Mandate | Accepted |
 | [README.md](../adr/README.md) | Architectural Decision Records (ADRs) | Accepted |
+| [_template.md](../adr/_template.md) | ADR-XXX: [Title] | Superseded |
 
 ---
 *This file is auto-generated. Do not edit manually.*

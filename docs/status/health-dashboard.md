@@ -1,38 +1,27 @@
 # Documentation Health Dashboard
 
 > Auto-generated documentation health report. Do not edit manually.
-<<<<<<< HEAD
-> Last updated: 2026-04-14T06:43:23.994526+00:00
-=======
-> Last updated: 2026-04-13T04:10:36.125055+00:00
->>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
+> Last updated: 2026-04-17T03:02:57.686197+00:00
 
 ## Overall Health Score
 
 ```
-  [###########################---] 90/100
-  Rating: Excellent
+  [##########################----] 88/100
+  Rating: Good
 ```
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-<<<<<<< HEAD
-| Total documentation files | 560 |
-| Total lines | 213,466 |
-| Average file size (lines) | 381.2 |
-| Orphaned files | 129 |
-=======
-| Total documentation files | 334 |
-| Total lines | 135,075 |
-| Average file size (lines) | 404.4 |
-| Orphaned files | 85 |
->>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
+| Total documentation files | 385 |
+| Total lines | 137,474 |
+| Average file size (lines) | 357.1 |
+| Orphaned files | 123 |
 | Files without headings | 0 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 431 |
-| **Health score** | **90/100** |
+| TODO/FIXME markers | 207 |
+| **Health score** | **88/100** |
 
 ### Score Breakdown
 
@@ -50,27 +39,27 @@
 
 These files are not linked from any other Markdown file in the repository:
 
-- `.claude\agents\meridian-blueprint.md`
-- `.claude\agents\meridian-cleanup.md`
-- `.claude\agents\meridian-docs.md`
-- `.claude\agents\meridian-navigation.md`
-- `.claude\skills\meridian-blueprint\references\blueprint-patterns.md`
-- `.claude\skills\meridian-blueprint\references\pipeline-position.md`
-- `.claude\skills\meridian-brainstorm\SKILL.md`
-- `.claude\skills\meridian-brainstorm\references\competitive-landscape.md`
-- `.claude\skills\meridian-brainstorm\references\idea-dimensions.md`
-- `.claude\skills\meridian-code-review\agents\grader.md`
-- `.claude\skills\meridian-code-review\references\architecture.md`
-- `.claude\skills\meridian-code-review\references\schemas.md`
-- `.claude\skills\meridian-implementation-assurance\references\documentation-routing.md`
-- `.claude\skills\meridian-implementation-assurance\references\evaluation-harness.md`
-- `.claude\skills\meridian-provider-builder\SKILL.md`
-- `.claude\skills\meridian-test-writer\SKILL.md`
-- `.claude\worktrees\sweet-colden\.claude\agents\meridian-blueprint.md`
-- `.claude\worktrees\sweet-colden\.claude\agents\meridian-cleanup.md`
-- `.claude\worktrees\sweet-colden\.claude\agents\meridian-docs.md`
-- `.claude\worktrees\sweet-colden\.claude\agents\meridian-navigation.md`
-- ... and 109 more
+- `.claude/agents/meridian-blueprint.md`
+- `.claude/agents/meridian-cleanup.md`
+- `.claude/agents/meridian-docs.md`
+- `.claude/agents/meridian-navigation.md`
+- `.claude/skills/meridian-blueprint/references/blueprint-patterns.md`
+- `.claude/skills/meridian-blueprint/references/pipeline-position.md`
+- `.claude/skills/meridian-brainstorm/SKILL.md`
+- `.claude/skills/meridian-brainstorm/references/competitive-landscape.md`
+- `.claude/skills/meridian-brainstorm/references/idea-dimensions.md`
+- `.claude/skills/meridian-code-review/agents/grader.md`
+- `.claude/skills/meridian-code-review/references/architecture.md`
+- `.claude/skills/meridian-code-review/references/schemas.md`
+- `.claude/skills/meridian-implementation-assurance/references/documentation-routing.md`
+- `.claude/skills/meridian-implementation-assurance/references/evaluation-harness.md`
+- `.claude/skills/meridian-provider-builder/SKILL.md`
+- `.claude/skills/meridian-simulated-user-panel/SKILL.md`
+- `.claude/skills/meridian-simulated-user-panel/agents/grader.md`
+- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md`
+- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md`
+- `.claude/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md`
+- ... and 103 more
 
 ## Trend
 
@@ -78,11 +67,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 |------|-------|-------|---------|-------|
-<<<<<<< HEAD
-| 2026-04-14 | 90 | 560 | 129 | 0 |
-=======
-| 2026-04-13 | 89 | 334 | 85 | 0 |
->>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
+| 2026-04-17 | 88 | 385 | 123 | 0 |
 
 ---
 

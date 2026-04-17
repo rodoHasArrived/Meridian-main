@@ -1,10 +1,6 @@
 # Meridian AI Repo Navigation
 
-<<<<<<< HEAD
-> Auto-generated on 2026-04-14T08:00:42Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
-=======
-> Auto-generated on 2026-04-13T04:10:31Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
->>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
+> Auto-generated on 2026-04-17T03:02:53Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -109,24 +105,4 @@ MCP hosts, tools, prompts, and resources that expose Meridian capabilities to LL
 
 | From | To | Why it matters |
 |---|---|---|
-| `Meridian` | `Meridian.Application` | Meridian references Meridian.Application directly via project reference. |
-| `Meridian` | `Meridian.Contracts` | Meridian references Meridian.Contracts directly via project reference. |
-| `Meridian` | `Meridian.Core` | Meridian references Meridian.Core directly via project reference. |
-| `Meridian` | `Meridian.Domain` | Meridian references Meridian.Domain directly via project reference. |
-| `Meridian` | `Meridian.Infrastructure` | Meridian references Meridian.Infrastructure directly via project reference. |
-| `Meridian` | `Meridian.ProviderSdk` | Meridian references Meridian.ProviderSdk directly via project reference. |
-| `Meridian` | `Meridian.Storage` | Meridian references Meridian.Storage directly via project reference. |
-| `Meridian` | `Meridian.Ui.Shared` | Meridian references Meridian.Ui.Shared directly via project reference. |
-| `Meridian.Application` | `Meridian.Contracts` | Meridian.Application references Meridian.Contracts directly via project reference. |
-| `Meridian.Application` | `Meridian.Core` | Meridian.Application references Meridian.Core directly via project reference. |
-| `Meridian.Application` | `Meridian.Domain` | Meridian.Application references Meridian.Domain directly via project reference. |
-| `Meridian.Application` | `Meridian.FSharp` | Meridian.Application references Meridian.FSharp directly via project reference. |
-| `Meridian.Application` | `Meridian.FSharp.DirectLending.Aggregates` | Meridian.Application references Meridian.FSharp.DirectLending.Aggregates directly via project reference. |
-| `Meridian.Application` | `Meridian.FSharp.Ledger` | Meridian.Application references Meridian.FSharp.Ledger directly via project reference. |
-| `Meridian.Application` | `Meridian.Infrastructure` | Meridian.Application references Meridian.Infrastructure directly via project reference. |
-| `Meridian.Application` | `Meridian.Ledger` | Meridian.Application references Meridian.Ledger directly via project reference. |
-| `Meridian.Application` | `Meridian.ProviderSdk` | Meridian.Application references Meridian.ProviderSdk directly via project reference. |
-| `Meridian.Application` | `Meridian.Storage` | Meridian.Application references Meridian.Storage directly via project reference. |
-| `Meridian.Backtesting` | `Meridian.Application` | Meridian.Backtesting references Meridian.Application directly via project reference. |
-| `Meridian.Backtesting` | `Meridian.Backtesting.Sdk` | Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference. |
 

@@ -1,11 +1,7 @@
 {
-<<<<<<< HEAD
-  "generatedAt": "2026-04-14T08:00:42Z",
-=======
-  "generatedAt": "2026-04-13T04:10:31Z",
->>>>>>> a7d08baa97b821d761fd47597971f4a4ceddd765
+  "generatedAt": "2026-04-17T03:02:53Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "C:/Users/Andrew James Rowden/OneDrive/Documents/OneDrive/Documents/Desktop/Meridian-main",
+  "repositoryRoot": "/home/runner/work/Meridian-main/Meridian-main",
   "subsystems": [
     {
       "id": "host-shell",
@@ -433,15 +429,15 @@
         "src/Meridian/Program.cs"
       ],
       "projectReferences": [
-        "Meridian.Application",
-        "Meridian.Contracts",
-        "Meridian.Core",
-        "Meridian.Domain",
-        "Meridian.Infrastructure",
-        "Meridian.Infrastructure.CppTrader",
-        "Meridian.ProviderSdk",
-        "Meridian.Storage",
-        "Meridian.Ui.Shared"
+        "..\\Meridian.Application\\Meridian.Application",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.Domain\\Meridian.Domain",
+        "..\\Meridian.Infrastructure.CppTrader\\Meridian.Infrastructure.CppTrader",
+        "..\\Meridian.Infrastructure\\Meridian.Infrastructure",
+        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk",
+        "..\\Meridian.Storage\\Meridian.Storage",
+        "..\\Meridian.Ui.Shared\\Meridian.Ui.Shared"
       ],
       "relatedDocs": []
     },
@@ -472,16 +468,16 @@
         "src/Meridian.Application/Pipeline/EventPipeline.cs"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.Core",
-        "Meridian.Domain",
-        "Meridian.FSharp",
-        "Meridian.FSharp.DirectLending.Aggregates",
-        "Meridian.FSharp.Ledger",
-        "Meridian.Infrastructure",
-        "Meridian.Ledger",
-        "Meridian.ProviderSdk",
-        "Meridian.Storage"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.Domain\\Meridian.Domain",
+        "..\\Meridian.FSharp.DirectLending.Aggregates\\Meridian.FSharp.DirectLending.Aggregates",
+        "..\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger",
+        "..\\Meridian.FSharp\\Meridian.FSharp",
+        "..\\Meridian.Infrastructure\\Meridian.Infrastructure",
+        "..\\Meridian.Ledger\\Meridian.Ledger",
+        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk",
+        "..\\Meridian.Storage\\Meridian.Storage"
       ],
       "relatedDocs": []
     },
@@ -509,10 +505,10 @@
         "src/Meridian.Backtesting"
       ],
       "projectReferences": [
-        "Meridian.Application",
-        "Meridian.Backtesting.Sdk",
-        "Meridian.Storage",
-        "Meridian.Strategies"
+        "..\\Meridian.Application\\Meridian.Application",
+        "..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk",
+        "..\\Meridian.Storage\\Meridian.Storage",
+        "..\\Meridian.Strategies\\Meridian.Strategies"
       ],
       "relatedDocs": []
     },
@@ -539,8 +535,8 @@
         "src/Meridian.Backtesting.Sdk"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.Ledger"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Ledger\\Meridian.Ledger"
       ],
       "relatedDocs": []
     },
@@ -596,9 +592,9 @@
         "src/Meridian.Core/Serialization/MarketDataJsonContext.cs"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.Domain",
-        "Meridian.ProviderSdk"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Domain\\Meridian.Domain",
+        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk"
       ],
       "relatedDocs": []
     },
@@ -625,8 +621,8 @@
         "src/Meridian.Domain"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.ProviderSdk"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.fsharp.md"
@@ -656,11 +652,11 @@
         "src/Meridian.Execution/Interfaces/IOrderGateway.cs"
       ],
       "projectReferences": [
-        "Meridian.Application",
-        "Meridian.Contracts",
-        "Meridian.Core",
-        "Meridian.Execution.Sdk",
-        "Meridian.Ledger"
+        "..\\Meridian.Application\\Meridian.Application",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
+        "..\\Meridian.Ledger\\Meridian.Ledger"
       ],
       "relatedDocs": []
     },
@@ -686,7 +682,7 @@
         "src/Meridian.Execution.Sdk"
       ],
       "projectReferences": [
-        "Meridian.Contracts"
+        "..\\Meridian.Contracts\\Meridian.Contracts"
       ],
       "relatedDocs": []
     },
@@ -716,13 +712,14 @@
         "src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.Core",
-        "Meridian.Domain",
-        "Meridian.Execution.Sdk",
-        "Meridian.IbApi.SmokeStub",
-        "Meridian.ProviderSdk",
-        "Meridian.Storage"
+        "$(ResolvedIbApiProjectPath)",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.Domain\\Meridian.Domain",
+        "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
+        "..\\Meridian.IbApi.SmokeStub\\Meridian.IbApi.SmokeStub",
+        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk",
+        "..\\Meridian.Storage\\Meridian.Storage"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.providers.md"
@@ -751,8 +748,8 @@
         "src/Meridian.Ledger"
       ],
       "projectReferences": [
-        "Meridian.Core",
-        "Meridian.FSharp.Ledger"
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger"
       ],
       "relatedDocs": []
     },
@@ -810,10 +807,10 @@
         "src/Meridian.McpServer/Program.cs"
       ],
       "projectReferences": [
-        "Meridian.Application",
-        "Meridian.Contracts",
-        "Meridian.Core",
-        "Meridian.Storage"
+        "..\\Meridian.Application\\Meridian.Application",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.Storage\\Meridian.Storage"
       ],
       "relatedDocs": []
     },
@@ -842,7 +839,7 @@
         "src/Meridian.ProviderSdk/IMarketDataClient.cs"
       ],
       "projectReferences": [
-        "Meridian.Contracts"
+        "..\\Meridian.Contracts\\Meridian.Contracts"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.providers.md",
@@ -873,13 +870,13 @@
         "src/Meridian.QuantScript"
       ],
       "projectReferences": [
-        "Meridian.Application",
-        "Meridian.Backtesting",
-        "Meridian.Backtesting.Sdk",
-        "Meridian.Contracts",
-        "Meridian.Domain",
-        "Meridian.ProviderSdk",
-        "Meridian.Storage"
+        "..\\Meridian.Application\\Meridian.Application",
+        "..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk",
+        "..\\Meridian.Backtesting\\Meridian.Backtesting",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Domain\\Meridian.Domain",
+        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk",
+        "..\\Meridian.Storage\\Meridian.Storage"
       ],
       "relatedDocs": []
     },
@@ -907,10 +904,10 @@
         "src/Meridian.Risk/IRiskRule.cs"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.Execution",
-        "Meridian.Execution.Sdk",
-        "Meridian.FSharp"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
+        "..\\Meridian.Execution\\Meridian.Execution",
+        "..\\Meridian.FSharp\\Meridian.FSharp"
       ],
       "relatedDocs": []
     },
@@ -942,10 +939,10 @@
         "src/Meridian.Storage/Archival/WriteAheadLog.cs"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.Core",
-        "Meridian.Domain",
-        "Meridian.ProviderSdk"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.Domain\\Meridian.Domain",
+        "..\\Meridian.ProviderSdk\\Meridian.ProviderSdk"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.storage.md"
@@ -974,15 +971,15 @@
         "src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs"
       ],
       "projectReferences": [
-        "Meridian.Backtesting.Sdk",
-        "Meridian.Contracts",
-        "Meridian.Core",
-        "Meridian.Execution",
-        "Meridian.Execution.Sdk",
-        "Meridian.FSharp",
-        "Meridian.FSharp.Ledger",
-        "Meridian.FSharp.Trading",
-        "Meridian.Infrastructure"
+        "..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Core\\Meridian.Core",
+        "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk",
+        "..\\Meridian.Execution\\Meridian.Execution",
+        "..\\Meridian.FSharp.Ledger\\Meridian.FSharp.Ledger",
+        "..\\Meridian.FSharp.Trading\\Meridian.FSharp.Trading",
+        "..\\Meridian.FSharp\\Meridian.FSharp",
+        "..\\Meridian.Infrastructure\\Meridian.Infrastructure"
       ],
       "relatedDocs": []
     },
@@ -1009,7 +1006,7 @@
         "src/Meridian.Ui.Services"
       ],
       "projectReferences": [
-        "Meridian.Contracts"
+        "..\\Meridian.Contracts\\Meridian.Contracts"
       ],
       "relatedDocs": []
     },
@@ -1036,12 +1033,12 @@
         "src/Meridian.Ui.Shared"
       ],
       "projectReferences": [
-        "Meridian.Application",
-        "Meridian.Contracts",
-        "Meridian.Execution",
-        "Meridian.Infrastructure.CppTrader",
-        "Meridian.Storage",
-        "Meridian.Strategies"
+        "..\\Meridian.Application\\Meridian.Application",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Execution\\Meridian.Execution",
+        "..\\Meridian.Infrastructure.CppTrader\\Meridian.Infrastructure.CppTrader",
+        "..\\Meridian.Storage\\Meridian.Storage",
+        "..\\Meridian.Strategies\\Meridian.Strategies"
       ],
       "relatedDocs": []
     },
@@ -1074,11 +1071,11 @@
         "src/Meridian.Wpf/MainWindow.xaml"
       ],
       "projectReferences": [
-        "Meridian.Backtesting",
-        "Meridian.QuantScript",
-        "Meridian.Strategies",
-        "Meridian.Ui.Services",
-        "Meridian.Ui.Shared"
+        "..\\Meridian.Backtesting\\Meridian.Backtesting",
+        "..\\Meridian.QuantScript\\Meridian.QuantScript",
+        "..\\Meridian.Strategies\\Meridian.Strategies",
+        "..\\Meridian.Ui.Services\\Meridian.Ui.Services",
+        "..\\Meridian.Ui.Shared\\Meridian.Ui.Shared"
       ],
       "relatedDocs": [
         "docs/plans/trading-workstation-migration-blueprint.md"
@@ -1107,9 +1104,9 @@
         "src/Meridian.FSharp"
       ],
       "projectReferences": [
-        "Meridian.Backtesting.Sdk",
-        "Meridian.Contracts",
-        "Meridian.Execution.Sdk"
+        "..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk",
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.Execution.Sdk\\Meridian.Execution.Sdk"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.fsharp.md"
@@ -1138,8 +1135,8 @@
         "src/Meridian.FSharp.DirectLending.Aggregates"
       ],
       "projectReferences": [
-        "Meridian.Contracts",
-        "Meridian.FSharp"
+        "..\\Meridian.Contracts\\Meridian.Contracts",
+        "..\\Meridian.FSharp\\Meridian.FSharp"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.fsharp.md"
@@ -1618,448 +1615,7 @@
       "recommendedAgent": "repo-navigation-agent"
     }
   ],
-  "dependencies": [
-    {
-      "from": "Meridian",
-      "to": "Meridian.Application",
-      "reason": "Meridian references Meridian.Application directly via project reference."
-    },
-    {
-      "from": "Meridian",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian",
-      "to": "Meridian.Core",
-      "reason": "Meridian references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian",
-      "to": "Meridian.Domain",
-      "reason": "Meridian references Meridian.Domain directly via project reference."
-    },
-    {
-      "from": "Meridian",
-      "to": "Meridian.Infrastructure",
-      "reason": "Meridian references Meridian.Infrastructure directly via project reference."
-    },
-    {
-      "from": "Meridian",
-      "to": "Meridian.ProviderSdk",
-      "reason": "Meridian references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian",
-      "to": "Meridian.Storage",
-      "reason": "Meridian references Meridian.Storage directly via project reference."
-    },
-    {
-      "from": "Meridian",
-      "to": "Meridian.Ui.Shared",
-      "reason": "Meridian references Meridian.Ui.Shared directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Application references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.Core",
-      "reason": "Meridian.Application references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.Domain",
-      "reason": "Meridian.Application references Meridian.Domain directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.FSharp",
-      "reason": "Meridian.Application references Meridian.FSharp directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.FSharp.DirectLending.Aggregates",
-      "reason": "Meridian.Application references Meridian.FSharp.DirectLending.Aggregates directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.FSharp.Ledger",
-      "reason": "Meridian.Application references Meridian.FSharp.Ledger directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.Infrastructure",
-      "reason": "Meridian.Application references Meridian.Infrastructure directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.Ledger",
-      "reason": "Meridian.Application references Meridian.Ledger directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.ProviderSdk",
-      "reason": "Meridian.Application references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Application",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.Application references Meridian.Storage directly via project reference."
-    },
-    {
-      "from": "Meridian.Backtesting",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Backtesting references Meridian.Application directly via project reference."
-    },
-    {
-      "from": "Meridian.Backtesting",
-      "to": "Meridian.Backtesting.Sdk",
-      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Backtesting",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.Backtesting references Meridian.Storage directly via project reference."
-    },
-    {
-      "from": "Meridian.Backtesting",
-      "to": "Meridian.Strategies",
-      "reason": "Meridian.Backtesting references Meridian.Strategies directly via project reference."
-    },
-    {
-      "from": "Meridian.Backtesting.Sdk",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Backtesting.Sdk references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Backtesting.Sdk",
-      "to": "Meridian.Ledger",
-      "reason": "Meridian.Backtesting.Sdk references Meridian.Ledger directly via project reference."
-    },
-    {
-      "from": "Meridian.Core",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Core references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Core",
-      "to": "Meridian.Domain",
-      "reason": "Meridian.Core references Meridian.Domain directly via project reference."
-    },
-    {
-      "from": "Meridian.Core",
-      "to": "Meridian.ProviderSdk",
-      "reason": "Meridian.Core references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Domain",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Domain references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Domain",
-      "to": "Meridian.ProviderSdk",
-      "reason": "Meridian.Domain references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Execution references Meridian.Application directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Execution references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Core",
-      "reason": "Meridian.Execution references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Execution.Sdk",
-      "reason": "Meridian.Execution references Meridian.Execution.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Ledger",
-      "reason": "Meridian.Execution references Meridian.Ledger directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution.Sdk",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Execution.Sdk references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Infrastructure references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.Core",
-      "reason": "Meridian.Infrastructure references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.Domain",
-      "reason": "Meridian.Infrastructure references Meridian.Domain directly via project reference."
-    },
-    {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.Execution.Sdk",
-      "reason": "Meridian.Infrastructure references Meridian.Execution.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.ProviderSdk",
-      "reason": "Meridian.Infrastructure references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.Infrastructure references Meridian.Storage directly via project reference."
-    },
-    {
-      "from": "Meridian.Ledger",
-      "to": "Meridian.Core",
-      "reason": "Meridian.Ledger references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian.Ledger",
-      "to": "Meridian.FSharp.Ledger",
-      "reason": "Meridian.Ledger references Meridian.FSharp.Ledger directly via project reference."
-    },
-    {
-      "from": "Meridian.McpServer",
-      "to": "Meridian.Application",
-      "reason": "Meridian.McpServer references Meridian.Application directly via project reference."
-    },
-    {
-      "from": "Meridian.McpServer",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.McpServer references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.McpServer",
-      "to": "Meridian.Core",
-      "reason": "Meridian.McpServer references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian.McpServer",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.McpServer references Meridian.Storage directly via project reference."
-    },
-    {
-      "from": "Meridian.ProviderSdk",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.ProviderSdk references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
-      "to": "Meridian.Application",
-      "reason": "Meridian.QuantScript references Meridian.Application directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
-      "to": "Meridian.Backtesting",
-      "reason": "Meridian.QuantScript references Meridian.Backtesting directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
-      "to": "Meridian.Backtesting.Sdk",
-      "reason": "Meridian.QuantScript references Meridian.Backtesting.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.QuantScript references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
-      "to": "Meridian.Domain",
-      "reason": "Meridian.QuantScript references Meridian.Domain directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
-      "to": "Meridian.ProviderSdk",
-      "reason": "Meridian.QuantScript references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.QuantScript references Meridian.Storage directly via project reference."
-    },
-    {
-      "from": "Meridian.Risk",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Risk references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Risk",
-      "to": "Meridian.Execution",
-      "reason": "Meridian.Risk references Meridian.Execution directly via project reference."
-    },
-    {
-      "from": "Meridian.Risk",
-      "to": "Meridian.Execution.Sdk",
-      "reason": "Meridian.Risk references Meridian.Execution.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Risk",
-      "to": "Meridian.FSharp",
-      "reason": "Meridian.Risk references Meridian.FSharp directly via project reference."
-    },
-    {
-      "from": "Meridian.Storage",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Storage references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Storage",
-      "to": "Meridian.Core",
-      "reason": "Meridian.Storage references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian.Storage",
-      "to": "Meridian.Domain",
-      "reason": "Meridian.Storage references Meridian.Domain directly via project reference."
-    },
-    {
-      "from": "Meridian.Storage",
-      "to": "Meridian.ProviderSdk",
-      "reason": "Meridian.Storage references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.Backtesting.Sdk",
-      "reason": "Meridian.Strategies references Meridian.Backtesting.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Strategies references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.Core",
-      "reason": "Meridian.Strategies references Meridian.Core directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.Execution",
-      "reason": "Meridian.Strategies references Meridian.Execution directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.Execution.Sdk",
-      "reason": "Meridian.Strategies references Meridian.Execution.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.FSharp",
-      "reason": "Meridian.Strategies references Meridian.FSharp directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.FSharp.Ledger",
-      "reason": "Meridian.Strategies references Meridian.FSharp.Ledger directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.FSharp.Trading",
-      "reason": "Meridian.Strategies references Meridian.FSharp.Trading directly via project reference."
-    },
-    {
-      "from": "Meridian.Strategies",
-      "to": "Meridian.Infrastructure",
-      "reason": "Meridian.Strategies references Meridian.Infrastructure directly via project reference."
-    },
-    {
-      "from": "Meridian.Ui.Services",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Ui.Services references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Ui.Shared",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Ui.Shared references Meridian.Application directly via project reference."
-    },
-    {
-      "from": "Meridian.Ui.Shared",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.Ui.Shared references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.Ui.Shared",
-      "to": "Meridian.Execution",
-      "reason": "Meridian.Ui.Shared references Meridian.Execution directly via project reference."
-    },
-    {
-      "from": "Meridian.Ui.Shared",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.Ui.Shared references Meridian.Storage directly via project reference."
-    },
-    {
-      "from": "Meridian.Ui.Shared",
-      "to": "Meridian.Strategies",
-      "reason": "Meridian.Ui.Shared references Meridian.Strategies directly via project reference."
-    },
-    {
-      "from": "Meridian.Wpf",
-      "to": "Meridian.Backtesting",
-      "reason": "Meridian.Wpf references Meridian.Backtesting directly via project reference."
-    },
-    {
-      "from": "Meridian.Wpf",
-      "to": "Meridian.QuantScript",
-      "reason": "Meridian.Wpf references Meridian.QuantScript directly via project reference."
-    },
-    {
-      "from": "Meridian.Wpf",
-      "to": "Meridian.Strategies",
-      "reason": "Meridian.Wpf references Meridian.Strategies directly via project reference."
-    },
-    {
-      "from": "Meridian.Wpf",
-      "to": "Meridian.Ui.Services",
-      "reason": "Meridian.Wpf references Meridian.Ui.Services directly via project reference."
-    },
-    {
-      "from": "Meridian.Wpf",
-      "to": "Meridian.Ui.Shared",
-      "reason": "Meridian.Wpf references Meridian.Ui.Shared directly via project reference."
-    },
-    {
-      "from": "Meridian.FSharp",
-      "to": "Meridian.Backtesting.Sdk",
-      "reason": "Meridian.FSharp references Meridian.Backtesting.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.FSharp",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.FSharp references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.FSharp",
-      "to": "Meridian.Execution.Sdk",
-      "reason": "Meridian.FSharp references Meridian.Execution.Sdk directly via project reference."
-    },
-    {
-      "from": "Meridian.FSharp.DirectLending.Aggregates",
-      "to": "Meridian.Contracts",
-      "reason": "Meridian.FSharp.DirectLending.Aggregates references Meridian.Contracts directly via project reference."
-    },
-    {
-      "from": "Meridian.FSharp.DirectLending.Aggregates",
-      "to": "Meridian.FSharp",
-      "reason": "Meridian.FSharp.DirectLending.Aggregates references Meridian.FSharp directly via project reference."
-    }
-  ],
+  "dependencies": [],
   "notes": {
     "purpose": "Orientation-first navigation dataset for assistants working inside Meridian.",
     "scope": "High-signal subsystems, contracts, docs, and task routes rather than exhaustive symbol search."
