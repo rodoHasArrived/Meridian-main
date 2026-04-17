@@ -213,7 +213,7 @@ jobs:
             echo "    steps:"
             echo "      - uses: actions/download-artifact@v4"
             echo "        with:"
-            echo "          name: ${{ '${{' }} needs.build-artifact.outputs.artifact-name ${{ '}}' }}"
+            echo '          name: ${{ needs.build-artifact.outputs.artifact-name }}'
             echo "\`\`\`"
             echo ""
             echo "**Cross-run download (reference a specific run):**"
@@ -221,7 +221,7 @@ jobs:
             echo "- uses: actions/download-artifact@v4"
             echo "  with:"
             echo "    name: ${ARTIFACT_NAME}"
-            echo "    github-token: ${{ '${{' }} secrets.GITHUB_TOKEN ${{ '}}' }}"
+            echo '    github-token: ${{ secrets.GITHUB_TOKEN }}'
             echo "    run-id: ${{ github.run_id }}"
             echo "\`\`\`"
           } >> "$GITHUB_STEP_SUMMARY"
