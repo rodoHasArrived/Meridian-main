@@ -612,6 +612,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── desktop-end-user-improvements-shortlist.md
 │       │   ├── desktop-end-user-improvements.md
 │       │   ├── desktop-ui-alternatives-evaluation.md
+│       │   ├── high-impact-improvement-brainstorm-2026-03.md
 │       │   └── high-impact-improvements-brainstorm.md
 │       ├── c4-context-legacy.png
 │       ├── c4-context-legacy.puml
@@ -639,12 +640,16 @@ Use these documents together when planning or implementing new work:
 │           ├── ROADMAP_NOW_NEXT_LATER_2026_03_25.md
 │           ├── ROADMAP_UPDATE_SUMMARY.md
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
-│           └── TEST_MATRIX_FIX_SUMMARY.md
+│           ├── TEST_MATRIX_FIX_SUMMARY.md
+│           └── desktop-improvements-executive-summary.md
 ├── artifacts
 │   └── provider-validation
 │       ├── README.md
 │       ├── _automation
-│       │   └── 2026-04-09
+│       │   ├── 2026-04-09
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-16
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -4534,9 +4539,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── assembly-performance-opportunities.md
 │   │   ├── competitive-analysis-2026-03.md
 │   │   ├── data-quality-monitoring-evaluation.md
-│   │   ├── desktop-improvements-executive-summary.md
 │   │   ├── desktop-platform-improvements-implementation-guide.md
-│   │   ├── high-impact-improvement-brainstorm-2026-03.md
 │   │   ├── high-value-low-cost-improvements-brainstorm.md
 │   │   ├── historical-data-providers-evaluation.md
 │   │   ├── ingestion-orchestration-evaluation.md
@@ -7476,6 +7479,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-602 directories, 6741 files
+603 directories, 6743 files
 ```
 <!-- readme-tree end -->
