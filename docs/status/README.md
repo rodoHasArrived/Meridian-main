@@ -1,7 +1,7 @@
 # Project Status Documentation
 
-**Last Reviewed:** 2026-04-08
-**Current Delivery Theme:** Advancing the Wave 1-4 path to core operator-readiness across provider trust, cockpit hardening, shared-model continuity, and governance productization
+**Last Reviewed:** 2026-04-17
+**Current Delivery Theme:** Preserving the closed Wave 1 trust gate while advancing the Wave 2-4 path to core operator-readiness across cockpit hardening, shared-model continuity, and governance productization
 
 This folder contains the repository's active status, roadmap, readiness, and reporting surfaces. Use it with [../plans/README.md](../plans/README.md) when you need both the current status snapshot and the active blueprint set.
 
@@ -74,7 +74,7 @@ These dated snapshots remain useful for history, but they no longer act as activ
 - **Core delivery path:** Waves 1-4 define the core operator-ready baseline; Waves 5-6 deepen the product afterward
 - **Workstation state:** Web and WPF both expose meaningful workspace flows, but cockpit hardening and shared-model continuity still remain
 - **Governance state:** Security Master is a delivered baseline and governance is now in active productization on top of it
-- **Provider state:** Breadth is strong, but readiness still depends on concrete Wave 1 validation evidence across key providers
+- **Provider state:** The active Wave 1 gate is closed around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; broader provider inventory remains deferred outside that closure claim
 - **Documentation state:** Status and plan navigation now centers the canonical roadmap, production-status posture, and subordinate execution plans
 
 ## Related Documentation

@@ -15,6 +15,70 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class FundAccountsViewModelTests
 {
     [Fact]
+    public void SelectedAccountInspectorProperties_SurfaceScopeWorkflowAndSharedDataAccess()
+    {
+        var account = new AccountSummaryDto(
+            AccountId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            AccountType: AccountTypeDto.Brokerage,
+            EntityId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+            FundId: Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+            SleeveId: Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+            VehicleId: Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+            AccountCode: "BRK-002",
+            DisplayName: "Operations Brokerage",
+            BaseCurrency: "USD",
+            Institution: "Broker B",
+            IsActive: true,
+            EffectiveFrom: new DateTimeOffset(2026, 4, 5, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null,
+            PortfolioId: "portfolio-alpha",
+            LedgerReference: "ledger-alpha",
+            StrategyId: "strategy-alpha",
+            RunId: "run-alpha",
+            SharedDataAccess: new FundStructureSharedDataAccessDto(
+                new SecurityMasterAccessSummaryDto(
+                    IsAvailable: true,
+                    AvailabilityDescription: "Security master runtime is configured.",
+                    InstrumentDefinitionsAccessible: true,
+                    EconomicDefinitionsAccessible: true,
+                    TradingParametersAccessible: true),
+                new HistoricalPriceAccessSummaryDto(
+                    IsAvailable: true,
+                    HasStoredData: true,
+                    AvailableSymbolCount: 12,
+                    SampleSymbols: ["AAPL", "MSFT"],
+                    AvailabilityDescription: "Historical price cache is available."),
+                new BackfillAccessSummaryDto(
+                    IsAvailable: true,
+                    IsActive: true,
+                    ProviderCount: 2,
+                    LastProvider: "Alpaca",
+                    LastFrom: new DateOnly(2026, 4, 1),
+                    LastTo: new DateOnly(2026, 4, 4),
+                    LastCompletedUtc: new DateTimeOffset(2026, 4, 4, 18, 30, 0, TimeSpan.Zero),
+                    LastRunSucceeded: true,
+                    SymbolCheckpointCount: 42,
+                    SymbolBarCountCount: 1250,
+                    AvailabilityDescription: "Backfill is current.")));
+
+        var viewModel = new FundAccountsViewModel(
+            Substitute.For<IFundAccountService>(),
+            Substitute.For<IFundProfileCatalog>(),
+            ProviderManagementService.Instance,
+            NullLogger<FundAccountsViewModel>.Instance)
+        {
+            SelectedAccount = account
+        };
+
+        viewModel.SelectedAccountLifecycleText.Should().Contain("Active");
+        viewModel.SelectedAccountScopeText.Should().Contain("Entity");
+        viewModel.SelectedAccountWorkflowLinkText.Should().Contain("Portfolio portfolio-alpha");
+        viewModel.SelectedAccountSecurityMasterText.Should().Contain("Security Master ready");
+        viewModel.SelectedAccountHistoricalPriceText.Should().Contain("Historical prices ready");
+        viewModel.SelectedAccountBackfillText.Should().Contain("Backfill available");
+    }
+
+    [Fact]
     public void ApplyProviderInsights_FiltersBindingsByScopeAndBuildsPreviewCards()
     {
         var account = new AccountSummaryDto(

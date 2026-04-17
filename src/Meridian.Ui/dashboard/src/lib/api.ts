@@ -4,6 +4,7 @@ import type {
   BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
+  ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
   LedgerSummary,
   LedgerTrialBalanceLine,
@@ -11,6 +12,7 @@ import type {
   OrderSubmitRequest,
   PaperSessionSummary,
   PaperSessionDetail,
+  PaperSessionReplayVerification,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -145,11 +147,19 @@ export function createPaperSession(strategyId: string, strategyName: string | nu
 }
 
 export function closePaperSession(sessionId: string) {
-  return postJson<void>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
+  return postJson<TradingActionResult>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
 }
 
 export function getPaperSessionDetail(sessionId: string) {
   return getJson<PaperSessionDetail>(`/api/execution/sessions/${encodeURIComponent(sessionId)}`);
+}
+
+export function getPaperSessionReplayVerification(sessionId: string) {
+  return getJson<PaperSessionReplayVerification>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/replay`);
+}
+
+export function getExecutionAudit(take = 20) {
+  return getJson<ExecutionAuditEntry[]>(`/api/execution/audit?take=${encodeURIComponent(String(take))}`);
 }
 
 // --- Strategy lifecycle ---

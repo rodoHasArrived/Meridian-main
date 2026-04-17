@@ -1,6 +1,6 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-17
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
@@ -54,23 +54,21 @@ The remaining backlog is therefore about turning those foundations and delivered
 
 ## Backlog Tracks
 
-### Track A / Wave 1: Provider confidence and current-functionality hardening
+### Track A / Wave 1: Closed trust-gate maintenance
 
-Goal: make the currently shipped platform easier to trust and easier to operate.
+Goal: preserve the closed Wave 1 trust gate without widening scope, and keep the currently shipped platform easier to trust and easier to operate.
 
 Open work:
 
-- expand Polygon replay coverage across more feeds and edge cases
-- strengthen NYSE shared-lifecycle regression coverage
-- keep IB runtime/bootstrap guidance aligned with the official vendor surface
-- keep StockSharp connector/runtime guidance aligned with validated adapters
-- expand under-tested provider coverage for TwelveData, Nasdaq Data Link, Alpha Vantage, Finnhub, Stooq, and OpenFIGI
-- continue backtesting-engine and strategy-run persistence coverage expansion
-- validate backfill checkpoint reliability across providers and longer date ranges
+- keep the active provider set fixed at Alpaca, Robinhood, and Yahoo across roadmap, status, matrix, and script surfaces
+- keep Robinhood runtime-bounded evidence explicit and current under `artifacts/provider-validation/robinhood/`
+- rerun `run-wave1-provider-validation.ps1` when provider, checkpoint, or Parquet proof surfaces change
+- keep deferred providers labeled consistently outside the active Wave 1 gate
+- continue adjacent backtesting-engine and strategy-run persistence coverage expansion without reopening Wave 1 scope
 
 Exit signal:
 
-Every major provider has documented replay/runtime evidence and passes its validation suite. Backfill checkpoints and gap detection are validated across providers and date ranges.
+The active gate for Alpaca, Robinhood, and Yahoo stays reproducible through `run-wave1-provider-validation.ps1`; checkpoint and Parquet rows stay closed in repo tests; and deferred providers remain clearly outside the active Wave 1 claim.
 
 ### Track B / Wave 2: Paper-trading cockpit hardening
 
@@ -274,9 +272,9 @@ References:
 
 ## Recommended Delivery Order
 
-### Wave 1 *(active)*
+### Wave 1 *(closed, maintain)*
 
-- Track A: Provider confidence and hardening
+- Track A: Closed trust-gate maintenance
 
 ### Wave 2
 
@@ -312,7 +310,7 @@ References:
 
 The repository can reasonably claim core operator-readiness when all of the following are true:
 
-1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, and backfill checkpoints plus gap handling are validated across representative providers and date ranges.
+1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, and checkpoint plus Parquet proof remains closed in repo tests.
 2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest → Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.

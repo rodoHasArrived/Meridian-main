@@ -37,6 +37,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         RecordSnapshotCommand = new AsyncRelayCommand(RecordSnapshotAsync, CanRecordSnapshot);
         ReconcileCommand = new AsyncRelayCommand(ReconcileAsync, CanReconcile);
         RefreshProviderRoutingCommand = new AsyncRelayCommand(RefreshProviderRoutingAsync, CanRefreshProviderRouting);
+        InspectSelectedAccountCommand = new AsyncRelayCommand(InspectSelectedAccountAsync, CanInspectSelectedAccount);
     }
 
     private Guid? _selectedFundId;
@@ -93,7 +94,9 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 RecordSnapshotCommand.NotifyCanExecuteChanged();
                 ReconcileCommand.NotifyCanExecuteChanged();
                 RefreshProviderRoutingCommand.NotifyCanExecuteChanged();
+                InspectSelectedAccountCommand.NotifyCanExecuteChanged();
                 RaisePropertyChanged(nameof(SelectedAccountSummary));
+                RaiseSelectedAccountInspectorProperties();
             }
         }
     }
@@ -102,6 +105,72 @@ public sealed partial class FundAccountsViewModel : BindableBase
         => SelectedAccount is null
             ? "Select an account to inspect balances, reconciliation, and provider routing."
             : $"{SelectedAccount.DisplayName} • {SelectedAccount.AccountType} • {SelectedAccount.BaseCurrency} • {SelectedAccount.Institution ?? "Institution not set"}";
+
+    public string AccountQueueStatusText
+        => $"{BrokerageAccounts.Count + CustodianAccounts.Count + BankAccounts.Count + OtherAccounts.Count} account(s) across {BrokerageAccounts.Count} brokerage, {CustodianAccounts.Count} custody, {BankAccounts.Count} bank, and {OtherAccounts.Count} other governance lanes.";
+
+    public string TotalAccountCountText
+        => (BrokerageAccounts.Count + CustodianAccounts.Count + BankAccounts.Count + OtherAccounts.Count).ToString();
+
+    public string CustodyAndBankCountText
+        => (CustodianAccounts.Count + BankAccounts.Count).ToString();
+
+    public string BrokerageAccountCountText
+        => BrokerageAccounts.Count.ToString();
+
+    public string OtherAccountCountText
+        => OtherAccounts.Count.ToString();
+
+    public string SelectedAccountLifecycleText
+        => SelectedAccount is null
+            ? "Select an account to review lifecycle status."
+            : $"{(SelectedAccount.IsActive ? "Active" : "Inactive")} • effective {SelectedAccount.EffectiveFrom:MMM dd yyyy}" +
+              $"{(SelectedAccount.EffectiveTo is null ? string.Empty : $" through {SelectedAccount.EffectiveTo.Value:MMM dd yyyy}")}";
+
+    public string SelectedAccountScopeText
+        => SelectedAccount is null
+            ? "No governance scope selected."
+            : BuildSelectedAccountScopeText(SelectedAccount);
+
+    public string SelectedAccountWorkflowLinkText
+        => SelectedAccount is null
+            ? "No workflow link available."
+            : BuildSelectedAccountWorkflowLinkText(SelectedAccount);
+
+    public string SelectedAccountRoutingReadinessText
+        => SelectedAccount is null
+            ? "Select an account to inspect routing readiness."
+            : RoutePreviews.Count == 0
+                ? "No route previews loaded for the selected account."
+                : $"{RoutePreviews.Count} route preview(s) loaded, {RoutePreviews.Count(preview => string.Equals(preview.StatusLabel, "Blocked", StringComparison.OrdinalIgnoreCase))} blocked, {ProviderBindings.Count} scoped binding(s) matched.";
+
+    public string SelectedAccountSecurityMasterText
+        => SelectedAccount?.SharedDataAccess is { SecurityMaster: var securityMaster }
+            ? securityMaster.IsAvailable
+                ? $"Security Master ready • {securityMaster.AvailabilityDescription}"
+                : $"Security Master unavailable • {securityMaster.AvailabilityDescription}"
+            : "Security Master posture is not available for this account.";
+
+    public string SelectedAccountHistoricalPriceText
+        => SelectedAccount?.SharedDataAccess is { HistoricalPrices: var historicalPrices }
+            ? historicalPrices.IsAvailable
+                ? $"Historical prices ready • {historicalPrices.AvailabilityDescription}"
+                : $"Historical prices unavailable • {historicalPrices.AvailabilityDescription}"
+            : "Historical price posture is not available for this account.";
+
+    public string SelectedAccountBackfillText
+        => SelectedAccount?.SharedDataAccess is { Backfill: var backfill }
+            ? backfill.IsAvailable
+                ? $"Backfill available • {backfill.ProviderCount} provider(s) • {backfill.LastProvider ?? "no recent provider"}"
+                : "Backfill is not available for this account scope."
+            : "Backfill posture is not available for this account.";
+
+    public string BalanceHistorySummaryText
+        => SelectedAccount is null
+            ? "Select an account to inspect recent balance snapshots."
+            : BalanceHistory.Count == 0
+                ? "No recent balance snapshots are loaded for the selected account."
+                : $"Latest snapshot {BalanceHistory[0].AsOfDate:MMM dd yyyy} from {BalanceHistory[0].Source} with cash {BalanceHistory[0].CashBalance:C0}.";
 
     private AccountReconciliationRunDto? _lastReconciliationRun;
     public AccountReconciliationRunDto? LastReconciliationRun
@@ -135,7 +204,13 @@ public sealed partial class FundAccountsViewModel : BindableBase
     public string? ProviderRoutingStatus
     {
         get => _providerRoutingStatus;
-        private set => SetProperty(ref _providerRoutingStatus, value);
+        private set
+        {
+            if (SetProperty(ref _providerRoutingStatus, value))
+            {
+                RaisePropertyChanged(nameof(SelectedAccountRoutingReadinessText));
+            }
+        }
     }
 
     public IAsyncRelayCommand LoadFundAccountsCommand { get; }
@@ -144,6 +219,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
     public IAsyncRelayCommand RecordSnapshotCommand { get; }
     public IAsyncRelayCommand ReconcileCommand { get; }
     public IAsyncRelayCommand RefreshProviderRoutingCommand { get; }
+    public IAsyncRelayCommand InspectSelectedAccountCommand { get; }
 
     public async Task LoadFundAccountsAsync()
     {
@@ -176,7 +252,15 @@ public sealed partial class FundAccountsViewModel : BindableBase
                 ?? OtherAccounts.FirstOrDefault();
 
             if (SelectedAccount is not null)
-                await RefreshProviderRoutingAsync();
+            {
+                await InspectSelectedAccountAsync();
+            }
+
+            RaisePropertyChanged(nameof(AccountQueueStatusText));
+            RaisePropertyChanged(nameof(TotalAccountCountText));
+            RaisePropertyChanged(nameof(CustodyAndBankCountText));
+            RaisePropertyChanged(nameof(BrokerageAccountCountText));
+            RaisePropertyChanged(nameof(OtherAccountCountText));
         }
         catch (Exception ex)
         {
@@ -206,6 +290,9 @@ public sealed partial class FundAccountsViewModel : BindableBase
     private bool CanRecordSnapshot() => SelectedAccount is not null;
 
     private async Task RecordSnapshotAsync()
+        => await LoadBalanceHistoryAsync();
+
+    private async Task LoadBalanceHistoryAsync()
     {
         if (SelectedAccount is null)
             return;
@@ -216,6 +303,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
         {
             var history = await _service.GetBalanceHistoryAsync(SelectedAccount.AccountId);
             ReplaceCollection(BalanceHistory, history);
+            RaisePropertyChanged(nameof(BalanceHistorySummaryText));
         }
         catch (Exception ex)
         {
@@ -259,6 +347,24 @@ public sealed partial class FundAccountsViewModel : BindableBase
     }
 
     private bool CanRefreshProviderRouting() => SelectedAccount is not null;
+
+    private bool CanInspectSelectedAccount() => SelectedAccount is not null;
+
+    public async Task InspectSelectedAccountAsync()
+    {
+        if (SelectedAccount is null)
+        {
+            ProviderBindings.Clear();
+            RoutePreviews.Clear();
+            BalanceHistory.Clear();
+            ProviderRoutingStatus = "Select an account to inspect provider routing.";
+            RaisePropertyChanged(nameof(BalanceHistorySummaryText));
+            return;
+        }
+
+        await LoadBalanceHistoryAsync();
+        await RefreshProviderRoutingAsync();
+    }
 
     public async Task RefreshProviderRoutingAsync()
     {
@@ -389,6 +495,58 @@ public sealed partial class FundAccountsViewModel : BindableBase
         ProviderRoutingStatus = ProviderBindings.Count == 0 && RoutePreviews.Count == 0
             ? "No scoped provider bindings matched this account."
             : $"Loaded {ProviderBindings.Count} binding(s) and {RoutePreviews.Count} route preview(s).";
+    }
+
+    private void RaiseSelectedAccountInspectorProperties()
+    {
+        RaisePropertyChanged(nameof(SelectedAccountLifecycleText));
+        RaisePropertyChanged(nameof(SelectedAccountScopeText));
+        RaisePropertyChanged(nameof(SelectedAccountWorkflowLinkText));
+        RaisePropertyChanged(nameof(SelectedAccountRoutingReadinessText));
+        RaisePropertyChanged(nameof(SelectedAccountSecurityMasterText));
+        RaisePropertyChanged(nameof(SelectedAccountHistoricalPriceText));
+        RaisePropertyChanged(nameof(SelectedAccountBackfillText));
+        RaisePropertyChanged(nameof(BalanceHistorySummaryText));
+    }
+
+    private static string BuildSelectedAccountScopeText(AccountSummaryDto account)
+    {
+        var segments = new List<string> { account.AccountType.ToString(), account.BaseCurrency };
+
+        if (account.EntityId.HasValue)
+            segments.Add($"Entity {account.EntityId.Value.ToString("N")[..8]}");
+
+        if (account.SleeveId.HasValue)
+            segments.Add($"Sleeve {account.SleeveId.Value.ToString("N")[..8]}");
+
+        if (account.VehicleId.HasValue)
+            segments.Add($"Vehicle {account.VehicleId.Value.ToString("N")[..8]}");
+
+        if (account.FundId.HasValue)
+            segments.Add($"Fund {account.FundId.Value.ToString("N")[..8]}");
+
+        return string.Join(" • ", segments);
+    }
+
+    private static string BuildSelectedAccountWorkflowLinkText(AccountSummaryDto account)
+    {
+        var links = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(account.PortfolioId))
+            links.Add($"Portfolio {account.PortfolioId}");
+
+        if (!string.IsNullOrWhiteSpace(account.LedgerReference))
+            links.Add($"Ledger {account.LedgerReference}");
+
+        if (!string.IsNullOrWhiteSpace(account.StrategyId))
+            links.Add($"Strategy {account.StrategyId}");
+
+        if (!string.IsNullOrWhiteSpace(account.RunId))
+            links.Add($"Run {account.RunId}");
+
+        return links.Count == 0
+            ? "No linked portfolio, ledger, strategy, or run has been assigned yet."
+            : string.Join(" • ", links);
     }
 
     private static bool ScopeMatches(

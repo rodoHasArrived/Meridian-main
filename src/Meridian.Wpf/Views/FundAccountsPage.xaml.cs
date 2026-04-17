@@ -25,6 +25,6 @@ public partial class FundAccountsPage : Page
             return;
 
         _viewModel.SelectedAccount = selectedAccount;
-        await _viewModel.RefreshProviderRoutingAsync();
+        await _viewModel.InspectSelectedAccountAsync();
     }
 }

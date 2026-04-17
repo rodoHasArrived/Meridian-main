@@ -1,7 +1,7 @@
 # Meridian - Project Roadmap
 
 **Last Updated:** 2026-04-17
-**Status:** Active productization — Waves 1-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
+**Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Waves 2-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
 **Repository Snapshot (2026-04-13 working tree):** solution projects: 39 | `src/` project files: 27 | test projects: 9 | workflow files: 42
 
 Meridian is no longer primarily blocked on missing platform primitives. The repo already contains strong market-data, storage, replay, backtesting, execution, ledger, workstation, and Security Master foundations. The remaining delivery problem is now narrower and more product-shaped: prove operator trust, close workflow gaps, and deepen governance without letting the product split into parallel subsystems.
@@ -71,8 +71,8 @@ These are conservative "in code and materially usable" claims as of 2026-04-13:
 
 These areas exist in code but are not yet complete enough to treat as finished operator workflows:
 
-- Provider confidence remains intentionally narrow. The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains runtime-bounded, and Polygon, Interactive Brokers, NYSE, and StockSharp are deferred from the active gate.
-- Backfill reliability and Parquet L2 flush behavior now have repo-backed proof, but the docs, scripts, and operator-facing acceptance language still need to stay synchronized with the validation matrix.
+- The active Wave 1 trust gate is intentionally narrow and now repo-closed. Alpaca and Yahoo are closed by checked-in evidence, Robinhood remains explicitly bounded by committed runtime artifacts, and Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred from the active gate.
+- Backfill reliability and Parquet L2 flush behavior are closed by repo-backed proof, but the docs, scripts, and operator-facing acceptance language still need to stay synchronized with the validation matrix so the gate stays closed.
 - The web workstation is no longer just a shell, but the paper-trading cockpit still needs stronger daily-use acceptance criteria, replay confidence, audit visibility, and clearer hardening boundaries.
 - Shared run coverage spans backtest, paper, and live-aware models in contracts and UI, but portfolio, ledger, cash-flow, and reconciliation continuity are not yet equally deep in every mode.
 - External brokerage and custodian account state still reaches Meridian mostly through paper sessions, statement ingestion, and read-model joins; first-class brokerage portfolio sync into fund-account, ledger, and governance workflows is not yet productized.
@@ -84,7 +84,6 @@ These areas exist in code but are not yet complete enough to treat as finished o
 
 These are active productization tracks rather than greenfield invention:
 
-- close the active Wave 1 provider-confidence and checkpoint-evidence gaps for Alpaca, Robinhood, and Yahoo
 - harden Wave 2 paper-trading cockpit workflows and operator acceptance criteria
 - deepen Wave 3 shared run / portfolio / ledger / reconciliation continuity
 - add brokerage and custodian portfolio-sync ingestion through execution and fund-account seams without moving portfolio logic into market-data providers
@@ -138,7 +137,7 @@ These remain valuable, but they are not on the shortest path to Meridian's core 
 
 ## What Remains
 
-- **Wave 1:** keep the active provider-confidence, checkpoint, and Parquet evidence gate aligned around Alpaca, Robinhood, and Yahoo
+- **Wave 1 maintenance:** keep the closed provider-confidence, checkpoint, and Parquet evidence gate aligned around Alpaca, Robinhood, and Yahoo
 - **Wave 2:** turn the current paper-trading cockpit from "visible" into "dependable"
 - **Wave 3:** make run history, portfolio, ledger, cash-flow, and reconciliation behave like one cross-workspace model
 - **Wave 4:** deepen governance and fund-operations workflows on top of the delivered Security Master baseline
@@ -162,9 +161,9 @@ The product promise is continuity: one operator can move from data trust to rese
 
 Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, and architecture simplification reinforcing the same read-model and orchestration seams rather than becoming a parallel delivery program.
 
-### Wave 1: Provider confidence and checkpoint evidence
+### Wave 1: Closed provider confidence and checkpoint evidence gate
 
-**Why now:** This remains the first dependency for every downstream readiness claim Meridian wants to make.
+**Why now:** This gate is now closed in repo evidence and should be preserved as the trust boundary for every downstream readiness claim.
 
 **Focus:**
 
@@ -172,9 +171,9 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 - keep Robinhood supported-surface evidence aligned with its bounded runtime artifact set without overstating live readiness
 - formalize Yahoo as a historical-only core provider row backed by deterministic repo tests
 - keep checkpoint reliability and Parquet L2 flush behavior on the passing suite list inside `run-wave1-provider-validation.ps1`
-- keep provider-confidence docs, deferred-provider language, runtime artifact folders, and the validation matrix synchronized with executable evidence
+- keep provider-confidence docs, deferred-provider language, runtime artifact folders, the validation matrix, and the latest automation summary synchronized with executable evidence
 
-**Exit signal:** The Wave 1 matrix, roadmap, and status docs all describe the same active provider set, Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly bounded, checkpoint and L2 rows stay closed in repo tests, and deferred providers are not implied to be current blockers.
+**Exit signal:** The Wave 1 matrix, roadmap, status docs, and automation summary all describe the same active provider set, Alpaca and Yahoo remain repo-closed, Robinhood remains explicitly bounded, checkpoint and L2 rows stay closed in repo tests, and deferred providers are not implied to be current blockers.
 
 ### Wave 2: Web paper-trading cockpit completion
 
@@ -257,7 +256,7 @@ Across Waves 2-4, keep WPF workflow-first consolidation, validation coverage, an
 
 ## Risks and Dependencies
 
-- **Provider trust is still the first dependency.** Without replay and runtime evidence, downstream workflow polish risks overstating readiness.
+- **Provider trust is still the first dependency.** The narrow Wave 1 gate is now closed, but downstream workflow polish still depends on preserving that evidence boundary instead of reopening provider scope by prose drift.
 - **Stronger tests are not the same as broad live-vendor proof.** Replay, contract, and pipeline evidence materially improve confidence but do not close every vendor-runtime gap by themselves.
 - **Cockpit hardening should precede live-readiness claims.** Meridian now has meaningful trading surfaces, but operator trust still matters more than feature count.
 - **The shared run model must remain the center of gravity.** If Research, Trading, Portfolio, Ledger, and Governance drift apart again, the workstation migration loses its product logic.

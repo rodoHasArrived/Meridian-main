@@ -1,7 +1,7 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-08
-**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical April 8 roadmap
+**Last Updated:** 2026-04-17
+**Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical April 17 roadmap
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
 
@@ -17,9 +17,9 @@ Use this with:
 
 ## Summary
 
-Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, and a delivered Security Master baseline. The remaining order is now simple and consistent across the planning set:
+Meridian already has strong platform foundations, meaningful workstation flows in web and WPF, shared run / portfolio / ledger read services, and a delivered Security Master baseline. The wave order remains simple and consistent across the planning set:
 
-1. **Wave 1:** provider confidence and checkpoint evidence
+1. **Wave 1:** provider confidence and checkpoint evidence *(repo-closed, keep synchronized)*
 2. **Wave 2:** paper-trading cockpit hardening
 3. **Wave 3:** shared run / portfolio / ledger continuity
 4. **Wave 4:** governance and fund-operations productization on top of the delivered Security Master baseline
@@ -44,7 +44,7 @@ Waves 1-4 define the core operator-readiness path. Waves 5-6 deepen the product 
 
 ### Partial
 
-- provider trust is still uneven across key providers and checkpoint scenarios
+- the active Wave 1 trust gate is closed for Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush behavior, but that closure still needs deliberate doc, script, and artifact synchronization
 - the paper-trading cockpit is real, but not yet hardened as a dependable daily-use lane
 - shared run continuity is present, but not yet equally deep across every workspace and mode
 - governance workflows now build on a delivered Security Master baseline, but multi-ledger, cash-flow, reconciliation, and reporting still need deeper productization
@@ -54,21 +54,21 @@ Waves 1-4 define the core operator-readiness path. Waves 5-6 deepen the product 
 
 ## Opportunities
 
-### 1. Wave 1: Close provider-confidence and checkpoint-evidence gaps first
-
-Provider evidence and backfill checkpoint confidence still gate every downstream readiness claim.
-
-### 2. Wave 2: Harden the paper-trading cockpit already in code
+### 1. Wave 2: Harden the paper-trading cockpit already in code
 
 The paper-trading cockpit should move from "implemented" to "dependable."
 
-### 3. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
+### 2. Wave 3: Make the shared run / portfolio / ledger model the center of gravity
 
 Research, Trading, and Governance should keep converging on the same run-centered seam.
 
-### 4. Wave 4: Productize governance and fund-operations on top of the delivered Security Master baseline
+### 3. Wave 4: Productize governance and fund-operations on top of the delivered Security Master baseline
 
 Security Master is already the delivered baseline; the opportunity is turning that baseline into deeper account/entity, multi-ledger, cash-flow, reconciliation, and reporting workflows.
+
+### 4. Wave 1: Keep the closed provider-confidence and checkpoint-evidence gate synchronized
+
+Wave 1 is now repo-closed, but it remains the trust boundary that every downstream readiness claim depends on.
 
 ### 5. Wave 5: Unify Backtest Studio after the core operator-readiness path is stable
 
@@ -100,7 +100,7 @@ The product promise is continuity: one operator can move from data trust to rese
 
 Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
 
-1. **Wave 1 gates:** major providers have documented replay or runtime validation evidence, and backfill checkpoints plus gap handling are validated across representative providers and date ranges.
+1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, checkpoint reliability plus Parquet L2 flush behavior are closed in repo tests, and `run-wave1-provider-validation.ps1` reproduces the offline gate.
 2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
 3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
 4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
@@ -111,7 +111,7 @@ Waves 5 and 6 deepen the product and widen later claims, but they are not prereq
 
 ## Risks and Dependencies
 
-- provider confidence remains the first dependency
+- provider confidence remains the first dependency even though the narrow Wave 1 gate is now closed
 - stronger replay, contract, and pipeline tests should raise confidence without being described as broad live-runtime closure
 - cockpit hardening should happen before live-readiness claims
 - the shared run model and delivered Security Master baseline must remain central as the product grows
