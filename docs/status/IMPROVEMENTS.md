@@ -66,11 +66,11 @@ Legacy `ROADMAP:` labels below retain their original milestone wording for trace
 The active improvement tracker now absorbs the current-value outputs from the brainstorm/proposal set instead of treating every evaluation as an equal live backlog source.
 
 - Active backlog inputs:
-  - `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md`
   - `docs/evaluations/high-value-low-cost-improvements-brainstorm.md`
   - `docs/evaluations/nautilus-inspired-restructuring-proposal.md`
   - `docs/evaluations/2026-03-brainstorm-next-frontier.md`
 - Historical backlog input:
+  - `archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md`
   - `archive/docs/assessments/high-impact-improvements-brainstorm.md`
 
 Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active normalized backlog, and treat brainstorm documents as supporting analysis unless they are explicitly promoted here.

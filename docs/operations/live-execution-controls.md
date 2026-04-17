@@ -1,6 +1,6 @@
 # Live Execution Controls
 
-**Last Updated:** 2026-04-05
+**Last Updated:** 2026-04-16
 
 This guide covers the operator-facing controls that gate live execution in Meridian while preserving `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` as the stable backend seam.
 
@@ -52,6 +52,7 @@ Operator identity is taken from `X-Meridian-Actor` when present, otherwise the a
 
 Audit records are written under the execution data root and surfaced through `GET /api/execution/audit`.
 The audit trail WAL is initialised lazily on first read or write so host construction does not sync-block on recovery during startup.
+When live routing is enabled, `AddBrokerageExecution(...)` now passes operator controls, audit trail, security-master gate, and shared portfolio state into `OrderManagementSystem`, and the OMS connects the selected live gateway on demand before the first order-side operation.
 
 Expected categories:
 
@@ -111,5 +112,7 @@ The repo includes executable coverage for the stable seam and Alpaca gateway pat
 
 - `Meridian.Tests.Ui.ExecutionGovernanceEndpointsTests.ControlsEndpoints_UpdateCircuitBreakerAndExposeAuditTrail`
 - `Meridian.Tests.Ui.ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam`
+- `Meridian.Tests.Ui.ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam`
+- `Meridian.Tests.Execution.OrderManagementSystemTests.PlaceOrderAsync_WhenGatewayStartsDisconnected_ConnectsAndAuditsSelectedGateway`
 - `Meridian.Tests.Strategies.PromotionServiceLiveGovernanceTests`
 - `Meridian.Tests.Execution.OrderManagementSystemGovernanceTests`

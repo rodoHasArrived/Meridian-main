@@ -42,7 +42,6 @@ Use this folder for deep context and implementation rationale. For live prioriti
 |----------|--------------|----------------|
 | [Windows Desktop Provider Configurability](windows-desktop-provider-configurability-assessment.md) | Provider-settings assessment and phased implementation rationale | Last reviewed 2026-03-19; infrastructure complete, UI workflow still in progress |
 | [Desktop Platform Improvements Guide](desktop-platform-improvements-implementation-guide.md) | Detailed implementation reference for the desktop improvement program | Original six priorities complete; extended follow-up retained in-file |
-| [Desktop Improvements Executive Summary](desktop-improvements-executive-summary.md) | Short executive companion to the implementation guide | Historical phase summary with 2026-03-19 follow-up; not the live backlog |
 | [QuantScriptEnvironment Blueprint Brainstorm](quant-script-blueprint-brainstorm.md) | Product and UX evaluation for QuantScript design decisions | Updated 2026-04-16; companion to `docs/plans/quant-script-environment-blueprint.md` |
 
 ## Strategy, Proposal, And Market Context Documents
@@ -50,7 +49,6 @@ Use this folder for deep context and implementation rationale. For live prioriti
 | Document | Current Role | Status / Notes |
 |----------|--------------|----------------|
 | [Competitive Analysis (Mar/Apr 2026)](competitive-analysis-2026-03.md) | Current market and competitor landscape analysis | Updated 2026-04-02; broadest competitive reference in this folder |
-| [High-Impact Improvements (Mar 2026)](high-impact-improvement-brainstorm-2026-03.md) | Historical high-impact defect and architecture brainstorm | Preserved for rationale; use status docs for active execution |
 | [High-Value Low-Cost Improvements](high-value-low-cost-improvements-brainstorm.md) | Active high-ROI quick-win idea set | Updated 2026-03-15 with implementation progress |
 | [Next Frontier Brainstorm](2026-03-brainstorm-next-frontier.md) | Living document for future capabilities beyond core platform hardening | Updated 2026-03-12 with implementation-status tracking |
 | [Nautilus-Inspired Restructuring](nautilus-inspired-restructuring-proposal.md) | Structural proposal set for provider and repository organization | Last reviewed 2026-03-11; partially implemented |
@@ -61,6 +59,8 @@ Use this folder for deep context and implementation rationale. For live prioriti
 ## Archived Or Historical Companions
 
 - [Desktop End-User Improvements](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/desktop-end-user-improvements.md) — comprehensive desktop UX assessment retained as historical reference
+- [Desktop Improvements Executive Summary](../../archive/docs/summaries/desktop-improvements-executive-summary.md) — archived executive snapshot superseded by the implementation guide and current status docs
+- [High-Impact Improvements (Mar 2026)](../../archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md) — archived March 2026 brainstorm retained as historical rationale after promotion into normalized status docs
 - [High-Impact Improvements Brainstorm](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/assessments/high-impact-improvements-brainstorm.md) — older brainstorm superseded by the March 2026 refresh and normalized status docs
 
 ## Related

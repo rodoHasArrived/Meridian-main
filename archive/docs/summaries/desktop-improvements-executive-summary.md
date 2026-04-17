@@ -2,10 +2,12 @@
 
 **Date**: 2026-02-20
 **Last Updated**: 2026-03-19
-**Status**: Reference summary with historical phase tracking; use the implementation guide and roadmap for live execution status
+**Status**: Archived executive snapshot with historical phase tracking; use the implementation guide and roadmap for live execution status
 **Author**: GitHub Copilot Analysis (consolidated for repository use)
 
-> This file is the short-form companion to `desktop-platform-improvements-implementation-guide.md`. Treat it as an executive snapshot, not the canonical source for current delivery status.
+> **Archived location:** `archive/docs/summaries/desktop-improvements-executive-summary.md`
+>
+> This file is the former short-form companion to `docs/evaluations/desktop-platform-improvements-implementation-guide.md`. Treat it as a historical snapshot, not the canonical source for current delivery status.
 
 ## Overview
 

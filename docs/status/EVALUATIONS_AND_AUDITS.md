@@ -331,8 +331,8 @@ Use this document as supporting context. For active prioritization, default to t
 
 ### Desktop Improvements Executive Summary
 
-> Source: `docs/evaluations/desktop-improvements-executive-summary.md`
-> Date: 2026-02-22 | Updated: 2026-03-19 | Status: Current summary for desktop modernization
+> Source: `../../archive/docs/summaries/desktop-improvements-executive-summary.md`
+> Date: 2026-02-22 | Updated: 2026-03-19 | Status: Archived executive snapshot — implementation guide is the canonical active reference
 
 **Executive Takeaway:** The desktop stack has broad functional coverage already, but the highest-value remaining work is UX consolidation, stronger live-state trust signals, and a workflow-centric trading workstation structure.
 
@@ -470,8 +470,8 @@ Use this document as supporting context. For active prioritization, default to t
 
 ### High-Impact Improvement Brainstorm (March 2026)
 
-> Source: `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md`
-> Date: 2026-03-01 (follow-ups: 2026-03-10, 2026-03-11) | Status: Active — several items implemented
+> Source: `../../archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md`
+> Date: 2026-03-01 (follow-ups: 2026-03-10, 2026-03-11) | Status: Archived historical brainstorm — rationale retained, active execution moved into status docs
 
 **Overall Rating:** 6.5/10 — Architecturally Sound, Operationally Risky
 
@@ -797,7 +797,7 @@ All source documents that feed into this consolidation:
 | Operational Readiness Evaluation | `docs/evaluations/operational-readiness-evaluation.md` | Evaluation | Current |
 | Desktop End-User Improvements | `../../archive/docs/assessments/desktop-end-user-improvements.md` | Assessment | Archived |
 | Desktop Provider Configurability | `docs/evaluations/windows-desktop-provider-configurability-assessment.md` | Assessment | Current |
-| High-Impact Improvement Brainstorm (Mar 2026) | `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md` | Brainstorm | Active |
+| High-Impact Improvement Brainstorm (Mar 2026) | `../../archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md` | Brainstorm | Archived |
 | High-Impact Improvements Brainstorm | `../../archive/docs/assessments/high-impact-improvements-brainstorm.md` | Brainstorm | Archived |
 | High-Value Low-Cost Improvements | `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | Brainstorm | Active |
 | Nautilus-Inspired Restructuring Proposal | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | Proposal | Partially Implemented |
@@ -810,7 +810,7 @@ All source documents that feed into this consolidation:
 | UWP Comprehensive Audit | `../../archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md` | Audit | Archived |
 | Repository Cleanup Plan | `../../archive/docs/plans/repository-cleanup-action-plan.md` | Plan | Archived |
 | Config Consolidation Report | `../../archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md` | Report | Archived |
-| Desktop Improvements Exec Summary | `docs/evaluations/desktop-improvements-executive-summary.md` | Summary | Current |
+| Desktop Improvements Exec Summary | `../../archive/docs/summaries/desktop-improvements-executive-summary.md` | Summary | Archived |
 | Desktop Platform Improvements Guide | `docs/evaluations/desktop-platform-improvements-implementation-guide.md` | Guide | Current |
 | Desktop Improvement Shortlist | `../../archive/docs/assessments/desktop-end-user-improvements-shortlist.md` | Assessment | Archived |
 

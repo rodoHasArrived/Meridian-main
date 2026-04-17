@@ -19,6 +19,8 @@ Historical documentation is organized by type so the active `docs/` tree stays f
 - Duplicate-code analysis: [`assessments/DUPLICATE_CODE_ANALYSIS.md`](assessments/DUPLICATE_CODE_ANALYSIS.md)
 - Audit snapshot (2026-03-20): [`assessments/AUDIT_REPORT_2026_03_20.md`](assessments/AUDIT_REPORT_2026_03_20.md)
 - Older high-impact brainstorm: [`assessments/high-impact-improvements-brainstorm.md`](assessments/high-impact-improvements-brainstorm.md)
+- March 2026 high-impact brainstorm: [`assessments/high-impact-improvement-brainstorm-2026-03.md`](assessments/high-impact-improvement-brainstorm-2026-03.md)
+- Desktop improvements executive summary: [`summaries/desktop-improvements-executive-summary.md`](summaries/desktop-improvements-executive-summary.md)
 - Repository cleanup plan: [`plans/repository-cleanup-action-plan.md`](plans/repository-cleanup-action-plan.md)
 - UWP to WPF migration: [`migrations/uwp-to-wpf-migration.md`](migrations/uwp-to-wpf-migration.md)
 - Platform restructuring ADR (superseded): [`migrations/ADR-015-platform-restructuring.md`](migrations/ADR-015-platform-restructuring.md)

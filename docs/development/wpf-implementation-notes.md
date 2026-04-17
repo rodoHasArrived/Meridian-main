@@ -364,7 +364,7 @@ make test-desktop-services
 
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
-- [`docs/evaluations/desktop-improvements-executive-summary.md`](../evaluations/desktop-improvements-executive-summary.md) — Platform improvement roadmap
+- [`docs/evaluations/desktop-platform-improvements-implementation-guide.md`](../evaluations/desktop-platform-improvements-implementation-guide.md) — Platform improvement roadmap and implementation reference
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
 - [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Desktop items in the project roadmap
 - [`docs/development/policies/desktop-support-policy.md`](./policies/desktop-support-policy.md) — Contribution requirements

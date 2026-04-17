@@ -269,6 +269,68 @@ public sealed class OrderManagementSystemTests : IDisposable
         result.OrderState!.Status.Should().Be(OrderStatus.Accepted);
         oms.GetOrder(placed.OrderId)!.Status.Should().Be(OrderStatus.Accepted);
     }
+
+    [Fact]
+    public async Task PlaceOrderAsync_WhenGatewayStartsDisconnected_ConnectsAndAuditsSelectedGateway()
+    {
+        var connected = false;
+        var gateway = Substitute.For<IExecutionGateway>();
+        gateway.GatewayId.Returns("robinhood");
+        gateway.IsConnected.Returns(_ => connected);
+        gateway.ConnectAsync(Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                connected = true;
+                return Task.CompletedTask;
+            });
+        gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var request = callInfo.Arg<OrderRequest>();
+                return new ExecutionReport
+                {
+                    OrderId = request.ClientOrderId ?? "ord-1",
+                    ClientOrderId = request.ClientOrderId,
+                    ReportType = ExecutionReportType.New,
+                    Symbol = request.Symbol,
+                    Side = request.Side,
+                    OrderStatus = OrderStatus.Accepted,
+                    OrderQuantity = request.Quantity,
+                    Timestamp = DateTimeOffset.UtcNow
+                };
+            });
+
+        var tempRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempRoot);
+        await using var auditTrail = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(tempRoot, "audit")),
+            NullLogger<ExecutionAuditTrailService>.Instance);
+
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            auditTrail: auditTrail);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1m
+        });
+
+        result.Success.Should().BeTrue();
+        await gateway.Received(1).ConnectAsync(Arg.Any<CancellationToken>());
+
+        var auditEntries = await auditTrail.GetRecentAsync(10);
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "GatewayConnected" &&
+            entry.BrokerName == "robinhood");
+        auditEntries.Should().Contain(entry =>
+            entry.Action == "OrderSubmitted" &&
+            entry.BrokerName == "robinhood" &&
+            entry.Symbol == "AAPL");
+    }
 }
 
 // ---------------------------------------------------------------------------

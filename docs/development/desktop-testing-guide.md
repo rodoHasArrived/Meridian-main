@@ -412,8 +412,8 @@ See `.github/workflows/desktop-builds.yml` for CI configuration.
 ## Related Documentation
 
 - **Desktop Development:**
-  - [Desktop Platform Improvements - Implementation Guide](../evaluations/desktop-platform-improvements-implementation-guide.md) - Complete improvement roadmap
-  - [Desktop Improvements - Executive Summary](../evaluations/desktop-improvements-executive-summary.md) - Impact analysis, priorities, and quick reference
+  - [Desktop Platform Improvements - Implementation Guide](../evaluations/desktop-platform-improvements-implementation-guide.md) - Canonical roadmap, implementation details, and executive-level summary
+  - [Desktop Modernization Summary](../status/EVALUATIONS_AND_AUDITS.md#desktop-platform-improvements-guide) - Consolidated status context across the evaluation set
 
 - **Testing and Quality:**
   - [Test Project README](https://github.com/rodoHasArrived/Meridian/blob/main/tests/Meridian.Ui.Tests/README.md) - Ui.Tests project details

@@ -2,8 +2,12 @@
 
 **Date:** 2026-03-01 (initial brainstorm)
 **Last Reconciled:** 2026-03-24
-**Status:** Historical brainstorm; use `docs/status/IMPROVEMENTS.md`, `docs/status/ROADMAP.md`, and `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` for active execution tracking
+**Status:** Archived historical brainstorm; use `docs/status/IMPROVEMENTS.md`, `docs/status/ROADMAP.md`, and `docs/status/FULL_IMPLEMENTATION_TODO_2026_03_20.md` for active execution tracking
 **Author:** Architecture Review
+
+> **Archived location:** `archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md`
+>
+> This document is retained for decision history and defect-discovery context, not as the live execution backlog.
 
 > **Scope**: Ideas that meaningfully improve the quality of the codebase and the
 > correctness/reliability of the running program. Implementation effort is
