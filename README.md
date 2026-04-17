@@ -138,7 +138,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-cleanup.md
 │   │   ├── meridian-docs.md
-│   │   └── meridian-navigation.md
+│   │   ├── meridian-navigation.md
+│   │   └── meridian-user-panel.md
 │   ├── settings.json
 │   ├── settings.local.json
 │   └── skills
@@ -191,6 +192,37 @@ Use these documents together when planning or implementing new work:
 │       │   ├── SKILL.md
 │       │   └── references
 │       │       └── provider-patterns.md
+│       ├── meridian-simulated-user-panel
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── grader.md
+│       │   ├── assets
+│       │   │   ├── bundles
+│       │   │   │   ├── roadmap-review.manifest.json
+│       │   │   │   ├── screen-review.manifest.json
+│       │   │   │   ├── ship-readiness.manifest.json
+│       │   │   │   └── workflow-walkthrough.manifest.json
+│       │   │   ├── eval-result.schema.json
+│       │   │   └── review-manifest.schema.json
+│       │   ├── evals
+│       │   │   ├── benchmark_baseline.json
+│       │   │   ├── evals.json
+│       │   │   └── golden
+│       │   │       ├── eval-01-welcome-onboarding-design-partner.md
+│       │   │       ├── eval-02-provider-onboarding-release-gate.md
+│       │   │       ├── eval-03-fund-ledger-controls-review.md
+│       │   │       ├── eval-04-analysis-export-power-user-review.md
+│       │   │       ├── eval-05-research-promotion-roadmap-review.md
+│       │   │       └── eval-06-provider-health-usability-lab.md
+│       │   ├── references
+│       │   │   ├── artifact-bundles.md
+│       │   │   ├── personas.md
+│       │   │   ├── review-contract.md
+│       │   │   ├── review-modes.md
+│       │   │   └── sample-prompts.md
+│       │   └── scripts
+│       │       ├── __init__.py
+│       │       └── run_eval.py
 │       ├── meridian-test-writer
 │       │   ├── CHANGELOG.md
 │       │   ├── SKILL.md
@@ -212,6 +244,14 @@ Use these documents together when planning or implementing new work:
 │       │   │   └── openai.yaml
 │       │   ├── evals
 │       │   │   └── evals.json
+│       │   ├── fixtures
+│       │   │   └── superseded-adr
+│       │   │       └── docs
+│       │   │           ├── adr
+│       │   │           │   ├── ADR-015-platform-restructuring.md
+│       │   │           │   └── README.md
+│       │   │           └── generated
+│       │   │               └── repository-structure.md
 │       │   ├── references
 │       │   │   ├── archive-placement-guide.md
 │       │   │   └── evaluation-harness.md
@@ -221,20 +261,30 @@ Use these documents together when planning or implementing new work:
 │       │       └── trace_archive_candidates.py
 │       ├── meridian-blueprint
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── blueprint-patterns.md
 │       ├── meridian-brainstorm
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── competitive-landscape.md
 │       ├── meridian-cleanup
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── scripts
 │       │       └── repo-updater.ps1
 │       ├── meridian-code-review
-│       │   └── SKILL.md
+│       │   ├── SKILL.md
+│       │   └── agents
+│       │       └── openai.yaml
 │       ├── meridian-implementation-assurance
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   ├── evals
 │       │   │   ├── artifacts
 │       │   │   │   ├── eval-1.jsonl
@@ -255,6 +305,8 @@ Use these documents together when planning or implementing new work:
 │       │       └── score_eval.py
 │       ├── meridian-provider-builder
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── provider-patterns.md
 │       ├── meridian-repo-navigation
@@ -263,10 +315,31 @@ Use these documents together when planning or implementing new work:
 │       │       └── openai.yaml
 │       ├── meridian-roadmap-strategist
 │       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
 │       │   └── references
 │       │       └── roadmap-source-map.md
+│       ├── meridian-simulated-user-panel
+│       │   ├── SKILL.md
+│       │   ├── agents
+│       │   │   └── openai.yaml
+│       │   ├── assets
+│       │   │   ├── bundles
+│       │   │   │   ├── roadmap-review.manifest.json
+│       │   │   │   ├── screen-review.manifest.json
+│       │   │   │   ├── ship-readiness.manifest.json
+│       │   │   │   └── workflow-walkthrough.manifest.json
+│       │   │   ├── eval-result.schema.json
+│       │   │   └── review-manifest.schema.json
+│       │   └── references
+│       │       ├── artifact-bundles.md
+│       │       ├── personas.md
+│       │       ├── review-contract.md
+│       │       └── review-modes.md
 │       └── meridian-test-writer
 │           ├── SKILL.md
+│           ├── agents
+│           │   └── openai.yaml
 │           └── references
 │               └── test-patterns.md
 ├── .devcontainer
@@ -300,6 +373,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── performance-agent.md
 │   │   ├── provider-builder-agent.md
 │   │   ├── repo-navigation-agent.md
+│   │   ├── simulated-user-panel-agent.md
 │   │   └── test-writer-agent.md
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
@@ -324,6 +398,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── optimize-performance.prompt.yml
 │   │   ├── project-context.prompt.yml
 │   │   ├── provider-implementation-guide.prompt.yml
+│   │   ├── simulate-user-panel-choose-mode.prompt.yml
+│   │   ├── simulate-user-panel-design-partner.prompt.yml
+│   │   ├── simulate-user-panel-release-gate.prompt.yml
+│   │   ├── simulate-user-panel-usability-lab.prompt.yml
+│   │   ├── simulate-user-panel.prompt.yml
 │   │   ├── troubleshoot-issue.prompt.yml
 │   │   ├── workflow-results-code-quality.prompt.yml
 │   │   ├── workflow-results-test-matrix.prompt.yml
@@ -378,6 +457,132 @@ Use these documents together when planning or implementing new work:
 ├── .gitleaks.toml
 ├── .globalconfig
 ├── .markdownlint.json
+├── .tools
+│   ├── .store
+│   │   └── dotnet-dump
+│   │       └── 9.0.661903
+│   │           ├── dotnet-dump
+│   │           │   └── 9.0.661903
+│   │           │       ├── .nupkg.metadata
+│   │           │       ├── .signature.p7s
+│   │           │       ├── Icon.png
+│   │           │       ├── THIRD-PARTY-NOTICES.txt
+│   │           │       ├── dotnet-dump.9.0.661903.nupkg.sha512
+│   │           │       ├── dotnet-dump.nuspec
+│   │           │       └── tools
+│   │           │           └── net8.0
+│   │           │               └── any
+│   │           │                   ├── Azure.Core.dll
+│   │           │                   ├── Azure.Identity.dll
+│   │           │                   ├── DotnetToolSettings.xml
+│   │           │                   ├── Microsoft.Bcl.AsyncInterfaces.dll
+│   │           │                   ├── Microsoft.Diagnostics.DebugServices.Implementation.dll
+│   │           │                   ├── Microsoft.Diagnostics.DebugServices.Implementation.pdb
+│   │           │                   ├── Microsoft.Diagnostics.DebugServices.Implementation.xml
+│   │           │                   ├── Microsoft.Diagnostics.DebugServices.dll
+│   │           │                   ├── Microsoft.Diagnostics.DebugServices.pdb
+│   │           │                   ├── Microsoft.Diagnostics.DebugServices.xml
+│   │           │                   ├── Microsoft.Diagnostics.ExtensionCommands.dll
+│   │           │                   ├── Microsoft.Diagnostics.ExtensionCommands.pdb
+│   │           │                   ├── Microsoft.Diagnostics.ExtensionCommands.xml
+│   │           │                   ├── Microsoft.Diagnostics.NETCore.Client.dll
+│   │           │                   ├── Microsoft.Diagnostics.NETCore.Client.pdb
+│   │           │                   ├── Microsoft.Diagnostics.NETCore.Client.xml
+│   │           │                   ├── Microsoft.Diagnostics.Repl.dll
+│   │           │                   ├── Microsoft.Diagnostics.Repl.pdb
+│   │           │                   ├── Microsoft.Diagnostics.Repl.xml
+│   │           │                   ├── Microsoft.Diagnostics.Runtime.dll
+│   │           │                   ├── Microsoft.Extensions.DependencyInjection.Abstractions.dll
+│   │           │                   ├── Microsoft.Extensions.Logging.Abstractions.dll
+│   │           │                   ├── Microsoft.FileFormats.dll
+│   │           │                   ├── Microsoft.FileFormats.pdb
+│   │           │                   ├── Microsoft.Identity.Client.Extensions.Msal.dll
+│   │           │                   ├── Microsoft.Identity.Client.dll
+│   │           │                   ├── Microsoft.IdentityModel.Abstractions.dll
+│   │           │                   ├── Microsoft.SymbolStore.dll
+│   │           │                   ├── Microsoft.SymbolStore.pdb
+│   │           │                   ├── SOS.Hosting.dll
+│   │           │                   ├── SOS.Hosting.pdb
+│   │           │                   ├── SOS.InstallHelper.dll
+│   │           │                   ├── SOS.InstallHelper.pdb
+│   │           │                   ├── System.ClientModel.dll
+│   │           │                   ├── System.Collections.Immutable.dll
+│   │           │                   ├── System.CommandLine.dll
+│   │           │                   ├── System.Memory.Data.dll
+│   │           │                   ├── System.Security.Cryptography.ProtectedData.dll
+│   │           │                   ├── cs
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── de
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── dotnet-dump.deps.json
+│   │           │                   ├── dotnet-dump.dll
+│   │           │                   ├── dotnet-dump.pdb
+│   │           │                   ├── dotnet-dump.runtimeconfig.json
+│   │           │                   ├── es
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── fr
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── it
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── ja
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── ko
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── linux-arm
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── linux-arm64
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── linux-musl-arm
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── linux-musl-arm64
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── linux-musl-x64
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── linux-x64
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── osx-arm64
+│   │           │                   │   ├── libsos.dylib
+│   │           │                   │   ├── libsosplugin.dylib
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── osx-x64
+│   │           │                   │   ├── libsos.dylib
+│   │           │                   │   ├── libsosplugin.dylib
+│   │           │                   │   └── sosdocsunix.txt
+│   │           │                   ├── pl
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── pt-BR
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── ru
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── runtimes
+│   │           │                   │   └── win
+│   │           │                   │       └── lib
+│   │           │                   │           └── netstandard2.0
+│   │           │                   │               └── System.Security.Cryptography.ProtectedData.dll
+│   │           │                   ├── shims
+│   │           │                   │   ├── osx-x64
+│   │           │                   │   │   └── dotnet-dump
+│   │           │                   │   ├── win-x64
+│   │           │                   │   │   └── dotnet-dump.exe
+│   │           │                   │   └── win-x86
+│   │           │                   │       └── dotnet-dump.exe
+│   │           │                   ├── tr
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   ├── win-arm64
+│   │           │                   │   ├── Microsoft.DiaSymReader.Native.arm64.dll
+│   │           │                   │   └── sos.dll
+│   │           │                   ├── win-x64
+│   │           │                   │   ├── Microsoft.DiaSymReader.Native.amd64.dll
+│   │           │                   │   └── sos.dll
+│   │           │                   ├── win-x86
+│   │           │                   │   ├── Microsoft.DiaSymReader.Native.x86.dll
+│   │           │                   │   └── sos.dll
+│   │           │                   ├── zh-Hans
+│   │           │                   │   └── System.CommandLine.resources.dll
+│   │           │                   └── zh-Hant
+│   │           │                       └── System.CommandLine.resources.dll
+│   │           └── project.assets.json
+│   └── dotnet-dump.exe
 ├── .vsconfig
 ├── CLAUDE.md
 ├── Directory.Build.props
@@ -411,6 +616,7 @@ Use these documents together when planning or implementing new work:
 │       ├── c4-context-legacy.png
 │       ├── c4-context-legacy.puml
 │       ├── migrations
+│       │   ├── ADR-015-platform-restructuring.md
 │       │   ├── desktop-app-xaml-compiler-errors.md
 │       │   ├── uwp-development-roadmap.md
 │       │   ├── uwp-release-checklist.md
@@ -434,6 +640,75 @@ Use these documents together when planning or implementing new work:
 │           ├── ROADMAP_UPDATE_SUMMARY.md
 │           ├── STRUCTURAL_IMPROVEMENTS_2026-02.md
 │           └── TEST_MATRIX_FIX_SUMMARY.md
+├── artifacts
+│   └── provider-validation
+│       ├── README.md
+│       ├── _automation
+│       │   └── 2026-04-09
+│       │       ├── wave1-validation-summary.json
+│       │       └── wave1-validation-summary.md
+│       ├── interactive-brokers
+│       │   ├── 2026-04-09
+│       │   │   ├── bootstrap
+│       │   │   │   └── summary.md
+│       │   │   ├── disconnect-reconnect
+│       │   │   │   └── summary.md
+│       │   │   ├── manifest.json
+│       │   │   ├── market-data-entitlements
+│       │   │   │   └── summary.md
+│       │   │   └── server-version
+│       │   │       └── summary.md
+│       │   └── 2026-04-14
+│       │       └── manual-validation-checklist.md
+│       ├── nyse
+│       │   └── 2026-04-09
+│       │       ├── auth-connectivity
+│       │       │   └── summary.md
+│       │       ├── l1-streaming-reconnect
+│       │       │   └── summary.md
+│       │       ├── manifest.json
+│       │       ├── premium-depth
+│       │       │   └── summary.md
+│       │       └── rate-limit
+│       │           └── summary.md
+│       ├── robinhood
+│       │   └── 2026-04-09
+│       │       ├── auth-session
+│       │       │   └── summary.md
+│       │       ├── manifest.json
+│       │       ├── order-submit-cancel
+│       │       │   └── summary.md
+│       │       ├── quote-polling
+│       │       │   └── summary.md
+│       │       └── throttling-reconnect
+│       │           └── summary.md
+│       └── stocksharp
+│           └── 2026-04-09
+│               ├── cqg-bootstrap
+│               │   └── summary.md
+│               ├── cqg-historical
+│               │   └── summary.md
+│               ├── cqg-streaming
+│               │   └── summary.md
+│               ├── interactive-brokers-bootstrap
+│               │   └── summary.md
+│               ├── interactive-brokers-historical
+│               │   └── summary.md
+│               ├── interactive-brokers-streaming
+│               │   └── summary.md
+│               ├── iqfeed-bootstrap
+│               │   └── summary.md
+│               ├── iqfeed-historical
+│               │   └── summary.md
+│               ├── iqfeed-streaming
+│               │   └── summary.md
+│               ├── manifest.json
+│               ├── rithmic-bootstrap
+│               │   └── summary.md
+│               ├── rithmic-historical
+│               │   └── summary.md
+│               └── rithmic-streaming
+│                   └── summary.md
 ├── benchmarks
 │   ├── BOTTLENECK_REPORT.md
 │   ├── Meridian.Benchmarks
@@ -520,6 +795,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── scan-todos.py
 │       │   ├── sync-readme-badges.py
 │       │   ├── test-scripts.py
+│       │   ├── tests
+│       │   │   └── test_scan_todos.py
 │       │   ├── update-claude-md.py
 │       │   ├── validate-api-docs.py
 │       │   ├── validate-docs-structure.py
@@ -582,13 +859,11 @@ Use these documents together when planning or implementing new work:
 │   │   └── prometheus.yml
 │   └── systemd
 │       └── meridian.service
-├── desktop.ini
 ├── docfx.json
 ├── docs
 │   ├── DEPENDENCIES.md
 │   ├── HELP.md
 │   ├── README.md
-│   ├── WORKFLOW_GUIDE.md
 │   ├── adr
 │   │   ├── 001-provider-abstraction.md
 │   │   ├── 002-tiered-storage-architecture.md
@@ -606,7 +881,6 @@ Use these documents together when planning or implementing new work:
 │   │   ├── 014-json-source-generators.md
 │   │   ├── 015-strategy-execution-contract.md
 │   │   ├── 016-platform-architecture-migration.md
-│   │   ├── ADR-015-platform-restructuring.md
 │   │   ├── README.md
 │   │   └── _template.md
 │   ├── ai
@@ -645,6 +919,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── desktop-layers.md
 │   │   ├── deterministic-canonicalization.md
 │   │   ├── domains.md
+│   │   ├── environment-designer-runtime-projection-and-wpf-admin-surface.md
 │   │   ├── layer-boundaries.md
 │   │   ├── ledger-architecture.md
 │   │   ├── overview.md
@@ -732,6 +1007,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── fsharp-domain.dot
 │   │   ├── fsharp-domain.png
 │   │   ├── fsharp-domain.svg
+│   │   ├── fund-ops-reconciliation.dot
+│   │   ├── fund-ops-reconciliation.png
+│   │   ├── fund-ops-reconciliation.svg
 │   │   ├── mcp-server.dot
 │   │   ├── mcp-server.png
 │   │   ├── mcp-server.svg
@@ -747,6 +1025,12 @@ Use these documents together when planning or implementing new work:
 │   │   ├── resilience-patterns.dot
 │   │   ├── resilience-patterns.png
 │   │   ├── resilience-patterns.svg
+│   │   ├── runtime-hosts.dot
+│   │   ├── runtime-hosts.png
+│   │   ├── runtime-hosts.svg
+│   │   ├── security-master-lifecycle.dot
+│   │   ├── security-master-lifecycle.png
+│   │   ├── security-master-lifecycle.svg
 │   │   ├── storage-architecture.dot
 │   │   ├── storage-architecture.png
 │   │   ├── storage-architecture.svg
@@ -762,75 +1046,78 @@ Use these documents together when planning or implementing new work:
 │   │   ├── ui-navigation-map.dot
 │   │   ├── ui-navigation-map.png
 │   │   ├── ui-navigation-map.svg
-│   │   └── uml
-│   │       ├── Activity Diagram - Data Collection Process Flow.png
-│   │       ├── Activity Diagram - Data Collection Process Flow.svg
-│   │       ├── Activity Diagram - Historical Backfill Process.png
-│   │       ├── Activity Diagram - Historical Backfill Process.svg
-│   │       ├── Class Diagram - WPF MVVM Architecture.png
-│   │       ├── Class Diagram - WPF MVVM Architecture.svg
-│   │       ├── Communication Diagram - Component Message Exchange.png
-│   │       ├── Communication Diagram - Component Message Exchange.svg
-│   │       ├── Interaction Overview Diagram - System Workflow.png
-│   │       ├── Interaction Overview Diagram - System Workflow.svg
-│   │       ├── README.md
-│   │       ├── Sequence Diagram - Backtesting Engine.png
-│   │       ├── Sequence Diagram - Backtesting Engine.svg
-│   │       ├── Sequence Diagram - Historical Backfill Flow.png
-│   │       ├── Sequence Diagram - Historical Backfill Flow.svg
-│   │       ├── Sequence Diagram - Paper Trading Order Execution.png
-│   │       ├── Sequence Diagram - Paper Trading Order Execution.svg
-│   │       ├── Sequence Diagram - Real-Time Data Collection Flow.png
-│   │       ├── Sequence Diagram - Real-Time Data Collection Flow.svg
-│   │       ├── Sequence Diagram - Strategy Promotion Lifecycle.png
-│   │       ├── Sequence Diagram - Strategy Promotion Lifecycle.svg
-│   │       ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.png
-│   │       ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.svg
-│   │       ├── State Diagram - Backfill Request States.png
-│   │       ├── State Diagram - Backfill Request States.svg
-│   │       ├── State Diagram - Order Book Stream States.png
-│   │       ├── State Diagram - Order Book Stream States.svg
-│   │       ├── State Diagram - Provider Connection States.png
-│   │       ├── State Diagram - Provider Connection States.svg
-│   │       ├── State Diagram - Trade Sequence Validation States.png
-│   │       ├── State Diagram - Trade Sequence Validation States.svg
-│   │       ├── Timing Diagram - Backfill Operation Timeline.png
-│   │       ├── Timing Diagram - Backfill Operation Timeline.svg
-│   │       ├── Timing Diagram - Event Processing Timeline.png
-│   │       ├── Timing Diagram - Event Processing Timeline.svg
-│   │       ├── Use Case Diagram - Meridian.png
-│   │       ├── Use Case Diagram - Meridian.svg
-│   │       ├── activity-diagram-backfill.png
-│   │       ├── activity-diagram-backfill.puml
-│   │       ├── activity-diagram.png
-│   │       ├── activity-diagram.puml
-│   │       ├── class-diagram-wpf-mvvm.puml
-│   │       ├── communication-diagram.png
-│   │       ├── communication-diagram.puml
-│   │       ├── interaction-overview-diagram.png
-│   │       ├── interaction-overview-diagram.puml
-│   │       ├── sequence-diagram-backfill.png
-│   │       ├── sequence-diagram-backfill.puml
-│   │       ├── sequence-diagram-backtesting.puml
-│   │       ├── sequence-diagram-paper-trading.puml
-│   │       ├── sequence-diagram-strategy-promotion.puml
-│   │       ├── sequence-diagram-wal-durability.puml
-│   │       ├── sequence-diagram.png
-│   │       ├── sequence-diagram.puml
-│   │       ├── state-diagram-backfill.png
-│   │       ├── state-diagram-backfill.puml
-│   │       ├── state-diagram-orderbook.png
-│   │       ├── state-diagram-orderbook.puml
-│   │       ├── state-diagram-trade-sequence.png
-│   │       ├── state-diagram-trade-sequence.puml
-│   │       ├── state-diagram.png
-│   │       ├── state-diagram.puml
-│   │       ├── timing-diagram-backfill.png
-│   │       ├── timing-diagram-backfill.puml
-│   │       ├── timing-diagram.png
-│   │       ├── timing-diagram.puml
-│   │       ├── use-case-diagram.png
-│   │       └── use-case-diagram.puml
+│   │   ├── uml
+│   │   │   ├── Activity Diagram - Data Collection Process Flow.png
+│   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
+│   │   │   ├── Activity Diagram - Historical Backfill Process.png
+│   │   │   ├── Activity Diagram - Historical Backfill Process.svg
+│   │   │   ├── Class Diagram - WPF MVVM Architecture.png
+│   │   │   ├── Class Diagram - WPF MVVM Architecture.svg
+│   │   │   ├── Communication Diagram - Component Message Exchange.png
+│   │   │   ├── Communication Diagram - Component Message Exchange.svg
+│   │   │   ├── Interaction Overview Diagram - System Workflow.png
+│   │   │   ├── Interaction Overview Diagram - System Workflow.svg
+│   │   │   ├── README.md
+│   │   │   ├── Sequence Diagram - Backtesting Engine.png
+│   │   │   ├── Sequence Diagram - Backtesting Engine.svg
+│   │   │   ├── Sequence Diagram - Historical Backfill Flow.png
+│   │   │   ├── Sequence Diagram - Historical Backfill Flow.svg
+│   │   │   ├── Sequence Diagram - Paper Trading Order Execution.png
+│   │   │   ├── Sequence Diagram - Paper Trading Order Execution.svg
+│   │   │   ├── Sequence Diagram - Real-Time Data Collection Flow.png
+│   │   │   ├── Sequence Diagram - Real-Time Data Collection Flow.svg
+│   │   │   ├── Sequence Diagram - Strategy Promotion Lifecycle.png
+│   │   │   ├── Sequence Diagram - Strategy Promotion Lifecycle.svg
+│   │   │   ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.png
+│   │   │   ├── Sequence Diagram - WAL Durability and Crash-Safe Writes.svg
+│   │   │   ├── State Diagram - Backfill Request States.png
+│   │   │   ├── State Diagram - Backfill Request States.svg
+│   │   │   ├── State Diagram - Order Book Stream States.png
+│   │   │   ├── State Diagram - Order Book Stream States.svg
+│   │   │   ├── State Diagram - Provider Connection States.png
+│   │   │   ├── State Diagram - Provider Connection States.svg
+│   │   │   ├── State Diagram - Trade Sequence Validation States.png
+│   │   │   ├── State Diagram - Trade Sequence Validation States.svg
+│   │   │   ├── Timing Diagram - Backfill Operation Timeline.png
+│   │   │   ├── Timing Diagram - Backfill Operation Timeline.svg
+│   │   │   ├── Timing Diagram - Event Processing Timeline.png
+│   │   │   ├── Timing Diagram - Event Processing Timeline.svg
+│   │   │   ├── Use Case Diagram - Meridian.png
+│   │   │   ├── Use Case Diagram - Meridian.svg
+│   │   │   ├── activity-diagram-backfill.png
+│   │   │   ├── activity-diagram-backfill.puml
+│   │   │   ├── activity-diagram.png
+│   │   │   ├── activity-diagram.puml
+│   │   │   ├── class-diagram-wpf-mvvm.puml
+│   │   │   ├── communication-diagram.png
+│   │   │   ├── communication-diagram.puml
+│   │   │   ├── interaction-overview-diagram.png
+│   │   │   ├── interaction-overview-diagram.puml
+│   │   │   ├── sequence-diagram-backfill.png
+│   │   │   ├── sequence-diagram-backfill.puml
+│   │   │   ├── sequence-diagram-backtesting.puml
+│   │   │   ├── sequence-diagram-paper-trading.puml
+│   │   │   ├── sequence-diagram-strategy-promotion.puml
+│   │   │   ├── sequence-diagram-wal-durability.puml
+│   │   │   ├── sequence-diagram.png
+│   │   │   ├── sequence-diagram.puml
+│   │   │   ├── state-diagram-backfill.png
+│   │   │   ├── state-diagram-backfill.puml
+│   │   │   ├── state-diagram-orderbook.png
+│   │   │   ├── state-diagram-orderbook.puml
+│   │   │   ├── state-diagram-trade-sequence.png
+│   │   │   ├── state-diagram-trade-sequence.puml
+│   │   │   ├── state-diagram.png
+│   │   │   ├── state-diagram.puml
+│   │   │   ├── timing-diagram-backfill.png
+│   │   │   ├── timing-diagram-backfill.puml
+│   │   │   ├── timing-diagram.png
+│   │   │   ├── timing-diagram.puml
+│   │   │   ├── use-case-diagram.png
+│   │   │   └── use-case-diagram.puml
+│   │   ├── workstation-delivery.dot
+│   │   ├── workstation-delivery.png
+│   │   └── workstation-delivery.svg
 │   ├── docfx
 │   │   ├── README.md
 │   │   ├── api
@@ -4314,6 +4601,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── meridian-6-week-roadmap.md
 │   │   ├── meridian-database-blueprint.md
 │   │   ├── options-roadmap.md
+│   │   ├── portfolio-level-backtesting-composer-blueprint.md
 │   │   ├── provider-reliability-data-confidence-wave-1-blueprint.md
 │   │   ├── quant-script-environment-blueprint.md
 │   │   ├── quant-script-page-implementation-guide.md
@@ -4321,6 +4609,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── readability-refactor-baseline.md
 │   │   ├── readability-refactor-roadmap.md
 │   │   ├── readability-refactor-technical-design-pack.md
+│   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   ├── security-master-productization-roadmap.md
 │   │   ├── trading-workstation-migration-blueprint.md
 │   │   ├── ufl-bond-target-state-v2.md
@@ -4515,10 +4804,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── desktop-dev.ps1
 │   │   ├── desktop-workflows.json
 │   │   ├── diagnose-uwp-xaml.ps1
+│   │   ├── fixtures
+│   │   │   └── robinhood-options-smoke.seed.json
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── install-git-hooks.sh
+│   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
-│   │   └── run-desktop.ps1
+│   │   ├── run-desktop.ps1
+│   │   └── run-wave1-provider-validation.ps1
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
 │   ├── lib
@@ -4545,18 +4838,14 @@ Use these documents together when planning or implementing new work:
 │   │   ├── UiServer.cs
 │   │   ├── app.ico
 │   │   ├── app.manifest
-│   │   ├── runtimeconfig.template.json
-│   │   └── wwwroot
-│   │       └── templates
-│   │           ├── credentials.html
-│   │           ├── index.html
-│   │           └── index.js
+│   │   └── runtimeconfig.template.json
 │   ├── Meridian.Application
 │   │   ├── Backfill
 │   │   │   ├── BackfillCostEstimator.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillResult.cs
 │   │   │   ├── BackfillStatusStore.cs
+│   │   │   ├── BackfillStatusStoreJsonContext.cs
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
 │   │   │   └── SymbolValidationSignal.cs
@@ -4624,8 +4913,7 @@ Use these documents together when planning or implementing new work:
 │   │   │       │   ├── BackfillModeRunner.cs
 │   │   │       │   ├── CollectorModeRunner.cs
 │   │   │       │   ├── CommandModeRunner.cs
-│   │   │       │   ├── DesktopModeRunner.cs
-│   │   │       │   └── WebModeRunner.cs
+│   │   │       │   └── DesktopModeRunner.cs
 │   │   │       ├── SharedStartupBootstrapper.cs
 │   │   │       ├── StartupModels
 │   │   │       │   ├── HostMode.cs
@@ -4687,6 +4975,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PostgresDirectLendingCommandService.cs
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
+│   │   ├── EnvironmentDesign
+│   │   │   ├── EnvironmentDesignerService.cs
+│   │   │   ├── IEnvironmentDesignService.cs
+│   │   │   ├── IEnvironmentPublishService.cs
+│   │   │   ├── IEnvironmentRuntimeProjectionService.cs
+│   │   │   └── IEnvironmentValidationService.cs
 │   │   ├── Etl
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   └── EtlServices.cs
@@ -4695,17 +4989,20 @@ Use these documents together when planning or implementing new work:
 │   │   ├── FundAccounts
 │   │   │   ├── IFundAccountService.cs
 │   │   │   └── InMemoryFundAccountService.cs
+│   │   ├── FundStructure
+│   │   │   ├── GovernanceSharedDataAccessService.cs
+│   │   │   ├── IFundStructureService.cs
+│   │   │   ├── IGovernanceSharedDataAccessService.cs
+│   │   │   └── InMemoryFundStructureService.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Http
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
-│   │   │   ├── Endpoints
-│   │   │   │   ├── ArchiveMaintenanceEndpoints.cs
-│   │   │   │   ├── DataQualityEndpoints.cs
-│   │   │   │   ├── PackagingEndpoints.cs
-│   │   │   │   └── StatusEndpointHandlers.cs
-│   │   │   ├── HtmlTemplateLoader.cs
-│   │   │   └── HtmlTemplates.cs
+│   │   │   └── Endpoints
+│   │   │       ├── ArchiveMaintenanceEndpoints.cs
+│   │   │       ├── DataQualityEndpoints.cs
+│   │   │       ├── PackagingEndpoints.cs
+│   │   │       └── StatusEndpointHandlers.cs
 │   │   ├── Indicators
 │   │   │   └── TechnicalIndicatorService.cs
 │   │   ├── Meridian.Application.csproj
@@ -4795,6 +5092,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterConflictService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterImportService.cs
+│   │   │   ├── SecurityMasterIngestStatusService.cs
 │   │   │   ├── SecurityMasterLedgerBridge.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterOptionsValidator.cs
@@ -4965,6 +5263,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── BackfillApiModels.cs
 │   │   │   ├── ClientModels.cs
 │   │   │   ├── ErrorResponse.cs
+│   │   │   ├── ExecutionApiModels.cs
 │   │   │   ├── LeanApiModels.cs
 │   │   │   ├── LiveDataModels.cs
 │   │   │   ├── OptionsModels.cs
@@ -4972,6 +5271,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ProviderRoutingApiModels.cs
 │   │   │   ├── Quality
 │   │   │   │   └── QualityApiModels.cs
+│   │   │   ├── SecurityMasterIngestStatusModels.cs
 │   │   │   ├── StatusEndpointModels.cs
 │   │   │   ├── StatusModels.cs
 │   │   │   ├── UiApiClient.cs
@@ -4995,6 +5295,7 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
 │   │   │   ├── DerivativesConfigDto.cs
+│   │   │   ├── MeridianPathDefaults.cs
 │   │   │   ├── ProviderConnectionsConfigDto.cs
 │   │   │   └── SymbolConfig.cs
 │   │   ├── Credentials
@@ -5062,6 +5363,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SubscriptionId.cs
 │   │   │   ├── SymbolId.cs
 │   │   │   └── VenueCode.cs
+│   │   ├── EnvironmentDesign
+│   │   │   └── EnvironmentDesignDtos.cs
 │   │   ├── Etl
 │   │   │   └── EtlModels.cs
 │   │   ├── Export
@@ -5105,6 +5408,7 @@ Use these documents together when planning or implementing new work:
 │   │   └── Workstation
 │   │       ├── FundLedgerDtos.cs
 │   │       ├── FundOperationsDtos.cs
+│   │       ├── FundOperationsWorkspaceDtos.cs
 │   │       ├── ReconciliationDtos.cs
 │   │       ├── SecurityMasterWorkstationDtos.cs
 │   │       └── StrategyRunReadModels.cs
@@ -5426,10 +5730,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── InteractiveBrokers
 │   │   │   │   ├── ContractFactory.cs
 │   │   │   │   ├── EnhancedIBConnectionManager.IBApi.cs
+│   │   │   │   ├── EnhancedIBConnectionManager.IBApiVendorStubs.cs
 │   │   │   │   ├── EnhancedIBConnectionManager.cs
 │   │   │   │   ├── IBApiLimits.cs
 │   │   │   │   ├── IBApiVersionValidator.cs
 │   │   │   │   ├── IBBrokerageGateway.cs
+│   │   │   │   ├── IBBrokerageInterop.cs
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
 │   │   │   │   ├── IBConnectionManager.cs
@@ -5837,85 +6143,37 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── ReconciliationProjectionService.cs
 │   │   │   ├── ReconciliationRunService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
+│   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   └── StrategyRunReadService.cs
 │   │   └── Storage
 │   │       └── StrategyRunStore.cs
-│   ├── Meridian.Ui.Services
-│   │   ├── Collections
-│   │   │   ├── BoundedObservableCollection.cs
-│   │   │   └── CircularBuffer.cs
-│   │   ├── Contracts
-│   │   │   ├── ConnectionTypes.cs
-│   │   │   ├── IAdminMaintenanceService.cs
-│   │   │   ├── IArchiveHealthService.cs
-│   │   │   ├── IBackgroundTaskSchedulerService.cs
-│   │   │   ├── IConfigService.cs
-│   │   │   ├── ICredentialService.cs
-│   │   │   ├── ILoggingService.cs
-│   │   │   │   ├── components
-│   │   │   │   │   ├── meridian
-│   │   │   │   │   │   ├── command-palette.test.tsx
-│   │   │   │   │   │   ├── command-palette.tsx
-│   │   │   │   │   │   ├── entity-data-table.test.tsx
-│   │   │   │   │   │   ├── entity-data-table.tsx
-│   │   │   │   │   │   ├── equity-curve-chart.test.tsx
-│   │   │   │   │   │   ├── equity-curve-chart.tsx
-│   │   │   │   │   │   ├── metric-card.tsx
-│   │   │   │   │   │   ├── run-status-badge.tsx
-│   │   │   │   │   │   ├── workspace-header.tsx
-│   │   │   │   │   │   └── workspace-nav.tsx
-│   │   │   │   │   └── ui
-│   │   │   │   │       ├── badge.tsx
-│   │   │   │   │       ├── button.tsx
-│   │   │   │   │       ├── card.tsx
-│   │   │   │   │       ├── command.tsx
-│   │   │   │   │       ├── dialog.tsx
-│   │   │   │   │       └── input.tsx
-│   │   │   │   ├── hooks
-│   │   │   │   │   └── use-workstation-data.ts
-│   │   │   │   ├── lib
-│   │   │   │   │   ├── api.trading.test.ts
-│   │   │   │   │   ├── api.ts
-│   │   │   │   │   ├── utils.ts
-│   │   │   │   │   └── workspace.ts
-│   │   │   │   ├── main.tsx
-│   │   │   │   ├── screens
-│   │   │   │   │   ├── data-operations-screen.test.tsx
-│   │   │   │   │   ├── data-operations-screen.tsx
-│   │   │   │   │   ├── governance-screen.test.tsx
-│   │   │   │   │   ├── governance-screen.tsx
-│   │   │   │   │   ├── overview-screen.tsx
-│   │   │   │   │   ├── research-screen.test.tsx
-│   │   │   │   │   ├── research-screen.tsx
-│   │   │   │   │   ├── trading-screen.test.tsx
-│   │   │   │   │   ├── trading-screen.tsx
-│   │   │   │   │   └── workspace-placeholder.tsx
-│   │   │   │   ├── styles
-│   │   │   │   │   └── index.css
-│   │   │   │   ├── test
-│   │   │   │   │   └── setup.ts
-│   │   │   │   └── types.ts
-│   │   │   ├── tailwind.config.d.ts
-│   │   │   ├── tailwind.config.js
-│   │   │   ├── tailwind.config.ts
-│   │   │   ├── tsconfig.app.json
-│   │   │   ├── tsconfig.app.tsbuildinfo
-│   │   │   ├── tsconfig.json
-│   │   │   ├── tsconfig.node.json
-│   │   │   ├── tsconfig.node.tsbuildinfo
-│   │   │   ├── vite.config.d.ts
-│   │   │   ├── vite.config.js
-│   │   │   └── vite.config.ts
+│   ├── Meridian.Ui
+│   │   ├── dashboard
+│   │   │   └── src
+│   │   │       ├── app.tsx
+│   │   │       ├── components
+│   │   │       │   └── meridian
+│   │   │       │       ├── workspace-header.tsx
+│   │   │       │       └── workspace-nav.tsx
+│   │   │       ├── lib
+│   │   │       │   ├── api.trading.test.ts
+│   │   │       │   └── api.ts
+│   │   │       ├── screens
+│   │   │       │   ├── data-operations-screen.test.tsx
+│   │   │       │   ├── governance-screen.test.tsx
+│   │   │       │   ├── governance-screen.tsx
+│   │   │       │   ├── overview-screen.tsx
+│   │   │       │   ├── research-screen.test.tsx
+│   │   │       │   ├── trading-screen.test.tsx
+│   │   │       │   └── trading-screen.tsx
+│   │   │       ├── styles
+│   │   │       │   └── index.css
+│   │   │       └── types.ts
 │   │   └── wwwroot
-│   │       ├── static
-│   │       │   └── dashboard.css
 │   │       └── workstation
-│   │           ├── assets
-│   │           │   ├── index-BUqJ19Wh.css
-│   │           │   ├── index-CnAc-D_d.js
-│   │           │   ├── index-DLXsLZLB.css
-│   │           │   └── index-VxIQhfQW.js
-│   │           └── index.html
+│   │           └── assets
+│   │               ├── index-CnAc-D_d.js
+│   │               └── index-DLXsLZLB.css
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
 │   │   │   ├── BoundedObservableCollection.cs
@@ -6057,10 +6315,12 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DiagnosticsEndpoints.cs
 │   │   │   ├── DirectLendingEndpoints.cs
 │   │   │   ├── EndpointHelpers.cs
+│   │   │   ├── EnvironmentDesignerEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
 │   │   │   ├── FundAccountEndpoints.cs
+│   │   │   ├── FundStructureEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
 │   │   │   ├── HistoricalEndpoints.cs
 │   │   │   ├── IBEndpoints.cs
@@ -6103,8 +6363,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Services
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   └── SecurityMasterSecurityReferenceLookup.cs
-│   │   ├── StaticAssetPathResolver.cs
 │   │   └── UserProfileRegistry.cs
 │   └── Meridian.Wpf
 │       ├── App.xaml
@@ -6202,21 +6462,31 @@ Use these documents together when planning or implementing new work:
 │       │   ├── LiveDataModels.cs
 │       │   ├── NotificationModels.cs
 │       │   ├── OrderBookModels.cs
+│       │   ├── PaneDropAction.cs
 │       │   ├── PaneDropEventArgs.cs
 │       │   ├── PaneLayout.cs
 │       │   ├── ProviderHealthModels.cs
 │       │   ├── QuantScriptModels.cs
 │       │   ├── SettingsModels.cs
+│       │   ├── ShellNavigationCatalog.DataOperations.cs
+│       │   ├── ShellNavigationCatalog.Governance.cs
+│       │   ├── ShellNavigationCatalog.Research.cs
+│       │   ├── ShellNavigationCatalog.Trading.cs
+│       │   ├── ShellNavigationCatalog.Workspaces.cs
+│       │   ├── ShellNavigationCatalog.cs
+│       │   ├── ShellNavigationModels.cs
 │       │   ├── StorageDisplayModels.cs
 │       │   ├── SymbolsModels.cs
 │       │   ├── WatchlistModels.cs
 │       │   ├── WorkspaceDefinition.cs
 │       │   ├── WorkspaceRegistry.cs
 │       │   ├── WorkspaceShellChromeModels.cs
-│       │   └── WorkspaceShellModels.cs
+│       │   ├── WorkspaceShellModels.cs
+│       │   └── WorkstationOperatingContextModels.cs
 │       ├── README.md
 │       ├── Services
 │       │   ├── AgentLoopService.cs
+│       │   ├── ApiStatusService.cs
 │       │   ├── ArchiveHealthService.cs
 │       │   ├── BackendServiceManager.cs
 │       │   ├── BackgroundTaskSchedulerService.cs
@@ -6244,6 +6514,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── ICommandContextProvider.cs
 │       │   ├── IFundProfileCatalog.cs
 │       │   ├── IQuantScriptLayoutService.cs
+│       │   ├── IWorkspaceShellStateProvider.cs
 │       │   ├── InfoBarService.cs
 │       │   ├── JumpListService.cs
 │       │   ├── KeyboardShortcutService.cs
@@ -6258,6 +6529,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── RetentionAssuranceService.cs
 │       │   ├── RunMatService.cs
 │       │   ├── SchemaService.cs
+│       │   ├── SecurityMasterOperatorWorkflowClient.cs
+│       │   ├── SecurityMasterRuntimeStatusService.cs
 │       │   ├── SingleInstanceService.cs
 │       │   ├── StatusService.cs
 │       │   ├── StorageService.cs
@@ -6271,9 +6544,13 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TooltipService.cs
 │       │   ├── TypeForwards.cs
 │       │   ├── WatchlistService.cs
+│       │   ├── WindowStartupRecovery.cs
 │       │   ├── WorkspaceService.cs
 │       │   ├── WorkspaceShellContextService.cs
-│       │   └── WorkstationReconciliationApiClient.cs
+│       │   ├── WorkspaceShellStateProviders.cs
+│       │   ├── WorkstationOperatingContextService.cs
+│       │   ├── WorkstationReconciliationApiClient.cs
+│       │   └── WpfShellServiceCollectionExtensions.cs
 │       ├── Styles
 │       │   ├── Animations.xaml
 │       │   ├── AppStyles.xaml
@@ -6359,7 +6636,8 @@ Use these documents together when planning or implementing new work:
 │       │   ├── TickerStripViewModel.cs
 │       │   ├── TradingHoursViewModel.cs
 │       │   ├── WatchlistViewModel.cs
-│       │   └── WelcomePageViewModel.cs
+│       │   ├── WelcomePageViewModel.cs
+│       │   └── WorkspaceShellViewModelBase.cs
 │       └── Views
 │           ├── AccountPortfolioPage.xaml
 │           ├── AccountPortfolioPage.xaml.cs
@@ -6423,6 +6701,8 @@ Use these documents together when planning or implementing new work:
 │           ├── EditScheduledJobDialog.xaml
 │           ├── EditScheduledJobDialog.xaml.cs
 │           ├── EditWatchlistDialog.cs
+│           ├── EnvironmentDesignerPage.xaml
+│           ├── EnvironmentDesignerPage.xaml.cs
 │           ├── EventReplayPage.xaml
 │           ├── EventReplayPage.xaml.cs
 │           ├── ExportPresetsPage.xaml
@@ -6545,10 +6825,15 @@ Use these documents together when planning or implementing new work:
 │           ├── WelcomePage.xaml.cs
 │           ├── WorkspaceCommandBarControl.xaml
 │           ├── WorkspaceCommandBarControl.xaml.cs
+│           ├── WorkspaceDeepPageHostPage.xaml
+│           ├── WorkspaceDeepPageHostPage.xaml.cs
 │           ├── WorkspacePage.xaml
 │           ├── WorkspacePage.xaml.cs
+│           ├── WorkspaceShellChromeState.cs
 │           ├── WorkspaceShellContextStripControl.xaml
-│           └── WorkspaceShellContextStripControl.xaml.cs
+│           ├── WorkspaceShellContextStripControl.xaml.cs
+│           ├── WorkspaceShellFallbackContentFactory.cs
+│           └── WorkspaceShellPageBase.cs
 ├── tests
 │   ├── Directory.Build.props
 │   ├── Meridian.Backtesting.Tests
@@ -6594,6 +6879,11 @@ Use these documents together when planning or implementing new work:
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── TradingTransitionTests.fs
 │   │   └── ValidationTests.fs
+│   ├── Meridian.FundStructure.Tests
+│   │   ├── EnvironmentDesignerServiceTests.cs
+│   │   ├── GovernanceSharedDataAccessServiceTests.cs
+│   │   ├── InMemoryFundStructureServiceTests.cs
+│   │   └── Meridian.FundStructure.Tests.csproj
 │   ├── Meridian.McpServer.Tests
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.McpServer.Tests.csproj
@@ -6608,6 +6898,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   └── TestPriceSeriesBuilder.cs
 │   │   ├── Meridian.QuantScript.Tests.csproj
+│   │   ├── NotebookExecutionSessionTests.cs
 │   │   ├── PlotQueueTests.cs
 │   │   ├── PortfolioBuilderTests.cs
 │   │   ├── PriceSeriesTests.cs
@@ -6655,14 +6946,17 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── ValidateConfigCommandTests.cs
 │   │   │   ├── Composition
 │   │   │   │   ├── DirectLendingStartupTests.cs
+│   │   │   │   ├── ProviderFeatureRegistrationTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
 │   │   │   │   ├── Startup
 │   │   │   │   │   └── SharedStartupBootstrapperTests.cs
 │   │   │   │   └── StorageFeatureRegistrationTests.cs
 │   │   │   ├── Config
+│   │   │   │   ├── ConfigEnvironmentOverrideTests.cs
 │   │   │   │   ├── ConfigJsonSchemaGeneratorTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
 │   │   │   │   ├── ConfigValidationPipelineTests.cs
+│   │   │   │   ├── ConfigValidatorCliTests.cs
 │   │   │   │   ├── ConfigValidatorTests.cs
 │   │   │   │   ├── ConfigurationUnificationTests.cs
 │   │   │   │   └── ProviderCredentialResolverTests.cs
@@ -6709,6 +7003,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── BackfillProgressTrackerTests.cs
 │   │   │   │   ├── BackpressureSignalTests.cs
 │   │   │   │   ├── CompositePublisherTests.cs
+│   │   │   │   ├── DeadLetterSinkTests.cs
 │   │   │   │   ├── DroppedEventAuditTrailTests.cs
 │   │   │   │   ├── DualPathEventPipelineTests.cs
 │   │   │   │   ├── EventPipelineMetricsTests.cs
@@ -6721,11 +7016,14 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── IngestionJobServiceTests.cs
 │   │   │   │   ├── IngestionJobTests.cs
 │   │   │   │   ├── MarketDataClientFactoryTests.cs
+│   │   │   │   ├── PersistentDedupLedgerTests.cs
 │   │   │   │   ├── SpscRingBufferTests.cs
 │   │   │   │   └── WalEventPipelineTests.cs
 │   │   │   ├── ProviderRouting
 │   │   │   │   └── ProviderRoutingServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
+│   │   │   ├── SecurityMaster
+│   │   │   │   └── SecurityMasterImportServiceTests.cs
 │   │   │   ├── Services
 │   │   │   │   ├── CanonicalizingPublisherTests.cs
 │   │   │   │   ├── CliModeResolverTests.cs
@@ -6740,16 +7038,22 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   │   └── SequenceErrorTrackerTests.cs
 │   │   │   │   ├── ErrorCodeMappingTests.cs
 │   │   │   │   ├── EventCanonicalizerTests.cs
+│   │   │   │   ├── FundOperationsWorkspaceReadServiceTests.cs
 │   │   │   │   ├── GracefulShutdownTests.cs
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── OptionsChainServiceTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
 │   │   │   │   ├── TradingCalendarTests.cs
 │   │   │   │   └── VenueMicMapperTests.cs
-│   │   │   └── Ui
-│   │   │       └── ConfigStoreTests.cs
+│   │   │   ├── Ui
+│   │   │   │   └── ConfigStoreTests.cs
+│   │   │   └── Wizard
+│   │   │       └── WizardConfigurationStepTests.cs
 │   │   ├── Architecture
 │   │   │   └── LayerBoundaryTests.cs
+│   │   ├── Contracts
+│   │   │   └── Api
+│   │   │       └── UiApiClientTests.cs
 │   │   ├── Domain
 │   │   │   ├── Collectors
 │   │   │   │   ├── L3OrderBookCollectorTests.cs
@@ -6783,6 +7087,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MarginModelTests.cs
 │   │   │   │   ├── MultiCurrencyTests.cs
 │   │   │   │   └── TaxLotAccountingTests.cs
+│   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
@@ -6832,6 +7137,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
+│   │   │   │   ├── IBApiVersionValidatorTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
@@ -6840,6 +7146,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── IBSimulationClientContractTests.cs
 │   │   │   │   ├── IBSimulationClientTests.cs
 │   │   │   │   ├── MarketDataClientContractTests.cs
+│   │   │   │   ├── NYSECredentialAndRateLimitTests.cs
 │   │   │   │   ├── NYSEMessageParsingTests.cs
 │   │   │   │   ├── NyseMarketDataClientContractTests.cs
 │   │   │   │   ├── NyseMarketDataClientTests.cs
@@ -6890,7 +7197,9 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── EndpointIntegrationTestBase.cs
 │   │   │   │   ├── EndpointTestCollection.cs
 │   │   │   │   ├── EndpointTestFixture.cs
+│   │   │   │   ├── EnvironmentDesignerEndpointTests.cs
 │   │   │   │   ├── FailoverEndpointTests.cs
+│   │   │   │   ├── FundStructureEndpointTests.cs
 │   │   │   │   ├── HealthEndpointTests.cs
 │   │   │   │   ├── HistoricalEndpointTests.cs
 │   │   │   │   ├── IBEndpointTests.cs
@@ -6937,6 +7246,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
+│   │   │   ├── SecurityMasterImportServiceTests.cs
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
@@ -6962,6 +7272,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FilePermissionsServiceTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
+│   │   │   ├── MaintenancePersistenceTests.cs
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
 │   │   │   ├── ParquetConversionServiceTests.cs
@@ -6969,6 +7280,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PortableDataPackagerTests.cs
 │   │   │   ├── PositionSnapshotStoreTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
+│   │   │   ├── SourceRegistryPersistenceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
 │   │   │   ├── StorageChecksumServiceTests.cs
 │   │   │   ├── StorageOptionsDefaultsTests.cs
@@ -6986,6 +7298,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── PromotionServiceTests.cs
 │   │   │   ├── ReconciliationProjectionServiceTests.cs
 │   │   │   ├── StrategyLifecycleManagerTests.cs
+│   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   └── StrategyRunReadServiceTests.cs
 │   │   ├── SymbolSearch
@@ -7002,6 +7315,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── MarketEventBuilder.cs
 │   │   │   │   ├── SecurityBuilder.cs
 │   │   │   │   └── TradeBuilder.cs
+│   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   └── TestMarketEventPublisher.cs
@@ -7014,8 +7328,8 @@ Use these documents together when planning or implementing new work:
 │   │       ├── DirectLendingEndpointsTests.cs
 │   │       ├── ExecutionGovernanceEndpointsTests.cs
 │   │       ├── ExecutionWriteEndpointsTests.cs
+│   │       ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │       ├── SecurityMasterPreferredEquityEndpointsTests.cs
-│   │       ├── StaticAssetPathResolverTests.cs
 │   │       └── WorkstationEndpointsTests.cs
 │   ├── Meridian.Ui.Tests
 │   │   ├── Collections
@@ -7075,15 +7389,20 @@ Use these documents together when planning or implementing new work:
 │   │       ├── SymbolManagementServiceTests.cs
 │   │       ├── SymbolMappingServiceTests.cs
 │   │       ├── SystemHealthServiceTests.cs
+│   │       ├── TestSupport
+│   │       │   └── FixedConfigService.cs
 │   │       ├── TimeSeriesAlignmentServiceTests.cs
 │   │       ├── WatchlistServiceCollection.cs
 │   │       └── WatchlistServiceTests.cs
 │   ├── Meridian.Wpf.Tests
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Wpf.Tests.csproj
+│   │   ├── Models
+│   │   │   └── ShellNavigationCatalogTests.cs
 │   │   ├── Services
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── AppServiceRegistrationTests.cs
+│   │   │   ├── BackendServiceManagerTests.cs
 │   │   │   ├── BackgroundTaskSchedulerServiceTests.cs
 │   │   │   ├── ConfigServiceTests.cs
 │   │   │   ├── ConnectionServiceTests.cs
@@ -7105,12 +7424,16 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── TooltipServiceTests.cs
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   ├── WorkspaceServiceTests.cs
-│   │   │   └── WorkspaceShellContextServiceTests.cs
+│   │   │   ├── WorkspaceShellContextServiceTests.cs
+│   │   │   └── WorkstationOperatingContextServiceTests.cs
 │   │   ├── Support
 │   │   │   ├── FakeQuantScriptCompiler.cs
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
+│   │   │   ├── MainPageUiAutomationFacade.cs
+│   │   │   ├── NavigationHostInspector.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
+│   │   │   ├── StrategyRunWorkspaceTestData.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── TestAssemblyConfiguration.cs
 │   │   ├── ViewModels
@@ -7120,19 +7443,32 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── FundAccountsViewModelTests.cs
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── MainShellViewModelTests.cs
+│   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RunMatViewModelTests.cs
-│   │   │   └── StrategyRunBrowserViewModelTests.cs
+│   │   │   ├── SecurityMasterViewModelTests.cs
+│   │   │   ├── StrategyRunBrowserViewModelTests.cs
+│   │   │   ├── StrategyRunLedgerViewModelTests.cs
+│   │   │   └── StrategyRunPortfolioViewModelTests.cs
 │   │   └── Views
 │   │       ├── DashboardPageSmokeTests.cs
+│   │       ├── DataOperationsWorkspaceShellSmokeTests.cs
 │   │       ├── DataQualityPageSmokeTests.cs
+│   │       ├── FullNavigationSweepTests.cs
+│   │       ├── FundProfileSelectionPageSmokeTests.cs
+│   │       ├── GovernanceWorkspaceShellSmokeTests.cs
 │   │       ├── MainPageSmokeTests.cs
+│   │       ├── MainPageUiWorkflowTests.cs
 │   │       ├── NavigationPageSmokeTests.cs
+│   │       ├── PageLifecycleCleanupTests.cs
 │   │       ├── QuantScriptPageTests.cs
 │   │       ├── RunMatUiSmokeTests.cs
 │   │       ├── RunMatWorkflowSmokeTests.cs
 │   │       ├── SplitPaneHostControlTests.cs
-│   │       └── SystemHealthPageSmokeTests.cs
+│   │       ├── SystemHealthPageSmokeTests.cs
+│   │       ├── WorkspaceDeepPageChromeTests.cs
+│   │       ├── WorkspaceShellPageSmokeTests.cs
+│   │       └── WorkstationPageSmokeTests.cs
 │   ├── coverlet.runsettings
 │   ├── scripts
 │   │   └── setup-verification.sh
@@ -7140,6 +7476,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-492 directories, 6516 files
+602 directories, 6741 files
 ```
 <!-- readme-tree end -->
