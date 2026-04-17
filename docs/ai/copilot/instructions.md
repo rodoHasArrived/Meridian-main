@@ -561,7 +561,10 @@ Meridian-main
 ├── artifacts
 │   └── provider-validation
 │       ├── _automation
-│       │   └── 2026-04-09
+│       │   ├── 2026-04-09
+│       │   │   ├── wave1-validation-summary.json
+│       │   │   └── wave1-validation-summary.md
+│       │   └── 2026-04-16
 │       │       ├── wave1-validation-summary.json
 │       │       └── wave1-validation-summary.md
 │       ├── interactive-brokers
@@ -4447,9 +4450,7 @@ Meridian-main
 │   │   ├── assembly-performance-opportunities.md
 │   │   ├── competitive-analysis-2026-03.md
 │   │   ├── data-quality-monitoring-evaluation.md
-│   │   ├── desktop-improvements-executive-summary.md
 │   │   ├── desktop-platform-improvements-implementation-guide.md
-│   │   ├── high-impact-improvement-brainstorm-2026-03.md
 │   │   ├── high-value-low-cost-improvements-brainstorm.md
 │   │   ├── historical-data-providers-evaluation.md
 │   │   ├── ingestion-orchestration-evaluation.md
