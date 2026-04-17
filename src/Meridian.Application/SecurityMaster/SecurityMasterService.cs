@@ -46,7 +46,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
         => ExecuteCreateAsync(request, ct);
 
-    public async Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+    public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+        => AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+
+    private async Task<SecurityDetailDto> AmendTermsInternalAsync(
+        AmendSecurityTermsRequest request,
+        string eventType,
+        CancellationToken ct)
     {
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
         var current = await _rebuilder.RebuildEconomicDefinitionAsync(request.SecurityId, aliasProjection, ct).ConfigureAwait(false)
@@ -59,7 +65,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            "TermsAmended",
+            eventType,
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -117,7 +123,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             SourceRecordId: request.SourceRecordId,
             Reason: request.Reason);
 
-        return await AmendTermsAsync(amendRequest, ct).ConfigureAwait(false);
+        return await AmendTermsInternalAsync(amendRequest, eventType: "PreferredTermsAmended", ct).ConfigureAwait(false);
     }
 
     public async Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
@@ -138,7 +144,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             SourceRecordId: request.SourceRecordId,
             Reason: request.Reason);
 
-        return await AmendTermsAsync(amendRequest, ct).ConfigureAwait(false);
+        return await AmendTermsInternalAsync(amendRequest, eventType: "ConvertibleTermsAmended", ct).ConfigureAwait(false);
     }
 
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)

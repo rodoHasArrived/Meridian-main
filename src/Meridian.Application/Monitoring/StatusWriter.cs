@@ -50,6 +50,10 @@ public sealed class StatusWriter : IAsyncDisposable
 
     public async Task WriteOnceAsync(CancellationToken ct = default)
     {
+        var directory = Path.GetDirectoryName(_path);
+        if (!string.IsNullOrWhiteSpace(directory))
+            Directory.CreateDirectory(directory);
+
         var cfg = _configProvider();
         var payload = new
         {

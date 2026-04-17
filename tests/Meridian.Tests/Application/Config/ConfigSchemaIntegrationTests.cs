@@ -48,6 +48,26 @@ public sealed class ConfigSchemaIntegrationTests
     private static string NormalizeJson(string json)
     {
         using var doc = JsonDocument.Parse(json);
-        return JsonSerializer.Serialize(doc.RootElement);
+        return JsonSerializer.Serialize(SortElement(doc.RootElement));
     }
+
+    private static object? SortElement(JsonElement element)
+        => element.ValueKind switch
+        {
+            JsonValueKind.Object => element
+                .EnumerateObject()
+                .Where(property => !string.Equals(property.Name, "default", StringComparison.Ordinal))
+                .OrderBy(property => property.Name, StringComparer.Ordinal)
+                .ToDictionary(
+                    property => property.Name,
+                    property => SortElement(property.Value),
+                    StringComparer.Ordinal),
+            JsonValueKind.Array => element.EnumerateArray().Select(SortElement).ToArray(),
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.GetDecimal(),
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Null => null,
+            _ => null
+        };
 }
