@@ -1,7 +1,7 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-17
 **Status:** Development / Pilot Ready - structurally strong baseline with Wave 1-4 productization work still active
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
@@ -29,7 +29,7 @@ The current working tree reinforces that direction rather than changing it. WPF 
 | Governance product surfaces | Partial | Security coverage, reconciliation drill-ins, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, and governed reporting workflows remain incomplete |
 | Web and WPF workstation shells | Partial | Both surfaces expose meaningful workspace flows; workflow hardening and deeper workflow-first consolidation remain |
 | Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
-| Provider confidence | Partial | Evidence-backed matrix, committed bounded-runtime artifacts, checkpoint proof, and Parquet L2 proof are now in repo; remaining gaps are vendor-runtime and entitlement bounded |
+| Provider confidence | Partial | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded, and deferred providers stay outside the active closure target |
 | Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
 
 ---
@@ -51,8 +51,9 @@ The current working tree reinforces that direction rather than changing it. WPF 
 
 ### Wave 1: Provider confidence and checkpoint evidence
 
-- Polygon, Robinhood, Interactive Brokers, StockSharp, and NYSE still have at least one runtime-bounded scenario that depends on credentials, entitlements, packages, or vendor sessions
+- Alpaca, Robinhood, and Yahoo now define the active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by runtime broker-session scenarios
 - backfill checkpoint reliability and Parquet L2 flush behavior now have repo-backed proof, including retry-safe L2 flush retention on failed/cancelled writes, and should be treated as closed Wave 1 sub-gates unless those tests regress
+- Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
 - provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, and `run-wave1-provider-validation.ps1` instead of architecture intent
 
 ### Wave 2: Paper-trading cockpit hardening
@@ -83,12 +84,11 @@ Use [`provider-validation-matrix.md`](provider-validation-matrix.md) as the prim
 
 | Provider | Posture | Notes |
 |---|---|---|
-| Alpaca | Complete | The checked-in execution path is validated end to end through the stable `/api/execution/*` seam |
-| Polygon | Partial | Recorded-session replay is strong; remaining gaps are bounded to live reconnect and websocket throttling transcripts |
-| Robinhood | Partial | Brokerage and polling-path evidence exist; remaining runtime scenarios are tracked under `artifacts/provider-validation/robinhood/2026-04-09/` |
-| Interactive Brokers | Partial | Guidance, smoke-build, and version-bound tests are in repo; vendor runtime remains tracked under `artifacts/provider-validation/interactive-brokers/2026-04-09/` |
-| StockSharp | Partial | Wave 1 validated adapters are narrowed to Rithmic, IQFeed, CQG, and Interactive Brokers, with runtime bounds tracked under `artifacts/provider-validation/stocksharp/2026-04-09/` |
-| NYSE | Partial | L1/shared-lifecycle evidence is strong; remaining auth/rate-limit/depth bounds are tracked under `artifacts/provider-validation/nyse/2026-04-09/` |
+| Alpaca | Complete | Checked-in provider suites plus the stable `/api/execution/*` seam close the active core-provider row in repo evidence |
+| Robinhood | Partial | Brokerage, polling, historical, and symbol-search evidence exist; remaining runtime scenarios stay bounded under `artifacts/provider-validation/robinhood/2026-04-09/` |
+| Yahoo | Complete | Deterministic historical-provider and intraday contract evidence close the historical-only core-provider row |
+
+Deferred from the active Wave 1 gate: Polygon, Interactive Brokers, NYSE, and StockSharp remain part of broader provider inventory, but they are not current closure blockers.
 
 ---
 
@@ -108,7 +108,7 @@ Waves 5 and 6 deepen the product and widen later claims, but they are not prereq
 ## Immediate Readiness Checklist
 
 - [ ] Keep provider claims synchronized with executable evidence in [`provider-validation-matrix.md`](provider-validation-matrix.md)
-- [ ] Close the remaining vendor-runtime-bounded Wave 1 scenarios for Polygon, Robinhood, IB, StockSharp, and NYSE
+- [ ] Close the remaining active Robinhood runtime-bounded Wave 1 scenarios and keep deferred providers labeled consistently outside the gate
 - [ ] Keep `artifacts/provider-validation/` and `run-wave1-provider-validation.ps1` current as the Wave 1 gate evolves
 - [ ] Harden the paper-trading cockpit against realistic operator scenarios before widening live-readiness language
 - [ ] Keep `Backtest -> Paper` explicit, auditable, and operator-visible through the workstation

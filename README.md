@@ -107,6 +107,7 @@ dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=
 
 ```bash
 make help           # List all task targets
+make build-quick    # Shared restore-once, sequential Debug build
 make desktop-run    # WPF desktop + local host (Windows)
 make run            # Collector with config hot-reload (--mode desktop)
 make run-backfill   # Historical backfill
@@ -117,6 +118,12 @@ make setup-dev      # One-shot local dev setup (hooks, config, restore, build)
 ```
 
 See [docs/HELP.md](docs/HELP.md) for the full operator/developer quick reference including environment variables, configuration schema, and provider credential setup.
+
+Build safety note:
+
+- Prefer one solution or project build at a time when multiple entrypoints share the same referenced projects.
+- `python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release` now restores once and builds with a single MSBuild node.
+- For automation or concurrent local runs, pass `--isolation-key <name>` so the build graph writes under `artifacts/bin/<name>/` and `artifacts/obj/<name>/` instead of shared project `bin/obj` folders.
 
 ## Planning Source of Truth
 

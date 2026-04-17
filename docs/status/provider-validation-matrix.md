@@ -1,26 +1,24 @@
 # Provider Validation Matrix
 
-**Last Updated:** 2026-04-13  
-**Scope:** Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
+**Last Updated:** 2026-04-17  
+**Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
-This matrix is Meridian's Wave 1 evidence gate. Every row must point to either executable repo evidence or a committed artifact folder under `artifacts/provider-validation/`. No row is upgraded by prose alone.
+This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence or committed runtime artifacts. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
 
 ## Legend
 
 - ✅ Closed with executable repo evidence
-- ⚠️ Bounded: meaningful evidence exists, but at least one vendor/runtime/entitlement condition remains manual
+- ⚠️ Bounded: meaningful evidence exists, but at least one vendor or runtime condition remains manual
 
 ## Wave 1 Matrix
 
 | Scope | Offline / CI evidence | Manual / runtime evidence | Status | Bounded by |
 |---|---|---|---|---|
-| Polygon replay and parser coverage | `PolygonRecordedSessionReplayTests`, `PolygonMessageParsingTests`, `PolygonSubscriptionTests`, `PolygonMarketDataClientTests`, committed fixtures under `tests/Meridian.Tests/Infrastructure/Providers/Fixtures/Polygon/` | Not required for the replay baseline; live reconnect and websocket throttling remain separate runtime follow-on work | ⚠️ | No sanitized live reconnect or websocket throttling transcript is committed yet |
-| Robinhood supported surface | `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests`, `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam` | `artifacts/provider-validation/robinhood/2026-04-09/` with `auth-session`, `quote-polling`, `order-submit-cancel`, and `throttling-reconnect` scenario folders | ⚠️ | Unofficial API plus manual broker-session/runtime requirements |
-| Interactive Brokers mode separation and version bounds | `IBRuntimeGuidanceTests`, `IBOrderSampleTests`, `IBApiVersionValidatorTests`, `IBSimulationClientContractTests`, `scripts/dev/build-ibapi-smoke.ps1` | `artifacts/provider-validation/interactive-brokers/2026-04-09/` with `bootstrap`, `server-version`, `market-data-entitlements`, and `disconnect-reconnect` scenario folders | ⚠️ | Official `IBApi` DLL/project path, TWS/Gateway runtime, and entitlements are external to the default repo build |
-| NYSE shared lifecycle and auth/rate-limit bounds | `NyseSharedLifecycleTests`, `NyseMarketDataClientTests`, `NYSECredentialAndRateLimitTests`, `NYSEMessageParsingTests`, `NyseTaqCollectorIntegrationTests` | `artifacts/provider-validation/nyse/2026-04-09/` with `auth-connectivity`, `l1-streaming-reconnect`, `rate-limit`, and `premium-depth` scenario folders | ⚠️ | Real credentials plus Premium/Professional entitlement for depth beyond the L1/shared-lifecycle gate |
-| StockSharp Wave 1 validated adapter set | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests`, `StockSharpConnectorCapabilities.GetWave1ValidatedConnectors()` | `artifacts/provider-validation/stocksharp/2026-04-09/` with per-adapter `bootstrap`, `streaming`, and `historical` scenario folders for `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers` | ⚠️ | Package surfaces, locally running vendor software, and adapter-specific credentials remain manual runtime conditions |
+| Alpaca core provider confidence | `AlpacaBrokerageGatewayTests`, `AlpacaCorporateActionProviderTests`, `AlpacaCredentialAndReconnectTests`, `AlpacaMessageParsingTests`, `AlpacaQuotePipelineGoldenTests`, `AlpacaQuoteRoutingTests`, `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Not required for the active Wave 1 claim | ✅ | n/a |
+| Robinhood supported surface | `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests`, `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam` | `artifacts/provider-validation/robinhood/2026-04-09/` with `auth-session`, `quote-polling`, `order-submit-cancel`, and `throttling-reconnect` scenario folders | ⚠️ | Unofficial API plus manual broker-session and runtime requirements |
+| Yahoo historical and fallback confidence | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` | Not required for the active Wave 1 claim; existing live Yahoo integration suites are optional developer reference only | ✅ | n/a |
 | Checkpoint reliability | `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
-| Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` (including failed/cancelled L2 flush retry retention) | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
+| Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 
 ## Primary Validation Command
 
@@ -38,6 +36,5 @@ The script writes:
 ## Notes
 
 - Robinhood remains polling-oriented and unofficial. Do not describe it as websocket-validated.
-- Interactive Brokers must keep simulation/guidance, compile-only smoke, and official vendor-runtime modes separate.
-- StockSharp Wave 1 validation is intentionally narrower than the full recognized connector catalog.
-- NYSE premium depth is optional-but-bounded and does not block closure of the L1/shared-lifecycle gate.
+- Yahoo is active only as a historical and fallback provider row for Wave 1.
+- `Polygon`, `Interactive Brokers`, `NYSE`, and `StockSharp` are deferred from the active Wave 1 gate.

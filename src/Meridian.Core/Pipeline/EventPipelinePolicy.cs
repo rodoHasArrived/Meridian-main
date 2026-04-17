@@ -48,7 +48,7 @@ public sealed record EventPipelinePolicy(
         EnableMetrics: true);
 
     /// <summary>
-    /// Policy for internal message buffering channels (e.g., StockSharp message buffer).
+    /// Policy for internal message buffering channels used by provider adapters.
     /// Moderate capacity (50k), drops oldest on overflow, metrics disabled for performance.
     /// </summary>
     public static EventPipelinePolicy MessageBuffer { get; } = new(

@@ -12,11 +12,13 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
 Set-Location $repoRoot
+. (Join-Path $PSScriptRoot 'SharedBuild.ps1')
 
 $hostProject = 'src/Meridian/Meridian.csproj'
 $desktopProject = 'src/Meridian.Wpf/Meridian.Wpf.csproj'
-$hostExe = Join-Path $repoRoot 'src\Meridian\bin\Debug\net9.0\Meridian.exe'
-$desktopExe = Join-Path $repoRoot 'src\Meridian.Wpf\bin\Debug\net9.0-windows10.0.19041.0\Meridian.Desktop.exe'
+$buildIsolationKey = New-MeridianBuildIsolationKey -Prefix 'desktop-run'
+$hostExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $hostProject -Configuration 'Debug' -Framework 'net9.0' -BinaryName 'Meridian.exe' -IsolationKey $buildIsolationKey
+$desktopExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $desktopProject -Configuration 'Debug' -Framework 'net9.0-windows10.0.19041.0' -BinaryName 'Meridian.Desktop.exe' -IsolationKey $buildIsolationKey
 $artifactsDir = Join-Path $repoRoot 'artifacts'
 $hostStdout = Join-Path $artifactsDir 'desktop-launcher-host.stdout.log'
 $hostStderr = Join-Path $artifactsDir 'desktop-launcher-host.stderr.log'
@@ -158,13 +160,31 @@ try {
         }
 
         Write-Info 'Building Meridian host...'
-        & dotnet build $hostProject -c Debug -v minimal -nologo /p:EnableWindowsTargeting=true
+        & dotnet restore $hostProject -v minimal @(
+            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
+        )
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Meridian host restore failed.'
+        }
+
+        & dotnet build $hostProject -c Debug -v minimal -nologo --no-restore @(
+            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
+        )
         if ($LASTEXITCODE -ne 0) {
             throw 'Meridian host build failed.'
         }
 
         Write-Info 'Building Meridian desktop shell...'
-        & dotnet build $desktopProject -c Debug -v minimal -nologo /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
+        & dotnet restore $desktopProject -v minimal @(
+            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild
+        )
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Meridian desktop restore failed.'
+        }
+
+        & dotnet build $desktopProject -c Debug -v minimal -nologo --no-restore @(
+            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild
+        )
         if ($LASTEXITCODE -ne 0) {
             throw 'Meridian desktop build failed.'
         }

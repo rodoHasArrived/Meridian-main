@@ -37,7 +37,6 @@ public sealed class SymbolMappingService
         new("Tiingo", "Tiingo", "Dots to dashes (BRK.B → BRK-B)", SymbolTransform.DotsToDashes),
         new("Finnhub", "Finnhub", "Uppercase (identity)", SymbolTransform.Uppercase),
         new("AlphaVantage", "Alpha Vantage", "Uppercase (identity)", SymbolTransform.Uppercase),
-        new("StockSharp", "StockSharp", "Symbol@Exchange format", SymbolTransform.StockSharpFormat),
         new("NYSE", "NYSE", "Uppercase (identity)", SymbolTransform.Uppercase),
     };
 
@@ -234,7 +233,6 @@ public sealed class SymbolMappingService
             SymbolTransform.DotsToSpaces => symbol.Replace(".", " ").ToUpperInvariant(),
             SymbolTransform.DotsToDashes => symbol.Replace(".", "-").ToUpperInvariant(),
             SymbolTransform.StooqFormat => $"{symbol.Replace(".", "-").ToLowerInvariant()}.us",
-            SymbolTransform.StockSharpFormat => symbol.ToUpperInvariant(), // Requires exchange, handled separately
             _ => symbol.ToUpperInvariant()
         };
     }
@@ -259,7 +257,6 @@ public sealed class SymbolMappingService
             SymbolTransform.DotsToSpaces => providerSymbol.Replace(" ", ".").ToUpperInvariant(),
             SymbolTransform.DotsToDashes => providerSymbol.Replace("-", ".").ToUpperInvariant(),
             SymbolTransform.StooqFormat => providerSymbol.Replace(".us", "").Replace("-", ".").ToUpperInvariant(),
-            SymbolTransform.StockSharpFormat => providerSymbol.Split('@')[0].ToUpperInvariant(),
             _ => providerSymbol.ToUpperInvariant()
         };
     }
@@ -630,7 +627,5 @@ public enum SymbolTransform : byte
     /// <summary>Replace dots with dashes (Yahoo format).</summary>
     DotsToDashes,
     /// <summary>Stooq format: lowercase with .us suffix.</summary>
-    StooqFormat,
-    /// <summary>StockSharp format: SYMBOL@EXCHANGE.</summary>
-    StockSharpFormat
+    StooqFormat
 }

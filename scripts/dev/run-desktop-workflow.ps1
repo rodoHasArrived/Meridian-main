@@ -23,6 +23,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 Set-Location $repoRoot
+. (Join-Path $PSScriptRoot 'SharedBuild.ps1')
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
 function Write-Ok([string]$Message) { Write-Host "[ OK ] $Message" -ForegroundColor Green }
@@ -220,6 +221,7 @@ $resolvedFramework = if ($PSBoundParameters.ContainsKey('Framework')) { $Framewo
 $resolvedExeName = if ($PSBoundParameters.ContainsKey('ExeName')) { $ExeName } else { [string](Get-ConfigValue -Table $defaults -Key 'exeName' -Fallback 'Meridian.Desktop.exe') }
 $outputRootInput = if ($PSBoundParameters.ContainsKey('OutputRoot')) { $OutputRoot } else { [string](Get-ConfigValue -Table $defaults -Key 'outputRoot' -Fallback 'artifacts/desktop-workflows') }
 $resolvedOutputRoot = Resolve-RepoPath $outputRootInput
+$buildIsolationKey = New-MeridianBuildIsolationKey -Prefix ("desktop-workflow-" + $Workflow)
 $resolvedScreenshotDirectory = if ($PSBoundParameters.ContainsKey('ScreenshotDirectory')) {
     Resolve-RepoPath $ScreenshotDirectory
 }
@@ -245,8 +247,7 @@ New-Item -ItemType Directory -Force -Path $runDirectory, $logDirectory, $screens
 
 $stdoutPath = Join-Path $logDirectory 'stdout.log'
 $stderrPath = Join-Path $logDirectory 'stderr.log'
-$projectDirectory = Split-Path -Parent $resolvedProjectPath
-$exePath = Join-Path $projectDirectory "bin/$resolvedConfiguration/$resolvedFramework/$resolvedExeName"
+$exePath = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $resolvedProjectPath -Configuration $resolvedConfiguration -Framework $resolvedFramework -BinaryName $resolvedExeName -IsolationKey $buildIsolationKey
 $manifest = [ordered]@{
     workflow = [ordered]@{
         name = $workflowDefinition.name
@@ -282,13 +283,17 @@ try {
 
     if (-not $SkipBuild) {
         Write-Info "Restoring $resolvedProjectPath ..."
-        & dotnet restore $resolvedProjectPath -p:TargetFramework=$resolvedFramework --verbosity minimal /p:EnableFullWpfBuild=true
+        & dotnet restore $resolvedProjectPath --verbosity minimal @(
+            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $resolvedFramework -EnableFullWpfBuild
+        )
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet restore failed for '$resolvedProjectPath'."
         }
 
         Write-Info "Building $resolvedProjectPath ($resolvedConfiguration, $resolvedFramework) ..."
-        & dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore -p:TargetFramework=$resolvedFramework --verbosity minimal /p:EnableFullWpfBuild=true
+        & dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @(
+            Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -TargetFramework $resolvedFramework -EnableFullWpfBuild
+        )
         if ($LASTEXITCODE -ne 0) {
             throw "dotnet build failed for '$resolvedProjectPath'."
         }

@@ -72,6 +72,44 @@ def _run(cmd: list[str], *, capture: bool = True) -> "subprocess.CompletedProces
     )
 
 
+def _run_passthrough(cmd: list[str]) -> int:
+    result = subprocess.run(
+        cmd,
+        cwd=REPO_ROOT,
+        text=True,
+    )
+    return result.returncode
+
+
+def _build_msbuild_args(args: argparse.Namespace) -> list[str]:
+    msbuild_args = ["/p:EnableWindowsTargeting=true", "-maxcpucount:1", "/nr:false"]
+
+    framework = getattr(args, "framework", None)
+    if framework:
+        msbuild_args.append(f"/p:TargetFramework={framework}")
+
+    runtime = getattr(args, "runtime", None)
+    if runtime:
+        msbuild_args.extend(["-r", runtime])
+
+    isolation_key = getattr(args, "isolation_key", None)
+    if isolation_key:
+        msbuild_args.append(f"/p:MeridianBuildIsolationKey={isolation_key}")
+
+    if getattr(args, "full_wpf_build", False):
+        msbuild_args.append("/p:EnableFullWpfBuild=true")
+
+    for prop in getattr(args, "property", []) or []:
+        if not prop:
+            continue
+        if prop.startswith(("/p:", "-p:")):
+            msbuild_args.append(prop)
+        else:
+            msbuild_args.append(f"/p:{prop}")
+
+    return msbuild_args
+
+
 def _have(tool: str) -> bool:
     return shutil.which(tool) is not None
 
@@ -594,23 +632,38 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 def cmd_build(args: argparse.Namespace) -> int:
     project: str = getattr(args, "project", "Meridian.sln")
     configuration: str = getattr(args, "configuration", "Release")
-    verbosity: str = os.environ.get("BUILD_VERBOSITY", "normal")
+    verbosity: str = getattr(args, "verbosity", os.environ.get("BUILD_VERBOSITY", "normal"))
+    msbuild_args = _build_msbuild_args(args)
+
+    if getattr(args, "shutdown_build_servers", False):
+        print("Shutting down dotnet build servers...")
+        shutdown_code = _run_passthrough(["dotnet", "build-server", "shutdown"])
+        if shutdown_code != 0:
+            return shutdown_code
+
+    if not getattr(args, "skip_restore", False):
+        print(f"Restoring {project}...")
+        restore_code = _run_passthrough(
+            ["dotnet", "restore", project, "--verbosity", verbosity, *msbuild_args]
+        )
+        if restore_code != 0:
+            return restore_code
 
     print(f"Building {project} ({configuration})...")
-    result = _run(
+    return _run_passthrough(
         [
             "dotnet",
             "build",
             project,
             "-c",
             configuration,
-            "/p:EnableWindowsTargeting=true",
             "--verbosity",
             verbosity,
-        ],
-        capture=False,
+            "-nologo",
+            "--no-restore",
+            *msbuild_args,
+        ]
     )
-    return result.returncode
 
 
 # ---------------------------------------------------------------------------
@@ -967,9 +1020,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     # build
-    p_build = sub.add_parser("build", help="Run build diagnostics")
+    p_build = sub.add_parser("build", help="Restore once and build sequentially")
     p_build.add_argument("--project", default="Meridian.sln")
     p_build.add_argument("--configuration", default="Release")
+    p_build.add_argument("--framework")
+    p_build.add_argument("--runtime")
+    p_build.add_argument("--verbosity", default=os.environ.get("BUILD_VERBOSITY", "normal"))
+    p_build.add_argument("--skip-restore", action="store_true")
+    p_build.add_argument("--full-wpf-build", action="store_true")
+    p_build.add_argument("--shutdown-build-servers", action="store_true")
+    p_build.add_argument("--isolation-key")
+    p_build.add_argument("--property", action="append", default=[])
 
     # collect-debug
     p_cd = sub.add_parser("collect-debug", help="Collect debug bundle")

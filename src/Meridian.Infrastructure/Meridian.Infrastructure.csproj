@@ -9,8 +9,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- StockSharp integration is optional -->
-    <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
     <EnableIbApiSmoke Condition="'$(EnableIbApiSmoke)' == ''">false</EnableIbApiSmoke>
     <EnableIbApiVendor Condition="'$(EnableIbApiVendor)' == ''">false</EnableIbApiVendor>
     <IBApiRoot Condition="'$(IBApiRoot)' == ''">$(MSBuildThisFileDirectory)..\..\external\IBApi</IBApiRoot>
@@ -26,10 +24,6 @@
     <ResolvedIbApiProjectPath Condition="'$(EnableIbApiRuntime)' == 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' == '' and Exists('$(IBApiRoot)\TWS API\source\CSharpClient\client\CSharpAPI.csproj')">$(IBApiRoot)\TWS API\source\CSharpClient\client\CSharpAPI.csproj</ResolvedIbApiProjectPath>
     <!-- SFTP ETL adapter requires Renci.SshNet (>= 2024.2.0); set EnableSftp=true to include it -->
     <EnableSftp Condition="'$(EnableSftp)' == ''">false</EnableSftp>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
-    <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableSftp)' == 'true'">
@@ -78,15 +72,6 @@
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Threading.Channels" />
     <PackageReference Include="SSH.NET" Condition="'$(EnableSftp)' == 'true'" />
-
-    <!-- StockSharp (optional) -->
-    <PackageReference Include="StockSharp.Algo" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.Messages" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.BusinessEntities" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.Rithmic" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.IQFeed" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.Cqg.Com" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.InteractiveBrokers" Condition="'$(EnableStockSharp)' == 'true'" />
 
   </ItemGroup>
 

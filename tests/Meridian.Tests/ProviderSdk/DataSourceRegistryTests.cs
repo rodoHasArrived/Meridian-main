@@ -54,7 +54,7 @@ public sealed class DataSourceRegistryTests
         registry.DiscoverFromAssemblies(typeof(DataSourceRegistry).Assembly);
 
         // Infrastructure assembly should contain at least some data sources
-        // The exact count depends on build configuration (e.g., StockSharp conditional)
+        // The exact count depends on build configuration and registered provider surfaces.
         registry.Sources.Should().NotBeNull();
     }
 

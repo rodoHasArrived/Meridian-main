@@ -4,7 +4,7 @@ This guide covers the CI/CD pipeline for the Meridian, including workflow struct
 
 ## Workflow Inventory
 
-The project uses 35 GitHub Actions workflows in `.github/workflows/`:
+The project uses 40 GitHub Actions workflow `.yml` files in `.github/workflows/`:
 
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
@@ -18,6 +18,7 @@ The project uses 35 GitHub Actions workflows in `.github/workflows/`:
 | Release | `release.yml` | Manual dispatch | Semver validation, changelog, GitHub release |
 | Benchmark | `benchmark.yml` | Manual dispatch | BenchmarkDotNet performance tracking |
 | Bottleneck Detection | `bottleneck-detection.yml` | Manual dispatch | Performance bottleneck analysis |
+| Canonicalization Fixture Maintenance | `canonicalization-fixture-maintenance.yml` | Manual dispatch | Refreshes canonicalization fixtures and validation artifacts |
 | Close Duplicates | `close-duplicate-issues.yml` | Issue opened | Auto-close duplicate issues |
 | Nightly | `nightly.yml` | Daily (1 AM UTC), manual | Full build + test + AI failure diagnosis |
 | Documentation | `documentation.yml` | Push/PRs (docs/source), weekly, issues, manual | Doc generation, structure sync, TODO scan |
@@ -25,17 +26,25 @@ The project uses 35 GitHub Actions workflows in `.github/workflows/`:
 | Stale | `stale.yml` | Daily (midnight UTC), manual | Stale issue/PR management |
 | Docs Check | `docs-check.yml` | Push/PRs (docs paths) | Documentation link and format validation |
 | Export Project Artifact | `export-project-artifact.yml` | Manual dispatch | Project artifact export |
+| Export Standalone EXE | `export-standalone-exe.yml` | Manual dispatch | Produces standalone desktop executable artifacts |
+| Generate Build Artifact | `generate-build-artifact.yml` | Manual dispatch | Creates packaged build artifacts for downstream use |
 | Golden Path Validation | `golden-path-validation.yml` | Manual dispatch | End-to-end smoke validation for the recommended developer path |
 | Build Observability | `build-observability.yml` | Manual dispatch | Build diagnostics, metrics, fingerprints |
+| Maintenance | `maintenance.yml` | Scheduled, manual | General repository maintenance and hygiene tasks |
+| Maintenance Self Test | `maintenance-self-test.yml` | Manual dispatch | Verifies maintenance workflow behavior safely |
 | Scheduled Maintenance | `scheduled-maintenance.yml` | Weekly (Sun), manual | Tests, cache cleanup, dependency health, AI recommendations |
 | Makefile Validation | `makefile.yml` | Push/PRs (Makefile/build tooling), manual | Ensures documented make targets stay healthy |
 | Copilot Setup | `copilot-setup-steps.yml` | Called by Copilot | Copilot environment setup |
 | Prompt Generation | `prompt-generation.yml` | Push/PRs (prompt files), manual | AI prompt template generation |
 | Python Package (Conda) | `python-package-conda.yml` | Manual dispatch | Builds and validates the conda-based Python package flow |
+| README Tree | `readme-tree.yml` | Push/PRs (repo structure docs), manual | Regenerates repository tree documentation |
+| Refresh Screenshots | `refresh-screenshots.yml` | Manual dispatch | Rebuilds documentation screenshots and image assets |
+| Repo Health | `repo-health.yml` | Scheduled, manual | Audits repository metadata, structure, and drift |
 | Ticker Data Collection | `ticker-data-collection.yml` | Scheduled, manual | Automated ticker data collection |
 | Update Diagrams | `update-diagrams.yml` | Push/PRs (source changes), manual | Architecture diagram and UML generation |
 | Skill Evaluations | `skill-evals.yml` | Manual dispatch | Runs Codex skill evaluation scenarios and captures artifacts |
 | Static Site Checks | `static.yml` | Push/PRs (docs/site changes), manual | Validates static documentation/site generation assets |
+| Reusable AI Analysis | `reusable-ai-analysis.yml` | Called by other workflows | Shared AI analysis steps used by maintenance and review workflows |
 | Reusable .NET Build | `reusable-dotnet-build.yml` | Called by other workflows | Shared build/test steps |
 | Copilot PR Reviewer | `copilot-pull-request-reviewer.yml` | PR opened/synchronize | AI-powered code review on every PR |
 | Copilot SWE Agent | `copilot-swe-agent-copilot.yml` | Manual dispatch | GitHub Copilot coding agent workflow |

@@ -482,40 +482,55 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void OnFixtureModeChanged(object? sender, EventArgs e)
     {
-        UpdateFixtureModeBanner();
-        RaisePropertyChanged(nameof(ShellStatusText));
-        RaisePropertyChanged(nameof(ShellStatusTone));
-        UpdateShellRefreshStamp();
-        _ = RefreshShellContextAsync();
+        DispatchToUi(() =>
+        {
+            UpdateFixtureModeBanner();
+            RaisePropertyChanged(nameof(ShellStatusText));
+            RaisePropertyChanged(nameof(ShellStatusTone));
+            UpdateShellRefreshStamp();
+            _ = RefreshShellContextAsync();
+        });
     }
 
     private void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
-        UpdateActiveFundDisplay();
-        UpdateShellRefreshStamp();
-        _ = RefreshShellContextAsync();
+        DispatchToUi(() =>
+        {
+            UpdateActiveFundDisplay();
+            UpdateShellRefreshStamp();
+            _ = RefreshShellContextAsync();
+        });
     }
 
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
-        RefreshOperatingContexts();
-        RefreshWindowMode();
-        UpdateActiveFundDisplay();
-        UpdateShellRefreshStamp();
-        _ = RefreshShellContextAsync();
+        DispatchToUi(() =>
+        {
+            RefreshOperatingContexts();
+            RefreshWindowMode();
+            UpdateActiveFundDisplay();
+            UpdateShellRefreshStamp();
+            _ = RefreshShellContextAsync();
+        });
     }
 
     private void OnOperatingContextCatalogChanged(object? sender, EventArgs e)
     {
-        RefreshOperatingContexts();
-        _ = RefreshShellContextAsync();
+        DispatchToUi(() =>
+        {
+            RefreshOperatingContexts();
+            _ = RefreshShellContextAsync();
+        });
     }
 
     private void OnWindowModeChanged(object? sender, EventArgs e)
     {
-        RefreshWindowMode();
-        UpdateShellRefreshStamp();
-        _ = RefreshShellContextAsync();
+        DispatchToUi(() =>
+        {
+            RefreshWindowMode();
+            UpdateShellRefreshStamp();
+            _ = RefreshShellContextAsync();
+        });
     }
 
     private void SelectWorkspace(string? workspace) => SelectWorkspace(workspace, navigateToHome: false);
@@ -824,8 +839,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             SelectedOperatingContext = _operatingContexts.FirstOrDefault(context =>
                                           string.Equals(context.ContextKey, _operatingContextService.CurrentContext?.ContextKey, StringComparison.OrdinalIgnoreCase))
                                       ?? _operatingContexts.FirstOrDefault(context =>
-                                          string.Equals(context.ContextKey, _operatingContextService.LastSelectedOperatingContextKey, StringComparison.OrdinalIgnoreCase))
-                                      ?? _operatingContexts.FirstOrDefault();
+                                          string.Equals(context.ContextKey, _operatingContextService.LastSelectedOperatingContextKey, StringComparison.OrdinalIgnoreCase));
         }
         finally
         {
@@ -1133,6 +1147,20 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         {
             target.Add(item);
         }
+    }
+
+    private static void DispatchToUi(Action action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            action();
+            return;
+        }
+
+        _ = dispatcher.InvokeAsync(action);
     }
 
     public sealed record RecentPageEntry(string PageTag, string DisplayName);

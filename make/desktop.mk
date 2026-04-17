@@ -9,8 +9,7 @@
 
 desktop-build: ## Build the WPF desktop project (requires Windows or EnableWindowsTargeting)
 	@echo "$(BLUE)Building Meridian.Wpf...$(NC)"
-	@dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --verbosity quiet --nologo \
-		/p:EnableWindowsTargeting=true
+	@python3 build/python/cli/buildctl.py build --project src/Meridian.Wpf/Meridian.Wpf.csproj --configuration Release --verbosity quiet --full-wpf-build
 	@echo "$(GREEN)Desktop build complete$(NC)"
 
 desktop-test: ## Run WPF desktop tests

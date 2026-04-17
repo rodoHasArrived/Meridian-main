@@ -18,7 +18,6 @@ For what the repo validates today versus what still requires manual runtime chec
 | Alpaca | Implemented | Easy | IEX feed | Development and basic US streaming | Simple setup, no Level 2 depth |
 | Interactive Brokers | Implemented with `IBAPI` | Complex | Cboe One + IEX | Professional trading and L2 depth | Real TWS / Gateway access requires the official `IBApi` surface; non-`IBAPI` builds stay on simulation or explicit runtime guidance |
 | Polygon | Implemented | Medium | 5 calls/min free tier | Aggregated real-time feeds | Strong streaming quality, premium plans scale better |
-| StockSharp | Implemented with `STOCKSHARP` | Medium | Varies by connector | Multi-exchange connectivity | Coverage depends on connector, package surface, and license |
 | NYSE Streaming | Implemented | Medium | Subscription | NYSE-specific feed workflows | Backed by `NYSEDataSource` |
 | Synthetic | Implemented | Very Low | Unlimited | Offline development and demos | Deterministic, not live market data |
 
@@ -35,7 +34,6 @@ For what the repo validates today versus what still requires manual runtime chec
 | Alpha Vantage | Implemented | 25/day | 5/min | Equities, indices, forex, crypto | Narrow intraday lookups |
 | Polygon | Implemented | 5/min | 5/min | US equities, options, forex, crypto | High-quality premium-oriented history |
 | Interactive Brokers | Requires `IBAPI` | With account | Strict pacing | US and global multi-asset | Institutional workflow continuity once the official `IBApi` path is enabled; smoke builds are compile-only |
-| StockSharp | Requires `STOCKSHARP` | Connector-dependent | Connector-dependent | Multi-exchange | Depends on configured connector plus installed StockSharp package surfaces |
 | Twelve Data | Implemented | 800/day, 8/min | 8/min | Equities, ETFs, forex, crypto | Credentialed international fallback |
 | FRED | Implemented | Free API key | 120/min | Economic time series | Macro overlays and research inputs |
 | Synthetic | Implemented | Unlimited | None | Deterministic offline scenarios | Testing, fixtures, demos |
@@ -48,7 +46,6 @@ For what the repo validates today versus what still requires manual runtime chec
 | Finnhub Symbol Search | Implemented | Global securities | Company and symbol discovery |
 | Polygon Symbol Search | Implemented | US equities | Filterable symbol search |
 | OpenFIGI | Implemented | Global instruments | Identifier normalization |
-| StockSharp Symbol Search | Requires `STOCKSHARP` | Connector-dependent multi-asset | Connector-native security lookup |
 | Synthetic Symbol Search | Implemented | Offline stock and ETF catalog | Fixture-mode and demo workflows |
 
 ---
@@ -119,24 +116,6 @@ For what the repo validates today versus what still requires manual runtime chec
 - `src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs`
 - `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs`
 
-### StockSharp
-
-**Best For:** Connector-based access to many venues and asset classes from one integration surface.
-
-**Strengths**
-- Broad connector ecosystem
-- Streaming, historical, and symbol-search paths
-- Good fit when a specific supported connector matches your venue needs
-
-**Tradeoffs**
-- Build and licensing complexity
-- Coverage depends on connector configuration rather than one fixed API
-
-**Operator Notes**
-- StockSharp is a connector-runtime integration, so runtime behavior and historical availability vary by adapter, package availability, and venue entitlements.
-- Unsupported connector or missing-package paths should be treated as setup/configuration issues and resolved through [StockSharp Connector Guide](stocksharp-connectors.md).
-- The default repo baseline validates connector metadata and guidance without claiming that every named connector is available in the current build.
-
 ### NYSE Streaming
 
 **Best For:** NYSE-focused streaming workflows where direct exchange semantics matter.
@@ -157,12 +136,6 @@ For what the repo validates today versus what still requires manual runtime chec
 **Implementation**
 - `src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs`
 - `src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs`
-
-**Implementation**
-- `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpMarketDataClient.cs`
-- `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpHistoricalDataProvider.cs`
-- `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs`
-- `docs/providers/stocksharp-connectors.md`
 
 ### Yahoo Finance
 
@@ -253,7 +226,6 @@ For what the repo validates today versus what still requires manual runtime chec
 | Alpaca | Yes | Yes | Yes | No | Yes | Yes |
 | Interactive Brokers | Yes | Yes | Yes | Yes | Connector workflow | Yes |
 | Polygon | Yes | Yes | Yes | No | Yes | Yes |
-| StockSharp | Yes | Yes | Yes | Yes | Yes | Connector-dependent |
 | NYSE Streaming | Yes | Yes | No | Yes | No | No |
 | Yahoo Finance | No | No | Yes | No | No | Adjusted close plus actions |
 | Tiingo | No | No | Yes | No | No | Full dividends and splits |

@@ -159,7 +159,7 @@ internal sealed class ConfigCommands : ICliCommand
         if (template == null)
         {
             Console.Error.WriteLine($"Unknown template: {templateName}");
-            Console.Error.WriteLine("Available templates: minimal, full, alpaca, stocksharp, backfill, production, docker");
+            Console.Error.WriteLine("Available templates: minimal, full, alpaca, backfill, production, docker");
             return CliResult.Fail(ErrorCode.NotFound);
         }
 

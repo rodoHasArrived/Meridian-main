@@ -257,7 +257,6 @@ public sealed class SystemHealthServiceTests
     }
 
     [Theory]
-    [InlineData("StockSharp")]
     [InlineData("IEX")]
     public async Task TestConnectionAsync_WithVariousProviders_AcceptsAllNames(string provider)
     {

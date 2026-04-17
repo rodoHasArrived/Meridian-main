@@ -544,8 +544,8 @@ public sealed class StatusEndpointHandlers
                 Description = "Real-time and historical data with adjustments",
                 IsAvailable = true,
                 RequiresApiKey = true,
-                SupportsIntraday = true,
-                SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"]
+                SupportsIntraday = false,
+                SupportedGranularities = ["Daily"]
             },
             new BackfillProviderInfo
             {

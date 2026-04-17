@@ -6,7 +6,6 @@ using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Adapters.StockSharp;
 using Meridian.Tests.TestHelpers;
 using Xunit;
 
@@ -28,7 +27,6 @@ public sealed class MarketDataClientFactoryTests
         registry.SupportedStreamingSources.Should().Contain("ib");
         registry.SupportedStreamingSources.Should().Contain("alpaca");
         registry.SupportedStreamingSources.Should().Contain("polygon");
-        registry.SupportedStreamingSources.Should().Contain("stocksharp");
     }
 
     [Fact]
@@ -169,9 +167,6 @@ public sealed class MarketDataClientFactoryTests
 
         registry.RegisterStreamingFactory("polygon", () =>
             new PolygonMarketDataClient(publisher, trade, quote));
-
-        registry.RegisterStreamingFactory("stocksharp", () =>
-            new StockSharpMarketDataClient(trade, depth, quote, new StockSharpConfig()));
 
         return registry;
     }

@@ -155,7 +155,7 @@ public sealed class SettingsConfigurationService
     private static ProviderTier MapTier(string providerId) =>
         providerId.ToLowerInvariant() switch
         {
-            "alpaca" or "ib" or "ibkr" or "stocksharp" => ProviderTier.FreeWithAccount,
+            "alpaca" or "ib" or "ibkr" => ProviderTier.FreeWithAccount,
             "robinhood" => ProviderTier.FreeWithAccount,
             "polygon" or "nasdaq" or "nasdaqdatalink" => ProviderTier.LimitedFree,
             "nyse" => ProviderTier.Premium,

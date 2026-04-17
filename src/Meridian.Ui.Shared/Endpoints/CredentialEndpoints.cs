@@ -31,7 +31,6 @@ public static class CredentialEndpoints
         new("ib",           "Interactive Brokers", []),
         new("synthetic",    "Synthetic",        []),
         new("stooq",        "Stooq",            []),
-        new("stocksharp",   "StockSharp",       []),
     ];
 
     /// <summary>Registers all credential management routes.</summary>

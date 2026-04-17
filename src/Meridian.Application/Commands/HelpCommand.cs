@@ -200,7 +200,7 @@ FIRST-TIME SETUP:
     --detect-providers      Show available providers and their status
     --generate-config       Generate a config template
     --generate-config-schema Generate JSON Schema for appsettings.json
-    --template <name>       Template: minimal, full, alpaca, stocksharp,
+    --template <name>       Template: minimal, full, alpaca,
                             backfill, production, docker
 
 EXAMPLES:
@@ -325,7 +325,6 @@ STREAMING PROVIDERS:
     alpaca          WebSocket streaming, trades + quotes
     polygon         WebSocket streaming, trades + quotes + depth
     ib              Interactive Brokers TWS/Gateway, full L2
-    stocksharp      90+ data sources via StockSharp connectors
     nyse            NYSE hybrid streaming + historical
 
 HISTORICAL (BACKFILL) PROVIDERS:
@@ -344,8 +343,6 @@ SYMBOL SEARCH PROVIDERS:
     finnhub         US + international exchanges
     polygon         US equities
     openfigi        Global identifier mapping
-    stocksharp      Multi-exchange search
-
 FAILOVER:
     The system supports automatic provider failover. Configure failover
     rules via the web API at /api/failover/config.
@@ -476,7 +473,7 @@ DATA QUERY & EXPORT TOOLS:
 
 AUTO-CONFIGURATION OPTIONS:
     --template <name>       Template for --generate-config: minimal, full, alpaca,
-                            stocksharp, backfill, production, docker (default: minimal)
+                            backfill, production, docker (default: minimal)
     --output <path>         Output path for generated config/schema
                             (config/appsettings.generated.json or config/appsettings.schema.json)
 

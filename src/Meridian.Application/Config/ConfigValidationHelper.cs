@@ -18,7 +18,7 @@ public sealed class AppConfigValidator : AbstractValidator<AppConfig>
 
         RuleFor(x => x.DataSource)
             .IsInEnum()
-            .WithMessage("DataSource must be IB, Alpaca, Polygon, StockSharp, or NYSE");
+            .WithMessage("DataSource must be IB, Alpaca, Polygon, NYSE, or Synthetic");
 
         // Alpaca-specific validation
         When(x => x.DataSource == DataSourceKind.Alpaca, () =>
@@ -42,15 +42,6 @@ public sealed class AppConfigValidator : AbstractValidator<AppConfig>
         {
             RuleFor(x => x.IBClientPortal)
                 .SetValidator(new IBClientPortalOptionsValidator()!);
-        });
-
-        // StockSharp-specific validation
-        When(x => x.DataSource == DataSourceKind.StockSharp, () =>
-        {
-            RuleFor(x => x.StockSharp)
-                .NotNull()
-                .WithMessage("StockSharp configuration is required when DataSource is set to StockSharp")
-                .SetValidator(new StockSharpConfigValidator()!);
         });
 
         // Storage configuration validation
@@ -189,159 +180,6 @@ public sealed class IBClientPortalOptionsValidator : AbstractValidator<IBClientP
     {
         return Uri.TryCreate(value, UriKind.Absolute, out var uri)
             && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
-    }
-}
-
-/// <summary>
-/// Validates StockSharpConfig settings.
-/// </summary>
-public sealed class StockSharpConfigValidator : AbstractValidator<StockSharpConfig>
-{
-    private static readonly string[] SupportedConnectors =
-        ["rithmic", "iqfeed", "cqg", "interactivebrokers", "ib"];
-
-    private static bool HasCustomAdapter(StockSharpConfig config)
-    {
-        if (!string.IsNullOrWhiteSpace(config.AdapterType))
-        {
-            return true;
-        }
-
-        return config.ConnectionParams != null
-               && config.ConnectionParams.TryGetValue("AdapterType", out var adapterType)
-               && !string.IsNullOrWhiteSpace(adapterType);
-    }
-
-    public StockSharpConfigValidator()
-    {
-        RuleFor(x => x.Enabled)
-            .Equal(true)
-            .WithMessage("StockSharp must be enabled when DataSource is set to StockSharp");
-
-        RuleFor(x => x.ConnectorType)
-            .NotEmpty()
-            .WithMessage("StockSharp ConnectorType is required");
-
-        RuleFor(x => x)
-            .Must(config => SupportedConnectors.Contains(config.ConnectorType.ToLowerInvariant()) || HasCustomAdapter(config))
-            .WithMessage("Custom StockSharp connectors require AdapterType (or ConnectionParams.AdapterType) to be set");
-
-        When(x => string.Equals(x.ConnectorType, "rithmic", StringComparison.OrdinalIgnoreCase), () =>
-        {
-            RuleFor(x => x.Rithmic)
-                .NotNull()
-                .WithMessage("Rithmic configuration is required when ConnectorType is Rithmic")
-                .SetValidator(new RithmicConfigValidator()!);
-        });
-
-        When(x => string.Equals(x.ConnectorType, "iqfeed", StringComparison.OrdinalIgnoreCase), () =>
-        {
-            RuleFor(x => x.IQFeed)
-                .NotNull()
-                .WithMessage("IQFeed configuration is required when ConnectorType is IQFeed")
-                .SetValidator(new IQFeedConfigValidator()!);
-        });
-
-        When(x => string.Equals(x.ConnectorType, "cqg", StringComparison.OrdinalIgnoreCase), () =>
-        {
-            RuleFor(x => x.CQG)
-                .NotNull()
-                .WithMessage("CQG configuration is required when ConnectorType is CQG")
-                .SetValidator(new CQGConfigValidator()!);
-        });
-
-        When(x => string.Equals(x.ConnectorType, "interactivebrokers", StringComparison.OrdinalIgnoreCase)
-                  || string.Equals(x.ConnectorType, "ib", StringComparison.OrdinalIgnoreCase), () =>
-        {
-            RuleFor(x => x.InteractiveBrokers)
-                .NotNull()
-                .WithMessage("Interactive Brokers configuration is required when ConnectorType is InteractiveBrokers")
-                .SetValidator(new StockSharpIBConfigValidator()!);
-        });
-    }
-}
-
-/// <summary>
-/// Validates RithmicConfig settings.
-/// </summary>
-public sealed class RithmicConfigValidator : AbstractValidator<RithmicConfig>
-{
-    public RithmicConfigValidator()
-    {
-        RuleFor(x => x.Server)
-            .NotEmpty()
-            .WithMessage("Rithmic server is required");
-
-        RuleFor(x => x.UserName)
-            .NotEmpty()
-            .WithMessage("Rithmic username is required");
-
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .WithMessage("Rithmic password is required");
-    }
-}
-
-/// <summary>
-/// Validates IQFeedConfig settings.
-/// </summary>
-public sealed class IQFeedConfigValidator : AbstractValidator<IQFeedConfig>
-{
-    public IQFeedConfigValidator()
-    {
-        RuleFor(x => x.Host)
-            .NotEmpty()
-            .WithMessage("IQFeed host is required");
-
-        RuleFor(x => x.Level1Port)
-            .GreaterThan(0)
-            .WithMessage("IQFeed Level1Port must be greater than 0");
-
-        RuleFor(x => x.Level2Port)
-            .GreaterThan(0)
-            .WithMessage("IQFeed Level2Port must be greater than 0");
-
-        RuleFor(x => x.LookupPort)
-            .GreaterThan(0)
-            .WithMessage("IQFeed LookupPort must be greater than 0");
-    }
-}
-
-/// <summary>
-/// Validates CQGConfig settings.
-/// </summary>
-public sealed class CQGConfigValidator : AbstractValidator<CQGConfig>
-{
-    public CQGConfigValidator()
-    {
-        RuleFor(x => x.UserName)
-            .NotEmpty()
-            .WithMessage("CQG username is required");
-
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .WithMessage("CQG password is required");
-    }
-}
-
-/// <summary>
-/// Validates StockSharpIBConfig settings.
-/// </summary>
-public sealed class StockSharpIBConfigValidator : AbstractValidator<StockSharpIBConfig>
-{
-    public StockSharpIBConfigValidator()
-    {
-        RuleFor(x => x.Host)
-            .NotEmpty()
-            .WithMessage("Interactive Brokers host is required");
-
-        RuleFor(x => x.Port)
-            .GreaterThan(0)
-            .WithMessage("Interactive Brokers port must be greater than 0");
-
-        RuleFor(x => x.ClientId)
-            .GreaterThan(0)
-            .WithMessage("Interactive Brokers client ID must be greater than 0");
     }
 }
 

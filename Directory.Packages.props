@@ -135,16 +135,6 @@
     <PackageVersion Include="ScottPlot.WPF" Version="5.0.55" />
   </ItemGroup>
 
-  <ItemGroup Label="StockSharp">
-    <PackageVersion Include="StockSharp.Algo" Version="5.0.229" />
-    <PackageVersion Include="StockSharp.Messages" Version="5.0.223" />
-    <PackageVersion Include="StockSharp.BusinessEntities" Version="5.0.216" />
-    <PackageVersion Include="StockSharp.Rithmic" Version="5.0.110" />
-    <PackageVersion Include="StockSharp.IQFeed" Version="5.0.93" />
-    <PackageVersion Include="StockSharp.Cqg.Com" Version="5.0.128" />
-    <PackageVersion Include="StockSharp.InteractiveBrokers" Version="5.0.129" />
-  </ItemGroup>
-
   <ItemGroup Label="Benchmarking">
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
     <PackageVersion Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.15.8" />
@@ -187,7 +177,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Security - Transitive Dependency Version Overrides">
-    <!-- Override vulnerable transitive dependencies from StockSharp/QuantConnect.Lean -->
+    <!-- Override vulnerable transitive dependencies from QuantConnect.Lean -->
     
     <!-- System.Drawing.Common: Fix GHSA-rxg9-xrhp-64gj (Critical) - CVE-2021-24112 RCE 
          Fixed in 4.7.2+ and 5.0.3+ -->

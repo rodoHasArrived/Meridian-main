@@ -205,6 +205,40 @@ public sealed class CheckpointEndpointTests
     }
 
     [Fact]
+    public async Task GetPendingSymbols_WithYahooProviderAndLongerRange_KeepsProviderTaggedCoverageBoundaries()
+    {
+        await SeedCheckpointStateAsync(
+            new BackfillResult(
+                Success: false,
+                Provider: "yahoo",
+                Symbols: ["SPY", "QQQ", "IWM"],
+                From: new DateOnly(2024, 1, 1),
+                To: new DateOnly(2024, 3, 31),
+                BarsWritten: 95,
+                StartedUtc: DateTimeOffset.UtcNow.AddHours(-3),
+                CompletedUtc: DateTimeOffset.UtcNow.AddHours(-2),
+                Error: "interrupted after partial completion"),
+            ("SPY", new DateOnly(2024, 3, 31), 62),
+            ("QQQ", new DateOnly(2024, 2, 15), 33));
+
+        var response = await _client.GetAsync("/api/backfill/checkpoints/job-yahoo-long-window/pending");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        doc.RootElement.GetProperty("provider").GetString().Should().Be("yahoo");
+
+        var pending = doc.RootElement.GetProperty("pendingSymbols").EnumerateArray()
+            .Select(static item => item.GetString())
+            .Where(static item => item is not null)
+            .Cast<string>()
+            .ToArray();
+
+        pending.Should().BeEquivalentTo(["QQQ", "IWM"]);
+        doc.RootElement.GetProperty("count").GetInt32().Should().Be(2);
+        doc.RootElement.GetProperty("completedCount").GetInt32().Should().Be(1);
+    }
+
+    [Fact]
     public async Task GetCheckpointValidation_WithCheckpointSidecars_ReturnsDerivedSignals()
     {
         await SeedCheckpointStateAsync(

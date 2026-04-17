@@ -72,42 +72,7 @@ public sealed class ConfigEnvironmentOverride
         ["POLYGON_API_KEY"] = "Backfill:Providers:Polygon:ApiKey",
         ["TIINGO_API_TOKEN"] = "Backfill:Providers:Tiingo:ApiToken",
         ["FINNHUB_API_KEY"] = "Backfill:Providers:Finnhub:ApiKey",
-        ["ALPHA_VANTAGE_API_KEY"] = "Backfill:Providers:AlphaVantage:ApiKey",
-
-        // StockSharp core settings
-        ["MDC_STOCKSHARP_ENABLED"] = "StockSharp:Enabled",
-        ["MDC_STOCKSHARP_CONNECTOR"] = "StockSharp:ConnectorType",
-        ["MDC_STOCKSHARP_ADAPTER_TYPE"] = "StockSharp:AdapterType",
-        ["MDC_STOCKSHARP_ADAPTER_ASSEMBLY"] = "StockSharp:AdapterAssembly",
-        ["MDC_STOCKSHARP_STORAGE_PATH"] = "StockSharp:StoragePath",
-        ["MDC_STOCKSHARP_BINARY"] = "StockSharp:UseBinaryStorage",
-        ["MDC_STOCKSHARP_REALTIME"] = "StockSharp:EnableRealTime",
-        ["MDC_STOCKSHARP_HISTORICAL"] = "StockSharp:EnableHistorical",
-
-        // StockSharp - Rithmic
-        ["MDC_STOCKSHARP_RITHMIC_SERVER"] = "StockSharp:Rithmic:Server",
-        ["MDC_STOCKSHARP_RITHMIC_USERNAME"] = "StockSharp:Rithmic:UserName",
-        ["MDC_STOCKSHARP_RITHMIC_PASSWORD"] = "StockSharp:Rithmic:Password",
-        ["MDC_STOCKSHARP_RITHMIC_CERTFILE"] = "StockSharp:Rithmic:CertFile",
-        ["MDC_STOCKSHARP_RITHMIC_PAPER"] = "StockSharp:Rithmic:UsePaperTrading",
-
-        // StockSharp - IQFeed
-        ["MDC_STOCKSHARP_IQFEED_HOST"] = "StockSharp:IQFeed:Host",
-        ["MDC_STOCKSHARP_IQFEED_LEVEL1_PORT"] = "StockSharp:IQFeed:Level1Port",
-        ["MDC_STOCKSHARP_IQFEED_LEVEL2_PORT"] = "StockSharp:IQFeed:Level2Port",
-        ["MDC_STOCKSHARP_IQFEED_LOOKUP_PORT"] = "StockSharp:IQFeed:LookupPort",
-        ["MDC_STOCKSHARP_IQFEED_PRODUCT_ID"] = "StockSharp:IQFeed:ProductId",
-        ["MDC_STOCKSHARP_IQFEED_PRODUCT_VERSION"] = "StockSharp:IQFeed:ProductVersion",
-
-        // StockSharp - CQG
-        ["MDC_STOCKSHARP_CQG_USERNAME"] = "StockSharp:CQG:UserName",
-        ["MDC_STOCKSHARP_CQG_PASSWORD"] = "StockSharp:CQG:Password",
-        ["MDC_STOCKSHARP_CQG_DEMO"] = "StockSharp:CQG:UseDemoServer",
-
-        // StockSharp - Interactive Brokers
-        ["MDC_STOCKSHARP_IB_HOST"] = "StockSharp:InteractiveBrokers:Host",
-        ["MDC_STOCKSHARP_IB_PORT"] = "StockSharp:InteractiveBrokers:Port",
-        ["MDC_STOCKSHARP_IB_CLIENT_ID"] = "StockSharp:InteractiveBrokers:ClientId"
+        ["ALPHA_VANTAGE_API_KEY"] = "Backfill:Providers:AlphaVantage:ApiKey"
     };
 
     /// <summary>
@@ -245,7 +210,6 @@ public sealed class ConfigEnvironmentOverride
             "Alpaca" => ApplyAlpacaOverride(config, parts.Skip(1).ToArray(), value),
             "IB" => ApplyIbOverride(config, parts.Skip(1).ToArray(), value),
             "IBClientPortal" => ApplyIbClientPortalOverride(config, parts.Skip(1).ToArray(), value),
-            "StockSharp" => ApplyStockSharpOverride(config, parts.Skip(1).ToArray(), value),
             "Storage" => ApplyStorageOverride(config, parts.Skip(1).ToArray(), value),
             "Backfill" => ApplyBackfillOverride(config, parts.Skip(1).ToArray(), value),
             _ => config
@@ -385,110 +349,6 @@ public sealed class ConfigEnvironmentOverride
         return config with { Backfill = backfill };
     }
 
-    private AppConfig ApplyStockSharpOverride(AppConfig config, string[] path, string value)
-    {
-        var stockSharp = config.StockSharp ?? new StockSharpConfig();
-
-        if (path.Length == 0)
-            return config;
-
-        stockSharp = path[0] switch
-        {
-            "Enabled" => stockSharp with { Enabled = ParseBool(value) },
-            "ConnectorType" => stockSharp with { ConnectorType = value },
-            "AdapterType" => stockSharp with { AdapterType = value },
-            "AdapterAssembly" => stockSharp with { AdapterAssembly = value },
-            "StoragePath" => stockSharp with { StoragePath = value },
-            "UseBinaryStorage" => stockSharp with { UseBinaryStorage = ParseBool(value) },
-            "EnableRealTime" => stockSharp with { EnableRealTime = ParseBool(value) },
-            "EnableHistorical" => stockSharp with { EnableHistorical = ParseBool(value) },
-            "Rithmic" => ApplyRithmicOverride(stockSharp, path.Skip(1).ToArray(), value),
-            "IQFeed" => ApplyIqFeedOverride(stockSharp, path.Skip(1).ToArray(), value),
-            "CQG" => ApplyCqgOverride(stockSharp, path.Skip(1).ToArray(), value),
-            "InteractiveBrokers" => ApplyStockSharpIbOverride(stockSharp, path.Skip(1).ToArray(), value),
-            _ => stockSharp
-        };
-
-        return config with { StockSharp = stockSharp };
-    }
-
-    private static StockSharpConfig ApplyRithmicOverride(StockSharpConfig config, string[] path, string value)
-    {
-        var rithmic = config.Rithmic ?? new RithmicConfig();
-
-        if (path.Length == 0)
-            return config;
-
-        rithmic = path[0] switch
-        {
-            "Server" => rithmic with { Server = value },
-            "UserName" => rithmic with { UserName = value },
-            "Password" => rithmic with { Password = value },
-            "CertFile" => rithmic with { CertFile = value },
-            "UsePaperTrading" => rithmic with { UsePaperTrading = ParseBool(value) },
-            _ => rithmic
-        };
-
-        return config with { Rithmic = rithmic };
-    }
-
-    private static StockSharpConfig ApplyIqFeedOverride(StockSharpConfig config, string[] path, string value)
-    {
-        var iqFeed = config.IQFeed ?? new IQFeedConfig();
-
-        if (path.Length == 0)
-            return config;
-
-        iqFeed = path[0] switch
-        {
-            "Host" => iqFeed with { Host = value },
-            "Level1Port" => iqFeed with { Level1Port = ParseInt(value) ?? iqFeed.Level1Port },
-            "Level2Port" => iqFeed with { Level2Port = ParseInt(value) ?? iqFeed.Level2Port },
-            "LookupPort" => iqFeed with { LookupPort = ParseInt(value) ?? iqFeed.LookupPort },
-            "ProductId" => iqFeed with { ProductId = value },
-            "ProductVersion" => iqFeed with { ProductVersion = value },
-            _ => iqFeed
-        };
-
-        return config with { IQFeed = iqFeed };
-    }
-
-    private static StockSharpConfig ApplyCqgOverride(StockSharpConfig config, string[] path, string value)
-    {
-        var cqg = config.CQG ?? new CQGConfig();
-
-        if (path.Length == 0)
-            return config;
-
-        cqg = path[0] switch
-        {
-            "UserName" => cqg with { UserName = value },
-            "Password" => cqg with { Password = value },
-            "UseDemoServer" => cqg with { UseDemoServer = ParseBool(value) },
-            _ => cqg
-        };
-
-        return config with { CQG = cqg };
-    }
-
-    private static StockSharpConfig ApplyStockSharpIbOverride(StockSharpConfig config, string[] path, string value)
-    {
-        var ib = config.InteractiveBrokers ?? new StockSharpIBConfig();
-
-        if (path.Length == 0)
-            return config;
-
-        ib = path[0] switch
-        {
-            "Host" => ib with { Host = value },
-            "Port" => ib with { Port = ParseInt(value) ?? ib.Port },
-            "ClientId" => ib with { ClientId = ParseInt(value) ?? ib.ClientId },
-            _ => ib
-        };
-
-        return config with { InteractiveBrokers = ib };
-    }
-
     private static string ConvertEnvVarToConfigPath(string envVar)
     {
         // Remove MDC_ prefix
@@ -538,8 +398,6 @@ public sealed class ConfigEnvironmentOverride
             return "Interactive Brokers Client Portal";
         if (envVar.StartsWith("MDC_IB"))
             return "Interactive Brokers";
-        if (envVar.StartsWith("MDC_STOCKSHARP"))
-            return "StockSharp Configuration";
         if (envVar.StartsWith("MDC_STORAGE"))
             return "Storage Configuration";
         if (envVar.StartsWith("MDC_BACKFILL"))
@@ -557,7 +415,7 @@ public sealed class ConfigEnvironmentOverride
         {
             "MDC_DATA_ROOT" => "Root directory for data storage",
             "MDC_COMPRESS" => "Enable gzip compression (true/false)",
-            "MDC_DATASOURCE" => "Data source provider (IB, Alpaca, Polygon, StockSharp, NYSE, Synthetic)",
+            "MDC_DATASOURCE" => "Data source provider (IB, Alpaca, Polygon, NYSE, Synthetic)",
             "MDC_SYNTHETIC_MODE" => "Enable the built-in synthetic/offline market data provider",
             "MDC_ALPACA_FEED" => "Alpaca data feed (iex or sip)",
             "MDC_IB_HOST" => "Interactive Brokers TWS/Gateway host",
@@ -565,10 +423,6 @@ public sealed class ConfigEnvironmentOverride
             "MDC_IB_CLIENT_ID" => "Interactive Brokers API client id",
             "MDC_IB_PAPER" => "Whether to target Interactive Brokers paper trading",
             "MDC_IB_CLIENT_PORTAL_BASE_URL" => "Interactive Brokers Client Portal base URL",
-            "MDC_STOCKSHARP_CONNECTOR" => "StockSharp connector type (Rithmic, IQFeed, CQG, InteractiveBrokers, Custom)",
-            "MDC_STOCKSHARP_ADAPTER_TYPE" => "StockSharp adapter type for custom connectors",
-            "MDC_STOCKSHARP_ADAPTER_ASSEMBLY" => "StockSharp adapter assembly name for custom connectors",
-            "MDC_STOCKSHARP_STORAGE_PATH" => "StockSharp storage path",
             "MDC_BACKFILL_SYMBOLS" => "Comma-separated list of symbols",
             _ => ""
         };

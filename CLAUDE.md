@@ -17,7 +17,7 @@ Repo-local Codex skills live under `.codex/skills/`. Use them for Meridian-speci
 ### Key Capabilities
 - Real-time streaming: Interactive Brokers, Alpaca, NYSE, Polygon, StockSharp (90+ sources)
 - Historical backfill: 10+ providers with automatic fallback chain
-- Symbol search: 5 providers (Alpaca, Finnhub, Polygon, OpenFIGI, StockSharp)
+- Symbol search: 7 providers (Alpaca, Edgar, Finnhub, Polygon, OpenFIGI, Robinhood, StockSharp)
 - Brokerage gateway framework: Alpaca, IB, StockSharp adapters for order routing
 - Current provider implementation inventory documented below for audit parity (streaming, historical, symbol-search, brokerage, base, and template classes)
 - Data quality monitoring with SLA enforcement
@@ -7606,7 +7606,6 @@ Located in `docs/adr/`. Use `[ImplementsAdr("ADR-XXX", "reason")]` on implementi
 | ADR-013 | Bounded channel pipeline policy — consistent backpressure |
 | ADR-014 | JSON source generators — no-reflection serialization |
 | ADR-015 | Paper trading gateway — risk-free strategy validation for live + backtest parity |
-| ADR-015 | Repository rename and platform restructuring guidance retained as a companion ADR-015 document |
 | ADR-016 | Platform architecture migration — repository-wide mandate |
 
 ---
@@ -7654,6 +7653,7 @@ The following provider-related classes are the current canonical inventory used 
 | Provider Class | Role |
 |----------------|------|
 | `AlpacaSymbolSearchProviderRefactored` | Alpaca symbol search |
+| `EdgarSymbolSearchProvider` | SEC EDGAR symbol search |
 | `FinnhubSymbolSearchProviderRefactored` | Finnhub symbol search |
 | `OpenFigiClient` | OpenFIGI symbol resolution/search |
 | `PolygonSymbolSearchProvider` | Polygon symbol search |

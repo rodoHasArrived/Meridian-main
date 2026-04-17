@@ -43,13 +43,13 @@ $steps = @(
         )
     },
     [ordered]@{
-        Name = "Polygon replay and parsing"
+        Name = "Alpaca core provider confidence"
         Kind = "test"
         Command = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~PolygonRecordedSessionReplayTests|FullyQualifiedName~PolygonMessageParsingTests|FullyQualifiedName~PolygonSubscriptionTests|FullyQualifiedName~PolygonMarketDataClientTests"
+            "FullyQualifiedName~AlpacaBrokerageGatewayTests|FullyQualifiedName~AlpacaCorporateActionProviderTests|FullyQualifiedName~AlpacaCredentialAndReconnectTests|FullyQualifiedName~AlpacaMessageParsingTests|FullyQualifiedName~AlpacaQuotePipelineGoldenTests|FullyQualifiedName~AlpacaQuoteRoutingTests|FullyQualifiedName~AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam"
         )
     },
     [ordered]@{
@@ -63,33 +63,13 @@ $steps = @(
         )
     },
     [ordered]@{
-        Name = "Interactive Brokers guidance and version bounds"
+        Name = "Yahoo historical-only core provider"
         Kind = "test"
         Command = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBOrderSampleTests|FullyQualifiedName~IBApiVersionValidatorTests|FullyQualifiedName~IBSimulationClientContractTests"
-        )
-    },
-    [ordered]@{
-        Name = "NYSE shared lifecycle and bounded runtime seams"
-        Kind = "test"
-        Command = @(
-            "dotnet"
-        ) + $commonTestArgs + @(
-            "--filter",
-            "FullyQualifiedName~NyseSharedLifecycleTests|FullyQualifiedName~NyseMarketDataClientTests|FullyQualifiedName~NYSECredentialAndRateLimitTests|FullyQualifiedName~NYSEMessageParsingTests|FullyQualifiedName~NyseTaqCollectorIntegrationTests"
-        )
-    },
-    [ordered]@{
-        Name = "StockSharp validated adapter baseline"
-        Kind = "test"
-        Command = @(
-            "dotnet"
-        ) + $commonTestArgs + @(
-            "--filter",
-            "FullyQualifiedName~StockSharpSubscriptionTests|FullyQualifiedName~StockSharpMessageConversionTests|FullyQualifiedName~StockSharpConnectorFactoryTests"
+            "FullyQualifiedName~YahooFinanceHistoricalDataProviderTests|FullyQualifiedName~YahooFinanceIntradayContractTests"
         )
     },
     [ordered]@{
@@ -110,17 +90,6 @@ $steps = @(
         ) + $commonTestArgs + @(
             "--filter",
             "FullyQualifiedName~ParquetStorageSinkTests|FullyQualifiedName~ParquetConversionServiceTests"
-        )
-    },
-    [ordered]@{
-        Name = "IBApi compile-only smoke build"
-        Kind = "script"
-        Command = @(
-            "powershell",
-            "-NoProfile",
-            "-ExecutionPolicy", "Bypass",
-            "-File", (Join-Path $repoRoot "scripts/dev/build-ibapi-smoke.ps1"),
-            "-Configuration", $Configuration
         )
     }
 )

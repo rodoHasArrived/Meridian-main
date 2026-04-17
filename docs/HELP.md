@@ -150,8 +150,17 @@ dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 ### Solution build
 
 ```bash
-dotnet restore Meridian.sln
-dotnet build Meridian.sln
+python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release
+```
+
+For concurrent automation or screenshot/smoke runs, isolate the whole build graph:
+
+```bash
+python3 build/python/cli/buildctl.py build \
+  --project src/Meridian.Wpf/Meridian.Wpf.csproj \
+  --configuration Release \
+  --full-wpf-build \
+  --isolation-key desktop-smoke
 ```
 
 ### Focused test runs

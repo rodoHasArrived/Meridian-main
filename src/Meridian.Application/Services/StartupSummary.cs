@@ -50,7 +50,6 @@ public sealed class StartupSummary
         AppendProviderStatus(sb, "Alpaca", config.DataSource == DataSourceKind.Alpaca, HasAlpacaCredentials(config));
         AppendProviderStatus(sb, "Polygon", config.DataSource == DataSourceKind.Polygon, HasPolygonCredentials(config));
         AppendProviderStatus(sb, "IB", config.DataSource == DataSourceKind.IB, HasIBConfig(config));
-        AppendProviderStatus(sb, "StockSharp", config.DataSource == DataSourceKind.StockSharp, config.StockSharp?.Enabled == true);
         AppendProviderStatus(sb, "NYSE", config.DataSource == DataSourceKind.NYSE, HasNYSECredentials());
         AppendProviderStatus(sb, "Synthetic", config.DataSource == DataSourceKind.Synthetic, config.Synthetic?.Enabled == true);
 
@@ -387,7 +386,6 @@ public sealed class StartupSummary
             DataSourceKind.IB => "Interactive Brokers",
             DataSourceKind.Alpaca => "Alpaca Markets",
             DataSourceKind.Polygon => "Polygon.io",
-            DataSourceKind.StockSharp => "StockSharp",
             DataSourceKind.NYSE => "NYSE",
             DataSourceKind.Synthetic => "Synthetic Offline Dataset",
             _ => kind.ToString()

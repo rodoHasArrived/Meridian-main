@@ -11,7 +11,6 @@ namespace Meridian.Application.Config;
 /// Market data provider selector:
 /// - <see cref="DataSourceKind.IB"/> uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
 /// - <see cref="DataSourceKind.Alpaca"/> uses Alpaca market data via WebSocket (trades; quotes optional in future).
-/// - <see cref="DataSourceKind.StockSharp"/> uses StockSharp connectors (Rithmic, IQFeed, CQG, IB, etc.).
 /// - <see cref="DataSourceKind.NYSE"/> uses the NYSE market data feed.
 /// - <see cref="DataSourceKind.Synthetic"/> uses the built-in synthetic historical/reference dataset for offline development.
 /// </param>
@@ -19,7 +18,6 @@ namespace Meridian.Application.Config;
 /// <param name="IB">Interactive Brokers provider options (required if DataSource == DataSourceKind.IB).</param>
 /// <param name="IBClientPortal">Interactive Brokers Client Portal HTTP settings for portfolio/account import.</param>
 /// <param name="Polygon">Polygon provider options (required if DataSource == DataSourceKind.Polygon).</param>
-/// <param name="StockSharp">StockSharp connector configuration (required if DataSource == DataSourceKind.StockSharp).</param>
 /// <param name="Synthetic">Synthetic market-data provider configuration for offline/backtest development.</param>
 /// <param name="Storage">Storage configuration options (naming convention, partitioning, etc.).</param>
 /// <param name="Symbols">Symbol subscriptions.</param>
@@ -43,7 +41,6 @@ public sealed record AppConfig(
     IBOptions? IB = null,
     IBClientPortalOptions? IBClientPortal = null,
     PolygonOptions? Polygon = null,
-    StockSharpConfig? StockSharp = null,
     SyntheticMarketDataConfig? Synthetic = null,
     StorageConfig? Storage = null,
     SymbolConfig[]? Symbols = null,

@@ -3,7 +3,7 @@ namespace Meridian.Execution.Sdk;
 /// <summary>
 /// Extended execution gateway contract for full brokerage providers.
 /// Adds account querying, position sync, and connection lifecycle on top of
-/// <see cref="IExecutionGateway"/>. Each broker (Alpaca, IB, StockSharp, etc.)
+/// <see cref="IExecutionGateway"/>. Each broker (Alpaca, IB, etc.)
 /// implements this interface to expose its full trading capabilities.
 /// </summary>
 public interface IBrokerageGateway : IExecutionGateway, IAsyncDisposable

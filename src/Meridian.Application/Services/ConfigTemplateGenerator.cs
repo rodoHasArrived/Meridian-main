@@ -169,65 +169,6 @@ public sealed class ConfigTemplateGenerator
     }
 
     /// <summary>
-    /// Generates a StockSharp-specific configuration template.
-    /// </summary>
-    public ConfigTemplate GenerateStockSharp()
-    {
-        var config = new
-        {
-            DataRoot = "data",
-            Compress = true,
-            DataSource = "StockSharp",
-            StockSharp = new
-            {
-                Enabled = true,
-                ConnectorType = "Rithmic",
-                AdapterType = "${MDC_STOCKSHARP_ADAPTER_TYPE}",
-                AdapterAssembly = "${MDC_STOCKSHARP_ADAPTER_ASSEMBLY}",
-                EnableRealTime = true,
-                EnableHistorical = true,
-                UseBinaryStorage = false,
-                StoragePath = "data/stocksharp/{connector}",
-                Rithmic = new
-                {
-                    Server = "${MDC_STOCKSHARP_RITHMIC_SERVER}",
-                    UserName = "${MDC_STOCKSHARP_RITHMIC_USERNAME}",
-                    Password = "${MDC_STOCKSHARP_RITHMIC_PASSWORD}",
-                    CertFile = "${MDC_STOCKSHARP_RITHMIC_CERTFILE}",
-                    UsePaperTrading = true
-                }
-            },
-            Storage = new
-            {
-                NamingConvention = "BySymbol",
-                DatePartition = "Daily"
-            },
-            Symbols = new[]
-            {
-                new { Symbol = "ES", Exchange = "CME", SecurityType = "FUT", SubscribeTrades = true, SubscribeDepth = true }
-            }
-        };
-
-        return new ConfigTemplate
-        {
-            Name = "StockSharp",
-            Description = "Configuration for StockSharp connectors (Rithmic example)",
-            Json = JsonSerializer.Serialize(config, JsonOptions),
-            Category = ConfigTemplateCategory.Provider,
-            EnvironmentVariables = new Dictionary<string, string>
-            {
-                ["MDC_STOCKSHARP_CONNECTOR"] = "StockSharp connector type (Rithmic, IQFeed, CQG, InteractiveBrokers, Custom)",
-                ["MDC_STOCKSHARP_ADAPTER_TYPE"] = "Fully qualified StockSharp adapter type (for custom connectors)",
-                ["MDC_STOCKSHARP_ADAPTER_ASSEMBLY"] = "Adapter assembly name (if needed)",
-                ["MDC_STOCKSHARP_RITHMIC_SERVER"] = "Rithmic server name",
-                ["MDC_STOCKSHARP_RITHMIC_USERNAME"] = "Rithmic username",
-                ["MDC_STOCKSHARP_RITHMIC_PASSWORD"] = "Rithmic password",
-                ["MDC_STOCKSHARP_RITHMIC_CERTFILE"] = "Path to Rithmic certificate file"
-            }
-        };
-    }
-
-    /// <summary>
     /// Generates a backfill-focused configuration template.
     /// </summary>
     public ConfigTemplate GenerateBackfill()
@@ -378,7 +319,7 @@ public sealed class ConfigTemplateGenerator
             Category = ConfigTemplateCategory.Deployment,
             EnvironmentVariables = new Dictionary<string, string>
             {
-                ["MDC_DATASOURCE"] = "Data source provider (IB, Alpaca, Polygon, StockSharp, NYSE)",
+                ["MDC_DATASOURCE"] = "Data source provider (IB, Alpaca, Polygon, NYSE)",
                 ["MDC_SYMBOLS"] = "Comma-separated list of symbols",
                 ["ALPACA_KEY_ID"] = "Alpaca API Key ID",
                 ["ALPACA_SECRET_KEY"] = "Alpaca Secret Key",
@@ -397,7 +338,6 @@ public sealed class ConfigTemplateGenerator
             GenerateMinimal(),
             GenerateFull(),
             GenerateAlpaca(),
-            GenerateStockSharp(),
             GenerateBackfill(),
             GenerateProduction(),
             GenerateDocker()
@@ -414,7 +354,6 @@ public sealed class ConfigTemplateGenerator
             "minimal" => GenerateMinimal(),
             "full" => GenerateFull(),
             "alpaca" => GenerateAlpaca(),
-            "stocksharp" => GenerateStockSharp(),
             "backfill" => GenerateBackfill(),
             "production" => GenerateProduction(),
             "docker" => GenerateDocker(),
