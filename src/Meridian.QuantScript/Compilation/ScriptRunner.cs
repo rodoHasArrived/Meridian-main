@@ -66,22 +66,30 @@ public sealed class ScriptRunner : IScriptRunner
         var wallClock = Stopwatch.StartNew();
         var memBefore = GC.GetTotalMemory(false);
 
-        var compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+        var compilationResult = new ScriptCompilationResult(
+            Success: true,
+            CompilationTime: TimeSpan.Zero,
+            Diagnostics: Array.Empty<ScriptDiagnostic>());
 
-        if (!compilationResult.Success)
+        if (checkpoint is null)
         {
-            return new ScriptRunResult(
-                Success: false,
-                Elapsed: wallClock.Elapsed,
-                CompileTime: compilationResult.CompilationTime,
-                PeakMemoryBytes: 0,
-                CompilationErrors: compilationResult.Diagnostics,
-                RuntimeError: null,
-                ConsoleOutput: string.Empty,
-                Metrics: Array.Empty<KeyValuePair<string, string>>(),
-                Plots: Array.Empty<PlotRequest>(),
-                TradesSummary: Array.Empty<string>(),
-                Checkpoint: checkpoint);
+            compilationResult = await _compiler.CompileAsync(source, ct).ConfigureAwait(false);
+
+            if (!compilationResult.Success)
+            {
+                return new ScriptRunResult(
+                    Success: false,
+                    Elapsed: wallClock.Elapsed,
+                    CompileTime: compilationResult.CompilationTime,
+                    PeakMemoryBytes: 0,
+                    CompilationErrors: compilationResult.Diagnostics,
+                    RuntimeError: null,
+                    ConsoleOutput: string.Empty,
+                    Metrics: Array.Empty<KeyValuePair<string, string>>(),
+                    Plots: Array.Empty<PlotRequest>(),
+                    TradesSummary: Array.Empty<string>(),
+                    Checkpoint: checkpoint);
+            }
         }
 
         using var runCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
