@@ -543,15 +543,19 @@ public sealed class StatusEndpointHandlers
                 DisplayName = "Alpaca Markets",
                 Description = "Real-time and historical data with adjustments",
                 IsAvailable = true,
-                RequiresApiKey = true
+                RequiresApiKey = true,
+                SupportsIntraday = true,
+                SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"]
             },
             new BackfillProviderInfo
             {
                 Name = "yahoo",
                 DisplayName = "Yahoo Finance",
-                Description = "Free historical data for most US equities",
+                Description = "Free unofficial daily and regular-hours intraday data for most listed equities and ETFs",
                 IsAvailable = true,
-                RequiresApiKey = false
+                RequiresApiKey = false,
+                SupportsIntraday = true,
+                SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"]
             },
             new BackfillProviderInfo
             {
@@ -559,7 +563,9 @@ public sealed class StatusEndpointHandlers
                 DisplayName = "Stooq",
                 Description = "Free EOD data for global markets",
                 IsAvailable = true,
-                RequiresApiKey = false
+                RequiresApiKey = false,
+                SupportsIntraday = false,
+                SupportedGranularities = ["Daily"]
             },
             new BackfillProviderInfo
             {
@@ -567,7 +573,9 @@ public sealed class StatusEndpointHandlers
                 DisplayName = "Nasdaq Data Link",
                 Description = "Historical data (API key may be required)",
                 IsAvailable = true,
-                RequiresApiKey = true
+                RequiresApiKey = true,
+                SupportsIntraday = false,
+                SupportedGranularities = ["Daily"]
             }
         };
     }

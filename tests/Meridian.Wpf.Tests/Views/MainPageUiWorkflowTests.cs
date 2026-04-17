@@ -37,6 +37,29 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
+    public void MainPage_CommandPaletteEmptyState_ShouldExposeHelpfulRecoveryAction()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.ShowCommandPalette();
+            facade.SetText(facade.CommandPaletteTextBox, "zzzz-unmatched-query");
+
+            facade.CommandPaletteResults.Items.Count.Should().Be(0);
+            facade.CommandPaletteEmptyState.Visibility.Should().Be(Visibility.Visible);
+            facade.CommandPaletteSummaryText.Text.Should().Contain("No matches");
+            facade.CommandPaletteEmptyTitleText.Text.Should().Contain("zzzz-unmatched-query");
+
+            facade.Click(facade.CommandPaletteClearButton);
+
+            facade.CommandPaletteTextBox.Text.Should().BeEmpty();
+            facade.CommandPaletteEmptyState.Visibility.Should().Be(Visibility.Collapsed);
+            facade.CommandPaletteResults.Items.Count.Should().BeGreaterThan(0);
+        });
+    }
+
+    [Fact]
     public void MainPage_WorkspaceTileWorkflow_ShouldExposeStableWorkspaceLaunchContracts()
     {
         WpfTestThread.Run(() =>
@@ -84,6 +107,22 @@ public sealed class MainPageUiWorkflowTests
             facade.Click(facade.TickerStripToggleButton);
             facade.ViewModel.TickerStripVisible.Should().BeFalse();
             facade.TickerStripToggleLabelText.Text.Should().Be("Ticker Strip");
+        });
+    }
+
+    [Fact]
+    public void MainPage_RecentPagesEmptyState_ShouldOfferCommandPaletteShortcut()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var facade = new MainPageUiAutomationFacade();
+
+            facade.RecentPagesEmptyText.Text.Should().Be("No recent pages yet.");
+            facade.RecentPagesSummaryText.Text.Should().Contain("No recent");
+
+            facade.Click(facade.RecentPagesEmptyActionButton);
+
+            facade.CommandPaletteOverlay.Visibility.Should().Be(Visibility.Visible);
         });
     }
 }

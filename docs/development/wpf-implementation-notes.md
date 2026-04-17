@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-04-14 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-04-16 | **Status**: Authored / Included in solution build
 
 ## Overview
 
@@ -18,7 +18,7 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 | Project | Role |
 |---------|------|
 | `Meridian.Wpf` | Views, code-behind, WPF-specific services |
-| `Meridian.Wpf.Tests` | 101 unit tests for WPF-specific services |
+| `Meridian.Wpf.Tests` | 104 unit tests for WPF-specific services and shell projections |
 | `Meridian.Ui.Services` | Shared service layer (CommandPaletteService, WorkspaceService, NavigationServiceBase, etc.) |
 | `Meridian.Ui.Tests` | 171 tests for shared UI services |
 | `Meridian.Ui.Shared` | Endpoint helpers, DTO extensions, HTML template generator |
@@ -282,9 +282,9 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 ---
 
-## Research and Trading Workspace Shells
+## Workspace Shells
 
-Two dedicated workspace shell pages provide the initial entry point into each primary workflow. They are lightweight presenter pages — no deep data logic — that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages.
+Research and Trading workspace shells remain lightweight presenter pages that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages. Data Operations now uses a service-backed projection layer that folds provider, backfill, storage, session, notification, and export-job telemetry into a single operator shell.
 
 Shell implementation now shares descriptor-driven infrastructure:
 
@@ -313,6 +313,21 @@ Shell implementation now shares descriptor-driven infrastructure:
 3. **Quick Actions** — Open Live Data, Open Portfolio, Import Positions, View Trading Hours
 4. **Risk Rail** — Drawdown gauge, position-limit utilization, order-rate throttle status (from `CompositeRiskValidator`)
 
+### `DataOperationsWorkspaceShellPage` (`Views/DataOperationsWorkspaceShellPage.xaml`)
+
+**Purpose**: Operational cockpit for provider readiness, backfill pressure, storage posture, collection sessions, and export delivery.
+
+**Data composition**:
+1. `DataOperationsWorkspaceShellPage.xaml.cs` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
+2. `DataOperationsWorkspacePresentationBuilder` converts those service responses into shell context badges, queue cards, summary values, recent operations, and quick-action wiring.
+3. Primary actions route directly to `ProviderHealth`, `Backfill`, and `DataExport`; secondary actions keep `Providers`, `Storage`, `CollectionSessions`, `Schedules`, and `PackageManager` in the same shell flow.
+
+**Design zones**:
+1. **Context strip** — Scope, freshness, backfill review state, and critical blockers derived from live operational state instead of static labels.
+2. **Queue boards** — Provider health, backfill queue/session state, storage posture, and export job visibility.
+3. **Recent operations rail** — Latest session, resumable backfill, export run, or alert-linked notification with a deep link back into the owning page.
+4. **Support surfaces** — Fast open buttons for Providers, Backfill, Symbols, Storage, Collection Sessions, Data Export, Schedules, and Package Manager.
+
 ---
 
 ## Build
@@ -322,7 +337,7 @@ Shell implementation now shares descriptor-driven infrastructure:
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableWindowsTargeting=true -c Release
 
 # WPF + shared UI services tests
-dotnet test tests/Meridian.Wpf.Tests /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Wpf.Tests /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 ```
 
@@ -340,7 +355,7 @@ dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 
 | Test project | Count | Covers |
 |---|---|---|
-| `Meridian.Wpf.Tests` | 101 | WPF-specific services: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, etc. |
+| `Meridian.Wpf.Tests` | 104 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data Operations shell projection, etc. |
 | `Meridian.Ui.Tests` | 171 | Shared services: ApiClient, Backfill, Charting, Watchlist, DataQuality, StrategyRun drill-ins |
 
 Run with:

@@ -9,6 +9,7 @@ using Meridian.Application.ResultTypes;
 using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Meridian.Contracts.Configuration;
@@ -202,8 +203,15 @@ public static class SharedStartupHelpers
             : baseRequest.Symbols;
         var from = ParseDate(cliArgs.BackfillFrom) ?? baseRequest.From;
         var to = ParseDate(cliArgs.BackfillTo) ?? baseRequest.To;
+        var granularity = string.IsNullOrWhiteSpace(cliArgs.BackfillGranularity)
+            ? baseRequest.Granularity
+            : DataGranularityExtensions.TryParseValue(cliArgs.BackfillGranularity, out var parsedGranularity)
+                ? parsedGranularity
+                : throw new InvalidOperationException(
+                    $"Unsupported backfill granularity '{cliArgs.BackfillGranularity}'. " +
+                    "Use one of: Daily, Hourly, 1Min, 5Min, 15Min, 30Min, 4Hour.");
 
-        return new BackfillRequest(provider, symbols.ToArray(), from, to);
+        return new BackfillRequest(provider, symbols.ToArray(), from, to, granularity);
     }
 
     private static DateOnly? ParseDate(string? value)

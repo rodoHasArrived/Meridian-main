@@ -202,6 +202,12 @@ public sealed class BackfillProviderInfo
 
     [JsonPropertyName("requiresApiKey")]
     public bool RequiresApiKey { get; set; }
+
+    [JsonPropertyName("supportsIntraday")]
+    public bool SupportsIntraday { get; set; }
+
+    [JsonPropertyName("supportedGranularities")]
+    public string[] SupportedGranularities { get; set; } = Array.Empty<string>();
 }
 
 /// <summary>

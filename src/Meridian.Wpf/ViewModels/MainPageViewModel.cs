@@ -21,6 +21,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly FundContextService _fundContextService;
     private readonly WorkstationOperatingContextService? _operatingContextService;
+    private readonly WorkspaceShellContextService? _workspaceShellContextService;
     private readonly ObservableCollection<ShellCommandPaletteEntry> _commandPalettePages = [];
     private readonly ObservableCollection<ShellNavigationItem> _primaryNavigationItems = [];
     private readonly ObservableCollection<ShellNavigationItem> _secondaryNavigationItems = [];
@@ -47,6 +48,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private Visibility _commandPaletteVisibility = Visibility.Collapsed;
     private string _commandPaletteQuery = string.Empty;
     private ShellCommandPaletteEntry? _selectedCommandPalettePage;
+    private string _commandPaletteResultSummary = string.Empty;
+    private Visibility _commandPaletteEmptyVisibility = Visibility.Collapsed;
     private Visibility _backButtonVisibility = Visibility.Collapsed;
     private Visibility _recentPagesEmptyVisibility = Visibility.Visible;
     private Visibility _fixtureModeBannerVisibility = Visibility.Collapsed;
@@ -56,17 +59,22 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private Visibility _activeFundVisibility = Visibility.Collapsed;
     private WorkstationOperatingContext? _selectedOperatingContext;
     private BoundedWindowMode _selectedWindowMode = BoundedWindowMode.DockFloat;
+    private WorkspaceShellContext _shellContext = new();
+    private DateTimeOffset _shellLastUpdatedAt = DateTimeOffset.Now;
+    private int _shellContextRevision;
 
     public MainPageViewModel(
         INavigationService navigationService,
         FixtureModeDetector fixtureModeDetector,
         FundContextService? fundContextService = null,
-        WorkstationOperatingContextService? operatingContextService = null)
+        WorkstationOperatingContextService? operatingContextService = null,
+        WorkspaceShellContextService? workspaceShellContextService = null)
     {
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _fundContextService = fundContextService ?? FundContextService.Instance;
         _operatingContextService = operatingContextService;
+        _workspaceShellContextService = workspaceShellContextService;
 
         SplitPane = new SplitPaneViewModel();
         CommandPalettePages = new ReadOnlyObservableCollection<ShellCommandPaletteEntry>(_commandPalettePages);
@@ -83,6 +91,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         ShowCommandPaletteCommand = new RelayCommand(ShowCommandPalette);
         HideCommandPaletteCommand = new RelayCommand(HideCommandPalette);
         OpenSelectedCommandPalettePageCommand = new RelayCommand(OpenSelectedCommandPalettePage, CanOpenSelectedCommandPalettePage);
+        ClearCommandPaletteQueryCommand = new RelayCommand(ClearCommandPaletteQuery);
         OpenNotificationsCommand = new RelayCommand(() => NavigateToPage("NotificationCenter"));
         OpenHelpCommand = new RelayCommand(() => NavigateToPage("Help"));
         ToggleTickerStripCommand = new RelayCommand(ToggleTickerStrip);
@@ -110,6 +119,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshOperatingContexts();
         RefreshWindowMode();
         UpdateActiveFundDisplay();
+        UpdateShellRefreshStamp();
+        _ = RefreshShellContextAsync();
     }
 
     public INavigationService NavigationService => _navigationService;
@@ -141,6 +152,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public IRelayCommand HideCommandPaletteCommand { get; }
 
     public IRelayCommand OpenSelectedCommandPalettePageCommand { get; }
+
+    public IRelayCommand ClearCommandPaletteQueryCommand { get; }
 
     public IRelayCommand OpenNotificationsCommand { get; }
 
@@ -192,6 +205,26 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     public string CurrentModeName => _operatingContextService?.GetCurrentModeDisplayName() ?? "Dock + Float";
+
+    public WorkspaceShellContext ShellContext
+    {
+        get => _shellContext;
+        private set => SetProperty(ref _shellContext, value);
+    }
+
+    public string ShellStatusText => _fixtureModeDetector.IsOfflineMode
+        ? "Offline"
+        : _fixtureModeDetector.IsFixtureMode
+            ? "Fixture"
+            : "Live";
+
+    public string ShellStatusTone => _fixtureModeDetector.IsOfflineMode
+        ? WorkspaceTone.Danger
+        : _fixtureModeDetector.IsFixtureMode
+            ? WorkspaceTone.Warning
+            : WorkspaceTone.Success;
+
+    public string ShellLastRefreshText => FormatShellLastRefresh(_shellLastUpdatedAt);
 
     public string CurrentWorkspace
     {
@@ -306,6 +339,26 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
     }
 
+    public string CommandPaletteResultSummary
+    {
+        get => _commandPaletteResultSummary;
+        private set => SetProperty(ref _commandPaletteResultSummary, value);
+    }
+
+    public Visibility CommandPaletteEmptyVisibility
+    {
+        get => _commandPaletteEmptyVisibility;
+        private set => SetProperty(ref _commandPaletteEmptyVisibility, value);
+    }
+
+    public string CommandPaletteEmptyTitle => string.IsNullOrWhiteSpace(CommandPaletteQuery)
+        ? "No pages available"
+        : $"No results for “{CommandPaletteQuery.Trim()}”";
+
+    public string CommandPaletteEmptyDescription => string.IsNullOrWhiteSpace(CommandPaletteQuery)
+        ? "Try opening a workspace home or refresh the shell to register navigation targets."
+        : "Search by page title, workspace, workflow, or page tag.";
+
     public Visibility BackButtonVisibility
     {
         get => _backButtonVisibility;
@@ -348,6 +401,22 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _activeFundVisibility, value);
     }
 
+    public Visibility ContextSelectionHintVisibility => ActiveFundVisibility == Visibility.Visible
+        ? Visibility.Collapsed
+        : Visibility.Visible;
+
+    public string ContextSelectionHintText => "Choose an operating context to tailor navigation, alerts, and workspace defaults.";
+
+    public string SwitchContextActionText => ActiveFundVisibility == Visibility.Visible
+        ? "Switch Context"
+        : "Choose Context";
+
+    public string RecentPagesSummaryText => _recentPages.Count == 0
+        ? $"No recent {WorkspaceHeading.ToLowerInvariant()} workflows"
+        : $"{_recentPages.Count} recent {WorkspaceHeading.ToLowerInvariant()} workflow{(_recentPages.Count == 1 ? string.Empty : "s")}";
+
+    public string CurrentWorkspaceHomePageTag => GetWorkspaceHomePageTag(CurrentWorkspace);
+
     public void ActivateShell()
     {
         if (_navigationService.GetBreadcrumbs().Count == 0)
@@ -355,10 +424,14 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ApplyCurrentPage(CurrentPageTag);
             _navigationService.NavigateTo(CurrentPageTag);
             SyncNavigationState();
+            UpdateShellRefreshStamp();
+            _ = RefreshShellContextAsync();
             return;
         }
 
         SyncNavigationState();
+        UpdateShellRefreshStamp();
+        _ = RefreshShellContextAsync();
     }
 
     public void SyncNavigationState()
@@ -403,16 +476,24 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         HideCommandPalette();
         RefreshRecentPages();
         SyncNavigationState();
+        UpdateShellRefreshStamp();
+        _ = RefreshShellContextAsync();
     }
 
     private void OnFixtureModeChanged(object? sender, EventArgs e)
     {
         UpdateFixtureModeBanner();
+        RaisePropertyChanged(nameof(ShellStatusText));
+        RaisePropertyChanged(nameof(ShellStatusTone));
+        UpdateShellRefreshStamp();
+        _ = RefreshShellContextAsync();
     }
 
     private void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
         UpdateActiveFundDisplay();
+        UpdateShellRefreshStamp();
+        _ = RefreshShellContextAsync();
     }
 
     private void OnOperatingContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
@@ -420,16 +501,21 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         RefreshOperatingContexts();
         RefreshWindowMode();
         UpdateActiveFundDisplay();
+        UpdateShellRefreshStamp();
+        _ = RefreshShellContextAsync();
     }
 
     private void OnOperatingContextCatalogChanged(object? sender, EventArgs e)
     {
         RefreshOperatingContexts();
+        _ = RefreshShellContextAsync();
     }
 
     private void OnWindowModeChanged(object? sender, EventArgs e)
     {
         RefreshWindowMode();
+        UpdateShellRefreshStamp();
+        _ = RefreshShellContextAsync();
     }
 
     private void SelectWorkspace(string? workspace) => SelectWorkspace(workspace, navigateToHome: false);
@@ -445,12 +531,15 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(WorkspaceSummary));
             RaisePropertyChanged(nameof(ActiveNavigationLabel));
             RaisePropertyChanged(nameof(RecentPagesHintText));
+            RaisePropertyChanged(nameof(RecentPagesSummaryText));
+            RaisePropertyChanged(nameof(CurrentWorkspaceHomePageTag));
             RaisePropertyChanged(nameof(IsResearchWorkspaceActive));
             RaisePropertyChanged(nameof(IsTradingWorkspaceActive));
             RaisePropertyChanged(nameof(IsDataOperationsWorkspaceActive));
             RaisePropertyChanged(nameof(IsGovernanceWorkspaceActive));
             RefreshShellNavigation();
             RefreshCommandPalettePages();
+            _ = RefreshShellContextAsync();
         }
 
         if (navigateToHome && !_suppressNavigation)
@@ -487,6 +576,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         CommandPaletteVisibility = Visibility.Collapsed;
     }
 
+    private void ClearCommandPaletteQuery()
+    {
+        CommandPaletteQuery = string.Empty;
+    }
+
     private bool CanOpenSelectedCommandPalettePage()
         => SelectedCommandPalettePage is not null;
 
@@ -519,7 +613,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private void RefreshCurrentPage()
     {
+        UpdateShellRefreshStamp();
         _navigationService.NavigateTo(CurrentPageTag);
+        _ = RefreshShellContextAsync();
     }
 
     private void ApplyCurrentPage(string pageTag)
@@ -630,6 +726,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         ReplaceCollection(_commandPalettePages, descriptors);
         SelectedCommandPalettePage = _commandPalettePages.FirstOrDefault();
+        UpdateCommandPalettePresentation(query);
     }
 
     private void RefreshRecentPages()
@@ -645,6 +742,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         ReplaceCollection(_recentPages, recent);
         RecentPagesEmptyVisibility = _recentPages.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        RaisePropertyChanged(nameof(RecentPagesSummaryText));
     }
 
     private void UpdateFixtureModeBanner()
@@ -663,6 +761,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ActiveFundName = operatingContext.DisplayName;
             ActiveFundSubtitle = operatingContext.Subtitle;
             ActiveFundVisibility = Visibility.Visible;
+            RaisePropertyChanged(nameof(ContextSelectionHintVisibility));
+            RaisePropertyChanged(nameof(SwitchContextActionText));
             return;
         }
 
@@ -672,12 +772,16 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             ActiveFundName = "Select Context";
             ActiveFundSubtitle = "Operating context required";
             ActiveFundVisibility = Visibility.Collapsed;
+            RaisePropertyChanged(nameof(ContextSelectionHintVisibility));
+            RaisePropertyChanged(nameof(SwitchContextActionText));
             return;
         }
 
         ActiveFundName = activeFund.DisplayName;
         ActiveFundSubtitle = $"{activeFund.LegalEntityName} · {activeFund.BaseCurrency}";
         ActiveFundVisibility = Visibility.Visible;
+        RaisePropertyChanged(nameof(ContextSelectionHintVisibility));
+        RaisePropertyChanged(nameof(SwitchContextActionText));
     }
 
     private async Task SelectOperatingContextAsync(WorkstationOperatingContext context)
@@ -748,6 +852,144 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         }
 
         RaisePropertyChanged(nameof(CurrentModeName));
+    }
+
+    private async Task RefreshShellContextAsync(CancellationToken ct = default)
+    {
+        var refreshRevision = System.Threading.Interlocked.Increment(ref _shellContextRevision);
+        var shellContext = _workspaceShellContextService is null
+            ? BuildFallbackShellContext()
+            : await _workspaceShellContextService.CreateAsync(BuildShellContextInput(), ct).ConfigureAwait(false);
+
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ShellContext = shellContext;
+            }
+
+            return;
+        }
+
+        await dispatcher.InvokeAsync(() =>
+        {
+            if (refreshRevision == _shellContextRevision)
+            {
+                ShellContext = shellContext;
+            }
+        });
+    }
+
+    private WorkspaceShellContextInput BuildShellContextInput()
+    {
+        return new WorkspaceShellContextInput
+        {
+            WorkspaceTitle = CurrentPageTitle,
+            WorkspaceSubtitle = CurrentPageSubtitle,
+            PrimaryScopeLabel = "Operating Context",
+            AsOfValue = _shellLastUpdatedAt.ToLocalTime().ToString("MMM dd yyyy HH:mm"),
+            ReviewStateLabel = "Layout",
+            ReviewStateValue = CurrentModeName,
+            ReviewStateTone = SelectedWindowMode == BoundedWindowMode.WorkbenchPreset
+                ? WorkspaceTone.Info
+                : WorkspaceTone.Neutral,
+            CriticalLabel = "Workflow",
+            CriticalValue = WorkspaceHeading,
+            CriticalTone = WorkspaceTone.Info
+        };
+    }
+
+    private WorkspaceShellContext BuildFallbackShellContext()
+    {
+        var scopeValue = ActiveFundVisibility == Visibility.Visible
+            ? $"{ActiveFundName} · {ActiveFundSubtitle}"
+            : "No operating context selected";
+
+        return new WorkspaceShellContext
+        {
+            WorkspaceTitle = CurrentPageTitle,
+            WorkspaceSubtitle = CurrentPageSubtitle,
+            Badges =
+            [
+                new WorkspaceShellBadge
+                {
+                    Label = "Operating Context",
+                    Value = scopeValue,
+                    Glyph = "\uE8B7",
+                    Tone = ActiveFundVisibility == Visibility.Visible ? WorkspaceTone.Info : WorkspaceTone.Warning
+                },
+                new WorkspaceShellBadge
+                {
+                    Label = "Environment",
+                    Value = ShellStatusText,
+                    Glyph = "\uE7BA",
+                    Tone = ShellStatusTone
+                },
+                new WorkspaceShellBadge
+                {
+                    Label = "Updated",
+                    Value = ShellLastRefreshText,
+                    Glyph = "\uE823",
+                    Tone = WorkspaceTone.Neutral
+                },
+                new WorkspaceShellBadge
+                {
+                    Label = "Layout",
+                    Value = CurrentModeName,
+                    Glyph = "\uE7F8",
+                    Tone = WorkspaceTone.Neutral
+                },
+                new WorkspaceShellBadge
+                {
+                    Label = "Workflow",
+                    Value = WorkspaceHeading,
+                    Glyph = "\uE8FD",
+                    Tone = WorkspaceTone.Info
+                }
+            ]
+        };
+    }
+
+    private void UpdateShellRefreshStamp()
+    {
+        _shellLastUpdatedAt = DateTimeOffset.Now;
+        RaisePropertyChanged(nameof(ShellLastRefreshText));
+    }
+
+    private static string FormatShellLastRefresh(DateTimeOffset updatedAt)
+    {
+        var age = DateTimeOffset.Now - updatedAt;
+        if (age < TimeSpan.FromMinutes(1))
+        {
+            return "Updated just now";
+        }
+
+        if (age < TimeSpan.FromHours(1))
+        {
+            return $"Updated {(int)Math.Max(1, Math.Floor(age.TotalMinutes))}m ago";
+        }
+
+        return $"Updated {updatedAt.ToLocalTime():MMM dd HH:mm}";
+    }
+
+    private void UpdateCommandPalettePresentation(string query)
+    {
+        var resultCount = _commandPalettePages.Count;
+        CommandPaletteResultSummary = string.IsNullOrWhiteSpace(query)
+            ? resultCount == 0
+                ? "No shell destinations are currently registered."
+                : $"{resultCount} pages across all workspaces"
+            : resultCount == 0
+                ? $"No matches for “{query}”"
+                : $"{resultCount} result{(resultCount == 1 ? string.Empty : "s")} for “{query}”";
+
+        CommandPaletteEmptyVisibility = resultCount == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        RaisePropertyChanged(nameof(CommandPaletteEmptyTitle));
+        RaisePropertyChanged(nameof(CommandPaletteEmptyDescription));
     }
 
     private static bool MatchesPaletteQuery(ShellPageDescriptor descriptor, string query)

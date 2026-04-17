@@ -57,6 +57,7 @@ public sealed record CliArguments
     public string? BackfillSymbols { get; init; }
     public string? BackfillFrom { get; init; }
     public string? BackfillTo { get; init; }
+    public string? BackfillGranularity { get; init; }
 
     // Paths and config
     public string? ConfigPath { get; init; }
@@ -117,6 +118,7 @@ public sealed record CliArguments
             BackfillSymbols = GetValue(args, "--backfill-symbols"),
             BackfillFrom = GetValue(args, "--backfill-from"),
             BackfillTo = GetValue(args, "--backfill-to"),
+            BackfillGranularity = GetValue(args, "--backfill-granularity"),
 
             ConfigPath = GetValue(args, "--config"),
             Replay = GetValue(args, "--replay"),

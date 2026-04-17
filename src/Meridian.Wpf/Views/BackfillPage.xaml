@@ -297,7 +297,10 @@
                                   SelectionChanged="GranularityCombo_SelectionChanged"
                                   Margin="0,0,0,8">
                             <ComboBoxItem Content="Daily (EOD)" Tag="Daily" IsSelected="True" />
+                            <ComboBoxItem Content="4 Hour" Tag="4Hour" />
                             <ComboBoxItem Content="Hourly" Tag="Hourly" />
+                            <ComboBoxItem Content="30 Minute" Tag="30Min" />
+                            <ComboBoxItem Content="5 Minute" Tag="5Min" />
                             <ComboBoxItem Content="15 Minute" Tag="15Min" />
                             <ComboBoxItem Content="1 Minute" Tag="1Min" />
                         </ComboBox>

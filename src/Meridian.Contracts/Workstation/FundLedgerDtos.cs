@@ -40,7 +40,8 @@ public sealed record FundJournalLine(
     string Description,
     decimal TotalDebits,
     decimal TotalCredits,
-    int LineCount);
+    int LineCount,
+    IReadOnlyList<string>? FinancialAccountIds = null);
 
 /// <summary>
 /// Governance-facing fund ledger summary.

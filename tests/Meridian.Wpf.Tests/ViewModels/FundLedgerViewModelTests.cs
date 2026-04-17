@@ -469,6 +469,137 @@ public sealed class FundLedgerViewModelTests
         });
     }
 
+    [Fact]
+    public void LoadAsync_PopulatesCashProjectionAndScopedLedgerDimensions()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                await fundContext.UpsertProfileAsync(new FundProfileDetail(
+                    FundProfileId: "alpha-fund",
+                    DisplayName: "Alpha Fund",
+                    LegalEntityName: "Alpha Fund LP",
+                    BaseCurrency: "USD",
+                    DefaultWorkspaceId: "governance",
+                    DefaultLandingPageTag: "FundLedger",
+                    DefaultLedgerScope: FundLedgerScope.Consolidated,
+                    EntityIds: ["entity-alpha"],
+                    SleeveIds: ["sleeve-credit"],
+                    VehicleIds: ["vehicle-master"],
+                    IsDefault: true));
+                await fundContext.SelectFundProfileAsync("alpha-fund");
+
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundId = ToFundId("alpha-fund");
+                var entityId = Guid.Parse("12121212-1111-1111-1111-111111111111");
+                var sleeveId = Guid.Parse("23232323-2222-2222-2222-222222222222");
+                var vehicleId = Guid.Parse("34343434-3333-3333-3333-333333333333");
+                var accountId = Guid.Parse("45454545-4444-4444-4444-444444444444");
+
+                await fundAccountService.CreateAccountAsync(new CreateAccountRequest(
+                    AccountId: accountId,
+                    AccountType: AccountTypeDto.Custody,
+                    AccountCode: "CUST-SCOPE",
+                    DisplayName: "Scoped Custody",
+                    BaseCurrency: "USD",
+                    EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-10),
+                    CreatedBy: "test",
+                    EntityId: entityId,
+                    FundId: fundId,
+                    SleeveId: sleeveId,
+                    VehicleId: vehicleId,
+                    Institution: "Northern Trust"));
+                await fundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+                    AccountId: accountId,
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    Currency: "USD",
+                    CashBalance: 750m,
+                    Source: "test",
+                    RecordedBy: "test",
+                    SecuritiesMarketValue: 250m));
+
+                var store = new StrategyRunStore();
+                await store.RecordRunAsync(BuildFundScopedRun("run-scoped-ledger", accountId.ToString()));
+
+                var portfolioReadService = new PortfolioReadService();
+                var ledgerReadService = new LedgerReadService();
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext);
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
+                var reconciliationRepository = new InMemoryReconciliationRunRepository();
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService,
+                    new ReconciliationProjectionService(),
+                    reconciliationRepository);
+                var reconciliationReadService = new ReconciliationReadService(
+                    fundAccountService,
+                    fundAccountReadService,
+                    workspaceService,
+                    strategyReconciliationService);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    new FakeWorkstationReconciliationApiClient([], []));
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
+
+                using var viewModel = new FundLedgerViewModel(
+                    fundLedgerReadService,
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    cashFinancingReadService,
+                    workbenchService,
+                    fundOperationsWorkspaceReadService,
+                    workspaceService);
+
+                await viewModel.LoadAsync();
+
+                viewModel.CashFlowEntries.Should().HaveCount(3);
+                viewModel.CashFlowBuckets.Should().NotBeEmpty();
+                viewModel.CashProjectionStatusText.Should().Contain("cash-flow event");
+
+                var entityView = viewModel.LedgerDimensions.Single(view => view.Key == "entity-linked");
+                entityView.LinkedAccountCount.Should().Be(1);
+                entityView.TrialBalanceLineCount.Should().Be(3);
+                entityView.JournalEntryCount.Should().Be(2);
+
+                viewModel.SelectedLedgerDimension = entityView;
+
+                viewModel.VisibleTrialBalance.Should().HaveCount(3);
+                viewModel.VisibleTrialBalance.Should().OnlyContain(line => line.FinancialAccountId == accountId.ToString());
+                viewModel.VisibleJournal.Should().HaveCount(2);
+                viewModel.SelectedLedgerJournalEntriesText.Should().Be("2");
+                viewModel.SelectedLedgerTrialBalanceLinesText.Should().Be("3");
+                viewModel.SelectedLedgerAssetBalanceText.Should().NotBe("-");
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
     private static Guid ToFundId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId.Trim())));
 
@@ -569,10 +700,16 @@ public sealed class FundLedgerViewModelTests
                     Reason: "Security Master coverage is missing.")
             ]);
 
-    private static StrategyRunEntry BuildFundScopedRun(string runId)
+    private static StrategyRunEntry BuildFundScopedRun(string runId, string? financialAccountId = null)
     {
         var startedAt = new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
+        var cashFlows = new CashFlowEntry[]
+        {
+            new TradeCashFlow(startedAt.AddMinutes(1), 500m, "AAPL", 10, 50m),
+            new CommissionCashFlow(startedAt.AddMinutes(1), -1m, "AAPL", Guid.NewGuid()),
+            new DividendCashFlow(startedAt.AddDays(5), 20m, "MSFT", 100, 0.20m)
+        };
         var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
         {
             ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m),
@@ -604,7 +741,7 @@ public sealed class FundLedgerViewModelTests
             {
                 [accountSnapshot.AccountId] = accountSnapshot
             },
-            DayCashFlows: []);
+            DayCashFlows: cashFlows);
 
         var request = new BacktestRequest(
             From: new DateOnly(2026, 3, 20),
@@ -639,10 +776,10 @@ public sealed class FundLedgerViewModelTests
             Request: request,
             Universe: new HashSet<string>(["AAPL", "TSLA"], StringComparer.OrdinalIgnoreCase),
             Snapshots: [snapshot],
-            CashFlows: [],
+            CashFlows: cashFlows,
             Fills: [],
             Metrics: metrics,
-            Ledger: CreateLedger(),
+            Ledger: CreateLedger(financialAccountId),
             ElapsedTime: TimeSpan.FromMinutes(30),
             TotalEventsProcessed: 100);
 
@@ -662,7 +799,7 @@ public sealed class FundLedgerViewModelTests
         };
     }
 
-    private static IReadOnlyLedger CreateLedger()
+    private static IReadOnlyLedger CreateLedger(string? financialAccountId = null)
     {
         var ledger = new global::Meridian.Ledger.Ledger();
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero), "Initial capital",
@@ -672,13 +809,13 @@ public sealed class FundLedgerViewModelTests
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, 0, TimeSpan.Zero), "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
-            (LedgerAccounts.Cash, 0m, 400m)
+            (LedgerAccounts.Securities("AAPL", financialAccountId), 400m, 0m),
+            (financialAccountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(financialAccountId), 0m, 400m)
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, 0, TimeSpan.Zero), "Open TSLA short",
         [
-            (LedgerAccounts.Cash, 150m, 0m),
-            (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)
+            (financialAccountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(financialAccountId), 150m, 0m),
+            (LedgerAccounts.ShortSecuritiesPayable("TSLA", financialAccountId), 0m, 150m)
         ]);
         return ledger;
     }

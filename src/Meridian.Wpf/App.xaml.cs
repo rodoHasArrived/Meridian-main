@@ -351,6 +351,11 @@ public partial class App : System.Windows.Application
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
         services.AddSingleton<BackfillProviderConfigService>(_ => BackfillProviderConfigService.Instance);
         services.AddSingleton<BackfillCheckpointService>(_ => BackfillCheckpointService.Instance);
+        services.AddSingleton<BackfillApiService>();
+        services.AddSingleton<Meridian.Ui.Services.CollectionSessionService>(_ => Meridian.Ui.Services.CollectionSessionService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.ScheduleManagerService>(_ => Meridian.Ui.Services.ScheduleManagerService.Instance);
+        services.AddSingleton<WpfServices.StorageService>(_ => WpfServices.StorageService.Instance);
+        services.AddSingleton<BatchExportSchedulerService>();
         services.AddSingleton<Meridian.Ui.Services.ActivityFeedService>(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
         services.AddSingleton<Meridian.Ui.Services.CommandPaletteService>(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
         services.AddSingleton<Meridian.Ui.Services.SymbolManagementService>(_ => Meridian.Ui.Services.SymbolManagementService.Instance);

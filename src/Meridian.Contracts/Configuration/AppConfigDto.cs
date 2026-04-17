@@ -398,6 +398,9 @@ public sealed class BackfillProviderMetadataDto
     [JsonPropertyName("configSource")]
     public string ConfigSource { get; set; } = "default";
 
+    [JsonPropertyName("supportedGranularities")]
+    public string[] SupportedGranularities { get; set; } = [];
+
     [JsonPropertyName("featureFlags")]
     public Dictionary<string, bool>? FeatureFlags { get; set; }
 }

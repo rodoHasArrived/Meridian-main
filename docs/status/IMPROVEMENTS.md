@@ -1416,10 +1416,10 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - shared workstation DTOs exist for run summaries/details, portfolio summaries/positions, ledger summaries, journal rows, trial balance rows, and run comparison views
 - `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` are in code
 - WPF now exposes a first `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-ins
+- governance fund operations now exposes explicit fund cash-flow projection ladders/events plus consolidated and account-linked multi-ledger views
 
 **Next expansion:**
-- add cash-flow modeling and projection views to governance-grade portfolio/ledger workflows
-- expose trial-balance and multi-ledger tracking explicitly, not only as supporting read models
+- deepen per-entity / per-sleeve / per-vehicle ledger posting fidelity beyond the current account-linked multi-ledger filters
 - integrate Security Master metadata so portfolio, ledger, and governance surfaces use one authoritative instrument layer
 - add a reconciliation engine with break queues and governed exception handling
 - add report generation tools for fund-ops, investor, compliance, and board-style reporting packs

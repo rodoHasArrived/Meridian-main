@@ -73,11 +73,11 @@ public static class ProviderRegistry
                 DisplayName: "Yahoo Finance",
                 RequiredEnvVars: Array.Empty<string>(),
                 AlternativeEnvVars: Array.Empty<string>(),
-                Capabilities: new[] { "Historical", "Daily" },
+                Capabilities: new[] { "Historical", "Daily", "Intraday", "Aggregates" },
                 Priority: 10,
                 SignupUrl: "https://finance.yahoo.com",
                 DocsUrl: "https://finance.yahoo.com",
-                FreeTierDescription: "Free: daily historical data, no API key required"
+                FreeTierDescription: "Free: daily plus regular-hours intraday historical data, no API key required"
             ),
             new(
                 Name: "Tiingo",
@@ -121,7 +121,7 @@ public static class ProviderRegistry
                 Priority: 25,
                 SignupUrl: "https://www.alphavantage.co/support/#api-key",
                 DocsUrl: "https://www.alphavantage.co/documentation/",
-                FreeTierDescription: "Free: 25 requests/day, daily historical data"
+                FreeTierDescription: "Free: 25 requests/day, daily and intraday historical data"
             ),
             new(
                 Name: "FRED",

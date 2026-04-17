@@ -7,6 +7,7 @@ using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
+using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
 
@@ -39,6 +40,35 @@ public sealed class HistoricalBackfillService
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
 
+    public void ValidateRequest(BackfillRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToArray() ?? Array.Empty<string>();
+        if (symbols.Length == 0)
+            throw new InvalidOperationException("At least one symbol is required for backfill.");
+
+        if (!_providers.TryGetValue(request.Provider.ToLowerInvariant(), out var provider))
+            throw new InvalidOperationException($"Unknown backfill provider '{request.Provider}'.");
+
+        if (!request.Granularity.IsIntraday())
+            return;
+
+        if (provider is not IHistoricalAggregateBarProvider aggregateProvider)
+        {
+            throw new InvalidOperationException(
+                $"Provider '{provider.DisplayName}' does not support {request.Granularity.ToDisplayName()} intraday backfill.");
+        }
+
+        if (!aggregateProvider.SupportedGranularities.Contains(request.Granularity))
+        {
+            var supported = string.Join(", ", aggregateProvider.SupportedGranularities.Select(g => g.ToDisplayName()));
+            throw new InvalidOperationException(
+                $"Provider '{provider.DisplayName}' does not support {request.Granularity.ToDisplayName()} backfill. " +
+                $"Supported granularities: {supported}.");
+        }
+    }
+
     public async Task<BackfillResult> RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -46,11 +76,9 @@ public sealed class HistoricalBackfillService
 
         var started = DateTimeOffset.UtcNow;
         var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToArray() ?? Array.Empty<string>();
-        if (symbols.Length == 0)
-            throw new InvalidOperationException("At least one symbol is required for backfill.");
-
-        if (!_providers.TryGetValue(request.Provider.ToLowerInvariant(), out var provider))
-            throw new InvalidOperationException($"Unknown backfill provider '{request.Provider}'.");
+        ValidateRequest(request);
+        var provider = _providers[request.Provider.ToLowerInvariant()];
+        var aggregateProvider = provider as IHistoricalAggregateBarProvider;
 
         // Load per-symbol checkpoints when the caller opts into resume mode.
         IReadOnlyDictionary<string, DateOnly>? symbolCheckpoints = null;
@@ -134,18 +162,43 @@ public sealed class HistoricalBackfillService
                     _log.Information("Starting backfill for {Symbol} via {Provider}", symbol, provider.DisplayName);
                 }
 
-                var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
                 DateOnly? lastBarDate = null;
                 long symbolBars = 0;
-                foreach (var bar in bars)
+                if (request.Granularity.IsIntraday())
                 {
-                    var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
-                    await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
-                    _metrics.IncHistoricalBars();
-                    Interlocked.Increment(ref barsWritten);
-                    symbolBars++;
-                    if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
-                        lastBarDate = bar.SessionDate;
+                    if (aggregateProvider is null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Provider '{provider.DisplayName}' does not support {request.Granularity.ToDisplayName()} intraday backfill.");
+                    }
+
+                    var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                    foreach (var bar in bars)
+                    {
+                        var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
+                        _metrics.IncHistoricalBars();
+                        Interlocked.Increment(ref barsWritten);
+                        symbolBars++;
+
+                        var barDate = DateOnly.FromDateTime(bar.EndTime.UtcDateTime);
+                        if (lastBarDate is null || barDate > lastBarDate.Value)
+                            lastBarDate = barDate;
+                    }
+                }
+                else
+                {
+                    var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                    foreach (var bar in bars)
+                    {
+                        var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
+                        _metrics.IncHistoricalBars();
+                        Interlocked.Increment(ref barsWritten);
+                        symbolBars++;
+                        if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
+                            lastBarDate = bar.SessionDate;
+                    }
                 }
 
                 perSymbolBars[symbol] = symbolBars;

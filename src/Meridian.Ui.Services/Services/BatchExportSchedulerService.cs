@@ -14,7 +14,7 @@ namespace Meridian.Ui.Services;
 /// Service for scheduling and managing batch export jobs.
 /// Implements Feature #40: Batch Export Scheduler
 /// </summary>
-public sealed class BatchExportSchedulerService : IAsyncDisposable
+public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
 {
     private readonly ConcurrentDictionary<string, ExportJob> _jobs = new();
     private readonly ConcurrentQueue<ExportJob> _queue = new();
@@ -23,6 +23,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
     private readonly List<Task> _workers = new();
     private readonly string _jobStorePath;
     private Timer? _schedulerTimer;
+    private int _disposeState;
 
     public BatchExportSchedulerService(int maxConcurrentJobs = 4, string? jobStorePath = null)
     {
@@ -561,6 +562,41 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Reads the persisted export jobs without starting the scheduler workers.
+    /// This is used by shell surfaces that need job visibility but do not own
+    /// export execution.
+    /// </summary>
+    public async Task<IReadOnlyList<ExportJob>> ReadPersistedJobsAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            if (!File.Exists(_jobStorePath))
+            {
+                return Array.Empty<ExportJob>();
+            }
+
+            var json = await File.ReadAllTextAsync(_jobStorePath, ct).ConfigureAwait(false);
+            var jobs = JsonSerializer.Deserialize<List<ExportJob>>(json) ?? [];
+
+            foreach (var job in jobs)
+            {
+                if (job.Status == ExportJobStatus.Running)
+                {
+                    job.Status = ExportJobStatus.Pending;
+                }
+            }
+
+            return jobs
+                .OrderByDescending(job => job.LastRunAt ?? job.CreatedAt)
+                .ToArray();
+        }
+        catch
+        {
+            return Array.Empty<ExportJob>();
+        }
+    }
+
     private async Task SaveJobsAsync(CancellationToken ct = default)
     {
         try
@@ -578,9 +614,26 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable
         }
     }
 
+    public void Dispose()
+    {
+        DisposeCoreAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+        GC.SuppressFinalize(this);
+    }
+
     public async ValueTask DisposeAsync()
     {
-        await StopAsync();
+        await DisposeCoreAsync().ConfigureAwait(false);
+        GC.SuppressFinalize(this);
+    }
+
+    private async ValueTask DisposeCoreAsync()
+    {
+        if (Interlocked.Exchange(ref _disposeState, 1) != 0)
+        {
+            return;
+        }
+
+        await StopAsync().ConfigureAwait(false);
         _cts.Dispose();
         _workerSemaphore.Dispose();
     }

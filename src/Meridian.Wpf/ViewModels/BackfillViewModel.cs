@@ -876,8 +876,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         GranularityHintText = granularity switch
         {
             "1Min" => "1-minute data is best for short tactical windows (typically days to a few weeks).",
+            "5Min" => "5-minute data balances detail and request size for multi-week backfills and focused intraday studies.",
             "15Min" => "15-minute data balances detail and request size for multi-week to multi-month backfills.",
+            "30Min" => "30-minute data works well for multi-month backfills where you still want intraday structure.",
             "Hourly" => "Hourly data is well-suited for trend/rotation systems over months.",
+            "4Hour" => "4-hour data compresses hourly sessions into broader trend bars while keeping partial close buckets.",
             _ => "Daily is recommended for broad symbol lists and long history windows."
         };
     }
@@ -899,8 +902,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
         var lookbackDays = granularity switch
         {
             "1Min" => symbolCount > 20 ? 3 : symbolCount > 5 ? 7 : 14,
+            "5Min" => symbolCount > 30 ? 14 : symbolCount > 10 ? 30 : 60,
             "15Min" => symbolCount > 20 ? 14 : symbolCount > 5 ? 30 : 60,
+            "30Min" => symbolCount > 30 ? 30 : symbolCount > 10 ? 90 : 180,
             "Hourly" => symbolCount > 50 ? 30 : symbolCount > 10 ? 90 : 180,
+            "4Hour" => symbolCount > 75 ? 90 : symbolCount > 20 ? 180 : 365,
             _ => symbolCount > 100 ? 365 : symbolCount > 30 ? 365 * 2 : 365 * 5
         };
         return (DateTime.Today.AddDays(-lookbackDays), DateTime.Today);
@@ -909,8 +915,11 @@ public sealed class BackfillViewModel : BindableBase, IDisposable, ICommandConte
     public static string GetGranularityDisplay(string granularity) => granularity switch
     {
         "1Min" => "1-minute",
+        "5Min" => "5-minute",
         "15Min" => "15-minute",
+        "30Min" => "30-minute",
         "Hourly" => "hourly",
+        "4Hour" => "4-hour",
         "Daily" => "daily",
         _ => granularity.ToLowerInvariant()
     };

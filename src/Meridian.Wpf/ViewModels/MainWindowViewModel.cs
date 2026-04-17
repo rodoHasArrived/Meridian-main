@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Linq;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
@@ -481,7 +482,14 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             return string.Empty;
         }
 
-        var symbolList = string.Join(", ", symbols);
+        const int previewLimit = 4;
+        var previewSymbols = symbols.Take(previewLimit).ToArray();
+        var symbolList = string.Join(", ", previewSymbols);
+        if (symbols.Count > previewSymbols.Length)
+        {
+            symbolList = $"{symbolList} +{symbols.Count - previewSymbols.Length} more";
+        }
+
         return symbols.Count == 1
             ? $"Symbol detected in clipboard: {symbolList} - Add to Watchlist?"
             : $"{symbols.Count} symbols detected in clipboard: {symbolList} - Add to Watchlist?";

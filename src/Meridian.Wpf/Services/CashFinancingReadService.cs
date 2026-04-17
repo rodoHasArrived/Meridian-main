@@ -7,6 +7,8 @@ namespace Meridian.Wpf.Services;
 /// </summary>
 public sealed class CashFinancingReadService
 {
+    private const int ProjectionBucketDays = 7;
+
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
     private readonly FundAccountReadService _fundAccountReadService;
 
@@ -45,9 +47,18 @@ public sealed class CashFinancingReadService
         decimal netExposure = 0m;
         decimal totalEquity = 0m;
 
-        foreach (var run in relevantRuns)
+        var portfolioTasks = relevantRuns
+            .Select(run => _runWorkspaceService.GetPortfolioAsync(run.RunId, ct))
+            .ToArray();
+        var cashFlowTasks = relevantRuns
+            .Select(run => _runWorkspaceService.GetCashFlowAsync(run.RunId, currency, ProjectionBucketDays, ct))
+            .ToArray();
+
+        var portfolios = await Task.WhenAll(portfolioTasks).ConfigureAwait(false);
+        var cashFlows = await Task.WhenAll(cashFlowTasks).ConfigureAwait(false);
+
+        foreach (var portfolio in portfolios)
         {
-            var portfolio = await _runWorkspaceService.GetPortfolioAsync(run.RunId, ct).ConfigureAwait(false);
             if (portfolio is null)
             {
                 continue;
@@ -63,6 +74,35 @@ public sealed class CashFinancingReadService
             totalEquity += portfolio.TotalEquity;
         }
 
+        var cashFlowSummaries = cashFlows
+            .Where(static summary => summary is not null)
+            .Select(static summary => summary!)
+            .ToArray();
+
+        var projectedInflows = cashFlowSummaries.Sum(static summary => summary.TotalInflows);
+        var projectedOutflows = cashFlowSummaries.Sum(static summary => summary.TotalOutflows);
+        var projectedNetCashFlow = cashFlowSummaries.Sum(static summary => summary.NetCashFlow);
+        var aggregatedEntries = cashFlowSummaries
+            .SelectMany(static summary => summary.Entries)
+            .OrderBy(static entry => entry.Timestamp)
+            .ThenBy(static entry => entry.EventKind, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var aggregatedBuckets = cashFlowSummaries
+            .SelectMany(static summary => summary.Ladder.Buckets)
+            .GroupBy(
+                static bucket => (bucket.BucketStart, bucket.BucketEnd, bucket.Currency),
+                static bucket => bucket)
+            .OrderBy(static group => group.Key.BucketStart)
+            .Select(static group => new CashLadderBucketDto(
+                BucketStart: group.Key.BucketStart,
+                BucketEnd: group.Key.BucketEnd,
+                ProjectedInflows: group.Sum(static bucket => bucket.ProjectedInflows),
+                ProjectedOutflows: group.Sum(static bucket => bucket.ProjectedOutflows),
+                NetFlow: group.Sum(static bucket => bucket.NetFlow),
+                Currency: group.Key.Currency,
+                EventCount: group.Sum(static bucket => bucket.EventCount)))
+            .ToArray();
+
         var highlights = new List<string>
         {
             accounts.Count == 0
@@ -73,7 +113,10 @@ public sealed class CashFinancingReadService
                 : $"{relevantRuns.Length} recorded run(s) are contributing capital posture.",
             financing == 0m
                 ? "No financing costs have been recorded for the current fund scope."
-                : $"Financing costs total {financing:C2} across linked runs."
+                : $"Financing costs total {financing:C2} across linked runs.",
+            cashFlowSummaries.Length == 0
+                ? "No run-derived cash-flow projections are available yet."
+                : $"{aggregatedEntries.Length} cash-flow event(s) are grouped into {aggregatedBuckets.Length} projection bucket(s)."
         };
 
         return new CashFinancingSummary(
@@ -89,6 +132,13 @@ public sealed class CashFinancingReadService
             GrossExposure: grossExposure,
             NetExposure: netExposure,
             TotalEquity: totalEquity,
-            Highlights: highlights);
+            Highlights: highlights,
+            CashFlowEntryCount: aggregatedEntries.Length,
+            ProjectedInflows: projectedInflows,
+            ProjectedOutflows: projectedOutflows,
+            NetProjectedCashFlow: projectedNetCashFlow,
+            ProjectionBucketDays: ProjectionBucketDays,
+            CashFlowBuckets: aggregatedBuckets,
+            CashFlowEntries: aggregatedEntries);
     }
 }

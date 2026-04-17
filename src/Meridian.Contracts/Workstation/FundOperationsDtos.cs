@@ -138,7 +138,14 @@ public sealed record CashFinancingSummary(
     decimal GrossExposure,
     decimal NetExposure,
     decimal TotalEquity,
-    IReadOnlyList<string> Highlights);
+    IReadOnlyList<string> Highlights,
+    int CashFlowEntryCount = 0,
+    decimal ProjectedInflows = 0m,
+    decimal ProjectedOutflows = 0m,
+    decimal NetProjectedCashFlow = 0m,
+    int ProjectionBucketDays = 0,
+    IReadOnlyList<CashLadderBucketDto>? CashFlowBuckets = null,
+    IReadOnlyList<CashFlowEntryDto>? CashFlowEntries = null);
 
 /// <summary>
 /// Reconciliation row shown in governance operator queues.

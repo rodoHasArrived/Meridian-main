@@ -322,7 +322,8 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 - `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` now derive those models from recorded strategy/backtest results.
 - WPF now includes a first-pass `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-in pages, and completed backtests are mirrored into that shared workstation flow.
 - Run-scoped reconciliation contracts and service flows now exist through `ReconciliationRunRequest`, `ReconciliationRunSummary`, `ReconciliationRunDetail`, `ReconciliationRunService`, and `/api/workstation/reconciliation/*`.
-- The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, explicit cash-flow and multi-ledger views, richer reconciliation UX, and more complete cockpit-style workflow integration.
+- Governance fund operations now exposes explicit fund cash-flow projection ladders/events and account-linked multi-ledger views across consolidated, entity, sleeve, and vehicle dimensions.
+- The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, deeper per-entity/per-sleeve/per-vehicle posting fidelity, richer reconciliation UX, and more complete cockpit-style workflow integration.
 
 ### Known WPF limitations
 

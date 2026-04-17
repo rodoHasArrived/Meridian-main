@@ -65,7 +65,7 @@ public record FailoverRuleRequest(
 public record ForceFailoverRequest(string TargetProviderId);
 
 /// <summary>Request to run a backfill operation.</summary>
-public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To);
+public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null);
 
 /// <summary>Request to generate a dry-run backfill plan.</summary>
 public record DryRunPlanRequest(string[] Symbols);

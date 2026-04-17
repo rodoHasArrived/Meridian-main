@@ -290,6 +290,14 @@
                                         Click="OpenCollectionSessions_Click"
                                         Style="{StaticResource GhostButtonStyle}"
                                         Margin="0,0,8,8" />
+                                <Button Content="Data Export"
+                                        Click="OpenDataExport_Click"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Schedules"
+                                        Click="OpenSchedules_Click"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,8,8" />
                                 <Button Content="Packages"
                                         Click="OpenPackageManager_Click"
                                         Style="{StaticResource GhostButtonStyle}"

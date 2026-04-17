@@ -46,6 +46,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _totalEquityText = "-";
     private string _financingCostText = "-";
     private string _pendingSettlementText = "-";
+    private string _cashProjectionStatusText = "Cash-flow projection will appear once fund-scoped runs record funding events.";
+    private string _cashFlowEntryCountText = "0";
+    private string _projectedInflowsText = "-";
+    private string _projectedOutflowsText = "-";
+    private string _netProjectedCashFlowText = "-";
+    private string _projectionBucketSummaryText = "-";
     private string _openBreaksText = "0";
     private string _reconciliationRunsText = "0";
     private string _reportPackStatusText = "Governance report-pack preview is waiting for a fund context.";
@@ -60,6 +66,16 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private int _selectedTabIndex;
     private FundAccountSummary? _selectedAccount;
     private FundPortfolioPosition? _selectedPortfolioPosition;
+    private CashFlowEntryDto? _selectedCashFlowEntry;
+    private FundLedgerDimensionView? _selectedLedgerDimension;
+    private string _selectedLedgerDimensionDisplayText = "Consolidated Fund View";
+    private string _selectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
+    private string _selectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+    private string _selectedLedgerLinkedAccountsText = "0";
+    private string _selectedLedgerTrialBalanceLinesText = "0";
+    private string _selectedLedgerJournalEntriesText = "0";
+    private string _selectedLedgerAssetBalanceText = "-";
+    private string _selectedLedgerEquityBalanceText = "-";
     private FundReportPackPreviewDto? _reportPackPreview;
 
     public FundLedgerViewModel(
@@ -86,6 +102,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         Accounts = [];
         BankSnapshots = [];
         PortfolioPositions = [];
+        CashFlowEntries = [];
+        CashFlowBuckets = [];
+        VisibleTrialBalance = [];
+        VisibleJournal = [];
+        LedgerDimensions = [];
         ReconciliationRuns = [];
         CashFinancingHighlights = [];
         AuditTrail = [];
@@ -106,6 +127,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         RefreshReportPackCommand = new AsyncRelayCommand(RefreshReportPackPreviewAsync);
         OpenSelectedAccountPortfolioCommand = new RelayCommand(OpenSelectedAccountPortfolio, () => SelectedAccount is not null);
         OpenSelectedPortfolioSecurityCommand = new RelayCommand(OpenSelectedPortfolioSecurity, () => SelectedPortfolioPosition is not null);
+        OpenSelectedCashFlowSecurityCommand = new RelayCommand(OpenSelectedCashFlowSecurity, () => !string.IsNullOrWhiteSpace(SelectedCashFlowEntry?.Symbol));
 
         _fundContextService.ActiveFundProfileChanged += OnActiveFundProfileChanged;
         InitializeReconciliationWorkbench();
@@ -135,6 +157,16 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public ObservableCollection<BankAccountSnapshot> BankSnapshots { get; }
 
     public ObservableCollection<FundPortfolioPosition> PortfolioPositions { get; }
+
+    public ObservableCollection<CashFlowEntryDto> CashFlowEntries { get; }
+
+    public ObservableCollection<CashLadderBucketDto> CashFlowBuckets { get; }
+
+    public ObservableCollection<FundTrialBalanceLine> VisibleTrialBalance { get; }
+
+    public ObservableCollection<FundJournalLine> VisibleJournal { get; }
+
+    public ObservableCollection<FundLedgerDimensionView> LedgerDimensions { get; }
 
     public ObservableCollection<FundReconciliationItem> ReconciliationRuns { get; }
 
@@ -173,6 +205,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public IRelayCommand OpenSelectedAccountPortfolioCommand { get; }
 
     public IRelayCommand OpenSelectedPortfolioSecurityCommand { get; }
+
+    public IRelayCommand OpenSelectedCashFlowSecurityCommand { get; }
 
     public string Title
     {
@@ -342,6 +376,42 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _pendingSettlementText, value);
     }
 
+    public string CashProjectionStatusText
+    {
+        get => _cashProjectionStatusText;
+        private set => SetProperty(ref _cashProjectionStatusText, value);
+    }
+
+    public string CashFlowEntryCountText
+    {
+        get => _cashFlowEntryCountText;
+        private set => SetProperty(ref _cashFlowEntryCountText, value);
+    }
+
+    public string ProjectedInflowsText
+    {
+        get => _projectedInflowsText;
+        private set => SetProperty(ref _projectedInflowsText, value);
+    }
+
+    public string ProjectedOutflowsText
+    {
+        get => _projectedOutflowsText;
+        private set => SetProperty(ref _projectedOutflowsText, value);
+    }
+
+    public string NetProjectedCashFlowText
+    {
+        get => _netProjectedCashFlowText;
+        private set => SetProperty(ref _netProjectedCashFlowText, value);
+    }
+
+    public string ProjectionBucketSummaryText
+    {
+        get => _projectionBucketSummaryText;
+        private set => SetProperty(ref _projectionBucketSummaryText, value);
+    }
+
     public string OpenBreaksText
     {
         get => _openBreaksText;
@@ -448,6 +518,78 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         }
     }
 
+    public CashFlowEntryDto? SelectedCashFlowEntry
+    {
+        get => _selectedCashFlowEntry;
+        set
+        {
+            if (SetProperty(ref _selectedCashFlowEntry, value))
+            {
+                OpenSelectedCashFlowSecurityCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
+
+    public FundLedgerDimensionView? SelectedLedgerDimension
+    {
+        get => _selectedLedgerDimension;
+        set
+        {
+            if (SetProperty(ref _selectedLedgerDimension, value))
+            {
+                ApplyLedgerDimensionFilter();
+            }
+        }
+    }
+
+    public string SelectedLedgerDimensionDisplayText
+    {
+        get => _selectedLedgerDimensionDisplayText;
+        private set => SetProperty(ref _selectedLedgerDimensionDisplayText, value);
+    }
+
+    public string SelectedLedgerDimensionCoverageText
+    {
+        get => _selectedLedgerDimensionCoverageText;
+        private set => SetProperty(ref _selectedLedgerDimensionCoverageText, value);
+    }
+
+    public string SelectedLedgerDimensionStatusText
+    {
+        get => _selectedLedgerDimensionStatusText;
+        private set => SetProperty(ref _selectedLedgerDimensionStatusText, value);
+    }
+
+    public string SelectedLedgerLinkedAccountsText
+    {
+        get => _selectedLedgerLinkedAccountsText;
+        private set => SetProperty(ref _selectedLedgerLinkedAccountsText, value);
+    }
+
+    public string SelectedLedgerTrialBalanceLinesText
+    {
+        get => _selectedLedgerTrialBalanceLinesText;
+        private set => SetProperty(ref _selectedLedgerTrialBalanceLinesText, value);
+    }
+
+    public string SelectedLedgerJournalEntriesText
+    {
+        get => _selectedLedgerJournalEntriesText;
+        private set => SetProperty(ref _selectedLedgerJournalEntriesText, value);
+    }
+
+    public string SelectedLedgerAssetBalanceText
+    {
+        get => _selectedLedgerAssetBalanceText;
+        private set => SetProperty(ref _selectedLedgerAssetBalanceText, value);
+    }
+
+    public string SelectedLedgerEquityBalanceText
+    {
+        get => _selectedLedgerEquityBalanceText;
+        private set => SetProperty(ref _selectedLedgerEquityBalanceText, value);
+    }
+
     public async Task LoadAsync()
     {
         await LoadAsync(null);
@@ -489,6 +631,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
         ApplyLedger(ledger);
         ApplyAccounts(accounts, context);
+        BuildLedgerDimensions(activeFund, ledger, accounts);
         ApplyBankSnapshots(bankSnapshots);
         ApplyCashSummary(cashSummary);
         ApplyPortfolio(portfolioPositions);
@@ -548,15 +691,36 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         TotalEquityText = "-";
         FinancingCostText = "-";
         PendingSettlementText = "-";
+        CashProjectionStatusText = "Cash-flow projection will appear once fund-scoped runs record funding events.";
+        CashFlowEntryCountText = "0";
+        ProjectedInflowsText = "-";
+        ProjectedOutflowsText = "-";
+        NetProjectedCashFlowText = "-";
+        ProjectionBucketSummaryText = "-";
         OpenBreaksText = "0";
         ReconciliationRunsText = "0";
         TrialBalance.Clear();
         Journal.Clear();
+        VisibleTrialBalance.Clear();
+        VisibleJournal.Clear();
+        LedgerDimensions.Clear();
         Accounts.Clear();
         SelectedAccount = null;
         BankSnapshots.Clear();
         PortfolioPositions.Clear();
         SelectedPortfolioPosition = null;
+        CashFlowEntries.Clear();
+        CashFlowBuckets.Clear();
+        SelectedCashFlowEntry = null;
+        SelectedLedgerDimension = null;
+        SelectedLedgerDimensionDisplayText = "Consolidated Fund View";
+        SelectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
+        SelectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+        SelectedLedgerLinkedAccountsText = "0";
+        SelectedLedgerTrialBalanceLinesText = "0";
+        SelectedLedgerJournalEntriesText = "0";
+        SelectedLedgerAssetBalanceText = "-";
+        SelectedLedgerEquityBalanceText = "-";
         ReconciliationRuns.Clear();
         CashFinancingHighlights.Clear();
         AuditTrail.Clear();
@@ -651,13 +815,217 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         TotalEquityText = summary.TotalEquity.ToString("C2");
         FinancingCostText = summary.FinancingCost.ToString("C2");
         PendingSettlementText = summary.PendingSettlement.ToString("C2");
+        CashFlowEntryCountText = summary.CashFlowEntryCount.ToString("N0");
+        ProjectedInflowsText = summary.ProjectedInflows.ToString("C2");
+        ProjectedOutflowsText = summary.ProjectedOutflows.ToString("C2");
+        NetProjectedCashFlowText = summary.NetProjectedCashFlow.ToString("C2");
+        ProjectionBucketSummaryText = summary.ProjectionBucketDays > 0
+            ? $"{summary.CashFlowBuckets?.Count ?? 0} bucket(s) x {summary.ProjectionBucketDays}d"
+            : "-";
+        CashProjectionStatusText = summary.CashFlowEntryCount == 0
+            ? "No run-derived cash-flow projections are available yet for the active fund."
+            : $"{summary.CashFlowEntryCount} cash-flow event(s) are available across the shared fund continuity model.";
 
         CashFinancingHighlights.Clear();
         foreach (var highlight in summary.Highlights)
         {
             CashFinancingHighlights.Add(highlight);
         }
+
+        CashFlowEntries.Clear();
+        foreach (var entry in summary.CashFlowEntries ?? [])
+        {
+            CashFlowEntries.Add(entry);
+        }
+
+        CashFlowBuckets.Clear();
+        foreach (var bucket in summary.CashFlowBuckets ?? [])
+        {
+            CashFlowBuckets.Add(bucket);
+        }
+
+        SelectedCashFlowEntry = CashFlowEntries.FirstOrDefault(entry => !string.IsNullOrWhiteSpace(entry.Symbol))
+            ?? CashFlowEntries.FirstOrDefault();
     }
+
+    private void BuildLedgerDimensions(
+        FundProfileDetail activeFund,
+        FundLedgerSummary? ledger,
+        IReadOnlyList<FundAccountSummary> accounts)
+    {
+        var previousSelectionKey = SelectedLedgerDimension?.Key;
+        var trialBalanceByAccount = (ledger?.TrialBalance ?? [])
+            .Where(static line => !string.IsNullOrWhiteSpace(line.FinancialAccountId))
+            .GroupBy(static line => line.FinancialAccountId!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.Count(), StringComparer.OrdinalIgnoreCase);
+        var journalByAccount = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var line in ledger?.Journal ?? [])
+        {
+            foreach (var accountId in line.FinancialAccountIds ?? [])
+            {
+                journalByAccount[accountId] = journalByAccount.TryGetValue(accountId, out var count)
+                    ? count + 1
+                    : 1;
+            }
+        }
+
+        var consolidatedAccountIds = accounts
+            .Select(static account => account.AccountId.ToString())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var entityAccountIds = accounts
+            .Where(static account => account.EntityId.HasValue)
+            .Select(static account => account.AccountId.ToString())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var sleeveAccountIds = accounts
+            .Where(static account => account.SleeveId.HasValue)
+            .Select(static account => account.AccountId.ToString())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var vehicleAccountIds = accounts
+            .Where(static account => account.VehicleId.HasValue)
+            .Select(static account => account.AccountId.ToString())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var dimensions = new List<FundLedgerDimensionView>
+        {
+            new(
+                Key: "consolidated",
+                DisplayName: "Consolidated Fund View",
+                CoverageText: $"{ledger?.TrialBalance.Count ?? 0} trial-balance line(s) · {ledger?.Journal.Count ?? 0} journal entry(s) across the full fund view.",
+                StatusText: "Shows the complete fund ledger, including generic postings that are not tied to a specific financial account.",
+                ExpectedScopeCount: 1,
+                LinkedAccountCount: consolidatedAccountIds.Count,
+                TrialBalanceLineCount: ledger?.TrialBalance.Count ?? 0,
+                JournalEntryCount: ledger?.Journal.Count ?? 0,
+                IsConsolidated: true,
+                HasScopedLedgerData: true,
+                FinancialAccountIds: consolidatedAccountIds)
+        };
+
+        dimensions.Add(CreateLedgerDimensionView(
+            key: "entity-linked",
+            displayName: "Entity-Linked View",
+            expectedScopeCount: activeFund.EntityIds?.Count ?? 0,
+            accountIds: entityAccountIds,
+            trialBalanceByAccount,
+            journalByAccount));
+        dimensions.Add(CreateLedgerDimensionView(
+            key: "sleeve-linked",
+            displayName: "Sleeve-Linked View",
+            expectedScopeCount: activeFund.SleeveIds?.Count ?? 0,
+            accountIds: sleeveAccountIds,
+            trialBalanceByAccount,
+            journalByAccount));
+        dimensions.Add(CreateLedgerDimensionView(
+            key: "vehicle-linked",
+            displayName: "Vehicle-Linked View",
+            expectedScopeCount: activeFund.VehicleIds?.Count ?? 0,
+            accountIds: vehicleAccountIds,
+            trialBalanceByAccount,
+            journalByAccount));
+
+        LedgerDimensions.Clear();
+        foreach (var dimension in dimensions.Where(static dimension =>
+                     dimension.IsConsolidated ||
+                     dimension.ExpectedScopeCount > 0 ||
+                     dimension.LinkedAccountCount > 0))
+        {
+            LedgerDimensions.Add(dimension);
+        }
+
+        SelectedLedgerDimension = LedgerDimensions.FirstOrDefault(dimension =>
+                                     string.Equals(dimension.Key, previousSelectionKey, StringComparison.OrdinalIgnoreCase))
+                                 ?? LedgerDimensions.FirstOrDefault();
+    }
+
+    private static FundLedgerDimensionView CreateLedgerDimensionView(
+        string key,
+        string displayName,
+        int expectedScopeCount,
+        IReadOnlySet<string> accountIds,
+        IReadOnlyDictionary<string, int> trialBalanceByAccount,
+        IReadOnlyDictionary<string, int> journalByAccount)
+    {
+        var trialBalanceLineCount = accountIds.Sum(accountId => trialBalanceByAccount.TryGetValue(accountId, out var count) ? count : 0);
+        var journalEntryCount = accountIds.Sum(accountId => journalByAccount.TryGetValue(accountId, out var count) ? count : 0);
+        var hasScopedLedgerData = trialBalanceLineCount > 0 || journalEntryCount > 0;
+        var coverageText = $"{expectedScopeCount} profile scope(s) · {accountIds.Count} linked account(s) · {trialBalanceLineCount} trial-balance line(s) · {journalEntryCount} journal entry(s)";
+        var statusText = accountIds.Count == 0
+            ? "No linked accounts are tagged to this structure yet."
+            : hasScopedLedgerData
+                ? "Account-linked ledger rows are ready for scoped review."
+                : "Linked accounts exist, but the current ledger postings remain consolidated-only.";
+
+        return new FundLedgerDimensionView(
+            Key: key,
+            DisplayName: displayName,
+            CoverageText: coverageText,
+            StatusText: statusText,
+            ExpectedScopeCount: expectedScopeCount,
+            LinkedAccountCount: accountIds.Count,
+            TrialBalanceLineCount: trialBalanceLineCount,
+            JournalEntryCount: journalEntryCount,
+            IsConsolidated: false,
+            HasScopedLedgerData: hasScopedLedgerData,
+            FinancialAccountIds: accountIds);
+    }
+
+    private void ApplyLedgerDimensionFilter()
+    {
+        if (SelectedLedgerDimension is null)
+        {
+            VisibleTrialBalance.Clear();
+            VisibleJournal.Clear();
+            SelectedLedgerDimensionDisplayText = "Consolidated Fund View";
+            SelectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
+            SelectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+            SelectedLedgerLinkedAccountsText = "0";
+            SelectedLedgerTrialBalanceLinesText = "0";
+            SelectedLedgerJournalEntriesText = "0";
+            SelectedLedgerAssetBalanceText = "-";
+            SelectedLedgerEquityBalanceText = "-";
+            return;
+        }
+
+        var visibleTrialBalance = SelectedLedgerDimension.IsConsolidated
+            ? TrialBalance.ToArray()
+            : TrialBalance
+                .Where(line =>
+                    !string.IsNullOrWhiteSpace(line.FinancialAccountId) &&
+                    SelectedLedgerDimension.FinancialAccountIds.Contains(line.FinancialAccountId!))
+                .ToArray();
+        var visibleJournal = SelectedLedgerDimension.IsConsolidated
+            ? Journal.ToArray()
+            : Journal
+                .Where(line => (line.FinancialAccountIds ?? []).Any(SelectedLedgerDimension.FinancialAccountIds.Contains))
+                .ToArray();
+
+        VisibleTrialBalance.Clear();
+        foreach (var line in visibleTrialBalance)
+        {
+            VisibleTrialBalance.Add(line);
+        }
+
+        VisibleJournal.Clear();
+        foreach (var line in visibleJournal)
+        {
+            VisibleJournal.Add(line);
+        }
+
+        SelectedLedgerDimensionDisplayText = SelectedLedgerDimension.DisplayName;
+        SelectedLedgerDimensionCoverageText = SelectedLedgerDimension.CoverageText;
+        SelectedLedgerDimensionStatusText = SelectedLedgerDimension.StatusText;
+        SelectedLedgerLinkedAccountsText = SelectedLedgerDimension.LinkedAccountCount.ToString("N0");
+        SelectedLedgerTrialBalanceLinesText = visibleTrialBalance.Length.ToString("N0");
+        SelectedLedgerJournalEntriesText = visibleJournal.Length.ToString("N0");
+        SelectedLedgerAssetBalanceText = SumBalance(visibleTrialBalance, "Asset").ToString("C2");
+        SelectedLedgerEquityBalanceText = SumBalance(visibleTrialBalance, "Equity").ToString("C2");
+    }
+
+    private static decimal SumBalance(IEnumerable<FundTrialBalanceLine> lines, string accountType) =>
+        lines
+            .Where(line => string.Equals(line.AccountType, accountType, StringComparison.Ordinal))
+            .Sum(static line => line.Balance);
 
     private void ApplyPortfolio(IReadOnlyList<FundPortfolioPosition> positions)
     {
@@ -935,6 +1303,14 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         if (!string.IsNullOrWhiteSpace(SelectedPortfolioPosition?.Symbol))
         {
             _navigationService.NavigateTo("SecurityMaster", SelectedPortfolioPosition.Symbol);
+        }
+    }
+
+    private void OpenSelectedCashFlowSecurity()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedCashFlowEntry?.Symbol))
+        {
+            _navigationService.NavigateTo("SecurityMaster", SelectedCashFlowEntry.Symbol);
         }
     }
 

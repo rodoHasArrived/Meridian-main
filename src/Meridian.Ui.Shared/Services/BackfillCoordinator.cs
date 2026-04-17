@@ -110,6 +110,8 @@ public sealed class BackfillCoordinator : IDisposable
     public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)
         => _core.RunAsync(request, ct);
 
+    public void ValidateRequest(BackfillRequest request) => _core.ValidateRequest(request);
+
     /// <summary>
     /// Gets health status of all providers.
     /// </summary>
@@ -135,6 +137,8 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
     {
+        ValidateRequest(request);
+
         var service = CreateService();
         var cfg = _store.Load();
         var dataRoot = _store.GetDataRoot(cfg);
@@ -147,6 +151,7 @@ public sealed class BackfillCoordinator : IDisposable
         var to = request.To ?? DateOnly.FromDateTime(DateTime.Today);
         var totalDays = to.DayNumber - from.DayNumber + 1;
         var tradingDays = EstimateTradingDays(from, to);
+        var estimatedBarsPerSymbol = EstimateBarsPerSymbol(request.Granularity, tradingDays);
 
         foreach (var symbol in request.Symbols)
         {
@@ -156,7 +161,7 @@ public sealed class BackfillCoordinator : IDisposable
             symbolPreviews.Add(new SymbolPreview(
                 Symbol: symbol.ToUpperInvariant(),
                 DateRange: $"{from:yyyy-MM-dd} to {to:yyyy-MM-dd}",
-                EstimatedBars: tradingDays,
+                EstimatedBars: estimatedBarsPerSymbol,
                 ExistingData: existingDataInfo,
                 WouldOverwrite: existingDataInfo.HasData && !existingDataInfo.IsComplete
             ));
@@ -170,7 +175,7 @@ public sealed class BackfillCoordinator : IDisposable
             TotalDays: totalDays,
             EstimatedTradingDays: tradingDays,
             Symbols: symbolPreviews.ToArray(),
-            EstimatedDurationSeconds: EstimateBackfillDuration(request.Symbols.Count, tradingDays),
+            EstimatedDurationSeconds: EstimateBackfillDuration(request.Symbols.Count, tradingDays, request.Granularity, providerInfo),
             Notes: GetProviderNotes(providerInfo)
         ));
     }
@@ -279,13 +284,45 @@ public sealed class BackfillCoordinator : IDisposable
         return false;
     }
 
-    private static int EstimateBackfillDuration(int symbolCount, int tradingDays)
+    private static int EstimateBarsPerSymbol(DataGranularity granularity, int tradingDays)
     {
-        // Rough estimate based on typical API rates and processing time
-        // Most free APIs allow 5-60 requests/minute
-        var requestsPerSecond = 0.5; // Conservative estimate
-        var estimatedRequests = symbolCount * (tradingDays / 252 + 1); // One request per symbol per year
-        return (int)(estimatedRequests / requestsPerSecond) + symbolCount; // Add processing overhead
+        if (tradingDays <= 0)
+            return 0;
+
+        var barsPerTradingDay = granularity switch
+        {
+            DataGranularity.Minute1 => 390,
+            DataGranularity.Minute5 => 78,
+            DataGranularity.Minute15 => 26,
+            DataGranularity.Minute30 => 13,
+            DataGranularity.Hour1 => 7,
+            DataGranularity.Hour4 => 2,
+            _ => 1
+        };
+
+        return tradingDays * barsPerTradingDay;
+    }
+
+    private static int EstimateBackfillDuration(
+        int symbolCount,
+        int tradingDays,
+        DataGranularity granularity,
+        IHistoricalDataProvider? provider)
+    {
+        var requestsPerSymbol = granularity switch
+        {
+            DataGranularity.Minute1 => Math.Max(1, (int)Math.Ceiling(tradingDays / 8d)),
+            DataGranularity.Minute5 or DataGranularity.Minute15 or DataGranularity.Minute30 => Math.Max(1, (int)Math.Ceiling(tradingDays / 60d)),
+            DataGranularity.Hour1 or DataGranularity.Hour4 => Math.Max(1, (int)Math.Ceiling(tradingDays / 730d)),
+            _ => 1
+        };
+
+        var estimatedRequests = Math.Max(1, symbolCount * requestsPerSymbol);
+        var requestsPerSecond = provider?.RateLimitDelay > TimeSpan.Zero
+            ? 1d / provider.RateLimitDelay.TotalSeconds
+            : 0.5d;
+
+        return (int)Math.Ceiling(estimatedRequests / Math.Max(requestsPerSecond, 0.1d)) + symbolCount;
     }
 
     /// <summary>
@@ -320,6 +357,16 @@ public sealed class BackfillCoordinator : IDisposable
                 ? $"{provider.RateLimitWindow.TotalMinutes:F0} minute(s)"
                 : $"{provider.RateLimitWindow.TotalSeconds:F0} second(s)";
             notes.Add($"Rate limit: {provider.MaxRequestsPerWindow} requests/{window}.");
+        }
+
+        if (provider is IHistoricalAggregateBarProvider aggregateProvider)
+        {
+            var supported = aggregateProvider.SupportedGranularities
+                .Select(g => g.ToDisplayName())
+                .OrderBy(name => name)
+                .ToArray();
+            if (supported.Length > 0)
+                notes.Add($"Intraday granularities: {string.Join(", ", supported)}.");
         }
 
         if (provider.RateLimitDelay > TimeSpan.Zero)

@@ -84,6 +84,28 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void CommandPaletteQuery_WhenNoResults_ShowsHelpfulEmptyStateAndCanClear()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "zzzz-unmatched-query";
+
+            vm.CommandPalettePages.Should().BeEmpty();
+            vm.CommandPaletteEmptyVisibility.Should().Be(Visibility.Visible);
+            vm.CommandPaletteResultSummary.Should().Contain("No matches");
+            vm.CommandPaletteEmptyTitle.Should().Contain("zzzz-unmatched-query");
+
+            vm.ClearCommandPaletteQueryCommand.Execute(null);
+
+            vm.CommandPaletteQuery.Should().BeEmpty();
+            vm.CommandPalettePages.Should().NotBeEmpty();
+            vm.CommandPaletteEmptyVisibility.Should().Be(Visibility.Collapsed);
+        });
+    }
+
+    [Fact]
     public void ShellNavigationCatalog_CoversEveryRegisteredPage()
     {
         WpfTestThread.Run(() =>
@@ -214,6 +236,20 @@ public sealed class MainShellViewModelTests
 
             vm.ClipboardBannerVisibility.Should().Be(Visibility.Collapsed);
             vm.AddClipboardSymbolsCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void ShowClipboardSymbols_WhenManySymbolsDetected_UsesCompactPreview()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel();
+
+            vm.ShowClipboardSymbols(["AAPL", "MSFT", "NVDA", "AMD", "TSLA", "META"]);
+
+            vm.ClipboardBannerText.Should().Contain("6 symbols detected in clipboard");
+            vm.ClipboardBannerText.Should().Contain("AAPL, MSFT, NVDA, AMD +2 more");
         });
     }
 

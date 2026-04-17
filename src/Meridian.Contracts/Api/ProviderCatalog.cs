@@ -69,7 +69,7 @@ public static class ProviderCatalog
         {
             ProviderId = "yahoo",
             DisplayName = "Yahoo Finance",
-            Description = "Unofficial free historical data from Yahoo Finance",
+            Description = "Unofficial free daily and regular-hours intraday data from Yahoo Finance",
             ProviderType = ProviderTypeKind.Backfill,
             RequiresCredentials = false,
             CredentialFields = Array.Empty<CredentialFieldInfo>(),
@@ -83,7 +83,8 @@ public static class ProviderCatalog
             Notes = new[]
             {
                 "Yahoo Finance data is unofficial and may have gaps.",
-                "Good for basic daily OHLCV data and dividend/split information."
+                "Supports daily bars plus regular-hours 1m, 5m, 15m, 30m, 1h, and synthetic 4h aggregates.",
+                "Good for basic OHLCV data and dividend/split information."
             },
             Warnings = new[]
             {
@@ -91,13 +92,13 @@ public static class ProviderCatalog
                 "Data quality may vary for less liquid securities."
             },
             SupportedMarkets = new[] { "US", "UK", "EU", "APAC" },
-            DataTypes = new[] { "DailyBars", "Dividends", "Splits" },
+            DataTypes = new[] { "DailyBars", "IntradayBars", "Aggregates", "Dividends", "Splits" },
             Capabilities = new CapabilityInfo
             {
                 SupportsAdjustedPrices = true,
                 SupportsDividends = true,
                 SupportsSplits = true,
-                SupportsIntraday = false,
+                SupportsIntraday = true,
                 SupportsTrades = false,
                 SupportsQuotes = false
             }
@@ -304,7 +305,7 @@ public static class ProviderCatalog
         {
             ProviderId = "alphavantage",
             DisplayName = "Alpha Vantage",
-            Description = "Free stock APIs with technical indicators",
+            Description = "Free stock APIs with daily and intraday bars plus technical indicators",
             ProviderType = ProviderTypeKind.Backfill,
             RequiresCredentials = true,
             CredentialFields = new[]
@@ -322,7 +323,7 @@ public static class ProviderCatalog
             {
                 "Alpha Vantage offers free API keys.",
                 "Rate limit: 5 requests/minute (free tier).",
-                "Supports stocks, forex, and crypto."
+                "Supports stocks, forex, and crypto intraday and daily bars."
             },
             Warnings = new[]
             {

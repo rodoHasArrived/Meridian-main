@@ -126,7 +126,13 @@ public sealed class FundLedgerReadService
                 Description: entry.Description,
                 TotalDebits: entry.Lines.Sum(line => line.Debit),
                 TotalCredits: entry.Lines.Sum(line => line.Credit),
-                LineCount: entry.Lines.Count))
+                LineCount: entry.Lines.Count,
+                FinancialAccountIds: entry.Lines
+                    .Select(line => line.Account.FinancialAccountId)
+                    .Where(static accountId => !string.IsNullOrWhiteSpace(accountId))
+                    .Select(static accountId => accountId!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray()))
             .ToArray();
     }
 

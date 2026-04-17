@@ -166,6 +166,25 @@ public sealed class BackfillEndpointTests
         body.Should().Contain("1970");
     }
 
+    [Fact]
+    public async Task RunBackfill_WithUnsupportedIntradayProvider_ReturnsBadRequest()
+    {
+        var payload = new
+        {
+            Symbols = new[] { "SPY" },
+            Provider = "stooq",
+            Granularity = "1Min"
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/backfill/run", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("does not support");
+        body.Should().Contain("1 Minute");
+    }
+
     #endregion
 
     #region POST /api/backfill/run/preview - Validation

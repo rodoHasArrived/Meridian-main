@@ -395,6 +395,58 @@ public enum DataGranularity : byte
 /// </summary>
 public static class DataGranularityExtensions
 {
+    public static bool TryParseValue(string? value, out DataGranularity granularity)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            granularity = DataGranularity.Daily;
+            return false;
+        }
+
+        var normalized = value.Trim().Replace("_", "", StringComparison.Ordinal).Replace("-", "", StringComparison.Ordinal);
+        granularity = normalized.ToLowerInvariant() switch
+        {
+            "1m" or "1min" or "minute1" => DataGranularity.Minute1,
+            "5m" or "5min" or "minute5" => DataGranularity.Minute5,
+            "15m" or "15min" or "minute15" => DataGranularity.Minute15,
+            "30m" or "30min" or "minute30" => DataGranularity.Minute30,
+            "1h" or "1hour" or "hour1" or "hourly" => DataGranularity.Hour1,
+            "4h" or "4hour" or "hour4" => DataGranularity.Hour4,
+            "1d" or "1day" or "daily" => DataGranularity.Daily,
+            "1w" or "1week" or "weekly" => DataGranularity.Weekly,
+            "1month" or "monthly" => DataGranularity.Monthly,
+            _ => default
+        };
+
+        return normalized.ToLowerInvariant() switch
+        {
+            "1m" or "1min" or "minute1" or
+            "5m" or "5min" or "minute5" or
+            "15m" or "15min" or "minute15" or
+            "30m" or "30min" or "minute30" or
+            "1h" or "1hour" or "hour1" or "hourly" or
+            "4h" or "4hour" or "hour4" or
+            "1d" or "1day" or "daily" or
+            "1w" or "1week" or "weekly" or
+            "1month" or "monthly" => true,
+            _ => Enum.TryParse<DataGranularity>(value, ignoreCase: true, out granularity)
+        };
+    }
+
+    public static DataGranularity ParseValueOrDefault(string? value, DataGranularity defaultValue = DataGranularity.Daily)
+        => TryParseValue(value, out var granularity) ? granularity : defaultValue;
+
+    public static bool IsIntraday(this DataGranularity granularity) => granularity switch
+    {
+        DataGranularity.Minute1 or
+        DataGranularity.Minute5 or
+        DataGranularity.Minute15 or
+        DataGranularity.Minute30 or
+        DataGranularity.Hour1 or
+        DataGranularity.Hour4 => true,
+        _ => false
+    };
+
     public static string ToAlpacaTimeframe(this DataGranularity granularity) => granularity switch
     {
         DataGranularity.Minute1 => "1Min",
@@ -421,6 +473,45 @@ public static class DataGranularityExtensions
         DataGranularity.Weekly => TimeSpan.FromDays(7),
         DataGranularity.Monthly => TimeSpan.FromDays(30),
         _ => TimeSpan.FromDays(1)
+    };
+
+    public static string ToUiValue(this DataGranularity granularity) => granularity switch
+    {
+        DataGranularity.Minute1 => "1Min",
+        DataGranularity.Minute5 => "5Min",
+        DataGranularity.Minute15 => "15Min",
+        DataGranularity.Minute30 => "30Min",
+        DataGranularity.Hour1 => "Hourly",
+        DataGranularity.Hour4 => "4Hour",
+        DataGranularity.Daily => "Daily",
+        DataGranularity.Weekly => "Weekly",
+        DataGranularity.Monthly => "Monthly",
+        _ => "Daily"
+    };
+
+    public static string ToConfigValue(this DataGranularity granularity) => granularity switch
+    {
+        DataGranularity.Minute1 => "minute1",
+        DataGranularity.Minute5 => "minute5",
+        DataGranularity.Minute15 => "minute15",
+        DataGranularity.Minute30 => "minute30",
+        DataGranularity.Hour1 => "hourly",
+        DataGranularity.Hour4 => "hour4",
+        DataGranularity.Daily => "daily",
+        DataGranularity.Weekly => "weekly",
+        DataGranularity.Monthly => "monthly",
+        _ => "daily"
+    };
+
+    public static string ToStorageFilePrefix(this DataGranularity granularity) => granularity switch
+    {
+        DataGranularity.Minute1 => "bar_1min",
+        DataGranularity.Minute5 => "bar_5min",
+        DataGranularity.Minute15 => "bar_15min",
+        DataGranularity.Minute30 => "bar_30min",
+        DataGranularity.Hour1 => "bar_hourly",
+        DataGranularity.Hour4 => "bar_4hour",
+        _ => "bar_daily"
     };
 
     public static string ToDisplayName(this DataGranularity granularity) => granularity switch

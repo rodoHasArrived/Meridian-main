@@ -79,6 +79,8 @@ OPTIONS:
     --backfill-symbols <list>       Comma-separated symbols (e.g., AAPL,MSFT)
     --backfill-from <date>          Start date (YYYY-MM-DD)
     --backfill-to <date>            End date (YYYY-MM-DD)
+    --backfill-granularity <value>  Granularity: Daily, Hourly, 1Min, 5Min,
+                                    15Min, 30Min, 4Hour
     --resume                        Resume an interrupted backfill from the last
                                     saved checkpoint (skips already-completed symbols)
 
@@ -91,12 +93,17 @@ EXAMPLES:
     Meridian --backfill --backfill-provider alpaca \
         --backfill-symbols SPY --backfill-from 2024-01-01
 
+    # Intraday Yahoo backfill
+    Meridian --backfill --backfill-provider yahoo \
+        --backfill-symbols AAPL --backfill-from 2024-04-01 \
+        --backfill-to 2024-04-05 --backfill-granularity 15Min
+
     # Backfill multiple symbols
     Meridian --backfill --backfill-symbols AAPL,MSFT,GOOGL,AMZN,META
 
 PROVIDERS (by rate limit tolerance):
     stooq           Free, no API key, low rate limits
-    yahoo           Free, unofficial, moderate limits
+    yahoo           Free, unofficial, daily + intraday bars (1m-4h)
     tiingo          Free tier, 500/hour
     finnhub         Free tier, 60/min
     alphavantage    Free tier, 5/min
@@ -323,7 +330,7 @@ STREAMING PROVIDERS:
 
 HISTORICAL (BACKFILL) PROVIDERS:
     stooq           Free daily bars, no API key needed
-    yahoo           Free daily bars (unofficial API)
+    yahoo           Free daily + intraday bars (1m, 5m, 15m, 30m, 1h, 4h synthetic)
     tiingo          Free tier: 500 req/hour
     finnhub         Free tier: 60 req/min
     alphavantage    Free tier: 5 req/min
@@ -438,6 +445,7 @@ BACKFILL OPTIONS:
     --backfill-symbols <list>       Comma-separated symbols (e.g., AAPL,MSFT)
     --backfill-from <date>          Start date (YYYY-MM-DD)
     --backfill-to <date>            End date (YYYY-MM-DD)
+    --backfill-granularity <value>  Daily, Hourly, 1Min, 5Min, 15Min, 30Min, 4Hour
     --resume                        Resume interrupted backfill from last checkpoint
 
 PACKAGING OPTIONS:
@@ -485,6 +493,11 @@ EXAMPLES:
     # Run historical backfill
     Meridian --backfill --backfill-symbols AAPL,MSFT,GOOGL \
         --backfill-from 2024-01-01 --backfill-to 2024-12-31
+
+    # Run Yahoo intraday backfill
+    Meridian --backfill --backfill-provider yahoo --backfill-symbols SPY \
+        --backfill-from 2024-04-01 --backfill-to 2024-04-05 \
+        --backfill-granularity 5Min
 
     # Run self-tests
     Meridian --selftest

@@ -219,6 +219,24 @@
                             <KeyBinding Key="Enter" Command="{Binding OpenSelectedCommandPalettePageCommand}" />
                         </TextBox.InputBindings>
                     </TextBox>
+                    <DockPanel Margin="16,0,16,8" LastChildFill="False">
+                        <TextBlock x:Name="CommandPaletteSummaryText"
+                                   Text="{Binding CommandPaletteResultSummary}"
+                                   FontSize="11"
+                                   Opacity="0.78"
+                                   Foreground="{StaticResource NavSectionLabelBrush}"
+                                   AutomationProperties.AutomationId="CommandPaletteSummaryText"
+                                   AutomationProperties.Name="Command Palette Summary" />
+                        <Button x:Name="CommandPaletteClearButton"
+                                DockPanel.Dock="Right"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                Padding="8,3"
+                                Command="{Binding ClearCommandPaletteQueryCommand}"
+                                AutomationProperties.AutomationId="CommandPaletteClearButton"
+                                AutomationProperties.Name="Clear Command Palette Search">
+                            <TextBlock Text="Clear search" />
+                        </Button>
+                    </DockPanel>
                     <ListBox x:Name="CommandPaletteResults"
                              MaxHeight="360"
                              Background="Transparent"
@@ -264,6 +282,26 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+                    <Border x:Name="CommandPaletteEmptyState"
+                            Margin="16,0,16,12"
+                            Padding="16"
+                            Visibility="{Binding CommandPaletteEmptyVisibility}"
+                            Style="{StaticResource CompactCardStyle}"
+                            AutomationProperties.AutomationId="CommandPaletteEmptyState"
+                            AutomationProperties.Name="Command Palette Empty State">
+                        <StackPanel>
+                            <TextBlock x:Name="CommandPaletteEmptyTitleText"
+                                       Text="{Binding CommandPaletteEmptyTitle}"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       FontSize="15"
+                                       AutomationProperties.AutomationId="CommandPaletteEmptyTitleText" />
+                            <TextBlock x:Name="CommandPaletteEmptyDescriptionText"
+                                       Margin="0,6,0,0"
+                                       Text="{Binding CommandPaletteEmptyDescription}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       AutomationProperties.AutomationId="CommandPaletteEmptyDescriptionText" />
+                        </StackPanel>
+                    </Border>
                     <TextBlock Text="Ctrl+K to open - Esc to close - Enter to open selection"
                                FontSize="11"
                                Opacity="0.7"
@@ -620,9 +658,18 @@
 
                             <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
 
-                            <TextBlock Text="Recent"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="16,0,0,6" />
+                            <DockPanel Margin="16,0,16,6" LastChildFill="False">
+                                <TextBlock Text="Recent"
+                                           Style="{StaticResource ShellSectionLabelStyle}" />
+                                <Border DockPanel.Dock="Right"
+                                        Style="{StaticResource NeutralBadgeStyle}">
+                                    <TextBlock x:Name="RecentPagesSummaryText"
+                                               Text="{Binding RecentPagesSummaryText}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               AutomationProperties.AutomationId="RecentPagesSummaryText" />
+                                </Border>
+                            </DockPanel>
                             <ItemsControl ItemsSource="{Binding RecentPages}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -640,13 +687,42 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock x:Name="RecentPagesEmptyText"
-                                       Text="Navigate to any page to start building history."
-                                       Visibility="{Binding RecentPagesEmptyVisibility}"
-                                       AutomationProperties.AutomationId="RecentPagesEmptyText"
-                                       AutomationProperties.Name="Recent Pages Empty State"
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       Margin="16,0,0,0" />
+                            <Border x:Name="RecentPagesEmptyState"
+                                    Margin="16,0,16,0"
+                                    Padding="14"
+                                    Visibility="{Binding RecentPagesEmptyVisibility}"
+                                    Style="{StaticResource CompactCardStyle}"
+                                    AutomationProperties.AutomationId="RecentPagesEmptyState"
+                                    AutomationProperties.Name="Recent Pages Empty State">
+                                <StackPanel>
+                                    <TextBlock x:Name="RecentPagesEmptyText"
+                                               Text="No recent pages yet."
+                                               AutomationProperties.AutomationId="RecentPagesEmptyText"
+                                               AutomationProperties.Name="Recent Pages Empty Title"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               FontSize="14" />
+                                    <TextBlock Margin="0,6,0,0"
+                                               Text="{Binding RecentPagesHintText}"
+                                               Style="{StaticResource CardDescriptionStyle}" />
+                                    <Button x:Name="RecentPagesEmptyActionButton"
+                                            Margin="0,10,0,0"
+                                            HorizontalAlignment="Left"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding ShowCommandPaletteCommand}"
+                                            AutomationProperties.AutomationId="RecentPagesEmptyActionButton"
+                                            AutomationProperties.Name="Open Command Palette From Recent Empty State">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconSearch}"
+                                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="Open Command Palette"
+                                                       Margin="8,0,0,0"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -713,6 +789,7 @@
 
             <Grid Margin="0">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -813,6 +890,38 @@
                                        Margin="0,8,0,0"
                                        Text="{Binding CurrentPageSubtitle}"
                                        Style="{StaticResource CardDescriptionStyle}" />
+                            <Border x:Name="ContextSelectionHint"
+                                    Margin="0,12,0,0"
+                                    Padding="12,10"
+                                    Visibility="{Binding ContextSelectionHintVisibility}"
+                                    Style="{StaticResource WarningBadgeInlineStyle}"
+                                    AutomationProperties.AutomationId="ContextSelectionHint"
+                                    AutomationProperties.Name="Context Selection Hint">
+                                <DockPanel LastChildFill="False">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE7BA;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource WarningColorBrush}" />
+                                        <TextBlock x:Name="ContextSelectionHintTextBlock"
+                                                   Margin="8,0,0,0"
+                                                   Text="{Binding ContextSelectionHintText}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   AutomationProperties.AutomationId="ContextSelectionHintText" />
+                                    </StackPanel>
+                                    <Button x:Name="ContextSelectionHintButton"
+                                            DockPanel.Dock="Right"
+                                            Margin="12,0,0,0"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Command="{Binding SwitchFundCommand}"
+                                            AutomationProperties.AutomationId="ContextSelectionHintButton"
+                                            AutomationProperties.Name="Choose Operating Context">
+                                        <TextBlock Text="Choose Context" />
+                                    </Button>
+                                </DockPanel>
+                            </Border>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1"
@@ -820,29 +929,90 @@
                                     VerticalAlignment="Top">
                             <WrapPanel HorizontalAlignment="Right" Margin="0,0,0,12">
                                 <Border x:Name="ConnectionStatusBadge"
-                                        Style="{StaticResource SuccessBadgeStyle}"
                                         Margin="0,0,10,10">
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Success">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Warning">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Danger">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentRedAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Info">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse x:Name="ConnectionStatusDot"
                                                  Width="8"
                                                  Height="8"
-                                                 Fill="{StaticResource SuccessColorBrush}"
-                                                 Margin="0,0,6,0" />
+                                                 Margin="0,0,6,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="{StaticResource SuccessColorBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ShellStatusTone}" Value="Warning">
+                                                            <Setter Property="Fill" Value="{StaticResource WarningColorBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ShellStatusTone}" Value="Danger">
+                                                            <Setter Property="Fill" Value="{StaticResource ErrorColorBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ShellStatusTone}" Value="Info">
+                                                            <Setter Property="Fill" Value="{StaticResource InfoColorBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
                                         <TextBlock x:Name="ConnectionStatusText"
-                                                   Text="Connected"
+                                                   Text="{Binding ShellStatusText}"
                                                    FontSize="12"
-                                                   Foreground="{StaticResource SuccessColorBrush}" />
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
-                                    <TextBlock Text="{Binding WorkspaceSummary}"
-                                               FontSize="12"
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE823;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                        <TextBlock Text="{Binding ShellLastRefreshText}"
+                                                   Margin="6,0,0,0"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    </StackPanel>
                                 </Border>
                             </WrapPanel>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Style="{StaticResource SecondaryButtonStyle}"
+                                        ToolTip="Choose operating context"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding SwitchFundCommand}"
+                                        AutomationProperties.AutomationId="SwitchContextButton"
+                                        AutomationProperties.Name="Switch Operating Context">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE777;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SwitchContextActionText}"
+                                                   Margin="8,0,0,0"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
                                 <Button Style="{StaticResource GhostButtonStyle}"
                                         ToolTip="Refresh (F5)"
                                         Command="{Binding RefreshPageCommand}"
@@ -891,7 +1061,11 @@
                     </Grid>
                 </Border>
 
-                <DockPanel Grid.Row="2">
+                <views:WorkspaceShellContextStripControl Grid.Row="2"
+                                                        Margin="24,0,24,16"
+                                                        ShellContext="{Binding ShellContext}" />
+
+                <DockPanel Grid.Row="3">
                     <Border DockPanel.Dock="Top" Height="32"
                             Background="{StaticResource CommandBarBackground}"
                             BorderBrush="{StaticResource CommandBarBorderBrush}" BorderThickness="0,0,0,1">

@@ -58,6 +58,14 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public ListBox CommandPaletteResults => GetRequired<ListBox>("CommandPaletteResults");
 
+    public TextBlock CommandPaletteSummaryText => GetRequired<TextBlock>("CommandPaletteSummaryText");
+
+    public Button CommandPaletteClearButton => GetRequired<Button>("CommandPaletteClearButton");
+
+    public Border CommandPaletteEmptyState => GetRequired<Border>("CommandPaletteEmptyState");
+
+    public TextBlock CommandPaletteEmptyTitleText => GetRequired<TextBlock>("CommandPaletteEmptyTitleText");
+
     public ListBox WorkspacePrimaryNavList => GetRequired<ListBox>("WorkspacePrimaryNavList");
 
     public ListBox WorkspaceSecondaryNavList => GetRequired<ListBox>("WorkspaceSecondaryNavList");
@@ -75,6 +83,10 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     public Button GovernanceWorkspaceButton => GetRequired<Button>("GovernanceWorkspaceButton");
 
     public TextBlock RecentPagesEmptyText => GetRequired<TextBlock>("RecentPagesEmptyText");
+
+    public Button RecentPagesEmptyActionButton => GetRequired<Button>("RecentPagesEmptyActionButton");
+
+    public TextBlock RecentPagesSummaryText => GetRequired<TextBlock>("RecentPagesSummaryText");
 
     public Button TickerStripToggleButton => GetRequired<Button>("TickerStripToggleButton");
 
