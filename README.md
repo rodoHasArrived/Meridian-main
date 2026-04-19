@@ -5241,7 +5241,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Strategies
 │   │   │   ├── AdvancedCarry
 │   │   │   │   ├── AdvancedCarryDecisionEngine.cs
-│   │   │   │   └── AdvancedCarryModels.cs
+│   │   │   │   ├── AdvancedCarryModels.cs
+│   │   │   │   └── CarryTradeBacktestStrategy.cs
 │   │   │   └── OptionsOverwrite
 │   │   │       ├── BlackScholesCalculator.cs
 │   │   │       ├── CoveredCallOverwriteStrategy.cs
@@ -6561,6 +6562,7 @@ Use these documents together when planning or implementing new work:
 │       │   ├── BacktestViewModel.cs
 │       │   ├── BatchBacktestViewModel.cs
 │       │   ├── BindableBase.cs
+│       │   ├── CarryTradeBacktestViewModel.cs
 │       │   ├── CashFlowViewModel.cs
 │       │   ├── ChartingPageViewModel.cs
 │       │   ├── ClusterStatusViewModel.cs
@@ -6655,6 +6657,7 @@ Use these documents together when planning or implementing new work:
 │           ├── BacktestPage.xaml.cs
 │           ├── BatchBacktestPage.xaml
 │           ├── BatchBacktestPage.xaml.cs
+│           ├── CarryTradeBacktestPage.xaml
 │           ├── ChartingPage.xaml
 │           ├── ChartingPage.xaml.cs
 │           ├── ClusterStatusPage.xaml
@@ -7464,6 +7467,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-602 directories, 6722 files
+602 directories, 6725 files
 ```
 <!-- readme-tree end -->
