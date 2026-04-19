@@ -11,6 +11,31 @@ public enum CarryOptimizationMethod
     MaximumSharpe
 }
 
+/// <summary>
+/// Controls how carry signal is derived in <see cref="CarryTradeBacktestStrategy"/>.
+/// </summary>
+public enum YieldCarryMode
+{
+    /// <summary>
+    /// Classic carry: expected return = historical price-momentum + assumed carry yield.
+    /// </summary>
+    ClassicCarry,
+
+    /// <summary>
+    /// Yield-spread carry: expected return = asset yield − risk-free rate.
+    /// Long high-spread assets; underweight (or skip) low/negative-spread assets.
+    /// Best for dividend stocks, bond ETFs, REITs, and FX carry pairs.
+    /// </summary>
+    YieldSpread,
+
+    /// <summary>
+    /// Yield rotation: ranks assets by yield each period; rotates into the top-quartile
+    /// yielders and out of the bottom-quartile.  Applies an additional momentum tilt
+    /// when an asset's yield has risen (price has compressed) relative to its 20-day average.
+    /// </summary>
+    YieldRotation,
+}
+
 public enum CarryExecutionAlgorithm
 {
     Twap,
