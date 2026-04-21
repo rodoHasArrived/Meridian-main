@@ -46,6 +46,8 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient
     public bool EnableHeartbeat { get; set; }
     public bool IsConnected => false;
 
+    // Required by IIBBrokerageClient contract so non-IBAPI builds remain interface-compatible with IBAPI builds.
+#pragma warning disable CS0067 // Event is never used
     public event EventHandler<int>? NextValidIdReceived;
     public event EventHandler<IBOrderStatusUpdate>? OrderStatusReceived;
     public event EventHandler<IBOpenOrderUpdate>? OpenOrderReceived;
@@ -56,6 +58,7 @@ public sealed partial class EnhancedIBConnectionManager : IIBBrokerageClient
     public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
     public event EventHandler<int>? AccountSummaryCompleted;
     public event EventHandler<IBApiError>? ErrorOccurred;
+#pragma warning restore CS0067
 
     /// <summary>
     /// Centralizes the platform guard used by the non-IBAPI build so each stub entry point stays concise.

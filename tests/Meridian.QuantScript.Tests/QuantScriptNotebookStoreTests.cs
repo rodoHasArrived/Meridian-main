@@ -80,6 +80,51 @@ public sealed class QuantScriptNotebookStoreTests : IDisposable
         await act.Should().ThrowAsync<InvalidDataException>();
     }
 
+    [Fact]
+    public void GetSuggestedNotebookPath_CalledSuccessivelyWithinOneSecond_ReturnsUniquePaths()
+    {
+        Directory.CreateDirectory(_tempDirectory);
+        var store = BuildStore();
+
+        var first = store.GetSuggestedNotebookPath("Strategy Notebook");
+        var second = store.GetSuggestedNotebookPath("Strategy Notebook");
+
+        first.Should().NotBe(second);
+        Path.GetFileName(first).Should().StartWith("Strategy Notebook-");
+        Path.GetFileName(second).Should().StartWith("Strategy Notebook-");
+    }
+
+    [Fact]
+    public async Task SaveNotebook_WhenWriteIsInterrupted_PreservesLastGoodNotebook()
+    {
+        Directory.CreateDirectory(_tempDirectory);
+        var store = BuildStore();
+        var path = Path.Combine(_tempDirectory, "interrupted-save.mqnb");
+        var original = new QuantScriptNotebookDocument
+        {
+            Title = "Original",
+            Cells = [new QuantScriptNotebookCellDocument("cell-1", "Print(\"original\");")]
+        };
+
+        await store.SaveNotebookAsync(path, original);
+
+        var interrupted = new QuantScriptNotebookDocument
+        {
+            Title = "Interrupted",
+            Cells = [new QuantScriptNotebookCellDocument("cell-2", "Print(\"interrupted\");")]
+        };
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var interruptedSave = () => store.SaveNotebookAsync(path, interrupted, cts.Token);
+        await interruptedSave.Should().ThrowAsync<OperationCanceledException>();
+
+        var loaded = await store.LoadNotebookAsync(path);
+        loaded.Title.Should().Be("Original");
+        loaded.Cells.Should().ContainSingle();
+        loaded.Cells[0].Source.Should().Contain("original");
+    }
+
     private QuantScriptNotebookStore BuildStore()
         => new(new QuantScriptOptions
         {

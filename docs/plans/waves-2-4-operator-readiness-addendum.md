@@ -335,9 +335,20 @@ Finish governance and fund-operations productization by making casework, report 
 - **Deliverables:**
   - named scenario suites for `Backtest -> Paper`, paper-session restore, promotion review, run continuity, brokerage divergence, reconciliation break review, and report publish
   - command matrix that maps each scenario to the narrowest useful validation command
+  - Wave 4 evidence records that use a deterministic template requiring scenario name, fixture window, API assertions, workstation assertions, artifact location, and regression owner (tracked in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md))
 - **Exit criteria:**
   - each active wave has at least one repo-backed scenario suite tied to its own exit criteria
   - regression checks describe operator behavior, not only isolated method coverage
+
+### Wave 4 Evidence Template Baseline (Applied)
+
+The Wave 4 evidence template is now active in [`../status/wave4-evidence-template.md`](../status/wave4-evidence-template.md) and is seeded with the first three deterministic governance scenarios:
+
+1. `wave4-governance-identifier-conflict-resolution-v1`
+2. `wave4-governance-corporate-action-propagation-impact-v1`
+3. `wave4-governance-multi-ledger-reconciliation-break-classification-v1`
+
+These records establish the minimum acceptance payload for Wave 4 readiness proof and should be extended (not bypassed) as additional governance scenarios are onboarded.
 
 ### X2: Wave 1 Trust-Gate Preservation
 

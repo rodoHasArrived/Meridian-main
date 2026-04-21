@@ -1,8 +1,24 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
+import * as api from "@/lib/api";
 import { GovernanceScreen } from "@/screens/governance-screen";
 import type { GovernanceWorkspaceResponse } from "@/types";
+
+vi.mock("@/lib/api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
+  return {
+    ...actual,
+    searchSecurities: vi.fn().mockResolvedValue([]),
+    getSecurityIdentity: vi.fn().mockResolvedValue(null),
+    getSecurityConflicts: vi.fn().mockResolvedValue([]),
+    getReconciliationBreakQueue: vi.fn().mockResolvedValue([]),
+    resolveReconciliationBreak: vi.fn(),
+    reviewReconciliationBreak: vi.fn(),
+    getRunTrialBalance: vi.fn().mockResolvedValue([]),
+    resolveSecurityConflict: vi.fn()
+  };
+});
 
 const data: GovernanceWorkspaceResponse = {
   metrics: [
@@ -103,6 +119,82 @@ describe("GovernanceScreen", () => {
     );
 
     expect(screen.getByText("Security coverage")).toBeInTheDocument();
+  });
+
+  it("accepts and renders alias rows inside identity drill-in for governance workflows", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([
+      {
+        securityId: "sec-1",
+        displayName: "Apple Inc.",
+        status: "Active",
+        classification: {
+          assetClass: "Equity",
+          subType: "CommonStock",
+          primaryIdentifierKind: "Ticker",
+          primaryIdentifierValue: "AAPL"
+        },
+        economicDefinition: {
+          currency: "USD",
+          version: 3,
+          effectiveFrom: "2024-01-01T00:00:00Z",
+          effectiveTo: null,
+          subType: "CommonStock",
+          assetFamily: "Equity",
+          issuerType: "Corporate"
+        }
+      }
+    ]);
+    vi.mocked(api.getSecurityIdentity).mockResolvedValueOnce({
+      securityId: "sec-1",
+      displayName: "Apple Inc.",
+      assetClass: "Equity",
+      status: "Active",
+      version: 3,
+      effectiveFrom: "2024-01-01T00:00:00Z",
+      effectiveTo: null,
+      identifiers: [
+        {
+          kind: "Ticker",
+          value: "AAPL",
+          isPrimary: true,
+          validFrom: "2024-01-01T00:00:00Z",
+          validTo: null,
+          provider: "Bloomberg"
+        }
+      ],
+      aliases: [
+        {
+          aliasId: "alias-1",
+          securityId: "sec-1",
+          aliasKind: "ProviderSymbol",
+          aliasValue: "AAPL.OQ",
+          provider: "Nasdaq",
+          scope: "Collector",
+          reason: "Market data source mapping",
+          createdBy: "ops.gov",
+          createdAt: "2025-01-01T00:00:00Z",
+          validFrom: "2025-01-01T00:00:00Z",
+          validTo: null,
+          isEnabled: true
+        }
+      ]
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/governance/security-master"]}>
+        <GovernanceScreen data={data} />
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
+    const securityRow = await screen.findByText("Apple Inc.");
+    await user.click(securityRow);
+
+    expect(await screen.findByText(/Identity drill-in · Apple Inc\./i)).toBeInTheDocument();
+    expect(screen.getByText("Aliases")).toBeInTheDocument();
+    expect(screen.getByText("AAPL.OQ")).toBeInTheDocument();
+    expect(screen.getByText("Collector")).toBeInTheDocument();
   });
 
   it("renders reconciliation detail on deep-link routes and updates selection", async () => {

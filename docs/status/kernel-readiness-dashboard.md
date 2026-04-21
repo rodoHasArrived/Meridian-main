@@ -1,6 +1,6 @@
 # Kernel Readiness Dashboard (DK Program)
 
-**Last Updated:** 2026-04-20  
+**Last Updated:** 2026-04-21  
 **Program Scope:** Delivery Kernel waves DK1-DK2 mapped to Waves 2-4 in [`ROADMAP.md`](ROADMAP.md)  
 **Purpose:** single hand-authored status dashboard for subsystem kernel readiness, gate progression, implementation commitments, and rollback posture.
 
@@ -26,7 +26,7 @@
 
 | Subsystem | Wave | Owner | Parity | Explainability | Calibration | Operator Sign-off | Kernel Readiness | Next Milestone (Target Date) | Evidence / Notes |
 |---|---|---|---|---|---|---|---|---|---|
-| Data quality + provider trust | DK1 | Data Operations & Provider Reliability owner | 🟡 | 🟡 | ⚪ | ⚪ | At Risk | Complete pilot parity runbook for Alpaca/Robinhood/Yahoo set (2026-05-01) | Must stay synchronized with provider validation matrix and Wave 1 scripts |
+| Data quality + provider trust | DK1 | Data Operations & Provider Reliability owner | 🟡 | 🟡 | 🟡 | ⚪ | At Risk | Complete pilot parity runbook for Alpaca/Robinhood/Yahoo set (2026-05-01) | Evidence pack: [DK1 pilot parity runbook](./dk1-pilot-parity-runbook.md), [trust rationale mapping](./dk1-trust-rationale-mapping.md), [baseline thresholds + FP/FN review](./dk1-baseline-trust-thresholds.md), [provider validation matrix](./provider-validation-matrix.md) |
 | Promotion + paper-trading cockpit | DK1 -> DK2 handoff | Trading Workstation owner | ⚪ | ⚪ | ⚪ | ⚪ | Not Started | Lock promotion-path audit fields + pilot review checklist (2026-05-08) | Depends on DK1 trust explainability and calibrated thresholds |
 | Export + packaging | DK2 | Data Operations Export owner | ⚪ | ⚪ | ⚪ | ⚪ | Not Started | Freeze export schema/version contract for governed pilot outputs (2026-05-15) | Must remain aligned with shared run/portfolio/ledger contract versions |
 | Reconciliation + governance | DK2 | Governance/Fund Ops owner | ⚪ | ⚪ | ⚪ | ⚪ | Not Started | Approve reconciliation tolerance profile + exception playbook (2026-05-22) | Requires promotion/export lineage continuity from DK2 |
@@ -52,16 +52,16 @@
 
 ### Entry checklist
 
-- [x] **Parity entry:** Wave 1 closure evidence remains current and reproducible.
-- [ ] **Explainability entry:** trust signals have operator-visible source and rationale.
-- [ ] **Calibration entry:** baseline trust thresholds are declared for pilot operations.
+- [x] **Parity entry:** Wave 1 closure evidence remains current and reproducible ([DK1 pilot parity runbook](./dk1-pilot-parity-runbook.md)).
+- [ ] **Explainability entry:** trust signals have operator-visible source and rationale ([trust rationale mapping](./dk1-trust-rationale-mapping.md)).
+- [ ] **Calibration entry:** baseline trust thresholds are declared for pilot operations ([baseline thresholds + FP/FN review](./dk1-baseline-trust-thresholds.md)).
 - [ ] **Operator entry:** Data Ops + Trading approve DK1 pilot scope.
 
 ### Exit checklist
 
-- [ ] **Parity pass:** cockpit views match validated provider/replay results for pilot scenarios.
-- [ ] **Explainability pass:** every trust alert maps to source, reason code, and operator action.
-- [ ] **Calibration pass:** thresholds tuned with documented false-positive/false-negative review.
+- [ ] **Parity pass:** cockpit views match validated provider/replay results for pilot scenarios ([DK1 pilot parity runbook](./dk1-pilot-parity-runbook.md)).
+- [ ] **Explainability pass:** every trust alert maps to source, reason code, and operator action ([trust rationale mapping](./dk1-trust-rationale-mapping.md)).
+- [ ] **Calibration pass:** thresholds tuned with documented false-positive/false-negative review ([baseline thresholds + FP/FN review](./dk1-baseline-trust-thresholds.md)).
 - [ ] **Operator sign-off:** Data Ops + Trading owners approve DK1 completion.
 
 ## DK2 - Promotion + export + reconciliation
@@ -79,6 +79,15 @@
 - [ ] **Explainability pass:** end-to-end trace from trusted input to governed output is operator-visible.
 - [ ] **Calibration pass:** reconciliation exceptions are tuned with no unresolved critical mismatches.
 - [ ] **Operator sign-off:** Trading + Governance owners sign DK2 readiness.
+
+
+#### Governance/fund-ops scenario gate text (mirrors Wave 4 objective pass/fail)
+
+| Criterion | Required endpoint(s) + response fields | Required workstation surface behavior | Fail condition |
+| --- | --- | --- | --- |
+| Security Master conflict lifecycle is traceable end-to-end | `/api/security-master/conflicts`, `/api/security-master/conflicts/{conflictId}`, and `/api/security-master/conflicts/{conflictId}/resolve` must expose `ConflictReasonCode`, source-provenance identifiers, and resolution payload rationale (`ResolutionDecision`, `ResolutionRationale`, `Actor`, `TimestampUtc`, `CorrelationId`). | Operator can **search -> drill-in -> history -> resolution** for one conflicted instrument and see conflict reasons, source provenance, prior resolution history, and final resolution decision in one continuous flow. | Any missing linkage between conflict list/detail/resolution views, missing conflict reason code, missing source provenance, or missing explicit resolution rationale/audit chain in the same scenario run. |
+| Corporate action provenance and parameter versioning remain explainable | `/api/security-master/corporate-actions` and `/api/security-master/trading-parameters` must return event provenance (`CorporateActionSource`, `IngestedAtUtc`) plus effective version fields (`EffectiveVersion`, `EffectiveFromUtc`, `SupersedesVersion`). | Operator can **search -> drill-in -> history -> resolution** from instrument view into corporate-action timeline and trading-parameter history, then resolve a flagged discrepancy with the effective-version trail visible. | Corporate-action timeline lacks provenance, trading-parameter change lacks effective-version traceability, or discrepancy resolution is recorded without explainable source/version linkage. |
+| Governance audit trail is complete across fund-ops decisions | Governance workflow endpoints (`/api/fund-structure/workspace-view`, `/api/fund-structure/report-pack-preview`, and reconciliation decision endpoints) must emit audit metadata (`AuditActor`, `AuditTimestampUtc`, `CorrelationId`) and decision rationale fields for approvals/rejections. | Operator can **search -> drill-in -> history -> resolution** for an account/entity decision, inspect prior decision history, and complete or reject resolution with rationale that remains visible in history and governed output previews. | Any governance decision path that omits actor/timestamp/correlation, fails to retain decision rationale, or breaks history-to-resolution linkage between workspace and governed-output views. |
 
 ---
 

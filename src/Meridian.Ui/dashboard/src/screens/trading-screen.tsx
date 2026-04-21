@@ -11,9 +11,9 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionControls, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { ExecutionAuditEntry, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -135,6 +135,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
           occurredAt: new Date().toISOString()
         };
       }
+      await refreshExecutionControls();
       setConfirm((prev) => ({ ...prev, busy: false, result }));
     } catch (err) {
       setConfirm((prev) => ({
@@ -159,6 +160,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [selectedSessionDetail, setSelectedSessionDetail] = useState<PaperSessionDetail | null>(null);
   const [sessionReplayVerification, setSessionReplayVerification] = useState<PaperSessionReplayVerification | null>(null);
   const [executionAudit, setExecutionAudit] = useState<ExecutionAuditEntry[]>([]);
+  const [executionControls, setExecutionControls] = useState<ExecutionControlSnapshot | null>(null);
 
   const [replayFiles, setReplayFiles] = useState<ReplayFileRecord[]>([]);
   const [selectedReplayFile, setSelectedReplayFile] = useState("");
@@ -168,6 +170,10 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [seekMs, setSeekMs] = useState("0");
 
   const [promotionRunId, setPromotionRunId] = useState("");
+  const [promotionApprovedBy, setPromotionApprovedBy] = useState("");
+  const [promotionApprovalReason, setPromotionApprovalReason] = useState("");
+  const [promotionReviewNotes, setPromotionReviewNotes] = useState("");
+  const [promotionManualOverrideId, setPromotionManualOverrideId] = useState("");
   const [promotionEval, setPromotionEval] = useState<PromotionEvaluationResult | null>(null);
   const [promotionHistory, setPromotionHistory] = useState<PromotionRecord[]>([]);
   const [promotionError, setPromotionError] = useState<string | null>(null);
@@ -180,6 +186,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setExecutionAudit(entries);
     } catch {
       setExecutionAudit([]);
+    }
+  }
+
+  async function refreshExecutionControls() {
+    try {
+      const snapshot = await getExecutionControls();
+      setExecutionControls(snapshot);
+    } catch {
+      setExecutionControls(null);
     }
   }
 
@@ -199,6 +214,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       .then(setPromotionHistory)
       .catch(() => { /* history unavailable */ });
     void refreshExecutionAudit();
+    void refreshExecutionControls();
   }, []);
 
   async function handleSubmitOrder(e: React.FormEvent) {
@@ -210,6 +226,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
         setOrderState({ phase: "submitted", orderId: result.orderId, error: null });
         setShowOrderForm(false);
         setOrderForm({ symbol: "", side: "Buy", type: "Market", quantity: 0, limitPrice: null });
+        await refreshExecutionControls();
       } else {
         setOrderState({ phase: "error", orderId: null, error: result.reason ?? "Order failed." });
       }
@@ -265,6 +282,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
         };
       });
       await refreshExecutionAudit();
+      await refreshExecutionControls();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
     }
@@ -293,6 +311,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       setSelectedSessionDetail(detail);
       setSessionReplayVerification(verification);
       await refreshExecutionAudit();
+      await refreshExecutionControls();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to verify session replay.");
     }
@@ -346,11 +365,20 @@ export function TradingScreen({ data }: TradingScreenProps) {
   }
 
   async function handlePromoteToPaper() {
-    if (!promotionEval?.isEligible || !promotionRunId.trim()) return;
+    if (!promotionEval?.isEligible || !promotionRunId.trim() || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()) {
+      setPromotionError("Approver and approval reason are required.");
+      return;
+    }
     setPromotionBusy(true);
     setPromotionError(null);
     try {
-      const result = await approvePromotion(promotionRunId.trim(), "Approved from trading workstation promotion gate.");
+      const result = await approvePromotion({
+        runId: promotionRunId.trim(),
+        approvedBy: promotionApprovedBy.trim(),
+        approvalReason: promotionApprovalReason.trim(),
+        reviewNotes: promotionReviewNotes.trim() || undefined,
+        manualOverrideId: promotionManualOverrideId.trim() || undefined
+      });
       setPromotionResult(result.success ? `Promoted. Promotion ID: ${result.promotionId ?? "n/a"}` : result.reason);
       const history = await getPromotionHistory();
       setPromotionHistory(history);
@@ -457,6 +485,40 @@ export function TradingScreen({ data }: TradingScreenProps) {
                   <li key={guardrail}>{guardrail}</li>
                 ))}
               </ul>
+            </div>
+            <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Execution controls snapshot</p>
+                <span className={cn("text-xs font-semibold uppercase tracking-[0.14em]", executionControls?.circuitBreaker.isOpen ? "text-danger" : "text-success")}>
+                  Breaker {executionControls?.circuitBreaker.isOpen ? "Open" : "Closed"}
+                </span>
+              </div>
+              {executionControls ? (
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <p>
+                    Default limit: <span className="font-mono text-foreground">{executionControls.defaultMaxPositionSize ?? "Not set"}</span>
+                  </p>
+                  <p>
+                    Symbol limits:{" "}
+                    <span className="font-mono text-foreground">
+                      {Object.keys(executionControls.symbolPositionLimits).length === 0
+                        ? "None"
+                        : Object.entries(executionControls.symbolPositionLimits).map(([symbol, limit]) => `${symbol}=${limit}`).join(", ")}
+                    </span>
+                  </p>
+                  <p>
+                    Active overrides:{" "}
+                    <span className="font-mono text-foreground">
+                      {executionControls.manualOverrides.length === 0
+                        ? "None"
+                        : executionControls.manualOverrides.map((entry) => `${entry.kind}${entry.symbol ? ` (${entry.symbol})` : ""}`).join(", ")}
+                    </span>
+                  </p>
+                  <p className="font-mono">As of {executionControls.asOf}</p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Execution controls snapshot unavailable.</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -898,6 +960,14 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     <p className="mt-1 text-xs text-muted-foreground">
                       Source: {sessionReplayVerification.replaySource} · Verified at {sessionReplayVerification.verifiedAt}
                     </p>
+                    <div className="mt-2 grid gap-1 text-xs text-foreground sm:grid-cols-2">
+                      <span>Compared fills: {sessionReplayVerification.comparedFillCount}</span>
+                      <span>Compared orders: {sessionReplayVerification.comparedOrderCount}</span>
+                      <span>Compared ledger entries: {sessionReplayVerification.comparedLedgerEntryCount}</span>
+                      <span>Verification audit: {sessionReplayVerification.verificationAuditId ?? "Unavailable"}</span>
+                      <span>Last persisted fill: {sessionReplayVerification.lastPersistedFillAt ?? "N/A"}</span>
+                      <span>Last persisted order update: {sessionReplayVerification.lastPersistedOrderUpdateAt ?? "N/A"}</span>
+                    </div>
                     {sessionReplayVerification.mismatchReasons.length > 0 && (
                       <ul className="mt-2 space-y-1 text-xs text-foreground">
                         {sessionReplayVerification.mismatchReasons.slice(0, 3).map((reason) => (
@@ -1034,9 +1104,39 @@ export function TradingScreen({ data }: TradingScreenProps) {
               onChange={(e) => setPromotionRunId(e.target.value)}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
             />
+            <input
+              aria-label="Approved by"
+              placeholder="operator id"
+              value={promotionApprovedBy}
+              onChange={(e) => setPromotionApprovedBy(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              required
+            />
+            <input
+              aria-label="Approval reason"
+              placeholder="why this promotion is approved"
+              value={promotionApprovalReason}
+              onChange={(e) => setPromotionApprovalReason(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              required
+            />
+            <input
+              aria-label="Review notes"
+              placeholder="optional review notes"
+              value={promotionReviewNotes}
+              onChange={(e) => setPromotionReviewNotes(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+            <input
+              aria-label="Manual override id"
+              placeholder="optional manual override id"
+              value={promotionManualOverrideId}
+              onChange={(e) => setPromotionManualOverrideId(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+            />
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={handleEvaluatePromotion} disabled={promotionBusy || !promotionRunId.trim()}>Evaluate gate checks</Button>
-              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible}>Confirm promote</Button>
+              <Button size="sm" onClick={handlePromoteToPaper} disabled={promotionBusy || !promotionEval?.isEligible || !promotionApprovedBy.trim() || !promotionApprovalReason.trim()}>Confirm promote</Button>
             </div>
             {promotionEval && (
               <div className="rounded-lg border border-border/60 p-3 text-xs">
@@ -1051,7 +1151,13 @@ export function TradingScreen({ data }: TradingScreenProps) {
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Audit trail</p>
               <ul className="space-y-1 text-xs">
                 {promotionHistory.slice(0, 4).map((record) => (
-                  <li key={record.promotionId} className="font-mono">{record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}</li>
+                  <li key={record.promotionId} className="font-mono">
+                    {record.promotedAt} · {record.strategyId} · {record.sourceRunType}→{record.targetRunType}
+                    {record.approvedBy ? ` · by ${record.approvedBy}` : ""}
+                    {record.approvalReason ? ` · reason: ${record.approvalReason}` : ""}
+                    {record.manualOverrideId ? ` · override: ${record.manualOverrideId}` : ""}
+                    {record.reviewNotes ? ` · notes: ${record.reviewNotes}` : ""}
+                  </li>
                 ))}
               </ul>
             </div>
