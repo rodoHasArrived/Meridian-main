@@ -9,27 +9,34 @@ namespace Meridian.Wpf.Tests.Services;
 /// Tests for <see cref="WorkspaceService"/> — workspace CRUD operations,
 /// default workspaces, session management, and import/export.
 /// </summary>
-public sealed class WorkspaceServiceTests
+public sealed class WorkspaceServiceTests : IDisposable
 {
-    private static readonly string TestSettingsFilePath = Path.Combine(
-        Path.GetTempPath(),
-        "Meridian.Wpf.Tests",
-        "workspace-service-tests",
-        "workspace-data.json");
+    private static string CreateTestSettingsFilePath()
+        => Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Wpf.Tests",
+            "workspace-service-tests",
+            $"{Guid.NewGuid():N}.workspace-data.json");
 
-    private static WorkspaceService CreateService(bool resetPersistedState = true)
+    private static WorkspaceService CreateService(string? settingsFilePath = null, bool resetPersistedState = true)
     {
-        var service = WorkspaceService.Instance;
-        WorkspaceService.SetSettingsFilePathOverrideForTests(TestSettingsFilePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(TestSettingsFilePath)!);
-        if (resetPersistedState && File.Exists(TestSettingsFilePath))
+        settingsFilePath ??= CreateTestSettingsFilePath();
+        var service = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
+        WorkspaceService.SetSettingsFilePathOverrideForTests(settingsFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
+        if (resetPersistedState && File.Exists(settingsFilePath))
         {
-            File.Delete(TestSettingsFilePath);
+            File.Delete(settingsFilePath);
         }
 
         service.ResetForTests();
         service.LoadWorkspacesAsync().GetAwaiter().GetResult();
         return service;
+    }
+
+    public void Dispose()
+    {
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
     }
 
     // ── Singleton ────────────────────────────────────────────────────
@@ -402,7 +409,8 @@ public sealed class WorkspaceServiceTests
     [Fact]
     public async Task LoadWorkspacesAsync_ShouldRoundTripCamelCasedScopedSessionFromDisk()
     {
-        var svc = CreateService();
+        var settingsFilePath = CreateTestSettingsFilePath();
+        var svc = CreateService(settingsFilePath);
 
         await svc.SaveSessionStateAsync(new SessionState
         {
@@ -415,7 +423,7 @@ public sealed class WorkspaceServiceTests
             RecentPages = new List<string> { "AddProviderWizard" }
         }, WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));
 
-        svc = CreateService(resetPersistedState: false);
+        svc = CreateService(settingsFilePath, resetPersistedState: false);
 
         var restored = svc.GetLastSessionStateForContext(
             WorkstationOperatingContext.CreateContextKey(OperatingContextScopeKind.Fund, "alpha-credit"));

@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigItem
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -53,7 +53,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Key
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Value
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -111,7 +111,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Source
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSensitive
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs

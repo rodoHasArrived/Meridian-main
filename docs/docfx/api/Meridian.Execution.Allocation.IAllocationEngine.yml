@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/IAllocationEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IAllocationEngine
     path: ../../src/Meridian.Execution/Allocation/IAllocationEngine.cs
@@ -48,7 +48,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Allocation/IAllocationEngine.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Allocate
     path: ../../src/Meridian.Execution/Allocation/IAllocationEngine.cs

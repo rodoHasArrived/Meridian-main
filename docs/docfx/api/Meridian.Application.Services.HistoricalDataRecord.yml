@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalDataRecord
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceFile
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -86,7 +86,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LineNumber
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -115,7 +115,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -173,7 +173,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventType
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
@@ -202,7 +202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RawJson
     path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs

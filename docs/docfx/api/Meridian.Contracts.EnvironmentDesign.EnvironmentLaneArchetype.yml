@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  id: EnvironmentLaneArchetype
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.AdvisoryPractice
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.Custom
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FamilyOffice
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FundPlatform
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.IndividualInvestor
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentLaneArchetype
+  nameWithType: EnvironmentLaneArchetype
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentLaneArchetype
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<EnvironmentLaneArchetype>))]
+
+      public enum EnvironmentLaneArchetype
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of EnvironmentLaneArchetype)))>
+
+      Public Enum EnvironmentLaneArchetype
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype}
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.IndividualInvestor
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.IndividualInvestor
+  id: IndividualInvestor
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  langs:
+  - csharp
+  - vb
+  name: IndividualInvestor
+  nameWithType: EnvironmentLaneArchetype.IndividualInvestor
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.IndividualInvestor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndividualInvestor
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: IndividualInvestor = 0
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.AdvisoryPractice
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.AdvisoryPractice
+  id: AdvisoryPractice
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  langs:
+  - csharp
+  - vb
+  name: AdvisoryPractice
+  nameWithType: EnvironmentLaneArchetype.AdvisoryPractice
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.AdvisoryPractice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdvisoryPractice
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: AdvisoryPractice = 1
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FamilyOffice
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FamilyOffice
+  id: FamilyOffice
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  langs:
+  - csharp
+  - vb
+  name: FamilyOffice
+  nameWithType: EnvironmentLaneArchetype.FamilyOffice
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FamilyOffice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FamilyOffice
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: FamilyOffice = 2
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FundPlatform
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FundPlatform
+  id: FundPlatform
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  langs:
+  - csharp
+  - vb
+  name: FundPlatform
+  nameWithType: EnvironmentLaneArchetype.FundPlatform
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.FundPlatform
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundPlatform
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: FundPlatform = 3
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.Custom
+  commentId: F:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.Custom
+  id: Custom
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: EnvironmentLaneArchetype.Custom
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: Custom = 4
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype.html
+  name: EnvironmentLaneArchetype
+  nameWithType: EnvironmentLaneArchetype
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype

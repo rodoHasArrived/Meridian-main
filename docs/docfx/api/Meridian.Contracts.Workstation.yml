@@ -8,6 +8,7 @@ items:
   - Meridian.Contracts.Workstation.CashFinancingSummary
   - Meridian.Contracts.Workstation.CashFlowEntryDto
   - Meridian.Contracts.Workstation.CashLadderBucketDto
+  - Meridian.Contracts.Workstation.ClosedLotSummary
   - Meridian.Contracts.Workstation.EquityCurvePoint
   - Meridian.Contracts.Workstation.EquityCurveSummary
   - Meridian.Contracts.Workstation.FundAccountSummary
@@ -16,15 +17,28 @@ items:
   - Meridian.Contracts.Workstation.FundLedgerQuery
   - Meridian.Contracts.Workstation.FundLedgerScope
   - Meridian.Contracts.Workstation.FundLedgerSummary
+  - Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  - Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
   - Meridian.Contracts.Workstation.FundOperationsNavigationContext
   - Meridian.Contracts.Workstation.FundOperationsTab
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  - Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery
   - Meridian.Contracts.Workstation.FundPortfolioPosition
   - Meridian.Contracts.Workstation.FundReconciliationItem
+  - Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  - Meridian.Contracts.Workstation.FundReportPackPreviewDto
+  - Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  - Meridian.Contracts.Workstation.FundReportingProfileDto
+  - Meridian.Contracts.Workstation.FundReportingSummaryDto
   - Meridian.Contracts.Workstation.FundTrialBalanceLine
   - Meridian.Contracts.Workstation.FundWorkspaceSummary
+  - Meridian.Contracts.Workstation.GovernanceReportKindDto
+  - Meridian.Contracts.Workstation.InsightFeed
+  - Meridian.Contracts.Workstation.InsightWidget
   - Meridian.Contracts.Workstation.LedgerJournalLine
   - Meridian.Contracts.Workstation.LedgerSummary
   - Meridian.Contracts.Workstation.LedgerTrialBalanceLine
+  - Meridian.Contracts.Workstation.OpenLotSummary
   - Meridian.Contracts.Workstation.PortfolioPositionSummary
   - Meridian.Contracts.Workstation.PortfolioSummary
   - Meridian.Contracts.Workstation.ReconciliationBreakCategory
@@ -39,6 +53,14 @@ items:
   - Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto
   - Meridian.Contracts.Workstation.ReconciliationSourceKind
   - Meridian.Contracts.Workstation.ReconciliationSummary
+  - Meridian.Contracts.Workstation.ResearchBriefingAlert
+  - Meridian.Contracts.Workstation.ResearchBriefingDto
+  - Meridian.Contracts.Workstation.ResearchBriefingRun
+  - Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+  - Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  - Meridian.Contracts.Workstation.ResearchSavedComparison
+  - Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  - Meridian.Contracts.Workstation.ResearchWhatChangedItem
   - Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest
   - Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest
   - Meridian.Contracts.Workstation.RunAttributionSummary
@@ -47,11 +69,18 @@ items:
   - Meridian.Contracts.Workstation.RunComparisonDto
   - Meridian.Contracts.Workstation.RunFillEntry
   - Meridian.Contracts.Workstation.RunFillSummary
+  - Meridian.Contracts.Workstation.RunLotSummary
   - Meridian.Contracts.Workstation.SecurityClassificationSummaryDto
   - Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto
   - Meridian.Contracts.Workstation.SecurityIdentityDrillInDto
   - Meridian.Contracts.Workstation.SecurityMasterWorkstationDto
+  - Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
   - Meridian.Contracts.Workstation.StrategyRunComparison
+  - Meridian.Contracts.Workstation.StrategyRunContinuityDetail
+  - Meridian.Contracts.Workstation.StrategyRunContinuityLineage
+  - Meridian.Contracts.Workstation.StrategyRunContinuityLink
+  - Meridian.Contracts.Workstation.StrategyRunContinuityStatus
+  - Meridian.Contracts.Workstation.StrategyRunContinuityWarning
   - Meridian.Contracts.Workstation.StrategyRunDetail
   - Meridian.Contracts.Workstation.StrategyRunEngine
   - Meridian.Contracts.Workstation.StrategyRunExecutionSummary
@@ -64,7 +93,9 @@ items:
   - Meridian.Contracts.Workstation.StrategyRunSummary
   - Meridian.Contracts.Workstation.StrategyRunTimelineEntry
   - Meridian.Contracts.Workstation.SymbolAttributionEntry
+  - Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
   - Meridian.Contracts.Workstation.WorkstationSecurityReference
+  - Meridian.Contracts.Workstation.WorkstationWatchlist
   langs:
   - csharp
   - vb
@@ -102,6 +133,7 @@ references:
   fullName: Meridian.Contracts.Workstation.FundJournalLine
 - uid: Meridian.Contracts.Workstation.FundLedgerSummary
   commentId: T:Meridian.Contracts.Workstation.FundLedgerSummary
+  parent: Meridian.Contracts.Workstation
   href: Meridian.Contracts.Workstation.FundLedgerSummary.html
   name: FundLedgerSummary
   nameWithType: FundLedgerSummary
@@ -121,6 +153,7 @@ references:
   fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext
 - uid: Meridian.Contracts.Workstation.FundWorkspaceSummary
   commentId: T:Meridian.Contracts.Workstation.FundWorkspaceSummary
+  parent: Meridian.Contracts.Workstation
   href: Meridian.Contracts.Workstation.FundWorkspaceSummary.html
   name: FundWorkspaceSummary
   nameWithType: FundWorkspaceSummary
@@ -145,6 +178,7 @@ references:
   fullName: Meridian.Contracts.Workstation.FundPortfolioPosition
 - uid: Meridian.Contracts.Workstation.CashFinancingSummary
   commentId: T:Meridian.Contracts.Workstation.CashFinancingSummary
+  parent: Meridian.Contracts.Workstation
   href: Meridian.Contracts.Workstation.CashFinancingSummary.html
   name: CashFinancingSummary
   nameWithType: CashFinancingSummary
@@ -157,6 +191,7 @@ references:
   fullName: Meridian.Contracts.Workstation.FundReconciliationItem
 - uid: Meridian.Contracts.Workstation.ReconciliationSummary
   commentId: T:Meridian.Contracts.Workstation.ReconciliationSummary
+  parent: Meridian.Contracts.Workstation
   href: Meridian.Contracts.Workstation.ReconciliationSummary.html
   name: ReconciliationSummary
   nameWithType: ReconciliationSummary
@@ -167,6 +202,71 @@ references:
   name: FundAuditEntry
   nameWithType: FundAuditEntry
   fullName: Meridian.Contracts.Workstation.FundAuditEntry
+- uid: Meridian.Contracts.Workstation.GovernanceReportKindDto
+  commentId: T:Meridian.Contracts.Workstation.GovernanceReportKindDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.GovernanceReportKindDto.html
+  name: GovernanceReportKindDto
+  nameWithType: GovernanceReportKindDto
+  fullName: Meridian.Contracts.Workstation.GovernanceReportKindDto
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery
+  commentId: T:Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery.html
+  name: FundOperationsWorkspaceQuery
+  nameWithType: FundOperationsWorkspaceQuery
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery
+- uid: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  commentId: T:Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+  href: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto.html
+  name: FundNavAssetClassExposureDto
+  nameWithType: FundNavAssetClassExposureDto
+  fullName: Meridian.Contracts.Workstation.FundNavAssetClassExposureDto
+- uid: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+  commentId: T:Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto.html
+  name: FundNavAttributionSummaryDto
+  nameWithType: FundNavAttributionSummaryDto
+  fullName: Meridian.Contracts.Workstation.FundNavAttributionSummaryDto
+- uid: Meridian.Contracts.Workstation.FundReportingProfileDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportingProfileDto
+  href: Meridian.Contracts.Workstation.FundReportingProfileDto.html
+  name: FundReportingProfileDto
+  nameWithType: FundReportingProfileDto
+  fullName: Meridian.Contracts.Workstation.FundReportingProfileDto
+- uid: Meridian.Contracts.Workstation.FundReportingSummaryDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportingSummaryDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundReportingSummaryDto.html
+  name: FundReportingSummaryDto
+  nameWithType: FundReportingSummaryDto
+  fullName: Meridian.Contracts.Workstation.FundReportingSummaryDto
+- uid: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  commentId: T:Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+  href: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto.html
+  name: FundOperationsWorkspaceDto
+  nameWithType: FundOperationsWorkspaceDto
+  fullName: Meridian.Contracts.Workstation.FundOperationsWorkspaceDto
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto.html
+  name: FundReportPackPreviewRequestDto
+  nameWithType: FundReportPackPreviewRequestDto
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  href: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.html
+  name: FundReportAssetClassSectionDto
+  nameWithType: FundReportAssetClassSectionDto
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+- uid: Meridian.Contracts.Workstation.FundReportPackPreviewDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportPackPreviewDto
+  href: Meridian.Contracts.Workstation.FundReportPackPreviewDto.html
+  name: FundReportPackPreviewDto
+  nameWithType: FundReportPackPreviewDto
+  fullName: Meridian.Contracts.Workstation.FundReportPackPreviewDto
 - uid: Meridian.Contracts.Workstation.ReconciliationSourceKind
   commentId: T:Meridian.Contracts.Workstation.ReconciliationSourceKind
   parent: Meridian.Contracts.Workstation
@@ -252,6 +352,75 @@ references:
   name: ResolveReconciliationBreakRequest
   nameWithType: ResolveReconciliationBreakRequest
   fullName: Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest
+- uid: Meridian.Contracts.Workstation.InsightWidget
+  commentId: T:Meridian.Contracts.Workstation.InsightWidget
+  href: Meridian.Contracts.Workstation.InsightWidget.html
+  name: InsightWidget
+  nameWithType: InsightWidget
+  fullName: Meridian.Contracts.Workstation.InsightWidget
+- uid: Meridian.Contracts.Workstation.InsightFeed
+  commentId: T:Meridian.Contracts.Workstation.InsightFeed
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.InsightFeed.html
+  name: InsightFeed
+  nameWithType: InsightFeed
+  fullName: Meridian.Contracts.Workstation.InsightFeed
+- uid: Meridian.Contracts.Workstation.WorkstationWatchlist
+  commentId: T:Meridian.Contracts.Workstation.WorkstationWatchlist
+  href: Meridian.Contracts.Workstation.WorkstationWatchlist.html
+  name: WorkstationWatchlist
+  nameWithType: WorkstationWatchlist
+  fullName: Meridian.Contracts.Workstation.WorkstationWatchlist
+- uid: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  commentId: T:Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ResearchRunDrillInLinks.html
+  name: ResearchRunDrillInLinks
+  nameWithType: ResearchRunDrillInLinks
+  fullName: Meridian.Contracts.Workstation.ResearchRunDrillInLinks
+- uid: Meridian.Contracts.Workstation.ResearchBriefingRun
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingRun
+  href: Meridian.Contracts.Workstation.ResearchBriefingRun.html
+  name: ResearchBriefingRun
+  nameWithType: ResearchBriefingRun
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingRun
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  commentId: T:Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+  href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html
+  name: ResearchSavedComparisonMode
+  nameWithType: ResearchSavedComparisonMode
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison
+  commentId: T:Meridian.Contracts.Workstation.ResearchSavedComparison
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html
+  name: ResearchSavedComparison
+  nameWithType: ResearchSavedComparison
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison
+- uid: Meridian.Contracts.Workstation.ResearchBriefingAlert
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingAlert
+  href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html
+  name: ResearchBriefingAlert
+  nameWithType: ResearchBriefingAlert
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingAlert
+- uid: Meridian.Contracts.Workstation.ResearchWhatChangedItem
+  commentId: T:Meridian.Contracts.Workstation.ResearchWhatChangedItem
+  href: Meridian.Contracts.Workstation.ResearchWhatChangedItem.html
+  name: ResearchWhatChangedItem
+  nameWithType: ResearchWhatChangedItem
+  fullName: Meridian.Contracts.Workstation.ResearchWhatChangedItem
+- uid: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary.html
+  name: ResearchBriefingWorkspaceSummary
+  nameWithType: ResearchBriefingWorkspaceSummary
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingDto
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html
+  name: ResearchBriefingDto
+  nameWithType: ResearchBriefingDto
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto
 - uid: Meridian.Contracts.Workstation.SecurityClassificationSummaryDto
   commentId: T:Meridian.Contracts.Workstation.SecurityClassificationSummaryDto
   parent: Meridian.Contracts.Workstation
@@ -343,6 +512,13 @@ references:
   name: StrategyRunDetail
   nameWithType: StrategyRunDetail
   fullName: Meridian.Contracts.Workstation.StrategyRunDetail
+- uid: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
+  commentId: T:Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus.html
+  name: WorkstationSecurityCoverageStatus
+  nameWithType: WorkstationSecurityCoverageStatus
+  fullName: Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus
 - uid: Meridian.Contracts.Workstation.WorkstationSecurityReference
   commentId: T:Meridian.Contracts.Workstation.WorkstationSecurityReference
   parent: Meridian.Contracts.Workstation
@@ -469,6 +645,64 @@ references:
   name: RunCashFlowSummary
   nameWithType: RunCashFlowSummary
   fullName: Meridian.Contracts.Workstation.RunCashFlowSummary
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityLink
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunContinuityLink
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityLink.html
+  name: StrategyRunContinuityLink
+  nameWithType: StrategyRunContinuityLink
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityLink
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityLineage
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunContinuityLineage
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityLineage.html
+  name: StrategyRunContinuityLineage
+  nameWithType: StrategyRunContinuityLineage
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityLineage
+- uid: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest.html
+  name: StrategyRunCashFlowDigest
+  nameWithType: StrategyRunCashFlowDigest
+  fullName: Meridian.Contracts.Workstation.StrategyRunCashFlowDigest
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityWarning.html
+  name: StrategyRunContinuityWarning
+  nameWithType: StrategyRunContinuityWarning
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityWarning
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityStatus
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunContinuityStatus
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityStatus.html
+  name: StrategyRunContinuityStatus
+  nameWithType: StrategyRunContinuityStatus
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityStatus
+- uid: Meridian.Contracts.Workstation.StrategyRunContinuityDetail
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunContinuityDetail
+  href: Meridian.Contracts.Workstation.StrategyRunContinuityDetail.html
+  name: StrategyRunContinuityDetail
+  nameWithType: StrategyRunContinuityDetail
+  fullName: Meridian.Contracts.Workstation.StrategyRunContinuityDetail
+- uid: Meridian.Contracts.Workstation.OpenLotSummary
+  commentId: T:Meridian.Contracts.Workstation.OpenLotSummary
+  href: Meridian.Contracts.Workstation.OpenLotSummary.html
+  name: OpenLotSummary
+  nameWithType: OpenLotSummary
+  fullName: Meridian.Contracts.Workstation.OpenLotSummary
+- uid: Meridian.Contracts.Workstation.ClosedLotSummary
+  commentId: T:Meridian.Contracts.Workstation.ClosedLotSummary
+  href: Meridian.Contracts.Workstation.ClosedLotSummary.html
+  name: ClosedLotSummary
+  nameWithType: ClosedLotSummary
+  fullName: Meridian.Contracts.Workstation.ClosedLotSummary
+- uid: Meridian.Contracts.Workstation.RunLotSummary
+  commentId: T:Meridian.Contracts.Workstation.RunLotSummary
+  href: Meridian.Contracts.Workstation.RunLotSummary.html
+  name: RunLotSummary
+  nameWithType: RunLotSummary
+  fullName: Meridian.Contracts.Workstation.RunLotSummary
 - uid: Meridian.Contracts.Workstation
   commentId: N:Meridian.Contracts.Workstation
   href: Meridian.html

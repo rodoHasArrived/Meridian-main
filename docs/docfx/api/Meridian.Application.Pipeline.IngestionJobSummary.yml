@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionJobSummary
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DraftJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QueuedJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunningJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PausedJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -237,7 +237,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailedJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelledJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -295,7 +295,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResumableJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -324,7 +324,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealtimeJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -353,7 +353,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs
@@ -382,7 +382,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/IngestionJobService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GapFillJobs
     path: ../../src/Meridian.Application/Pipeline/IngestionJobService.cs

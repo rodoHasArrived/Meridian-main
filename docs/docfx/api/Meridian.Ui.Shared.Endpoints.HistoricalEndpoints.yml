@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HistoricalEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
-    startLine: 13
+    startLine: 12
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -58,11 +58,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapHistoricalEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
-    startLine: 18
+    startLine: 17
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints
@@ -92,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapAlignmentEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
-    startLine: 108
+    startLine: 107
   assemblies:
   - Meridian.Ui.Shared
   namespace: Meridian.Ui.Shared.Endpoints

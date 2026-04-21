@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyParameterInfo
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PropertyName
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParameterType
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs

@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CoveredCallOverwriteStrategy
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnderlyingSymbol
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Params
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedTrades
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenPositions
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metrics
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTrade
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -409,7 +409,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnQuote
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnBar
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -479,7 +479,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderBook
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -514,7 +514,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnOrderFill
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -549,7 +549,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnDayEnd
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
@@ -587,7 +587,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnFinished
     path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/CoveredCallOverwriteStrategy.cs

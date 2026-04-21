@@ -21,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolAnalyticsInfo
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 434
+    startLine: 421
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -60,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 436
+    startLine: 423
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -89,11 +89,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SizeBytes
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 437
+    startLine: 424
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -118,11 +118,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FileCount
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 438
+    startLine: 425
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -147,11 +147,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OldestData
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 439
+    startLine: 426
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -176,11 +176,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewestData
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 440
+    startLine: 427
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -205,11 +205,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PercentOfTotal
     path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
-    startLine: 441
+    startLine: 428
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

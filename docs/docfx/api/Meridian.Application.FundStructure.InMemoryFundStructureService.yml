@@ -1,0 +1,2542 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService
+  commentId: T:Meridian.Application.FundStructure.InMemoryFundStructureService
+  id: InMemoryFundStructureService
+  parent: Meridian.Application.FundStructure
+  children:
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,System.String)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,System.String)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,System.String)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+  - Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: InMemoryFundStructureService
+  nameWithType: InMemoryFundStructureService
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InMemoryFundStructureService
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  summary: >-
+    Thread-safe governance structure service backed by an in-memory working set
+
+    with optional durable JSON snapshot persistence for local-first workflows.
+  example: []
+  syntax:
+    content: 'public sealed class InMemoryFundStructureService : IFundStructureService'
+    content.vb: Public NotInheritable Class InMemoryFundStructureService Implements IFundStructureService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService)
+  id: '#ctor(Meridian.Application.FundAccounts.IFundAccountService)'
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: InMemoryFundStructureService(IFundAccountService)
+  nameWithType: InMemoryFundStructureService.InMemoryFundStructureService(IFundAccountService)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.InMemoryFundStructureService(Meridian.Application.FundAccounts.IFundAccountService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  syntax:
+    content: public InMemoryFundStructureService(IFundAccountService fundAccountService)
+    parameters:
+    - id: fundAccountService
+      type: Meridian.Application.FundAccounts.IFundAccountService
+    content.vb: Public Sub New(fundAccountService As IFundAccountService)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor*
+  nameWithType.vb: InMemoryFundStructureService.New(IFundAccountService)
+  fullName.vb: Meridian.Application.FundStructure.InMemoryFundStructureService.New(Meridian.Application.FundAccounts.IFundAccountService)
+  name.vb: New(IFundAccountService)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,System.String)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,System.String)
+  id: '#ctor(Meridian.Application.FundAccounts.IFundAccountService,System.String)'
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: InMemoryFundStructureService(IFundAccountService, string?)
+  nameWithType: InMemoryFundStructureService.InMemoryFundStructureService(IFundAccountService, string?)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.InMemoryFundStructureService(Meridian.Application.FundAccounts.IFundAccountService, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  syntax:
+    content: public InMemoryFundStructureService(IFundAccountService fundAccountService, string? persistencePath)
+    parameters:
+    - id: fundAccountService
+      type: Meridian.Application.FundAccounts.IFundAccountService
+    - id: persistencePath
+      type: System.String
+    content.vb: Public Sub New(fundAccountService As IFundAccountService, persistencePath As String)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor*
+  nameWithType.vb: InMemoryFundStructureService.New(IFundAccountService, String)
+  fullName.vb: Meridian.Application.FundStructure.InMemoryFundStructureService.New(Meridian.Application.FundAccounts.IFundAccountService, String)
+  name.vb: New(IFundAccountService, String)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,System.String)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,System.String)
+  id: '#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,System.String)'
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: InMemoryFundStructureService(IFundAccountService, IGovernanceSharedDataAccessService?, string?)
+  nameWithType: InMemoryFundStructureService.InMemoryFundStructureService(IFundAccountService, IGovernanceSharedDataAccessService?, string?)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.InMemoryFundStructureService(Meridian.Application.FundAccounts.IFundAccountService, Meridian.Application.FundStructure.IGovernanceSharedDataAccessService?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  syntax:
+    content: public InMemoryFundStructureService(IFundAccountService fundAccountService, IGovernanceSharedDataAccessService? sharedDataAccessService, string? persistencePath)
+    parameters:
+    - id: fundAccountService
+      type: Meridian.Application.FundAccounts.IFundAccountService
+    - id: sharedDataAccessService
+      type: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+    - id: persistencePath
+      type: System.String
+    content.vb: Public Sub New(fundAccountService As IFundAccountService, sharedDataAccessService As IGovernanceSharedDataAccessService, persistencePath As String)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor*
+  nameWithType.vb: InMemoryFundStructureService.New(IFundAccountService, IGovernanceSharedDataAccessService, String)
+  fullName.vb: Meridian.Application.FundStructure.InMemoryFundStructureService.New(Meridian.Application.FundAccounts.IFundAccountService, Meridian.Application.FundStructure.IGovernanceSharedDataAccessService, String)
+  name.vb: New(IFundAccountService, IGovernanceSharedDataAccessService, String)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,System.String)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,System.String)
+  id: '#ctor(Meridian.Application.FundAccounts.IFundAccountService,Meridian.Application.FundStructure.IGovernanceSharedDataAccessService,Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,System.String)'
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: InMemoryFundStructureService(IFundAccountService, IGovernanceSharedDataAccessService?, ISecurityMasterQueryService?, string?)
+  nameWithType: InMemoryFundStructureService.InMemoryFundStructureService(IFundAccountService, IGovernanceSharedDataAccessService?, ISecurityMasterQueryService?, string?)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.InMemoryFundStructureService(Meridian.Application.FundAccounts.IFundAccountService, Meridian.Application.FundStructure.IGovernanceSharedDataAccessService?, Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  syntax:
+    content: public InMemoryFundStructureService(IFundAccountService fundAccountService, IGovernanceSharedDataAccessService? sharedDataAccessService, ISecurityMasterQueryService? securityMasterQueryService, string? persistencePath)
+    parameters:
+    - id: fundAccountService
+      type: Meridian.Application.FundAccounts.IFundAccountService
+    - id: sharedDataAccessService
+      type: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+    - id: securityMasterQueryService
+      type: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+    - id: persistencePath
+      type: System.String
+    content.vb: Public Sub New(fundAccountService As IFundAccountService, sharedDataAccessService As IGovernanceSharedDataAccessService, securityMasterQueryService As ISecurityMasterQueryService, persistencePath As String)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor*
+  nameWithType.vb: InMemoryFundStructureService.New(IFundAccountService, IGovernanceSharedDataAccessService, ISecurityMasterQueryService, String)
+  fullName.vb: Meridian.Application.FundStructure.InMemoryFundStructureService.New(Meridian.Application.FundAccounts.IFundAccountService, Meridian.Application.FundStructure.IGovernanceSharedDataAccessService, Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, String)
+  name.vb: New(IFundAccountService, IGovernanceSharedDataAccessService, ISecurityMasterQueryService, String)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+  id: CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateOrganizationAsync(CreateOrganizationRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateOrganizationAsync(CreateOrganizationRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateOrganizationAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<OrganizationSummaryDto> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OrganizationSummaryDto}
+    content.vb: Public Function CreateOrganizationAsync(request As CreateOrganizationRequest, ct As CancellationToken = Nothing) As Task(Of OrganizationSummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+  id: CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateBusinessAsync(CreateBusinessRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateBusinessAsync(CreateBusinessRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateBusinessAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<BusinessSummaryDto> CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateBusinessRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.BusinessSummaryDto}
+    content.vb: Public Function CreateBusinessAsync(request As CreateBusinessRequest, ct As CancellationToken = Nothing) As Task(Of BusinessSummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+  id: CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateClientAsync(CreateClientRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateClientAsync(CreateClientRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateClientAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<ClientSummaryDto> CreateClientAsync(CreateClientRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateClientRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.ClientSummaryDto}
+    content.vb: Public Function CreateClientAsync(request As CreateClientRequest, ct As CancellationToken = Nothing) As Task(Of ClientSummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+  id: CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateFundAsync(CreateFundRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateFundAsync(CreateFundRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateFundAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<FundSummaryDto> CreateFundAsync(CreateFundRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateFundRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundSummaryDto}
+    content.vb: Public Function CreateFundAsync(request As CreateFundRequest, ct As CancellationToken = Nothing) As Task(Of FundSummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+  id: CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateSleeveAsync(CreateSleeveRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateSleeveAsync(CreateSleeveRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSleeveAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<SleeveSummaryDto> CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateSleeveRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.SleeveSummaryDto}
+    content.vb: Public Function CreateSleeveAsync(request As CreateSleeveRequest, ct As CancellationToken = Nothing) As Task(Of SleeveSummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+  id: CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateVehicleAsync(CreateVehicleRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateVehicleAsync(CreateVehicleRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateVehicleAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<VehicleSummaryDto> CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateVehicleRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.VehicleSummaryDto}
+    content.vb: Public Function CreateVehicleAsync(request As CreateVehicleRequest, ct As CancellationToken = Nothing) As Task(Of VehicleSummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+  id: CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateLegalEntityAsync(CreateLegalEntityRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateLegalEntityAsync(CreateLegalEntityRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateLegalEntityAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<LegalEntitySummaryDto> CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.LegalEntitySummaryDto}
+    content.vb: Public Function CreateLegalEntityAsync(request As CreateLegalEntityRequest, ct As CancellationToken = Nothing) As Task(Of LegalEntitySummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+  id: CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateInvestmentPortfolioAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 375
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<InvestmentPortfolioSummaryDto> CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto}
+    content.vb: Public Function CreateInvestmentPortfolioAsync(request As CreateInvestmentPortfolioRequest, ct As CancellationToken = Nothing) As Task(Of InvestmentPortfolioSummaryDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+  id: LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: LinkNodesAsync(LinkFundStructureNodesRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.LinkNodesAsync(LinkFundStructureNodesRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LinkNodesAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 498
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<OwnershipLinkDto> LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OwnershipLinkDto}
+    content.vb: Public Function LinkNodesAsync(request As LinkFundStructureNodesRequest, ct As CancellationToken = Nothing) As Task(Of OwnershipLinkDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+  id: AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: AssignNodeAsync(AssignFundStructureNodeRequest, CancellationToken)
+  nameWithType: InMemoryFundStructureService.AssignNodeAsync(AssignFundStructureNodeRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssignNodeAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 557
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<FundStructureAssignmentDto> AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureAssignmentDto}
+    content.vb: Public Function AssignNodeAsync(request As AssignFundStructureNodeRequest, ct As CancellationToken = Nothing) As Task(Of FundStructureAssignmentDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+  id: GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: GetOrganizationStructureAsync(OrganizationStructureQuery, CancellationToken)
+  nameWithType: InMemoryFundStructureService.GetOrganizationStructureAsync(OrganizationStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrganizationStructureAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<OrganizationStructureGraphDto> GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OrganizationStructureGraphDto}
+    content.vb: Public Function GetOrganizationStructureAsync(query As OrganizationStructureQuery, ct As CancellationToken = Nothing) As Task(Of OrganizationStructureGraphDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+  id: GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: GetFundStructureGraphAsync(FundStructureQuery, CancellationToken)
+  nameWithType: InMemoryFundStructureService.GetFundStructureGraphAsync(FundStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFundStructureGraphAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 652
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<FundStructureGraphDto> GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.FundStructure.FundStructureQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureGraphDto}
+    content.vb: Public Function GetFundStructureGraphAsync(query As FundStructureQuery, ct As CancellationToken = Nothing) As Task(Of FundStructureGraphDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+  id: GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: GetAdvisoryViewAsync(AdvisoryStructureQuery, CancellationToken)
+  nameWithType: InMemoryFundStructureService.GetAdvisoryViewAsync(AdvisoryStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAdvisoryViewAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 738
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<AdvisoryStructureViewDto?> GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AdvisoryStructureViewDto}
+    content.vb: Public Function GetAdvisoryViewAsync(query As AdvisoryStructureQuery, ct As CancellationToken = Nothing) As Task(Of AdvisoryStructureViewDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+  id: GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: GetFundOperatingViewAsync(FundOperatingStructureQuery, CancellationToken)
+  nameWithType: InMemoryFundStructureService.GetFundOperatingViewAsync(FundOperatingStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFundOperatingViewAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 834
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<FundOperatingViewDto?> GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundOperatingViewDto}
+    content.vb: Public Function GetFundOperatingViewAsync(query As FundOperatingStructureQuery, ct As CancellationToken = Nothing) As Task(Of FundOperatingViewDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+  id: GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: GetAccountingViewAsync(AccountingStructureQuery, CancellationToken)
+  nameWithType: InMemoryFundStructureService.GetAccountingViewAsync(AccountingStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAccountingViewAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 987
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<AccountingStructureViewDto> GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.FundStructure.AccountingStructureQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AccountingStructureViewDto}
+    content.vb: Public Function GetAccountingViewAsync(query As AccountingStructureQuery, ct As CancellationToken = Nothing) As Task(Of AccountingStructureViewDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+  id: GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.InMemoryFundStructureService
+  langs:
+  - csharp
+  - vb
+  name: GetCashFlowViewAsync(GovernanceCashFlowQuery, CancellationToken)
+  nameWithType: InMemoryFundStructureService.GetCashFlowViewAsync(GovernanceCashFlowQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCashFlowViewAsync
+    path: ../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs
+    startLine: 1089
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.FundStructure
+  example: []
+  syntax:
+    content: public Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto}
+    content.vb: Public Function GetCashFlowViewAsync(query As GovernanceCashFlowQuery, ct As CancellationToken = Nothing) As Task(Of GovernanceCashFlowViewDto)
+  overload: Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync*
+  implements:
+  - Meridian.Application.FundStructure.IFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.FundStructure
+  commentId: N:Meridian.Application.FundStructure
+  href: Meridian.html
+  name: Meridian.Application.FundStructure
+  nameWithType: Meridian.Application.FundStructure
+  fullName: Meridian.Application.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundStructure
+    name: FundStructure
+    href: Meridian.Application.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundStructure
+    name: FundStructure
+    href: Meridian.Application.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.FundStructure.IFundStructureService
+  commentId: T:Meridian.Application.FundStructure.IFundStructureService
+  parent: Meridian.Application.FundStructure
+  href: Meridian.Application.FundStructure.IFundStructureService.html
+  name: IFundStructureService
+  nameWithType: IFundStructureService
+  fullName: Meridian.Application.FundStructure.IFundStructureService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.#ctor
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService__ctor_Meridian_Application_FundAccounts_IFundAccountService_
+  name: InMemoryFundStructureService
+  nameWithType: InMemoryFundStructureService.InMemoryFundStructureService
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.InMemoryFundStructureService
+  nameWithType.vb: InMemoryFundStructureService.New
+  fullName.vb: Meridian.Application.FundStructure.InMemoryFundStructureService.New
+  name.vb: New
+- uid: Meridian.Application.FundAccounts.IFundAccountService
+  commentId: T:Meridian.Application.FundAccounts.IFundAccountService
+  parent: Meridian.Application.FundAccounts
+  href: Meridian.Application.FundAccounts.IFundAccountService.html
+  name: IFundAccountService
+  nameWithType: IFundAccountService
+  fullName: Meridian.Application.FundAccounts.IFundAccountService
+- uid: Meridian.Application.FundAccounts
+  commentId: N:Meridian.Application.FundAccounts
+  href: Meridian.html
+  name: Meridian.Application.FundAccounts
+  nameWithType: Meridian.Application.FundAccounts
+  fullName: Meridian.Application.FundAccounts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundAccounts
+    name: FundAccounts
+    href: Meridian.Application.FundAccounts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.FundAccounts
+    name: FundAccounts
+    href: Meridian.Application.FundAccounts.html
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  commentId: T:Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+  parent: Meridian.Application.FundStructure
+  href: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService.html
+  name: IGovernanceSharedDataAccessService
+  nameWithType: IGovernanceSharedDataAccessService
+  fullName: Meridian.Application.FundStructure.IGovernanceSharedDataAccessService
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService.html
+  name: ISecurityMasterQueryService
+  nameWithType: ISecurityMasterQueryService
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateOrganizationAsync_Meridian_Contracts_FundStructure_CreateOrganizationRequest_System_Threading_CancellationToken_
+  name: CreateOrganizationAsync
+  nameWithType: InMemoryFundStructureService.CreateOrganizationAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateOrganizationAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateOrganizationAsync_Meridian_Contracts_FundStructure_CreateOrganizationRequest_System_Threading_CancellationToken_
+  name: CreateOrganizationAsync(CreateOrganizationRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateOrganizationAsync(CreateOrganizationRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+    name: CreateOrganizationAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateOrganizationAsync_Meridian_Contracts_FundStructure_CreateOrganizationRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+    name: CreateOrganizationRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateOrganizationAsync(Meridian.Contracts.FundStructure.CreateOrganizationRequest,System.Threading.CancellationToken)
+    name: CreateOrganizationAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateOrganizationAsync_Meridian_Contracts_FundStructure_CreateOrganizationRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+    name: CreateOrganizationRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateOrganizationRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateOrganizationRequest.html
+  name: CreateOrganizationRequest
+  nameWithType: CreateOrganizationRequest
+  fullName: Meridian.Contracts.FundStructure.CreateOrganizationRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OrganizationSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OrganizationSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrganizationSummaryDto>
+  nameWithType: Task<OrganizationSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.OrganizationSummaryDto>
+  nameWithType.vb: Task(Of OrganizationSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.OrganizationSummaryDto)
+  name.vb: Task(Of OrganizationSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+    name: OrganizationSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.OrganizationSummaryDto
+    name: OrganizationSummaryDto
+  - name: )
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateBusinessAsync_Meridian_Contracts_FundStructure_CreateBusinessRequest_System_Threading_CancellationToken_
+  name: CreateBusinessAsync
+  nameWithType: InMemoryFundStructureService.CreateBusinessAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateBusinessAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateBusinessAsync_Meridian_Contracts_FundStructure_CreateBusinessRequest_System_Threading_CancellationToken_
+  name: CreateBusinessAsync(CreateBusinessRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateBusinessAsync(CreateBusinessRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+    name: CreateBusinessAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateBusinessAsync_Meridian_Contracts_FundStructure_CreateBusinessRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+    name: CreateBusinessRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateBusinessAsync(Meridian.Contracts.FundStructure.CreateBusinessRequest,System.Threading.CancellationToken)
+    name: CreateBusinessAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateBusinessAsync_Meridian_Contracts_FundStructure_CreateBusinessRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+    name: CreateBusinessRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateBusinessRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateBusinessRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateBusinessRequest.html
+  name: CreateBusinessRequest
+  nameWithType: CreateBusinessRequest
+  fullName: Meridian.Contracts.FundStructure.CreateBusinessRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.BusinessSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.BusinessSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BusinessSummaryDto>
+  nameWithType: Task<BusinessSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.BusinessSummaryDto>
+  nameWithType.vb: Task(Of BusinessSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.BusinessSummaryDto)
+  name.vb: Task(Of BusinessSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.BusinessSummaryDto
+    name: BusinessSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.BusinessSummaryDto
+    name: BusinessSummaryDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateClientAsync_Meridian_Contracts_FundStructure_CreateClientRequest_System_Threading_CancellationToken_
+  name: CreateClientAsync
+  nameWithType: InMemoryFundStructureService.CreateClientAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateClientAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateClientAsync_Meridian_Contracts_FundStructure_CreateClientRequest_System_Threading_CancellationToken_
+  name: CreateClientAsync(CreateClientRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateClientAsync(CreateClientRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+    name: CreateClientAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateClientAsync_Meridian_Contracts_FundStructure_CreateClientRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateClientRequest
+    name: CreateClientRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateClientAsync(Meridian.Contracts.FundStructure.CreateClientRequest,System.Threading.CancellationToken)
+    name: CreateClientAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateClientAsync_Meridian_Contracts_FundStructure_CreateClientRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateClientRequest
+    name: CreateClientRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateClientRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateClientRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateClientRequest.html
+  name: CreateClientRequest
+  nameWithType: CreateClientRequest
+  fullName: Meridian.Contracts.FundStructure.CreateClientRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.ClientSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.ClientSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ClientSummaryDto>
+  nameWithType: Task<ClientSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.ClientSummaryDto>
+  nameWithType.vb: Task(Of ClientSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.ClientSummaryDto)
+  name.vb: Task(Of ClientSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.ClientSummaryDto
+    name: ClientSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.ClientSummaryDto
+    name: ClientSummaryDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateFundAsync_Meridian_Contracts_FundStructure_CreateFundRequest_System_Threading_CancellationToken_
+  name: CreateFundAsync
+  nameWithType: InMemoryFundStructureService.CreateFundAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateFundAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateFundAsync_Meridian_Contracts_FundStructure_CreateFundRequest_System_Threading_CancellationToken_
+  name: CreateFundAsync(CreateFundRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateFundAsync(CreateFundRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+    name: CreateFundAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateFundAsync_Meridian_Contracts_FundStructure_CreateFundRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateFundRequest
+    name: CreateFundRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateFundAsync(Meridian.Contracts.FundStructure.CreateFundRequest,System.Threading.CancellationToken)
+    name: CreateFundAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateFundAsync_Meridian_Contracts_FundStructure_CreateFundRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateFundRequest
+    name: CreateFundRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateFundRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateFundRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateFundRequest.html
+  name: CreateFundRequest
+  nameWithType: CreateFundRequest
+  fullName: Meridian.Contracts.FundStructure.CreateFundRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FundSummaryDto>
+  nameWithType: Task<FundSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.FundSummaryDto>
+  nameWithType.vb: Task(Of FundSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.FundSummaryDto)
+  name.vb: Task(Of FundSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundSummaryDto
+    name: FundSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundSummaryDto
+    name: FundSummaryDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateSleeveAsync_Meridian_Contracts_FundStructure_CreateSleeveRequest_System_Threading_CancellationToken_
+  name: CreateSleeveAsync
+  nameWithType: InMemoryFundStructureService.CreateSleeveAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateSleeveAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateSleeveAsync_Meridian_Contracts_FundStructure_CreateSleeveRequest_System_Threading_CancellationToken_
+  name: CreateSleeveAsync(CreateSleeveRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateSleeveAsync(CreateSleeveRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+    name: CreateSleeveAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateSleeveAsync_Meridian_Contracts_FundStructure_CreateSleeveRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
+    name: CreateSleeveRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateSleeveAsync(Meridian.Contracts.FundStructure.CreateSleeveRequest,System.Threading.CancellationToken)
+    name: CreateSleeveAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateSleeveAsync_Meridian_Contracts_FundStructure_CreateSleeveRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
+    name: CreateSleeveRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateSleeveRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateSleeveRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateSleeveRequest.html
+  name: CreateSleeveRequest
+  nameWithType: CreateSleeveRequest
+  fullName: Meridian.Contracts.FundStructure.CreateSleeveRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.SleeveSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.SleeveSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SleeveSummaryDto>
+  nameWithType: Task<SleeveSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.SleeveSummaryDto>
+  nameWithType.vb: Task(Of SleeveSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.SleeveSummaryDto)
+  name.vb: Task(Of SleeveSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.SleeveSummaryDto
+    name: SleeveSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.SleeveSummaryDto
+    name: SleeveSummaryDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateVehicleAsync_Meridian_Contracts_FundStructure_CreateVehicleRequest_System_Threading_CancellationToken_
+  name: CreateVehicleAsync
+  nameWithType: InMemoryFundStructureService.CreateVehicleAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateVehicleAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateVehicleAsync_Meridian_Contracts_FundStructure_CreateVehicleRequest_System_Threading_CancellationToken_
+  name: CreateVehicleAsync(CreateVehicleRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateVehicleAsync(CreateVehicleRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+    name: CreateVehicleAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateVehicleAsync_Meridian_Contracts_FundStructure_CreateVehicleRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
+    name: CreateVehicleRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateVehicleAsync(Meridian.Contracts.FundStructure.CreateVehicleRequest,System.Threading.CancellationToken)
+    name: CreateVehicleAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateVehicleAsync_Meridian_Contracts_FundStructure_CreateVehicleRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
+    name: CreateVehicleRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateVehicleRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateVehicleRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateVehicleRequest.html
+  name: CreateVehicleRequest
+  nameWithType: CreateVehicleRequest
+  fullName: Meridian.Contracts.FundStructure.CreateVehicleRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.VehicleSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.VehicleSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<VehicleSummaryDto>
+  nameWithType: Task<VehicleSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.VehicleSummaryDto>
+  nameWithType.vb: Task(Of VehicleSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.VehicleSummaryDto)
+  name.vb: Task(Of VehicleSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.VehicleSummaryDto
+    name: VehicleSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.VehicleSummaryDto
+    name: VehicleSummaryDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateLegalEntityAsync_Meridian_Contracts_FundStructure_CreateLegalEntityRequest_System_Threading_CancellationToken_
+  name: CreateLegalEntityAsync
+  nameWithType: InMemoryFundStructureService.CreateLegalEntityAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateLegalEntityAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateLegalEntityAsync_Meridian_Contracts_FundStructure_CreateLegalEntityRequest_System_Threading_CancellationToken_
+  name: CreateLegalEntityAsync(CreateLegalEntityRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateLegalEntityAsync(CreateLegalEntityRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+    name: CreateLegalEntityAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateLegalEntityAsync_Meridian_Contracts_FundStructure_CreateLegalEntityRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+    name: CreateLegalEntityRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateLegalEntityAsync(Meridian.Contracts.FundStructure.CreateLegalEntityRequest,System.Threading.CancellationToken)
+    name: CreateLegalEntityAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateLegalEntityAsync_Meridian_Contracts_FundStructure_CreateLegalEntityRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+    name: CreateLegalEntityRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateLegalEntityRequest.html
+  name: CreateLegalEntityRequest
+  nameWithType: CreateLegalEntityRequest
+  fullName: Meridian.Contracts.FundStructure.CreateLegalEntityRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.LegalEntitySummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.LegalEntitySummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LegalEntitySummaryDto>
+  nameWithType: Task<LegalEntitySummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.LegalEntitySummaryDto>
+  nameWithType.vb: Task(Of LegalEntitySummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.LegalEntitySummaryDto)
+  name.vb: Task(Of LegalEntitySummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+    name: LegalEntitySummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+    name: LegalEntitySummaryDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_CreateInvestmentPortfolioAsync_Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_System_Threading_CancellationToken_
+  name: CreateInvestmentPortfolioAsync
+  nameWithType: InMemoryFundStructureService.CreateInvestmentPortfolioAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.CreateInvestmentPortfolioAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateInvestmentPortfolioAsync_Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_System_Threading_CancellationToken_
+  name: CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest, CancellationToken)
+  nameWithType: IFundStructureService.CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+    name: CreateInvestmentPortfolioAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateInvestmentPortfolioAsync_Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+    name: CreateInvestmentPortfolioRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.CreateInvestmentPortfolioAsync(Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest,System.Threading.CancellationToken)
+    name: CreateInvestmentPortfolioAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_CreateInvestmentPortfolioAsync_Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+    name: CreateInvestmentPortfolioRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html
+  name: CreateInvestmentPortfolioRequest
+  nameWithType: CreateInvestmentPortfolioRequest
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<InvestmentPortfolioSummaryDto>
+  nameWithType: Task<InvestmentPortfolioSummaryDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto>
+  nameWithType.vb: Task(Of InvestmentPortfolioSummaryDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto)
+  name.vb: Task(Of InvestmentPortfolioSummaryDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+    name: InvestmentPortfolioSummaryDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto
+    name: InvestmentPortfolioSummaryDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_LinkNodesAsync_Meridian_Contracts_FundStructure_LinkFundStructureNodesRequest_System_Threading_CancellationToken_
+  name: LinkNodesAsync
+  nameWithType: InMemoryFundStructureService.LinkNodesAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.LinkNodesAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_LinkNodesAsync_Meridian_Contracts_FundStructure_LinkFundStructureNodesRequest_System_Threading_CancellationToken_
+  name: LinkNodesAsync(LinkFundStructureNodesRequest, CancellationToken)
+  nameWithType: IFundStructureService.LinkNodesAsync(LinkFundStructureNodesRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+    name: LinkNodesAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_LinkNodesAsync_Meridian_Contracts_FundStructure_LinkFundStructureNodesRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+    name: LinkFundStructureNodesRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.LinkNodesAsync(Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest,System.Threading.CancellationToken)
+    name: LinkNodesAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_LinkNodesAsync_Meridian_Contracts_FundStructure_LinkFundStructureNodesRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+    name: LinkFundStructureNodesRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+  commentId: T:Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest.html
+  name: LinkFundStructureNodesRequest
+  nameWithType: LinkFundStructureNodesRequest
+  fullName: Meridian.Contracts.FundStructure.LinkFundStructureNodesRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OwnershipLinkDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OwnershipLinkDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OwnershipLinkDto>
+  nameWithType: Task<OwnershipLinkDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.OwnershipLinkDto>
+  nameWithType.vb: Task(Of OwnershipLinkDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.OwnershipLinkDto)
+  name.vb: Task(Of OwnershipLinkDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.OwnershipLinkDto
+    name: OwnershipLinkDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.OwnershipLinkDto
+    name: OwnershipLinkDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_AssignNodeAsync_Meridian_Contracts_FundStructure_AssignFundStructureNodeRequest_System_Threading_CancellationToken_
+  name: AssignNodeAsync
+  nameWithType: InMemoryFundStructureService.AssignNodeAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.AssignNodeAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_AssignNodeAsync_Meridian_Contracts_FundStructure_AssignFundStructureNodeRequest_System_Threading_CancellationToken_
+  name: AssignNodeAsync(AssignFundStructureNodeRequest, CancellationToken)
+  nameWithType: IFundStructureService.AssignNodeAsync(AssignFundStructureNodeRequest, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+    name: AssignNodeAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_AssignNodeAsync_Meridian_Contracts_FundStructure_AssignFundStructureNodeRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+    name: AssignFundStructureNodeRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.AssignNodeAsync(Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest,System.Threading.CancellationToken)
+    name: AssignNodeAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_AssignNodeAsync_Meridian_Contracts_FundStructure_AssignFundStructureNodeRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+    name: AssignFundStructureNodeRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+  commentId: T:Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest.html
+  name: AssignFundStructureNodeRequest
+  nameWithType: AssignFundStructureNodeRequest
+  fullName: Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureAssignmentDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureAssignmentDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FundStructureAssignmentDto>
+  nameWithType: Task<FundStructureAssignmentDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.FundStructureAssignmentDto>
+  nameWithType.vb: Task(Of FundStructureAssignmentDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.FundStructureAssignmentDto)
+  name.vb: Task(Of FundStructureAssignmentDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundStructureAssignmentDto
+    name: FundStructureAssignmentDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundStructureAssignmentDto
+    name: FundStructureAssignmentDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_GetOrganizationStructureAsync_Meridian_Contracts_FundStructure_OrganizationStructureQuery_System_Threading_CancellationToken_
+  name: GetOrganizationStructureAsync
+  nameWithType: InMemoryFundStructureService.GetOrganizationStructureAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetOrganizationStructureAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetOrganizationStructureAsync_Meridian_Contracts_FundStructure_OrganizationStructureQuery_System_Threading_CancellationToken_
+  name: GetOrganizationStructureAsync(OrganizationStructureQuery, CancellationToken)
+  nameWithType: IFundStructureService.GetOrganizationStructureAsync(OrganizationStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+    name: GetOrganizationStructureAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetOrganizationStructureAsync_Meridian_Contracts_FundStructure_OrganizationStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+    name: OrganizationStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetOrganizationStructureAsync(Meridian.Contracts.FundStructure.OrganizationStructureQuery,System.Threading.CancellationToken)
+    name: GetOrganizationStructureAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetOrganizationStructureAsync_Meridian_Contracts_FundStructure_OrganizationStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+    name: OrganizationStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.OrganizationStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.OrganizationStructureQuery.html
+  name: OrganizationStructureQuery
+  nameWithType: OrganizationStructureQuery
+  fullName: Meridian.Contracts.FundStructure.OrganizationStructureQuery
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OrganizationStructureGraphDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.OrganizationStructureGraphDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrganizationStructureGraphDto>
+  nameWithType: Task<OrganizationStructureGraphDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.OrganizationStructureGraphDto>
+  nameWithType.vb: Task(Of OrganizationStructureGraphDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.OrganizationStructureGraphDto)
+  name.vb: Task(Of OrganizationStructureGraphDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.OrganizationStructureGraphDto
+    name: OrganizationStructureGraphDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.OrganizationStructureGraphDto
+    name: OrganizationStructureGraphDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_GetFundStructureGraphAsync_Meridian_Contracts_FundStructure_FundStructureQuery_System_Threading_CancellationToken_
+  name: GetFundStructureGraphAsync
+  nameWithType: InMemoryFundStructureService.GetFundStructureGraphAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundStructureGraphAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetFundStructureGraphAsync_Meridian_Contracts_FundStructure_FundStructureQuery_System_Threading_CancellationToken_
+  name: GetFundStructureGraphAsync(FundStructureQuery, CancellationToken)
+  nameWithType: IFundStructureService.GetFundStructureGraphAsync(FundStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+    name: GetFundStructureGraphAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetFundStructureGraphAsync_Meridian_Contracts_FundStructure_FundStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.FundStructureQuery
+    name: FundStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetFundStructureGraphAsync(Meridian.Contracts.FundStructure.FundStructureQuery,System.Threading.CancellationToken)
+    name: GetFundStructureGraphAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetFundStructureGraphAsync_Meridian_Contracts_FundStructure_FundStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.FundStructureQuery
+    name: FundStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.FundStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.FundStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.FundStructureQuery.html
+  name: FundStructureQuery
+  nameWithType: FundStructureQuery
+  fullName: Meridian.Contracts.FundStructure.FundStructureQuery
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureGraphDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundStructureGraphDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FundStructureGraphDto>
+  nameWithType: Task<FundStructureGraphDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.FundStructureGraphDto>
+  nameWithType.vb: Task(Of FundStructureGraphDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.FundStructureGraphDto)
+  name.vb: Task(Of FundStructureGraphDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundStructureGraphDto
+    name: FundStructureGraphDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundStructureGraphDto
+    name: FundStructureGraphDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_GetAdvisoryViewAsync_Meridian_Contracts_FundStructure_AdvisoryStructureQuery_System_Threading_CancellationToken_
+  name: GetAdvisoryViewAsync
+  nameWithType: InMemoryFundStructureService.GetAdvisoryViewAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAdvisoryViewAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetAdvisoryViewAsync_Meridian_Contracts_FundStructure_AdvisoryStructureQuery_System_Threading_CancellationToken_
+  name: GetAdvisoryViewAsync(AdvisoryStructureQuery, CancellationToken)
+  nameWithType: IFundStructureService.GetAdvisoryViewAsync(AdvisoryStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+    name: GetAdvisoryViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetAdvisoryViewAsync_Meridian_Contracts_FundStructure_AdvisoryStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+    name: AdvisoryStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetAdvisoryViewAsync(Meridian.Contracts.FundStructure.AdvisoryStructureQuery,System.Threading.CancellationToken)
+    name: GetAdvisoryViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetAdvisoryViewAsync_Meridian_Contracts_FundStructure_AdvisoryStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+    name: AdvisoryStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AdvisoryStructureQuery.html
+  name: AdvisoryStructureQuery
+  nameWithType: AdvisoryStructureQuery
+  fullName: Meridian.Contracts.FundStructure.AdvisoryStructureQuery
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AdvisoryStructureViewDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AdvisoryStructureViewDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AdvisoryStructureViewDto>
+  nameWithType: Task<AdvisoryStructureViewDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.AdvisoryStructureViewDto>
+  nameWithType.vb: Task(Of AdvisoryStructureViewDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.AdvisoryStructureViewDto)
+  name.vb: Task(Of AdvisoryStructureViewDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AdvisoryStructureViewDto
+    name: AdvisoryStructureViewDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AdvisoryStructureViewDto
+    name: AdvisoryStructureViewDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_GetFundOperatingViewAsync_Meridian_Contracts_FundStructure_FundOperatingStructureQuery_System_Threading_CancellationToken_
+  name: GetFundOperatingViewAsync
+  nameWithType: InMemoryFundStructureService.GetFundOperatingViewAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetFundOperatingViewAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetFundOperatingViewAsync_Meridian_Contracts_FundStructure_FundOperatingStructureQuery_System_Threading_CancellationToken_
+  name: GetFundOperatingViewAsync(FundOperatingStructureQuery, CancellationToken)
+  nameWithType: IFundStructureService.GetFundOperatingViewAsync(FundOperatingStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+    name: GetFundOperatingViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetFundOperatingViewAsync_Meridian_Contracts_FundStructure_FundOperatingStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+    name: FundOperatingStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetFundOperatingViewAsync(Meridian.Contracts.FundStructure.FundOperatingStructureQuery,System.Threading.CancellationToken)
+    name: GetFundOperatingViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetFundOperatingViewAsync_Meridian_Contracts_FundStructure_FundOperatingStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+    name: FundOperatingStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.FundOperatingStructureQuery.html
+  name: FundOperatingStructureQuery
+  nameWithType: FundOperatingStructureQuery
+  fullName: Meridian.Contracts.FundStructure.FundOperatingStructureQuery
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundOperatingViewDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.FundOperatingViewDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FundOperatingViewDto>
+  nameWithType: Task<FundOperatingViewDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.FundOperatingViewDto>
+  nameWithType.vb: Task(Of FundOperatingViewDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.FundOperatingViewDto)
+  name.vb: Task(Of FundOperatingViewDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.FundOperatingViewDto
+    name: FundOperatingViewDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.FundOperatingViewDto
+    name: FundOperatingViewDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_GetAccountingViewAsync_Meridian_Contracts_FundStructure_AccountingStructureQuery_System_Threading_CancellationToken_
+  name: GetAccountingViewAsync
+  nameWithType: InMemoryFundStructureService.GetAccountingViewAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetAccountingViewAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetAccountingViewAsync_Meridian_Contracts_FundStructure_AccountingStructureQuery_System_Threading_CancellationToken_
+  name: GetAccountingViewAsync(AccountingStructureQuery, CancellationToken)
+  nameWithType: IFundStructureService.GetAccountingViewAsync(AccountingStructureQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+    name: GetAccountingViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetAccountingViewAsync_Meridian_Contracts_FundStructure_AccountingStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureQuery
+    name: AccountingStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetAccountingViewAsync(Meridian.Contracts.FundStructure.AccountingStructureQuery,System.Threading.CancellationToken)
+    name: GetAccountingViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetAccountingViewAsync_Meridian_Contracts_FundStructure_AccountingStructureQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureQuery
+    name: AccountingStructureQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AccountingStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.AccountingStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.AccountingStructureQuery.html
+  name: AccountingStructureQuery
+  nameWithType: AccountingStructureQuery
+  fullName: Meridian.Contracts.FundStructure.AccountingStructureQuery
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AccountingStructureViewDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.AccountingStructureViewDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AccountingStructureViewDto>
+  nameWithType: Task<AccountingStructureViewDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.AccountingStructureViewDto>
+  nameWithType.vb: Task(Of AccountingStructureViewDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.AccountingStructureViewDto)
+  name.vb: Task(Of AccountingStructureViewDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+    name: AccountingStructureViewDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountingStructureViewDto
+    name: AccountingStructureViewDto
+  - name: )
+- uid: Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync*
+  commentId: Overload:Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync
+  href: Meridian.Application.FundStructure.InMemoryFundStructureService.html#Meridian_Application_FundStructure_InMemoryFundStructureService_GetCashFlowViewAsync_Meridian_Contracts_FundStructure_GovernanceCashFlowQuery_System_Threading_CancellationToken_
+  name: GetCashFlowViewAsync
+  nameWithType: InMemoryFundStructureService.GetCashFlowViewAsync
+  fullName: Meridian.Application.FundStructure.InMemoryFundStructureService.GetCashFlowViewAsync
+- uid: Meridian.Application.FundStructure.IFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.FundStructure.IFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.FundStructure.IFundStructureService
+  isExternal: true
+  href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetCashFlowViewAsync_Meridian_Contracts_FundStructure_GovernanceCashFlowQuery_System_Threading_CancellationToken_
+  name: GetCashFlowViewAsync(GovernanceCashFlowQuery, CancellationToken)
+  nameWithType: IFundStructureService.GetCashFlowViewAsync(GovernanceCashFlowQuery, CancellationToken)
+  fullName: Meridian.Application.FundStructure.IFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+    name: GetCashFlowViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetCashFlowViewAsync_Meridian_Contracts_FundStructure_GovernanceCashFlowQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+    name: GovernanceCashFlowQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.FundStructure.IFundStructureService.GetCashFlowViewAsync(Meridian.Contracts.FundStructure.GovernanceCashFlowQuery,System.Threading.CancellationToken)
+    name: GetCashFlowViewAsync
+    href: Meridian.Application.FundStructure.IFundStructureService.html#Meridian_Application_FundStructure_IFundStructureService_GetCashFlowViewAsync_Meridian_Contracts_FundStructure_GovernanceCashFlowQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+    name: GovernanceCashFlowQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+  commentId: T:Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery.html
+  name: GovernanceCashFlowQuery
+  nameWithType: GovernanceCashFlowQuery
+  fullName: Meridian.Contracts.FundStructure.GovernanceCashFlowQuery
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<GovernanceCashFlowViewDto>
+  nameWithType: Task<GovernanceCashFlowViewDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto>
+  nameWithType.vb: Task(Of GovernanceCashFlowViewDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto)
+  name.vb: Task(Of GovernanceCashFlowViewDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto
+    name: GovernanceCashFlowViewDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.GovernanceCashFlowViewDto
+    name: GovernanceCashFlowViewDto
+  - name: )

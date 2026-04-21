@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyPluginLoader
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadStrategyTypes
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instantiate
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetParameters
     path: ../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs

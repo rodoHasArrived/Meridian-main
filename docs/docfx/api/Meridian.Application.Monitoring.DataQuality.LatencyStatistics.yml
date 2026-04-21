@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LatencyStatistics
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -64,7 +64,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolsTracked
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -145,7 +145,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalSamples
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalMeanMs
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -203,7 +203,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP50Ms
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP90Ms
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -261,7 +261,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GlobalP99Ms
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -290,7 +290,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FastestSymbol
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -319,7 +319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SlowestSymbol
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DistributionsBySymbol
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
@@ -377,7 +377,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CalculatedAt
     path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs

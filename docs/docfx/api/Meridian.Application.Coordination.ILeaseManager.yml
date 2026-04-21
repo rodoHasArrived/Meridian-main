@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ILeaseManager
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs
@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InstanceId
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryAcquireAsync
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RenewAsync
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReleaseAsync
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs
@@ -215,7 +215,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HoldsLease
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Coordination/ILeaseManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSnapshotAsync
     path: ../../src/Meridian.Application/Coordination/ILeaseManager.cs

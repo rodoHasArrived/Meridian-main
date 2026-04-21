@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IngestionJob
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -82,7 +82,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobId
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WorkloadType
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: State
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -254,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -297,7 +297,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromDate
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToDate
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -383,7 +383,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckpointToken
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -431,7 +431,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryEnvelope
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -474,7 +474,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sla
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -517,7 +517,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatedAt
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -560,7 +560,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartedAt
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -603,7 +603,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompletedAt
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -646,7 +646,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ErrorMessage
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -689,7 +689,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolProgress
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -732,7 +732,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsTerminal
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -773,7 +773,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsResumable
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -814,7 +814,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryTransition
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -850,7 +850,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValidTransition
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs

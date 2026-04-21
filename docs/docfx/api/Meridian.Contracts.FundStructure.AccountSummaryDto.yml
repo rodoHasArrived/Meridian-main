@@ -5,7 +5,7 @@ items:
   id: AccountSummaryDto
   parent: Meridian.Contracts.FundStructure
   children:
-  - Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
+  - Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto,Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
   - Meridian.Contracts.FundStructure.AccountSummaryDto.AccountCode
   - Meridian.Contracts.FundStructure.AccountSummaryDto.AccountId
   - Meridian.Contracts.FundStructure.AccountSummaryDto.AccountType
@@ -22,6 +22,7 @@ items:
   - Meridian.Contracts.FundStructure.AccountSummaryDto.LedgerReference
   - Meridian.Contracts.FundStructure.AccountSummaryDto.PortfolioId
   - Meridian.Contracts.FundStructure.AccountSummaryDto.RunId
+  - Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess
   - Meridian.Contracts.FundStructure.AccountSummaryDto.SleeveId
   - Meridian.Contracts.FundStructure.AccountSummaryDto.StrategyId
   - Meridian.Contracts.FundStructure.AccountSummaryDto.VehicleId
@@ -35,11 +36,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountSummaryDto
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 187
+    startLine: 193
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -57,30 +58,30 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
-  commentId: M:Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)
-  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto)'
+- uid: Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto,Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  commentId: M:Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto,Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.AccountTypeDto,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.String,Meridian.Contracts.FundStructure.CustodianAccountDetailsDto,Meridian.Contracts.FundStructure.BankAccountDetailsDto,Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)'
   parent: Meridian.Contracts.FundStructure.AccountSummaryDto
   langs:
   - csharp
   - vb
-  name: AccountSummaryDto(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, string, string, string, string?, bool, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
-  nameWithType: AccountSummaryDto.AccountSummaryDto(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, string, string, string, string?, bool, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?)
-  fullName: Meridian.Contracts.FundStructure.AccountSummaryDto.AccountSummaryDto(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, System.Guid?, System.Guid?, System.Guid?, System.Guid?, string, string, string, string?, bool, System.DateTimeOffset, System.DateTimeOffset?, string?, string?, string?, string?, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto?, Meridian.Contracts.FundStructure.BankAccountDetailsDto?)
+  name: AccountSummaryDto(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, string, string, string, string?, bool, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?, FundStructureSharedDataAccessDto?)
+  nameWithType: AccountSummaryDto.AccountSummaryDto(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, string, string, string, string?, bool, DateTimeOffset, DateTimeOffset?, string?, string?, string?, string?, CustodianAccountDetailsDto?, BankAccountDetailsDto?, FundStructureSharedDataAccessDto?)
+  fullName: Meridian.Contracts.FundStructure.AccountSummaryDto.AccountSummaryDto(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, System.Guid?, System.Guid?, System.Guid?, System.Guid?, string, string, string, string?, bool, System.DateTimeOffset, System.DateTimeOffset?, string?, string?, string?, string?, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto?, Meridian.Contracts.FundStructure.BankAccountDetailsDto?, Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 187
+    startLine: 193
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
   syntax:
-    content: public AccountSummaryDto(Guid AccountId, AccountTypeDto AccountType, Guid? EntityId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, string AccountCode, string DisplayName, string BaseCurrency, string? Institution, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? PortfolioId, string? LedgerReference, string? StrategyId, string? RunId, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null)
+    content: public AccountSummaryDto(Guid AccountId, AccountTypeDto AccountType, Guid? EntityId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, string AccountCode, string DisplayName, string BaseCurrency, string? Institution, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? PortfolioId, string? LedgerReference, string? StrategyId, string? RunId, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null, FundStructureSharedDataAccessDto? SharedDataAccess = null)
     parameters:
     - id: AccountId
       type: System.Guid
@@ -120,11 +121,13 @@ items:
       type: Meridian.Contracts.FundStructure.CustodianAccountDetailsDto
     - id: BankDetails
       type: Meridian.Contracts.FundStructure.BankAccountDetailsDto
-    content.vb: Public Sub New(AccountId As Guid, AccountType As AccountTypeDto, EntityId As Guid?, FundId As Guid?, SleeveId As Guid?, VehicleId As Guid?, AccountCode As String, DisplayName As String, BaseCurrency As String, Institution As String, IsActive As Boolean, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?, PortfolioId As String, LedgerReference As String, StrategyId As String, RunId As String, CustodianDetails As CustodianAccountDetailsDto = Nothing, BankDetails As BankAccountDetailsDto = Nothing)
+    - id: SharedDataAccess
+      type: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+    content.vb: Public Sub New(AccountId As Guid, AccountType As AccountTypeDto, EntityId As Guid?, FundId As Guid?, SleeveId As Guid?, VehicleId As Guid?, AccountCode As String, DisplayName As String, BaseCurrency As String, Institution As String, IsActive As Boolean, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?, PortfolioId As String, LedgerReference As String, StrategyId As String, RunId As String, CustodianDetails As CustodianAccountDetailsDto = Nothing, BankDetails As BankAccountDetailsDto = Nothing, SharedDataAccess As FundStructureSharedDataAccessDto = Nothing)
   overload: Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor*
-  nameWithType.vb: AccountSummaryDto.New(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String, String, String, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
-  fullName.vb: Meridian.Contracts.FundStructure.AccountSummaryDto.New(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, System.Guid?, System.Guid?, System.Guid?, System.Guid?, String, String, String, String, Boolean, System.DateTimeOffset, System.DateTimeOffset?, String, String, String, String, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto, Meridian.Contracts.FundStructure.BankAccountDetailsDto)
-  name.vb: New(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String, String, String, String, CustodianAccountDetailsDto, BankAccountDetailsDto)
+  nameWithType.vb: AccountSummaryDto.New(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String, String, String, String, CustodianAccountDetailsDto, BankAccountDetailsDto, FundStructureSharedDataAccessDto)
+  fullName.vb: Meridian.Contracts.FundStructure.AccountSummaryDto.New(System.Guid, Meridian.Contracts.FundStructure.AccountTypeDto, System.Guid?, System.Guid?, System.Guid?, System.Guid?, String, String, String, String, Boolean, System.DateTimeOffset, System.DateTimeOffset?, String, String, String, String, Meridian.Contracts.FundStructure.CustodianAccountDetailsDto, Meridian.Contracts.FundStructure.BankAccountDetailsDto, Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto)
+  name.vb: New(Guid, AccountTypeDto, Guid?, Guid?, Guid?, Guid?, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String, String, String, String, CustodianAccountDetailsDto, BankAccountDetailsDto, FundStructureSharedDataAccessDto)
 - uid: Meridian.Contracts.FundStructure.AccountSummaryDto.AccountId
   commentId: P:Meridian.Contracts.FundStructure.AccountSummaryDto.AccountId
   id: AccountId
@@ -139,11 +142,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 188
+    startLine: 194
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -168,11 +171,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountType
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 189
+    startLine: 195
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -197,11 +200,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EntityId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 190
+    startLine: 196
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -226,11 +229,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FundId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 191
+    startLine: 197
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -255,11 +258,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SleeveId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 192
+    startLine: 198
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -284,11 +287,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VehicleId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 193
+    startLine: 199
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -313,11 +316,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountCode
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 194
+    startLine: 200
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -342,11 +345,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 195
+    startLine: 201
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -371,11 +374,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseCurrency
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 196
+    startLine: 202
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -400,11 +403,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Institution
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 197
+    startLine: 203
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -429,11 +432,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsActive
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 198
+    startLine: 204
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -458,11 +461,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 199
+    startLine: 205
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -487,11 +490,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 200
+    startLine: 206
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -516,11 +519,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 201
+    startLine: 207
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -545,11 +548,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerReference
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 202
+    startLine: 208
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -574,11 +577,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StrategyId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 203
+    startLine: 209
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -603,11 +606,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 204
+    startLine: 210
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -632,11 +635,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustodianDetails
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 205
+    startLine: 211
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -661,11 +664,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BankDetails
     path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
-    startLine: 206
+    startLine: 212
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.FundStructure
@@ -676,6 +679,35 @@ items:
       type: Meridian.Contracts.FundStructure.BankAccountDetailsDto
     content.vb: Public Property BankDetails As BankAccountDetailsDto
   overload: Meridian.Contracts.FundStructure.AccountSummaryDto.BankDetails*
+- uid: Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess
+  commentId: P:Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess
+  id: SharedDataAccess
+  parent: Meridian.Contracts.FundStructure.AccountSummaryDto
+  langs:
+  - csharp
+  - vb
+  name: SharedDataAccess
+  nameWithType: AccountSummaryDto.SharedDataAccess
+  fullName: Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharedDataAccess
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public FundStructureSharedDataAccessDto? SharedDataAccess { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+    content.vb: Public Property SharedDataAccess As FundStructureSharedDataAccessDto
+  overload: Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess*
 references:
 - uid: Meridian.Contracts.FundStructure
   commentId: N:Meridian.Contracts.FundStructure
@@ -983,7 +1015,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor*
   commentId: Overload:Meridian.Contracts.FundStructure.AccountSummaryDto.#ctor
-  href: Meridian.Contracts.FundStructure.AccountSummaryDto.html#Meridian_Contracts_FundStructure_AccountSummaryDto__ctor_System_Guid_Meridian_Contracts_FundStructure_AccountTypeDto_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_System_String_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_System_String_Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_Meridian_Contracts_FundStructure_BankAccountDetailsDto_
+  href: Meridian.Contracts.FundStructure.AccountSummaryDto.html#Meridian_Contracts_FundStructure_AccountSummaryDto__ctor_System_Guid_Meridian_Contracts_FundStructure_AccountTypeDto_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_System_String_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_System_String_Meridian_Contracts_FundStructure_CustodianAccountDetailsDto_Meridian_Contracts_FundStructure_BankAccountDetailsDto_Meridian_Contracts_FundStructure_FundStructureSharedDataAccessDto_
   name: AccountSummaryDto
   nameWithType: AccountSummaryDto.AccountSummaryDto
   fullName: Meridian.Contracts.FundStructure.AccountSummaryDto.AccountSummaryDto
@@ -1089,6 +1121,13 @@ references:
   name: BankAccountDetailsDto
   nameWithType: BankAccountDetailsDto
   fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+- uid: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+  commentId: T:Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto.html
+  name: FundStructureSharedDataAccessDto
+  nameWithType: FundStructureSharedDataAccessDto
+  fullName: Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto
 - uid: System.Nullable`1
   commentId: T:System.Nullable`1
   isExternal: true
@@ -1231,3 +1270,9 @@ references:
   name: BankDetails
   nameWithType: AccountSummaryDto.BankDetails
   fullName: Meridian.Contracts.FundStructure.AccountSummaryDto.BankDetails
+- uid: Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess
+  href: Meridian.Contracts.FundStructure.AccountSummaryDto.html#Meridian_Contracts_FundStructure_AccountSummaryDto_SharedDataAccess
+  name: SharedDataAccess
+  nameWithType: AccountSummaryDto.SharedDataAccess
+  fullName: Meridian.Contracts.FundStructure.AccountSummaryDto.SharedDataAccess

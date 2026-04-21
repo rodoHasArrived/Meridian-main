@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SettingsConfigurationService
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
@@ -62,7 +62,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateStoragePreview
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
@@ -140,7 +140,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalog
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
@@ -170,7 +170,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCredentialStatuses
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
@@ -200,11 +200,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProfiles
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 177
+    startLine: 182
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -230,11 +230,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateProfile
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 180
+    startLine: 185
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -268,11 +268,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveProfile
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 189
+    startLine: 194
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -304,11 +304,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimateDailyStorageSize
     path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
-    startLine: 200
+    startLine: 205
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services

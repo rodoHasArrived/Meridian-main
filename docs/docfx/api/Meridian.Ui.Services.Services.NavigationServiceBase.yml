@@ -18,12 +18,12 @@ items:
   - Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered(System.String)
   - Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.String,System.Object)
   - Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.Type,System.Object)
-  - Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.Type,System.Object)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.String,System.Type,System.Object)
   - Meridian.Ui.Services.Services.NavigationServiceBase.Navigated
   - Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(System.String)
   - Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages
   - Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(System.String,System.Type)
-  - Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory
+  - Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(System.String,System.Type,System.Object)
   langs:
   - csharp
   - vb
@@ -34,7 +34,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigationServiceBase
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Navigated
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanGoBack
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigateTo
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
@@ -210,11 +210,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigateTo
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 68
+    startLine: 69
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -248,11 +248,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GoBack
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 76
+    startLine: 78
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -276,11 +276,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPageType
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 91
+    startLine: 93
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -312,11 +312,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBreadcrumbs
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 99
+    startLine: 101
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -342,11 +342,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRegisteredPages
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 107
+    startLine: 109
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -372,11 +372,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsPageRegistered
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 112
+    startLine: 114
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -408,11 +408,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCurrentPageTag
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 117
+    startLine: 119
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -438,11 +438,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearHistory
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 127
+    startLine: 129
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -452,39 +452,6 @@ items:
     content: public virtual void ClearHistory()
     content.vb: Public Overridable Sub ClearHistory()
   overload: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory*
-- uid: Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory
-  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory
-  id: ResetNavigationHistory
-  parent: Meridian.Ui.Services.Services.NavigationServiceBase
-  langs:
-  - csharp
-  - vb
-  name: ResetNavigationHistory()
-  nameWithType: NavigationServiceBase.ResetNavigationHistory()
-  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ResetNavigationHistory
-    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 138
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Clears tracked navigation history and event subscriptions without touching any
-
-    platform-specific UI state. Intended for deterministic test setup when a singleton
-
-    navigation service may still be holding references to UI objects from an earlier dispatcher.
-  example: []
-  syntax:
-    content: protected void ResetNavigationHistory()
-    content.vb: Protected Sub ResetNavigationHistory()
-  overload: Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory*
 - uid: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(System.String,System.Type)
   commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(System.String,System.Type)
   id: RegisterPage(System.String,System.Type)
@@ -499,11 +466,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterPage
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 149
+    startLine: 140
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -537,11 +504,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterAllPages
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 157
+    startLine: 148
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -551,33 +518,36 @@ items:
     content: protected abstract void RegisterAllPages()
     content.vb: Protected MustOverride Sub RegisterAllPages()
   overload: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages*
-- uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.Type,System.Object)
-  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.Type,System.Object)
-  id: NavigateToPageCore(System.Type,System.Object)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.String,System.Type,System.Object)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.String,System.Type,System.Object)
+  id: NavigateToPageCore(System.String,System.Type,System.Object)
   parent: Meridian.Ui.Services.Services.NavigationServiceBase
   langs:
   - csharp
   - vb
-  name: NavigateToPageCore(Type, object?)
-  nameWithType: NavigationServiceBase.NavigateToPageCore(Type, object?)
-  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.Type, object?)
+  name: NavigateToPageCore(string, Type, object?)
+  nameWithType: NavigationServiceBase.NavigateToPageCore(string, Type, object?)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(string, System.Type, object?)
   type: Method
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NavigateToPageCore
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 165
+    startLine: 157
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
   summary: When overridden, performs the platform-specific navigation to a page type.
   example: []
   syntax:
-    content: protected abstract bool NavigateToPageCore(Type pageType, object? parameter)
+    content: protected abstract bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
     parameters:
+    - id: pageTag
+      type: System.String
+      description: The registered navigation tag used for metadata-aware routing.
     - id: pageType
       type: System.Type
       description: The Type of the page to navigate to.
@@ -587,11 +557,11 @@ items:
     return:
       type: System.Boolean
       description: True if navigation succeeded.
-    content.vb: Protected MustOverride Function NavigateToPageCore(pageType As Type, parameter As Object) As Boolean
+    content.vb: Protected MustOverride Function NavigateToPageCore(pageTag As String, pageType As Type, parameter As Object) As Boolean
   overload: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore*
-  nameWithType.vb: NavigationServiceBase.NavigateToPageCore(Type, Object)
-  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.Type, Object)
-  name.vb: NavigateToPageCore(Type, Object)
+  nameWithType.vb: NavigationServiceBase.NavigateToPageCore(String, Type, Object)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(String, System.Type, Object)
+  name.vb: NavigateToPageCore(String, Type, Object)
 - uid: Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore
   commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore
   id: GoBackCore
@@ -606,11 +576,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GoBackCore
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 170
+    startLine: 162
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -634,11 +604,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearHistoryCore
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 175
+    startLine: 167
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -648,6 +618,49 @@ items:
     content: protected abstract void ClearHistoryCore()
     content.vb: Protected MustOverride Sub ClearHistoryCore()
   overload: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(System.String,System.Type,System.Object)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(System.String,System.Type,System.Object)
+  id: TransformNavigationParameter(System.String,System.Type,System.Object)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: TransformNavigationParameter(string, Type, object?)
+  nameWithType: NavigationServiceBase.TransformNavigationParameter(string, Type, object?)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(string, System.Type, object?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TransformNavigationParameter
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Allows derived navigation services to normalize or synthesize parameters
+
+    for page-tag aliases before a page is created.
+  example: []
+  syntax:
+    content: protected virtual object? TransformNavigationParameter(string pageTag, Type pageType, object? parameter)
+    parameters:
+    - id: pageTag
+      type: System.String
+    - id: pageType
+      type: System.Type
+    - id: parameter
+      type: System.Object
+    return:
+      type: System.Object
+    content.vb: Protected Overridable Function TransformNavigationParameter(pageTag As String, pageType As Type, parameter As Object) As Object
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter*
+  nameWithType.vb: NavigationServiceBase.TransformNavigationParameter(String, Type, Object)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(String, System.Type, Object)
+  name.vb: TransformNavigationParameter(String, Type, Object)
 - uid: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(System.String)
   commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(System.String)
   id: OnNavigationFailed(System.String)
@@ -662,11 +675,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnNavigationFailed
     path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
-    startLine: 180
+    startLine: 179
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -1273,12 +1286,6 @@ references:
   name: ClearHistory
   nameWithType: NavigationServiceBase.ClearHistory
   fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory
-- uid: Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory*
-  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory
-  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_ResetNavigationHistory
-  name: ResetNavigationHistory
-  nameWithType: NavigationServiceBase.ResetNavigationHistory
-  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ResetNavigationHistory
 - uid: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage*
   commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage
   href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_RegisterPage_System_String_System_Type_
@@ -1293,7 +1300,7 @@ references:
   fullName: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages
 - uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore*
   commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore
-  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_NavigateToPageCore_System_Type_System_Object_
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_NavigateToPageCore_System_String_System_Type_System_Object_
   name: NavigateToPageCore
   nameWithType: NavigationServiceBase.NavigateToPageCore
   fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore
@@ -1309,6 +1316,12 @@ references:
   name: ClearHistoryCore
   nameWithType: NavigationServiceBase.ClearHistoryCore
   fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_TransformNavigationParameter_System_String_System_Type_System_Object_
+  name: TransformNavigationParameter
+  nameWithType: NavigationServiceBase.TransformNavigationParameter
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter
 - uid: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed*
   commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed
   href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_OnNavigationFailed_System_String_

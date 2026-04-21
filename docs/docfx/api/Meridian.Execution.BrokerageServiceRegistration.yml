@@ -18,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/BrokerageServiceRegistration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageServiceRegistration
     path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
-    startLine: 15
+    startLine: 16
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -63,11 +63,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/BrokerageServiceRegistration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddBrokerageExecution
     path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
-    startLine: 23
+    startLine: 24
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -105,11 +105,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/BrokerageServiceRegistration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddBrokerageGateway
     path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
-    startLine: 96
+    startLine: 100
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution
@@ -156,11 +156,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/BrokerageServiceRegistration.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddBrokerageGateway
     path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
-    startLine: 117
+    startLine: 121
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution

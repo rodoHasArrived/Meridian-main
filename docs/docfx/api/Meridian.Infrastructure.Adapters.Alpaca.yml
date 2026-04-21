@@ -8,6 +8,7 @@ items:
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
   langs:
@@ -44,6 +45,12 @@ references:
   name: AlpacaMarketDataClient
   nameWithType: AlpacaMarketDataClient
   fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider.html
+  name: AlpacaOptionsChainProvider
+  nameWithType: AlpacaOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
 - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
   commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
   href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule.html

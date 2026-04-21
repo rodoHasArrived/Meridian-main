@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResponseHandler
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleResponseAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs

@@ -1,11 +1,11 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-21
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
 This document is the normalized execution backlog for the repository's remaining product and structural work outside Phase 16 assembly/SIMD optimization.
-It is subordinate to [`ROADMAP.md`](ROADMAP.md): the tracks below are execution buckets that map to the canonical Wave 1-6 order and optional tracks, not an independent strategy.
+It is subordinate to [`ROADMAP.md`](ROADMAP.md): the tracks below are execution buckets that map to the canonical Wave 1-6 order and optional tracks, not an independent strategy. Status labels and target dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
 
 Use it with:
 
@@ -15,6 +15,23 @@ Use it with:
 - `../plans/governance-fund-ops-blueprint.md`
 - `../plans/quant-script-environment-blueprint.md`
 - `../plans/l3-inference-implementation-plan.md`
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
 
 ---
 

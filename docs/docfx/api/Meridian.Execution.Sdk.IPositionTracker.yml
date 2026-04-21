@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IPositionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IPositionTracker
     path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IPositionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPosition
     path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
@@ -87,7 +87,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IPositionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllPositions
     path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IPositionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPortfolioValue
     path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IPositionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetCash
     path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IPositionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetUnrealizedPnl
     path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
@@ -207,7 +207,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution.Sdk/IPositionTracker.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRealizedPnl
     path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs

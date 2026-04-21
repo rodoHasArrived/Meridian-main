@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianTradeData
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradePrice
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TradeSize
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Conditions
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SequenceNumber
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AggressorSide
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSource
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -317,7 +317,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reader
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs
@@ -360,7 +360,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianTradeData.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Clone
     path: ../../src/Meridian/Integrations/Lean/MeridianTradeData.cs

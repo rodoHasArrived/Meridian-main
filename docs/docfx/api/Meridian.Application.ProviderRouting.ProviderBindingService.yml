@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderBindingService
     path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBindingsAsync
     path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpsertAsync
     path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteAsync
     path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/ProviderRouting/ProviderBindingService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPoliciesAsync
     path: ../../src/Meridian.Application/ProviderRouting/ProviderBindingService.cs

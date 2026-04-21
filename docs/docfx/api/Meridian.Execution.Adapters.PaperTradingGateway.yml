@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperTradingGateway
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerName
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitAsync
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -253,7 +253,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOrderAsync
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -293,7 +293,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelAsync
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -336,7 +336,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamOrderUpdatesAsync
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Adapters/PaperTradingGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Execution/Adapters/PaperTradingGateway.cs

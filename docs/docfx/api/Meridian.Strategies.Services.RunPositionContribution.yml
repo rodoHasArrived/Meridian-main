@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunPositionContribution
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AccountId
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Quantity
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CostBasis
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs

@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanAutoExportService
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enabled
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -124,7 +124,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LeanDataPath
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Interval
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -186,7 +186,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastExportAt
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastExportError
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -248,7 +248,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastErrorMessage
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -279,7 +279,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFilesExported
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -310,7 +310,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesExported
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -341,7 +341,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -375,7 +375,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Configure
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs
@@ -419,7 +419,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/LeanAutoExportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteAsync
     path: ../../src/Meridian.Ui.Shared/LeanAutoExportService.cs

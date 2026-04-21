@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FixtureModeDetector
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
@@ -77,7 +77,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFixtureMode
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOfflineMode
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsBackendReachable
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsNonLiveMode
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModeLabel
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
@@ -247,110 +247,6 @@ items:
       type: System.String
     content.vb: Public ReadOnly Property ModeLabel As String
   overload: Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel*
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
-  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
-  id: ActiveScenario
-  parent: Meridian.Ui.Services.Services.FixtureModeDetector
-  langs:
-  - csharp
-  - vb
-  name: ActiveScenario
-  nameWithType: FixtureModeDetector.ActiveScenario
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ActiveScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-    startLine: 76
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Gets the currently active fixture scenario.
-
-    Only meaningful when <xref href="Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode" data-throw-if-not-resolved="false"></xref> is true.
-  example: []
-  syntax:
-    content: public FixtureScenario ActiveScenario { get; }
-    parameters: []
-    return:
-      type: Meridian.Ui.Services.Services.FixtureScenario
-    content.vb: Public ReadOnly Property ActiveScenario As FixtureScenario
-  overload: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario*
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
-  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
-  id: ScenarioLabel
-  parent: Meridian.Ui.Services.Services.FixtureModeDetector
-  langs:
-  - csharp
-  - vb
-  name: ScenarioLabel
-  nameWithType: FixtureModeDetector.ScenarioLabel
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ScenarioLabel
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-    startLine: 82
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Gets a short human-readable label for the active fixture scenario,
-
-    suitable for display in the fixture banner (e.g. "Connected (healthy)").
-  example: []
-  syntax:
-    content: public string ScenarioLabel { get; }
-    parameters: []
-    return:
-      type: System.String
-    content.vb: Public ReadOnly Property ScenarioLabel As String
-  overload: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel*
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
-  commentId: M:Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
-  id: CycleScenario
-  parent: Meridian.Ui.Services.Services.FixtureModeDetector
-  langs:
-  - csharp
-  - vb
-  name: CycleScenario()
-  nameWithType: FixtureModeDetector.CycleScenario()
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario()
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: CycleScenario
-    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-    startLine: 90
-  assemblies:
-  - Meridian.Ui.Services
-  namespace: Meridian.Ui.Services.Services
-  summary: >-
-    Advances the fixture data to the next scenario in the cycle and raises
-
-    <xref href="Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged" data-throw-if-not-resolved="false"></xref> so the UI banner refreshes.
-
-    Has no effect when <xref href="Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode" data-throw-if-not-resolved="false"></xref> is false.
-  example: []
-  syntax:
-    content: public FixtureScenario CycleScenario()
-    return:
-      type: Meridian.Ui.Services.Services.FixtureScenario
-      description: The new active scenario after cycling.
-    content.vb: Public Function CycleScenario() As FixtureScenario
-  overload: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario*
 - uid: Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
   commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
   id: BannerColor
@@ -365,11 +261,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BannerColor
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-    startLine: 106
+    startLine: 76
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -399,11 +295,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetFixtureMode
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-    startLine: 111
+    startLine: 81
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -433,11 +329,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateBackendReachability
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-    startLine: 121
+    startLine: 91
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -456,6 +352,102 @@ items:
   nameWithType.vb: FixtureModeDetector.UpdateBackendReachability(Boolean)
   fullName.vb: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability(Boolean)
   name.vb: UpdateBackendReachability(Boolean)
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  id: ScenarioLabel
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: ScenarioLabel
+  nameWithType: FixtureModeDetector.ScenarioLabel
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScenarioLabel
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the currently active fixture scenario label for display in the UI.
+  example: []
+  syntax:
+    content: public string ScenarioLabel { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ScenarioLabel As String
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  id: ActiveScenario
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: ActiveScenario
+  nameWithType: FixtureModeDetector.ActiveScenario
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveScenario
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the currently active fixture scenario.
+  example: []
+  syntax:
+    content: public FixtureScenario ActiveScenario { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+    content.vb: Public ReadOnly Property ActiveScenario As FixtureScenario
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+  commentId: M:Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+  id: CycleScenario
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: CycleScenario()
+  nameWithType: FixtureModeDetector.CycleScenario()
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CycleScenario
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Cycles to the next scenario in the <xref href="Meridian.Ui.Services.Services.FixtureScenario" data-throw-if-not-resolved="false"></xref> sequence.
+
+    No-op when fixture mode is off.
+  example: []
+  syntax:
+    content: public FixtureScenario CycleScenario()
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+      description: The scenario that is now active after the cycle.
+    content.vb: Public Function CycleScenario() As FixtureScenario
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario*
 - uid: Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
   commentId: E:Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
   id: ModeChanged
@@ -470,11 +462,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModeChanged
     path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
-    startLine: 137
+    startLine: 136
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services.Services
@@ -805,43 +797,6 @@ references:
   nameWithType.vb: String
   fullName.vb: String
   name.vb: String
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
-  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
-  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_IsFixtureMode
-  name: IsFixtureMode
-  nameWithType: FixtureModeDetector.IsFixtureMode
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
-  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ActiveScenario
-  name: ActiveScenario
-  nameWithType: FixtureModeDetector.ActiveScenario
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
-- uid: Meridian.Ui.Services.Services.FixtureScenario
-  commentId: T:Meridian.Ui.Services.Services.FixtureScenario
-  parent: Meridian.Ui.Services.Services
-  href: Meridian.Ui.Services.Services.FixtureScenario.html
-  name: FixtureScenario
-  nameWithType: FixtureScenario
-  fullName: Meridian.Ui.Services.Services.FixtureScenario
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
-  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ScenarioLabel
-  name: ScenarioLabel
-  nameWithType: FixtureModeDetector.ScenarioLabel
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
-  commentId: E:Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
-  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ModeChanged
-  name: ModeChanged
-  nameWithType: FixtureModeDetector.ModeChanged
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
-- uid: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario*
-  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
-  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_CycleScenario
-  name: CycleScenario
-  nameWithType: FixtureModeDetector.CycleScenario
-  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
 - uid: Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor*
   commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
   href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_BannerColor
@@ -860,6 +815,31 @@ references:
   name: UpdateBackendReachability
   nameWithType: FixtureModeDetector.UpdateBackendReachability
   fullName: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ScenarioLabel
+  name: ScenarioLabel
+  nameWithType: FixtureModeDetector.ScenarioLabel
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ActiveScenario
+  name: ActiveScenario
+  nameWithType: FixtureModeDetector.ActiveScenario
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario
+  commentId: T:Meridian.Ui.Services.Services.FixtureScenario
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.FixtureScenario.html
+  name: FixtureScenario
+  nameWithType: FixtureScenario
+  fullName: Meridian.Ui.Services.Services.FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_CycleScenario
+  name: CycleScenario
+  nameWithType: FixtureModeDetector.CycleScenario
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
 - uid: System.EventHandler
   commentId: T:System.EventHandler
   parent: System

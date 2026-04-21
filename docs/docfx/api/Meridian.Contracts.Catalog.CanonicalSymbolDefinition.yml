@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbolDefinition
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Canonical
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Aliases
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetClass
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Exchange
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Currency
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sedol
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -373,7 +373,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Isin
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -416,7 +416,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Figi
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -459,7 +459,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeFigi
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -502,7 +502,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cusip
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
@@ -545,7 +545,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Country
     path: ../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs

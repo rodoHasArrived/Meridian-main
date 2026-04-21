@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertStatistics
     path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
@@ -106,7 +106,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalAlerts
     path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
@@ -137,7 +137,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertsBySeverity
     path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
@@ -168,7 +168,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertsByCategory
     path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlertsBySource
     path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Since
     path: ../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs

@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRateLimitOutput
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 355
+    startLine: 362
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 357
+    startLine: 364
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -96,11 +96,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WindowSeconds
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 360
+    startLine: 367
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -137,11 +137,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinDelayMs
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 363
+    startLine: 370
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api
@@ -178,11 +178,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Api/UiDashboardModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
-    startLine: 366
+    startLine: 373
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Api

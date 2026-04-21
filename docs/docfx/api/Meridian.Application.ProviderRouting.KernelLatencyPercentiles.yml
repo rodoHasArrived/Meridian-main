@@ -1,0 +1,509 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  commentId: T:Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  id: KernelLatencyPercentiles
+  parent: Meridian.Application.ProviderRouting
+  children:
+  - Meridian.Application.ProviderRouting.KernelLatencyPercentiles.#ctor(System.Double,System.Double,System.Double)
+  - Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms
+  - Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms
+  - Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms
+  langs:
+  - csharp
+  - vb
+  name: KernelLatencyPercentiles
+  nameWithType: KernelLatencyPercentiles
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KernelLatencyPercentiles
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: 'public sealed record KernelLatencyPercentiles : IEquatable<KernelLatencyPercentiles>'
+    content.vb: Public NotInheritable Class KernelLatencyPercentiles Implements IEquatable(Of KernelLatencyPercentiles)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.ProviderRouting.KernelLatencyPercentiles}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.#ctor(System.Double,System.Double,System.Double)
+  commentId: M:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.#ctor(System.Double,System.Double,System.Double)
+  id: '#ctor(System.Double,System.Double,System.Double)'
+  parent: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  langs:
+  - csharp
+  - vb
+  name: KernelLatencyPercentiles(double, double, double)
+  nameWithType: KernelLatencyPercentiles.KernelLatencyPercentiles(double, double, double)
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.KernelLatencyPercentiles(double, double, double)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public KernelLatencyPercentiles(double P50Ms, double P95Ms, double P99Ms)
+    parameters:
+    - id: P50Ms
+      type: System.Double
+    - id: P95Ms
+      type: System.Double
+    - id: P99Ms
+      type: System.Double
+    content.vb: Public Sub New(P50Ms As Double, P95Ms As Double, P99Ms As Double)
+  overload: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.#ctor*
+  nameWithType.vb: KernelLatencyPercentiles.New(Double, Double, Double)
+  fullName.vb: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.New(Double, Double, Double)
+  name.vb: New(Double, Double, Double)
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms
+  commentId: P:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms
+  id: P50Ms
+  parent: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  langs:
+  - csharp
+  - vb
+  name: P50Ms
+  nameWithType: KernelLatencyPercentiles.P50Ms
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P50Ms
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double P50Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P50Ms As Double
+  overload: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms*
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms
+  commentId: P:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms
+  id: P95Ms
+  parent: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  langs:
+  - csharp
+  - vb
+  name: P95Ms
+  nameWithType: KernelLatencyPercentiles.P95Ms
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P95Ms
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double P95Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P95Ms As Double
+  overload: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms*
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms
+  commentId: P:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms
+  id: P99Ms
+  parent: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  langs:
+  - csharp
+  - vb
+  name: P99Ms
+  nameWithType: KernelLatencyPercentiles.P99Ms
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P99Ms
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double P99Ms { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P99Ms As Double
+  overload: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms*
+references:
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  href: Meridian.html
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.ProviderRouting.KernelLatencyPercentiles}
+  commentId: T:System.IEquatable{Meridian.Application.ProviderRouting.KernelLatencyPercentiles}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<KernelLatencyPercentiles>
+  nameWithType: IEquatable<KernelLatencyPercentiles>
+  fullName: System.IEquatable<Meridian.Application.ProviderRouting.KernelLatencyPercentiles>
+  nameWithType.vb: IEquatable(Of KernelLatencyPercentiles)
+  fullName.vb: System.IEquatable(Of Meridian.Application.ProviderRouting.KernelLatencyPercentiles)
+  name.vb: IEquatable(Of KernelLatencyPercentiles)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+    name: KernelLatencyPercentiles
+    href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+    name: KernelLatencyPercentiles
+    href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.#ctor*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.#ctor
+  href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html#Meridian_Application_ProviderRouting_KernelLatencyPercentiles__ctor_System_Double_System_Double_System_Double_
+  name: KernelLatencyPercentiles
+  nameWithType: KernelLatencyPercentiles.KernelLatencyPercentiles
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.KernelLatencyPercentiles
+  nameWithType.vb: KernelLatencyPercentiles.New
+  fullName.vb: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.New
+  name.vb: New
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms
+  href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html#Meridian_Application_ProviderRouting_KernelLatencyPercentiles_P50Ms
+  name: P50Ms
+  nameWithType: KernelLatencyPercentiles.P50Ms
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P50Ms
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms
+  href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html#Meridian_Application_ProviderRouting_KernelLatencyPercentiles_P95Ms
+  name: P95Ms
+  nameWithType: KernelLatencyPercentiles.P95Ms
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P95Ms
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms
+  href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html#Meridian_Application_ProviderRouting_KernelLatencyPercentiles_P99Ms
+  name: P99Ms
+  nameWithType: KernelLatencyPercentiles.P99Ms
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.P99Ms

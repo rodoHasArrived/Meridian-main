@@ -17,13 +17,18 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
 
-    <Grid>
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MinHeight="200" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+        <views:WorkspaceShellContextStripControl x:Name="ContextStrip" />
+
+        <ScrollViewer Grid.Row="1"
+                      Margin="0,16,0,0"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="8,4,8,16">
             <StackPanel MaxWidth="1400">
                 <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
                     <Grid>
@@ -49,7 +54,7 @@
                                 </Border>
                                 <StackPanel Margin="12,0,0,0">
                                     <TextBlock Text="Research" Style="{StaticResource PageTitleStyle}" />
-                                    <TextBlock Text="Strategy analysis, backtesting, and performance review"
+                                    <TextBlock Text="Market briefing, run studio, and paper-promotion review"
                                                Style="{StaticResource CardDescriptionStyle}" />
                                 </StackPanel>
                             </StackPanel>
@@ -135,6 +140,291 @@
                 <views:WorkspaceCommandBarControl x:Name="CommandBar"
                                                   CommandInvoked="OnCommandBarCommandInvoked"
                                                   Margin="0,0,0,24" />
+
+                <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel>
+                                <TextBlock Text="Market Briefing" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock x:Name="BriefingSummaryText"
+                                           Text="Pinned research context, watchlists, saved comparisons, and workflow alerts."
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0" />
+                            </StackPanel>
+
+                            <Border Grid.Column="1"
+                                    Padding="10,6"
+                                    CornerRadius="999"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="BriefingGeneratedText"
+                                           Text="Updated just now"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource InfoColorBrush}" />
+                            </Border>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.2*" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Pinned Insights" Style="{StaticResource StudioPanelTitleStyle}" />
+
+                                    <ItemsControl x:Name="BriefingInsightsList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Title}"
+                                                                       FontSize="13"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            <TextBlock Text="{Binding Headline}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="13"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource SuccessColorBrush}" />
+                                                            <TextBlock Text="{Binding Subtitle}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                            <TextBlock Text="{Binding Summary}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <Button Grid.Column="1"
+                                                                Content="Open"
+                                                                Tag="{Binding RunId}"
+                                                                Click="OpenBriefingRun_Click"
+                                                                Style="{StaticResource SecondaryButtonStyle}" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock x:Name="NoBriefingInsightsText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Text="Pinned insights will appear here once runs are available."
+                                               Visibility="Collapsed" />
+
+                                    <Rectangle Margin="0,16,0,14"
+                                               Height="1"
+                                               Fill="{StaticResource ConsoleBorderBrush}" />
+
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Watchlists" Style="{StaticResource StudioPanelTitleStyle}" />
+                                        <Button Grid.Column="1"
+                                                Content="Open Watchlists"
+                                                Click="OpenWatchlists_Click"
+                                                Style="{StaticResource LinkButtonStyle}" />
+                                    </Grid>
+
+                                    <ItemsControl x:Name="BriefingWatchlistsList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}"
+                                                                   FontSize="13"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                        <TextBlock Text="{Binding Summary}"
+                                                                   Margin="0,4,0,0"
+                                                                   FontSize="11"
+                                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock x:Name="NoBriefingWatchlistsText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Text="Pinned watchlists will appear here."
+                                               Visibility="Collapsed" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Style="{StaticResource StudioPanelStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="What Changed" Style="{StaticResource StudioPanelTitleStyle}" />
+
+                                    <ItemsControl x:Name="BriefingWhatChangedList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Title}"
+                                                                       FontSize="13"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            <TextBlock Text="{Binding Summary}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding RelativeTime}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                        </StackPanel>
+                                                        <Button Grid.Column="1"
+                                                                Content="Open"
+                                                                Tag="{Binding RunId}"
+                                                                Click="OpenBriefingRun_Click"
+                                                                Style="{StaticResource SecondaryButtonStyle}" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock x:Name="NoBriefingWhatChangedText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Text="Recent workflow changes will appear here."
+                                               Visibility="Collapsed" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource StudioPanelStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Alerts" Style="{StaticResource StudioPanelTitleStyle}" />
+
+                                    <ItemsControl x:Name="BriefingAlertsList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Title}"
+                                                                       FontSize="13"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            <TextBlock Text="{Binding Summary}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <Button Grid.Column="1"
+                                                                Content="{Binding ActionLabel}"
+                                                                Tag="{Binding RunId}"
+                                                                Click="OpenBriefingAlert_Click"
+                                                                Style="{StaticResource SecondaryButtonStyle}" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock x:Name="NoBriefingAlertsText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Text="Blocking alerts will appear here."
+                                               Visibility="Collapsed" />
+
+                                    <Rectangle Margin="0,16,0,14"
+                                               Height="1"
+                                               Fill="{StaticResource ConsoleBorderBrush}" />
+
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Saved Comparisons" Style="{StaticResource StudioPanelTitleStyle}" />
+                                        <Button Grid.Column="1"
+                                                Content="Run Browser"
+                                                Click="OpenStrategyRuns_Click"
+                                                Style="{StaticResource LinkButtonStyle}" />
+                                    </Grid>
+
+                                    <ItemsControl x:Name="BriefingComparisonsList">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding StrategyName}"
+                                                                       FontSize="13"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            <TextBlock Text="{Binding ModeSummary}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                            <TextBlock Text="{Binding Summary}"
+                                                                       Margin="0,4,0,0"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <Button Grid.Column="1"
+                                                                Content="Compare"
+                                                                Tag="{Binding AnchorRunId}"
+                                                                Click="OpenBriefingComparison_Click"
+                                                                Style="{StaticResource SecondaryButtonStyle}" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock x:Name="NoBriefingComparisonsText"
+                                               Margin="0,8,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               Text="Saved comparisons will appear here once runs can be staged side by side."
+                                               Visibility="Collapsed" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
                 <Grid Margin="0,0,0,24">
                     <Grid.ColumnDefinitions>

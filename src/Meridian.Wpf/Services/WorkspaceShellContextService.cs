@@ -74,7 +74,6 @@ public sealed class WorkspaceShellContextService
         var status = await _getStatusAsync(ct).ConfigureAwait(false);
         var history = _notificationService.GetHistory();
         var unreadCount = history.Count(item => !item.IsRead);
-        var recentCount = history.Count;
 
         var badges = new List<WorkspaceShellBadge>
         {
@@ -136,7 +135,7 @@ public sealed class WorkspaceShellContextService
             new()
             {
                 Label = "Alerts",
-                Value = unreadCount > 0 ? $"{unreadCount} unread" : recentCount > 0 ? $"{recentCount} recent" : "No recent alerts",
+                Value = unreadCount > 0 ? $"{unreadCount} unread" : "No recent alerts",
                 Glyph = "\uE7F4",
                 Tone = unreadCount > 0 ? WorkspaceTone.Warning : WorkspaceTone.Neutral
             }

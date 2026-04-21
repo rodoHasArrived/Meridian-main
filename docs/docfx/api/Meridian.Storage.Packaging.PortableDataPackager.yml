@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortableDataPackager
     path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.Validation.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProgressChanged
     path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
@@ -134,7 +134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreatePackageAsync
     path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportPackageAsync
     path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidatePackageAsync
     path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs
@@ -251,7 +251,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Packaging/PortableDataPackager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ListPackageContentsAsync
     path: ../../src/Meridian.Storage/Packaging/PortableDataPackager.cs

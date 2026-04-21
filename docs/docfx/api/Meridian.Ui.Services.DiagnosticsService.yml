@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticsService
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -68,7 +68,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunDryRunAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunPreflightCheckAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -163,7 +163,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateDiagnosticBundleAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDiagnosticSystemMetricsAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -231,7 +231,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfigurationAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -271,7 +271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestProviderAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -309,7 +309,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunQuickCheckAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShowConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -375,7 +375,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetErrorCodesAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -408,7 +408,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunSelfTestAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -446,7 +446,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateCredentialsAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -479,7 +479,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TestAllProvidersAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
@@ -512,7 +512,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateFullConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs

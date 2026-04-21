@@ -53,6 +53,7 @@ items:
   - Meridian.Infrastructure.Adapters.Core.HistoricalTradesResult
   - Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
   - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
   - Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Core.IOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
@@ -495,6 +496,13 @@ references:
   name: CorporateActionCommand
   nameWithType: CorporateActionCommand
   fullName: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider.html
+  name: IHistoricalAggregateBarProvider
+  nameWithType: IHistoricalAggregateBarProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalAggregateBarProvider
 - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
   commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
   parent: Meridian.Infrastructure.Adapters.Core

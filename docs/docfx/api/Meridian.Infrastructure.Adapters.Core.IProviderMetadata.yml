@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IProviderMetadata
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -62,6 +62,7 @@ items:
   derivedClasses:
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
   - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
@@ -80,16 +81,16 @@ items:
   - Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
-  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpHistoricalDataProvider
-  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpMarketDataClient
-  - Meridian.Infrastructure.Adapters.StockSharp.StockSharpSymbolSearchProvider
   - Meridian.Infrastructure.Adapters.Stooq.StooqHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient
+  - Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider
   - Meridian.Infrastructure.Adapters.Tiingo.TiingoHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.TwelveData.TwelveDataHistoricalDataProvider
   - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
@@ -117,7 +118,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -148,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -179,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -210,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -241,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -272,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresCredentials
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -303,7 +304,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -337,7 +338,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -368,7 +369,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
@@ -399,7 +400,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/IProviderMetadata.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedDataTypes
     path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs

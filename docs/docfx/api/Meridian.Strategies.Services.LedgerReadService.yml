@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/LedgerReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerReadService
     path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/LedgerReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
@@ -84,7 +84,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/LedgerReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
@@ -116,7 +116,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/LedgerReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSummary
     path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs
@@ -147,7 +147,7 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/LedgerReadService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildSummaryAsync
     path: ../../src/Meridian.Strategies/Services/LedgerReadService.cs

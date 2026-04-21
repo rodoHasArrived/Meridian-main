@@ -1,11 +1,28 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-21
 **Status:** Active tracking document
 
 This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
 
-Legacy `ROADMAP:` labels below retain their original milestone wording for traceability. Use the canonical roadmap and normalized TODO for current Wave 1-6 sequencing.
+Legacy `ROADMAP:` labels below retain their original milestone wording for traceability. Use [`PROGRAM_STATE.md`](PROGRAM_STATE.md) as the canonical source for wave status labels and target dates.
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
 
 ---
 
@@ -1393,6 +1410,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - duplicate title chrome on many legacy deep pages now compacts away automatically when those pages are hosted inside `WorkspaceDeepPageHostPage`
 - action-heavy legacy headers on `MessagingHub`, `NotificationCenter`, `SecurityMaster`, `ServiceManager`, and `PositionBlotter` now compact correctly inside the shared host while keeping their page-specific command and trust bands
 - `PositionBlotter`, `SecurityMaster`, and `ServiceManager` now expose richer page-body workbenches and workflow-native inspector rails instead of only inheriting the shared host chrome
+- the Trading shell now keeps portfolio drill-ins inside the cockpit by routing operators to the active run portfolio when a run is selected and to the account portfolio when no active run is bound, reinforcing Wave 3 shared-model continuity without bouncing back to `Research`
 - the mixed `MainPageUiWorkflowTests` bundle is stable again through isolated workspace persistence in the automation facade and shell-contract assertions that avoid unrelated singleton drift
 - `MainPageSmokeTests`, `MainPageUiWorkflowTests`, `RunMatUiSmokeTests`, `NavigationPageSmokeTests`, `WorkstationPageSmokeTests`, `NavigationServiceTests`, and `FullNavigationSweepTests` now run under `NavigationServiceSerialCollection`, keeping the mixed shell bundle deterministic while still validating full registered-page reachability
 - remaining K1 work is now concentrated in untouched high-traffic page-body harmonization and broader workstation refinements on pages such as `OrderBook`, `DataQuality`, and `LiveDataViewer`, rather than shell-foundation plumbing or the three newly harmonized workbenches

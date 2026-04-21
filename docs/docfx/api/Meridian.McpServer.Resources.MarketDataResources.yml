@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/MarketDataResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MarketDataResources
     path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
@@ -76,7 +76,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/MarketDataResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/MarketDataResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalog
     path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
@@ -167,7 +167,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/MarketDataResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStorageCatalog
     path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.McpServer/Resources/MarketDataResources.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetActiveConfiguration
     path: ../../src/Meridian.McpServer/Resources/MarketDataResources.cs

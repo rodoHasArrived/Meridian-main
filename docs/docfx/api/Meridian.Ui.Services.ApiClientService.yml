@@ -30,7 +30,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApiClientService
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -71,7 +71,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseUrl
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UiApi
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConfigured
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -195,7 +195,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ServiceUrlChanged
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Configure
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -258,7 +258,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Configure
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -296,7 +296,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillClient
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -329,7 +329,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAsync
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -369,7 +369,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetWithResponseAsync
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
@@ -409,11 +409,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostAsync
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 240
+    startLine: 238
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -451,11 +451,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PostWithResponseAsync
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 271
+    startLine: 269
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -495,11 +495,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteWithResponseAsync
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 337
+    startLine: 333
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -535,11 +535,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 396
+    startLine: 390
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -568,11 +568,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ApiClientService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Ui.Services/Services/ApiClientService.cs
-    startLine: 438
+    startLine: 432
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services

@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalizationEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapCanonicalizationEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs

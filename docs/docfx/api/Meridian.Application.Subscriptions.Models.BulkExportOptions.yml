@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BulkExportOptions
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeHeader
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Columns
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilterSymbols
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeMetadata
     path: ../../src/Meridian.Core/Subscriptions/Models/BulkImportExport.cs

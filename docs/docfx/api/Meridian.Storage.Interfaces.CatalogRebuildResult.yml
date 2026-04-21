@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogRebuildResult
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Success
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesIndexed
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectoriesIndexed
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytes
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Duration
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
@@ -276,7 +276,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warnings
     path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs

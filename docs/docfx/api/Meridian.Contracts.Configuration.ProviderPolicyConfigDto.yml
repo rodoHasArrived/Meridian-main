@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPolicyConfigDto
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolicyId
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capability
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -139,7 +139,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SafetyMode
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -180,7 +180,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireExplicitBinding
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequireProductionReady
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowedFailoverConnectionIds
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -303,7 +303,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AllowedProviderFamilies
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
@@ -344,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs

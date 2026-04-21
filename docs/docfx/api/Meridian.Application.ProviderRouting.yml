@@ -5,6 +5,12 @@ items:
   id: Meridian.Application.ProviderRouting
   children:
   - Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  - Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  - Meridian.Application.ProviderRouting.KernelExecutionScope
+  - Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  - Meridian.Application.ProviderRouting.KernelObservabilityService
+  - Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
   - Meridian.Application.ProviderRouting.ProviderBindingService
   - Meridian.Application.ProviderRouting.ProviderCertificationService
   - Meridian.Application.ProviderRouting.ProviderConnectionService
@@ -22,6 +28,47 @@ items:
   assemblies:
   - Meridian.Application
 references:
+- uid: Meridian.Application.ProviderRouting.KernelObservabilityService
+  commentId: T:Meridian.Application.ProviderRouting.KernelObservabilityService
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelObservabilityService.html
+  name: KernelObservabilityService
+  nameWithType: KernelObservabilityService
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilityService
+- uid: Meridian.Application.ProviderRouting.KernelExecutionScope
+  commentId: T:Meridian.Application.ProviderRouting.KernelExecutionScope
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelExecutionScope.html
+  name: KernelExecutionScope
+  nameWithType: KernelExecutionScope
+  fullName: Meridian.Application.ProviderRouting.KernelExecutionScope
+- uid: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
+  commentId: T:Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot.html
+  name: KernelObservabilitySnapshot
+  nameWithType: KernelObservabilitySnapshot
+  fullName: Meridian.Application.ProviderRouting.KernelObservabilitySnapshot
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  commentId: T:Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html
+  name: KernelDomainSnapshot
+  nameWithType: KernelDomainSnapshot
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  commentId: T:Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html
+  name: KernelLatencyPercentiles
+  nameWithType: KernelLatencyPercentiles
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+- uid: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+  commentId: T:Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds.html
+  name: KernelCriticalSeverityAlertThresholds
+  nameWithType: KernelCriticalSeverityAlertThresholds
+  fullName: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
 - uid: Meridian.Application.ProviderRouting.ProviderBindingService
   commentId: T:Meridian.Application.ProviderRouting.ProviderBindingService
   href: Meridian.Application.ProviderRouting.ProviderBindingService.html

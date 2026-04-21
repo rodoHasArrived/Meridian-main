@@ -12,7 +12,6 @@ items:
   - Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.PolygonStart
   - Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.RangeSize
   - Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.ReservedStart
-  - Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.StockSharpStart
   langs:
   - csharp
   - vb
@@ -23,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderSubscriptionRanges
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 23
+    startLine: 22
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -48,13 +47,11 @@ items:
 
     - 200,000-299,999: Polygon.io
 
-    - 300,000-399,999: StockSharp
+    - 300,000-399,999: Interactive Brokers
 
-    - 400,000-499,999: Interactive Brokers
+    - 400,000-499,999: NYSE
 
-    - 500,000-599,999: NYSE
-
-    - 600,000+: Reserved for future providers
+    - 500,000+: Reserved for future providers
 
 
     Usage:
@@ -90,11 +87,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlpacaStart
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 28
+    startLine: 27
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -119,11 +116,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolygonStart
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 33
+    startLine: 32
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -134,38 +131,6 @@ items:
     return:
       type: System.Int32
     content.vb: Public Const PolygonStart As Integer = 200000
-- uid: Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.StockSharpStart
-  commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.StockSharpStart
-  id: StockSharpStart
-  parent: Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges
-  langs:
-  - csharp
-  - vb
-  name: StockSharpStart
-  nameWithType: ProviderSubscriptionRanges.StockSharpStart
-  fullName: Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.StockSharpStart
-  type: Field
-  source:
-    remote:
-      path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: StockSharpStart
-    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 39
-  assemblies:
-  - Meridian.Infrastructure
-  namespace: Meridian.Infrastructure.Adapters.Core
-  summary: >-
-    Starting subscription ID for StockSharp provider (300,000).
-
-    Previously used 200,000 which collided with Polygon.
-  example: []
-  syntax:
-    content: public const int StockSharpStart = 300000
-    return:
-      type: System.Int32
-    content.vb: Public Const StockSharpStart As Integer = 300000
 - uid: Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.InteractiveBrokersStart
   commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.InteractiveBrokersStart
   id: InteractiveBrokersStart
@@ -180,21 +145,21 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InteractiveBrokersStart
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 44
+    startLine: 37
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
-  summary: Starting subscription ID for Interactive Brokers provider (400,000).
+  summary: Starting subscription ID for Interactive Brokers provider (300,000).
   example: []
   syntax:
-    content: public const int InteractiveBrokersStart = 400000
+    content: public const int InteractiveBrokersStart = 300000
     return:
       type: System.Int32
-    content.vb: Public Const InteractiveBrokersStart As Integer = 400000
+    content.vb: Public Const InteractiveBrokersStart As Integer = 300000
 - uid: Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.NyseStart
   commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.NyseStart
   id: NyseStart
@@ -209,21 +174,21 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NyseStart
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 49
+    startLine: 42
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
-  summary: Starting subscription ID for NYSE provider (500,000).
+  summary: Starting subscription ID for NYSE provider (400,000).
   example: []
   syntax:
-    content: public const int NyseStart = 500000
+    content: public const int NyseStart = 400000
     return:
       type: System.Int32
-    content.vb: Public Const NyseStart As Integer = 500000
+    content.vb: Public Const NyseStart As Integer = 400000
 - uid: Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.ReservedStart
   commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.ReservedStart
   id: ReservedStart
@@ -238,21 +203,21 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReservedStart
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 54
+    startLine: 47
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
-  summary: Starting subscription ID for reserved/future providers (600,000).
+  summary: Starting subscription ID for reserved/future providers (500,000).
   example: []
   syntax:
-    content: public const int ReservedStart = 600000
+    content: public const int ReservedStart = 500000
     return:
       type: System.Int32
-    content.vb: Public Const ReservedStart As Integer = 600000
+    content.vb: Public Const ReservedStart As Integer = 500000
 - uid: Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.RangeSize
   commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderSubscriptionRanges.RangeSize
   id: RangeSize
@@ -267,11 +232,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RangeSize
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 59
+    startLine: 52
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core
@@ -296,11 +261,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderSubscriptionRanges.cs
-    startLine: 67
+    startLine: 60
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Core

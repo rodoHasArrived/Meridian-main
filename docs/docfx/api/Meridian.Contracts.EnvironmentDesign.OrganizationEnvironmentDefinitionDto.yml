@@ -1,0 +1,871 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  id: OrganizationEnvironmentDefinitionDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto})
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+  - Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships
+  langs:
+  - csharp
+  - vb
+  name: OrganizationEnvironmentDefinitionDto
+  nameWithType: OrganizationEnvironmentDefinitionDto
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationEnvironmentDefinitionDto
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: 'public sealed record OrganizationEnvironmentDefinitionDto : IEquatable<OrganizationEnvironmentDefinitionDto>'
+    content.vb: Public NotInheritable Class OrganizationEnvironmentDefinitionDto Implements IEquatable(Of OrganizationEnvironmentDefinitionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto})
+  commentId: M:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto})
+  id: '#ctor(System.Guid,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto})'
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: OrganizationEnvironmentDefinitionDto(Guid, string, string, string, string, IReadOnlyList<EnvironmentLaneDefinitionDto>, IReadOnlyList<EnvironmentNodeDefinitionDto>, IReadOnlyList<EnvironmentRelationshipDefinitionDto>)
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationEnvironmentDefinitionDto(Guid, string, string, string, string, IReadOnlyList<EnvironmentLaneDefinitionDto>, IReadOnlyList<EnvironmentNodeDefinitionDto>, IReadOnlyList<EnvironmentRelationshipDefinitionDto>)
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationEnvironmentDefinitionDto(System.Guid, string, string, string, string, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public OrganizationEnvironmentDefinitionDto(Guid OrganizationId, string OrganizationNodeDefinitionId, string OrganizationCode, string OrganizationName, string BaseCurrency, IReadOnlyList<EnvironmentLaneDefinitionDto> Lanes, IReadOnlyList<EnvironmentNodeDefinitionDto> Nodes, IReadOnlyList<EnvironmentRelationshipDefinitionDto> Relationships)
+    parameters:
+    - id: OrganizationId
+      type: System.Guid
+    - id: OrganizationNodeDefinitionId
+      type: System.String
+    - id: OrganizationCode
+      type: System.String
+    - id: OrganizationName
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: Lanes
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto}
+    - id: Nodes
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto}
+    - id: Relationships
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto}
+    content.vb: Public Sub New(OrganizationId As Guid, OrganizationNodeDefinitionId As String, OrganizationCode As String, OrganizationName As String, BaseCurrency As String, Lanes As IReadOnlyList(Of EnvironmentLaneDefinitionDto), Nodes As IReadOnlyList(Of EnvironmentNodeDefinitionDto), Relationships As IReadOnlyList(Of EnvironmentRelationshipDefinitionDto))
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.#ctor*
+  nameWithType.vb: OrganizationEnvironmentDefinitionDto.New(Guid, String, String, String, String, IReadOnlyList(Of EnvironmentLaneDefinitionDto), IReadOnlyList(Of EnvironmentNodeDefinitionDto), IReadOnlyList(Of EnvironmentRelationshipDefinitionDto))
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.New(System.Guid, String, String, String, String, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto))
+  name.vb: New(Guid, String, String, String, String, IReadOnlyList(Of EnvironmentLaneDefinitionDto), IReadOnlyList(Of EnvironmentNodeDefinitionDto), IReadOnlyList(Of EnvironmentRelationshipDefinitionDto))
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId
+  id: OrganizationId
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: OrganizationId
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationId
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public Guid OrganizationId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OrganizationId As Guid
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId*
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+  id: OrganizationNodeDefinitionId
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: OrganizationNodeDefinitionId
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationNodeDefinitionId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string OrganizationNodeDefinitionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OrganizationNodeDefinitionId As String
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId*
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode
+  id: OrganizationCode
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: OrganizationCode
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationCode
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationCode
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string OrganizationCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OrganizationCode As String
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode*
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName
+  id: OrganizationName
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: OrganizationName
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationName
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrganizationName
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string OrganizationName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OrganizationName As String
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName*
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: OrganizationEnvironmentDefinitionDto.BaseCurrency
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency*
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes
+  id: Lanes
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Lanes
+  nameWithType: OrganizationEnvironmentDefinitionDto.Lanes
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lanes
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public IReadOnlyList<EnvironmentLaneDefinitionDto> Lanes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto}
+    content.vb: Public Property Lanes As IReadOnlyList(Of EnvironmentLaneDefinitionDto)
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes*
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes
+  id: Nodes
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Nodes
+  nameWithType: OrganizationEnvironmentDefinitionDto.Nodes
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Nodes
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public IReadOnlyList<EnvironmentNodeDefinitionDto> Nodes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto}
+    content.vb: Public Property Nodes As IReadOnlyList(Of EnvironmentNodeDefinitionDto)
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes*
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships
+  commentId: P:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships
+  id: Relationships
+  parent: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Relationships
+  nameWithType: OrganizationEnvironmentDefinitionDto.Relationships
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Relationships
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public IReadOnlyList<EnvironmentRelationshipDefinitionDto> Relationships { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto}
+    content.vb: Public Property Relationships As IReadOnlyList(Of EnvironmentRelationshipDefinitionDto)
+  overload: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships*
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrganizationEnvironmentDefinitionDto>
+  nameWithType: IEquatable<OrganizationEnvironmentDefinitionDto>
+  fullName: System.IEquatable<Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto>
+  nameWithType.vb: IEquatable(Of OrganizationEnvironmentDefinitionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto)
+  name.vb: IEquatable(Of OrganizationEnvironmentDefinitionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+    name: OrganizationEnvironmentDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto
+    name: OrganizationEnvironmentDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.#ctor
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto__ctor_System_Guid_System_String_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_EnvironmentDesign_EnvironmentLaneDefinitionDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_EnvironmentDesign_EnvironmentRelationshipDefinitionDto__
+  name: OrganizationEnvironmentDefinitionDto
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationEnvironmentDefinitionDto
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationEnvironmentDefinitionDto
+  nameWithType.vb: OrganizationEnvironmentDefinitionDto.New
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<EnvironmentLaneDefinitionDto>
+  nameWithType: IReadOnlyList<EnvironmentLaneDefinitionDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto>
+  nameWithType.vb: IReadOnlyList(Of EnvironmentLaneDefinitionDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto)
+  name.vb: IReadOnlyList(Of EnvironmentLaneDefinitionDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto
+    name: EnvironmentLaneDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto
+    name: EnvironmentLaneDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<EnvironmentNodeDefinitionDto>
+  nameWithType: IReadOnlyList<EnvironmentNodeDefinitionDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto>
+  nameWithType.vb: IReadOnlyList(Of EnvironmentNodeDefinitionDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto)
+  name.vb: IReadOnlyList(Of EnvironmentNodeDefinitionDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+    name: EnvironmentNodeDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+    name: EnvironmentNodeDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<EnvironmentRelationshipDefinitionDto>
+  nameWithType: IReadOnlyList<EnvironmentRelationshipDefinitionDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto>
+  nameWithType.vb: IReadOnlyList(Of EnvironmentRelationshipDefinitionDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto)
+  name.vb: IReadOnlyList(Of EnvironmentRelationshipDefinitionDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto
+    name: EnvironmentRelationshipDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto
+    name: EnvironmentRelationshipDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_OrganizationId
+  name: OrganizationId
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationId
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationId
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_OrganizationNodeDefinitionId
+  name: OrganizationNodeDefinitionId
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationNodeDefinitionId
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_OrganizationCode
+  name: OrganizationCode
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationCode
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationCode
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_OrganizationName
+  name: OrganizationName
+  nameWithType: OrganizationEnvironmentDefinitionDto.OrganizationName
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.OrganizationName
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_BaseCurrency
+  name: BaseCurrency
+  nameWithType: OrganizationEnvironmentDefinitionDto.BaseCurrency
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.BaseCurrency
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_Lanes
+  name: Lanes
+  nameWithType: OrganizationEnvironmentDefinitionDto.Lanes
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Lanes
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_Nodes
+  name: Nodes
+  nameWithType: OrganizationEnvironmentDefinitionDto.Nodes
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Nodes
+- uid: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships
+  href: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_OrganizationEnvironmentDefinitionDto_Relationships
+  name: Relationships
+  nameWithType: OrganizationEnvironmentDefinitionDto.Relationships
+  fullName: Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto.Relationships

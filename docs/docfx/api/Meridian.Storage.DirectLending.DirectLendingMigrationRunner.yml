@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingMigrationRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DirectLendingMigrationRunner
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingMigrationRunner.cs
@@ -51,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingMigrationRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingMigrationRunner.cs
@@ -83,7 +83,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/DirectLending/DirectLendingMigrationRunner.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnsureMigratedAsync
     path: ../../src/Meridian.Storage/DirectLending/DirectLendingMigrationRunner.cs

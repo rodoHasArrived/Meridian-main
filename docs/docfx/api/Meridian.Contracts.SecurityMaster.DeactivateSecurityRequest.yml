@@ -23,11 +23,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeactivateSecurityRequest
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 29
+    startLine: 42
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 29
+    startLine: 42
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -103,11 +103,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityId
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 30
+    startLine: 43
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -132,11 +132,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpectedVersion
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 31
+    startLine: 44
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -161,11 +161,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 32
+    startLine: 45
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -190,11 +190,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceSystem
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 33
+    startLine: 46
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -219,11 +219,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdatedBy
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 34
+    startLine: 47
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -248,11 +248,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SourceRecordId
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 35
+    startLine: 48
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster
@@ -277,11 +277,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
-    startLine: 36
+    startLine: 49
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.SecurityMaster

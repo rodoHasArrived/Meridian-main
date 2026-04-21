@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticsEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapDiagnosticsEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs

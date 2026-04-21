@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleLeanAlgorithm
     path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
@@ -744,7 +744,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Initialize
     path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
@@ -773,7 +773,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnData
     path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
@@ -805,7 +805,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnEndOfAlgorithm
     path: ../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs

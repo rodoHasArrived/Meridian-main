@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBApiVersionValidator
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -78,7 +78,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSupportedServerVersion
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxTestedServerVersion
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinSupportedClientVersion
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateServerVersion
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
@@ -224,7 +224,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BuildVersionRequirementsMessage
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs

@@ -10,6 +10,7 @@ items:
   - Meridian.Ui.Services.ConfigService.AddOrUpdateSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ConfigService.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ConfigService.ConfigPath
+  - Meridian.Ui.Services.ConfigService.DefaultPathResolver
   - Meridian.Ui.Services.ConfigService.DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ConfigService.DeleteSymbolAsync(System.String,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ConfigService.GetAppSettingsAsync(System.Threading.CancellationToken)
@@ -18,6 +19,7 @@ items:
   - Meridian.Ui.Services.ConfigService.InitializeAsync(System.Threading.CancellationToken)
   - Meridian.Ui.Services.ConfigService.Instance
   - Meridian.Ui.Services.ConfigService.LoadConfigAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ConfigService.ResolveDataRoot(Meridian.Contracts.Configuration.AppConfigDto)
   - Meridian.Ui.Services.ConfigService.SaveAlpacaOptionsAsync(Meridian.Contracts.Configuration.AlpacaOptionsDto,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ConfigService.SaveAppSettingsAsync(Meridian.Ui.Services.AppSettings,System.Threading.CancellationToken)
   - Meridian.Ui.Services.ConfigService.SaveConfigAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
@@ -38,7 +40,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigService
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
@@ -82,11 +84,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 21
+    startLine: 23
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -97,6 +99,35 @@ items:
       type: Meridian.Ui.Services.ConfigService
     content.vb: Public Shared ReadOnly Property Instance As ConfigService
   overload: Meridian.Ui.Services.ConfigService.Instance*
+- uid: Meridian.Ui.Services.ConfigService.DefaultPathResolver
+  commentId: P:Meridian.Ui.Services.ConfigService.DefaultPathResolver
+  id: DefaultPathResolver
+  parent: Meridian.Ui.Services.ConfigService
+  langs:
+  - csharp
+  - vb
+  name: DefaultPathResolver
+  nameWithType: ConfigService.DefaultPathResolver
+  fullName: Meridian.Ui.Services.ConfigService.DefaultPathResolver
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultPathResolver
+    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static Func<string> DefaultPathResolver { get; set; }
+    parameters: []
+    return:
+      type: System.Func{System.String}
+    content.vb: Public Shared Property DefaultPathResolver As Func(Of String)
+  overload: Meridian.Ui.Services.ConfigService.DefaultPathResolver*
 - uid: Meridian.Ui.Services.ConfigService.ConfigPath
   commentId: P:Meridian.Ui.Services.ConfigService.ConfigPath
   id: ConfigPath
@@ -111,11 +142,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 29
+    startLine: 32
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -144,11 +175,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 31
+    startLine: 34
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -173,11 +204,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 36
+    startLine: 42
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -208,11 +239,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 49
+    startLine: 60
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -231,6 +262,40 @@ items:
   overload: Meridian.Ui.Services.ConfigService.SaveConfigAsync*
   implements:
   - Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+- uid: Meridian.Ui.Services.ConfigService.ResolveDataRoot(Meridian.Contracts.Configuration.AppConfigDto)
+  commentId: M:Meridian.Ui.Services.ConfigService.ResolveDataRoot(Meridian.Contracts.Configuration.AppConfigDto)
+  id: ResolveDataRoot(Meridian.Contracts.Configuration.AppConfigDto)
+  parent: Meridian.Ui.Services.ConfigService
+  langs:
+  - csharp
+  - vb
+  name: ResolveDataRoot(AppConfigDto?)
+  nameWithType: ConfigService.ResolveDataRoot(AppConfigDto?)
+  fullName: Meridian.Ui.Services.ConfigService.ResolveDataRoot(Meridian.Contracts.Configuration.AppConfigDto?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveDataRoot
+    path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string ResolveDataRoot(AppConfigDto? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.AppConfigDto
+    return:
+      type: System.String
+    content.vb: Public Function ResolveDataRoot(config As AppConfigDto = Nothing) As String
+  overload: Meridian.Ui.Services.ConfigService.ResolveDataRoot*
+  nameWithType.vb: ConfigService.ResolveDataRoot(AppConfigDto)
+  fullName.vb: Meridian.Ui.Services.ConfigService.ResolveDataRoot(Meridian.Contracts.Configuration.AppConfigDto)
+  name.vb: ResolveDataRoot(AppConfigDto)
 - uid: Meridian.Ui.Services.ConfigService.SaveDataSourceAsync(System.String,System.Threading.CancellationToken)
   commentId: M:Meridian.Ui.Services.ConfigService.SaveDataSourceAsync(System.String,System.Threading.CancellationToken)
   id: SaveDataSourceAsync(System.String,System.Threading.CancellationToken)
@@ -245,11 +310,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 58
+    startLine: 77
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -285,11 +350,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAlpacaOptionsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 65
+    startLine: 84
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -322,11 +387,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveStorageConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 72
+    startLine: 91
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -366,11 +431,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddOrUpdateSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 81
+    startLine: 100
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -403,11 +468,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 95
+    startLine: 114
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -440,11 +505,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteSymbolAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 98
+    startLine: 117
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -480,11 +545,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSourcesAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 107
+    startLine: 126
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -515,11 +580,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataSourcesConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 113
+    startLine: 132
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -550,11 +615,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddOrUpdateDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 119
+    startLine: 138
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -587,11 +652,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeleteDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 135
+    startLine: 154
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -627,11 +692,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetDefaultDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 146
+    startLine: 165
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -669,11 +734,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ToggleDataSourceAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 158
+    startLine: 177
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -711,11 +776,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateFailoverSettingsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 171
+    startLine: 190
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -753,11 +818,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAppSettingsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 181
+    startLine: 200
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -788,11 +853,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAppSettingsAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 184
+    startLine: 203
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -825,11 +890,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateServiceUrlAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 187
+    startLine: 206
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -869,11 +934,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 193
+    startLine: 212
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -907,11 +972,11 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/ConfigService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateConfigAsync
     path: ../../src/Meridian.Ui.Services/Services/ConfigService.cs
-    startLine: 196
+    startLine: 215
   assemblies:
   - Meridian.Ui.Services
   namespace: Meridian.Ui.Services
@@ -1254,6 +1319,75 @@ references:
   name: ConfigService
   nameWithType: ConfigService
   fullName: Meridian.Ui.Services.ConfigService
+- uid: Meridian.Ui.Services.ConfigService.DefaultPathResolver*
+  commentId: Overload:Meridian.Ui.Services.ConfigService.DefaultPathResolver
+  href: Meridian.Ui.Services.ConfigService.html#Meridian_Ui_Services_ConfigService_DefaultPathResolver
+  name: DefaultPathResolver
+  nameWithType: ConfigService.DefaultPathResolver
+  fullName: Meridian.Ui.Services.ConfigService.DefaultPathResolver
+- uid: System.Func{System.String}
+  commentId: T:System.Func{System.String}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<string>
+  nameWithType: Func<string>
+  fullName: System.Func<string>
+  nameWithType.vb: Func(Of String)
+  fullName.vb: System.Func(Of String)
+  name.vb: Func(Of String)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
 - uid: Meridian.Ui.Services.ConfigService.ConfigPath*
   commentId: Overload:Meridian.Ui.Services.ConfigService.ConfigPath
   href: Meridian.Ui.Services.ConfigService.html#Meridian_Ui_Services_ConfigService_ConfigPath
@@ -1539,6 +1673,12 @@ references:
   - uid: Meridian.Contracts.Configuration
     name: Configuration
     href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Ui.Services.ConfigService.ResolveDataRoot*
+  commentId: Overload:Meridian.Ui.Services.ConfigService.ResolveDataRoot
+  href: Meridian.Ui.Services.ConfigService.html#Meridian_Ui_Services_ConfigService_ResolveDataRoot_Meridian_Contracts_Configuration_AppConfigDto_
+  name: ResolveDataRoot
+  nameWithType: ConfigService.ResolveDataRoot
+  fullName: Meridian.Ui.Services.ConfigService.ResolveDataRoot
 - uid: Meridian.Ui.Services.ConfigService.SaveDataSourceAsync*
   commentId: Overload:Meridian.Ui.Services.ConfigService.SaveDataSourceAsync
   href: Meridian.Ui.Services.ConfigService.html#Meridian_Ui_Services_ConfigService_SaveDataSourceAsync_System_String_System_Threading_CancellationToken_

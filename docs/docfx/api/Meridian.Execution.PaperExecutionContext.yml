@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperExecutionContext
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Gateway
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Feed
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Portfolio
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Universe
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -254,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CurrentTime
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -287,7 +287,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Ledger
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -323,7 +323,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Tick
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -364,7 +364,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyCorporateActionsAsync
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/PaperExecutionContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApplyFill
     path: ../../src/Meridian.Execution/PaperExecutionContext.cs

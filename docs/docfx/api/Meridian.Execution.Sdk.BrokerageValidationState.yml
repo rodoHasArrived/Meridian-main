@@ -1,0 +1,120 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.BrokerageValidationState
+  commentId: T:Meridian.Execution.Sdk.BrokerageValidationState
+  id: BrokerageValidationState
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.BrokerageValidationState.Gap
+  - Meridian.Execution.Sdk.BrokerageValidationState.Required
+  langs:
+  - csharp
+  - vb
+  name: BrokerageValidationState
+  nameWithType: BrokerageValidationState
+  fullName: Meridian.Execution.Sdk.BrokerageValidationState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerageValidationState
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: public enum BrokerageValidationState
+    content.vb: Public Enum BrokerageValidationState
+- uid: Meridian.Execution.Sdk.BrokerageValidationState.Required
+  commentId: F:Meridian.Execution.Sdk.BrokerageValidationState.Required
+  id: Required
+  parent: Meridian.Execution.Sdk.BrokerageValidationState
+  langs:
+  - csharp
+  - vb
+  name: Required
+  nameWithType: BrokerageValidationState.Required
+  fullName: Meridian.Execution.Sdk.BrokerageValidationState.Required
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Required
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Required = 0
+    return:
+      type: Meridian.Execution.Sdk.BrokerageValidationState
+- uid: Meridian.Execution.Sdk.BrokerageValidationState.Gap
+  commentId: F:Meridian.Execution.Sdk.BrokerageValidationState.Gap
+  id: Gap
+  parent: Meridian.Execution.Sdk.BrokerageValidationState
+  langs:
+  - csharp
+  - vb
+  name: Gap
+  nameWithType: BrokerageValidationState.Gap
+  fullName: Meridian.Execution.Sdk.BrokerageValidationState.Gap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gap
+    path: ../../src/Meridian.Execution.Sdk/BrokerageValidationEvaluator.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Gap = 1
+    return:
+      type: Meridian.Execution.Sdk.BrokerageValidationState
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.BrokerageValidationState
+  commentId: T:Meridian.Execution.Sdk.BrokerageValidationState
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.BrokerageValidationState.html
+  name: BrokerageValidationState
+  nameWithType: BrokerageValidationState
+  fullName: Meridian.Execution.Sdk.BrokerageValidationState

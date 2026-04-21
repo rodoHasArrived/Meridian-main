@@ -26,7 +26,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigStore
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LoadConfig
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Load
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -219,7 +219,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SaveAsync
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -250,7 +250,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryLoadProviderMetrics
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -278,7 +278,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryLoadStatusJson
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -306,7 +306,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDataRoot
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStatusPath
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
@@ -374,7 +374,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillStatusPath
     path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs

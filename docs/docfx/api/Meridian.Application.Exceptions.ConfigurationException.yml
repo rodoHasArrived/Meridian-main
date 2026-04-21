@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ConfigurationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigurationException
     path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ConfigurationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
     path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
@@ -99,7 +99,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ConfigurationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FieldName
     path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ConfigurationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
@@ -160,7 +160,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ConfigurationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs
@@ -196,7 +196,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Exceptions/ConfigurationException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Exceptions/ConfigurationException.cs

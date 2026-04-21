@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePermissionsService
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -95,7 +95,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnsureDirectoryPermissions
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -136,7 +136,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: VerifyWriteAccess
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FilePermissionsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPermissionsDiagnostic
     path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs

@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioImportService
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Instance
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
@@ -90,7 +90,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseCsvAsync
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParseJsonAsync
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAsSubscriptionsAsync
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
@@ -216,7 +216,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportToWatchlistAsync
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
@@ -256,7 +256,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetIndexConstituentsAsync
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
@@ -294,7 +294,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportSymbolsAsync
     path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs

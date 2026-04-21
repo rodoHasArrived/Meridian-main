@@ -20,7 +20,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/EventTraceContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTraceContext
     path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/EventTraceContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/EventTraceContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ParentContext
     path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
@@ -127,7 +127,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/EventTraceContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CorrelationId
     path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/EventTraceContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HasParent
     path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs
@@ -185,7 +185,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Tracing/EventTraceContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CaptureCurrent
     path: ../../src/Meridian.Application/Tracing/EventTraceContext.cs

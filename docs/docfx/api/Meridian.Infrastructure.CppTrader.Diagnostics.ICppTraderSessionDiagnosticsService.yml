@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ICppTraderSessionDiagnosticsService
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs
@@ -45,7 +45,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSessions
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrackSession
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs
@@ -107,7 +107,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveSession
     path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/ICppTraderSessionDiagnosticsService.cs

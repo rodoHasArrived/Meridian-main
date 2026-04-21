@@ -22,11 +22,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecutionPortfolioSnapshotDto
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 463
+    startLine: 574
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -60,11 +60,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 463
+    startLine: 574
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -104,11 +104,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cash
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 464
+    startLine: 575
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -133,11 +133,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PortfolioValue
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 465
+    startLine: 576
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -162,11 +162,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnrealisedPnl
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 466
+    startLine: 577
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -191,11 +191,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RealisedPnl
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 467
+    startLine: 578
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -220,11 +220,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Positions
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 468
+    startLine: 579
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services
@@ -249,11 +249,11 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs
-    startLine: 469
+    startLine: 580
   assemblies:
   - Meridian.Execution
   namespace: Meridian.Execution.Services

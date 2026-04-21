@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ISecurityMasterAmender
     path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs
@@ -34,6 +34,9 @@ items:
   syntax:
     content: public interface ISecurityMasterAmender
     content.vb: Public Interface ISecurityMasterAmender
+  derivedClasses:
+  - Meridian.Application.SecurityMaster.NullSecurityMasterService
+  - Meridian.Application.SecurityMaster.SecurityMasterService
 - uid: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
   commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
   id: AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
@@ -48,7 +51,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmendTermsAsync
     path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs

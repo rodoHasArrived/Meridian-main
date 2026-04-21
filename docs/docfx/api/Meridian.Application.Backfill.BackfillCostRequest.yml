@@ -5,8 +5,9 @@ items:
   id: BackfillCostRequest
   parent: Meridian.Application.Backfill
   children:
-  - Meridian.Application.Backfill.BackfillCostRequest.#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  - Meridian.Application.Backfill.BackfillCostRequest.#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity)
   - Meridian.Application.Backfill.BackfillCostRequest.From
+  - Meridian.Application.Backfill.BackfillCostRequest.Granularity
   - Meridian.Application.Backfill.BackfillCostRequest.Provider
   - Meridian.Application.Backfill.BackfillCostRequest.Symbols
   - Meridian.Application.Backfill.BackfillCostRequest.To
@@ -20,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillCostRequest
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 188
+    startLine: 279
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -44,32 +45,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Application.Backfill.BackfillCostRequest.#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
-  commentId: M:Meridian.Application.Backfill.BackfillCostRequest.#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
-  id: '#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})'
+- uid: Meridian.Application.Backfill.BackfillCostRequest.#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Application.Backfill.BackfillCostRequest.#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: '#ctor(System.String[],System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},Meridian.Infrastructure.Adapters.Core.DataGranularity)'
   parent: Meridian.Application.Backfill.BackfillCostRequest
   langs:
   - csharp
   - vb
-  name: BackfillCostRequest(string[]?, string?, DateOnly?, DateOnly?)
-  nameWithType: BackfillCostRequest.BackfillCostRequest(string[]?, string?, DateOnly?, DateOnly?)
-  fullName: Meridian.Application.Backfill.BackfillCostRequest.BackfillCostRequest(string[]?, string?, System.DateOnly?, System.DateOnly?)
+  name: BackfillCostRequest(string[]?, string?, DateOnly?, DateOnly?, DataGranularity)
+  nameWithType: BackfillCostRequest.BackfillCostRequest(string[]?, string?, DateOnly?, DateOnly?, DataGranularity)
+  fullName: Meridian.Application.Backfill.BackfillCostRequest.BackfillCostRequest(string[]?, string?, System.DateOnly?, System.DateOnly?, Meridian.Infrastructure.Adapters.Core.DataGranularity)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 188
+    startLine: 279
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
   summary: Request for cost estimation.
   example: []
   syntax:
-    content: public BackfillCostRequest(string[]? Symbols, string? Provider = null, DateOnly? From = null, DateOnly? To = null)
+    content: public BackfillCostRequest(string[]? Symbols, string? Provider = null, DateOnly? From = null, DateOnly? To = null, DataGranularity Granularity = DataGranularity.Daily)
     parameters:
     - id: Symbols
       type: System.String[]
@@ -79,11 +80,13 @@ items:
       type: System.Nullable{System.DateOnly}
     - id: To
       type: System.Nullable{System.DateOnly}
-    content.vb: Public Sub New(Symbols As String(), Provider As String = Nothing, From As DateOnly? = Nothing, [To] As DateOnly? = Nothing)
+    - id: Granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    content.vb: Public Sub New(Symbols As String(), Provider As String = Nothing, From As DateOnly? = Nothing, [To] As DateOnly? = Nothing, Granularity As DataGranularity = DataGranularity.Daily)
   overload: Meridian.Application.Backfill.BackfillCostRequest.#ctor*
-  nameWithType.vb: BackfillCostRequest.New(String(), String, DateOnly?, DateOnly?)
-  fullName.vb: Meridian.Application.Backfill.BackfillCostRequest.New(String(), String, System.DateOnly?, System.DateOnly?)
-  name.vb: New(String(), String, DateOnly?, DateOnly?)
+  nameWithType.vb: BackfillCostRequest.New(String(), String, DateOnly?, DateOnly?, DataGranularity)
+  fullName.vb: Meridian.Application.Backfill.BackfillCostRequest.New(String(), String, System.DateOnly?, System.DateOnly?, Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  name.vb: New(String(), String, DateOnly?, DateOnly?, DataGranularity)
 - uid: Meridian.Application.Backfill.BackfillCostRequest.Symbols
   commentId: P:Meridian.Application.Backfill.BackfillCostRequest.Symbols
   id: Symbols
@@ -98,11 +101,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 189
+    startLine: 280
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -127,11 +130,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 190
+    startLine: 281
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -156,11 +159,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: From
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 191
+    startLine: 282
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -185,11 +188,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: To
     path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
-    startLine: 192
+    startLine: 283
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Backfill
@@ -200,6 +203,35 @@ items:
       type: System.Nullable{System.DateOnly}
     content.vb: Public Property [To] As DateOnly?
   overload: Meridian.Application.Backfill.BackfillCostRequest.To*
+- uid: Meridian.Application.Backfill.BackfillCostRequest.Granularity
+  commentId: P:Meridian.Application.Backfill.BackfillCostRequest.Granularity
+  id: Granularity
+  parent: Meridian.Application.Backfill.BackfillCostRequest
+  langs:
+  - csharp
+  - vb
+  name: Granularity
+  nameWithType: BackfillCostRequest.Granularity
+  fullName: Meridian.Application.Backfill.BackfillCostRequest.Granularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Granularity
+    path: ../../src/Meridian.Application/Backfill/BackfillCostEstimator.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DataGranularity Granularity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    content.vb: Public Property Granularity As DataGranularity
+  overload: Meridian.Application.Backfill.BackfillCostRequest.Granularity*
 references:
 - uid: Meridian.Application.Backfill
   commentId: N:Meridian.Application.Backfill
@@ -507,7 +539,7 @@ references:
   - name: )
 - uid: Meridian.Application.Backfill.BackfillCostRequest.#ctor*
   commentId: Overload:Meridian.Application.Backfill.BackfillCostRequest.#ctor
-  href: Meridian.Application.Backfill.BackfillCostRequest.html#Meridian_Application_Backfill_BackfillCostRequest__ctor_System_String___System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__
+  href: Meridian.Application.Backfill.BackfillCostRequest.html#Meridian_Application_Backfill_BackfillCostRequest__ctor_System_String___System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__Meridian_Infrastructure_Adapters_Core_DataGranularity_
   name: BackfillCostRequest
   nameWithType: BackfillCostRequest.BackfillCostRequest
   fullName: Meridian.Application.Backfill.BackfillCostRequest.BackfillCostRequest
@@ -568,6 +600,13 @@ references:
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.dateonly
   - name: '?'
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
 - uid: System.Nullable`1
   commentId: T:System.Nullable`1
   isExternal: true
@@ -596,6 +635,44 @@ references:
   - name: " "
   - name: T
   - name: )
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
 - uid: Meridian.Application.Backfill.BackfillCostRequest.Symbols*
   commentId: Overload:Meridian.Application.Backfill.BackfillCostRequest.Symbols
   href: Meridian.Application.Backfill.BackfillCostRequest.html#Meridian_Application_Backfill_BackfillCostRequest_Symbols
@@ -620,3 +697,9 @@ references:
   name: To
   nameWithType: BackfillCostRequest.To
   fullName: Meridian.Application.Backfill.BackfillCostRequest.To
+- uid: Meridian.Application.Backfill.BackfillCostRequest.Granularity*
+  commentId: Overload:Meridian.Application.Backfill.BackfillCostRequest.Granularity
+  href: Meridian.Application.Backfill.BackfillCostRequest.html#Meridian_Application_Backfill_BackfillCostRequest_Granularity
+  name: Granularity
+  nameWithType: BackfillCostRequest.Granularity
+  fullName: Meridian.Application.Backfill.BackfillCostRequest.Granularity

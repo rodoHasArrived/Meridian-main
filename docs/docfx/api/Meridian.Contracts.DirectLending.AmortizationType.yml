@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AmortizationType
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Bullet
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InterestOnly
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -96,7 +96,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StraightLine
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
@@ -122,7 +122,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CustomSchedule
     path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs

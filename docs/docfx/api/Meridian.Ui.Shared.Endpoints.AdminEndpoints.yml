@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdminEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MapAdminEndpoints
     path: ../../src/Meridian.Ui.Shared/Endpoints/AdminEndpoints.cs

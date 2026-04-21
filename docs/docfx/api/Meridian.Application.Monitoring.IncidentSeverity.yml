@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.IncidentSeverity
+  commentId: T:Meridian.Application.Monitoring.IncidentSeverity
+  id: IncidentSeverity
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.IncidentSeverity.Critical
+  - Meridian.Application.Monitoring.IncidentSeverity.Major
+  - Meridian.Application.Monitoring.IncidentSeverity.Minor
+  - Meridian.Application.Monitoring.IncidentSeverity.Moderate
+  - Meridian.Application.Monitoring.IncidentSeverity.None
+  langs:
+  - csharp
+  - vb
+  name: IncidentSeverity
+  nameWithType: IncidentSeverity
+  fullName: Meridian.Application.Monitoring.IncidentSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncidentSeverity
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: 'public enum IncidentSeverity : byte'
+    content.vb: Public Enum IncidentSeverity As Byte
+- uid: Meridian.Application.Monitoring.IncidentSeverity.None
+  commentId: F:Meridian.Application.Monitoring.IncidentSeverity.None
+  id: None
+  parent: Meridian.Application.Monitoring.IncidentSeverity
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: IncidentSeverity.None
+  fullName: Meridian.Application.Monitoring.IncidentSeverity.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Application.Monitoring.IncidentSeverity
+- uid: Meridian.Application.Monitoring.IncidentSeverity.Minor
+  commentId: F:Meridian.Application.Monitoring.IncidentSeverity.Minor
+  id: Minor
+  parent: Meridian.Application.Monitoring.IncidentSeverity
+  langs:
+  - csharp
+  - vb
+  name: Minor
+  nameWithType: IncidentSeverity.Minor
+  fullName: Meridian.Application.Monitoring.IncidentSeverity.Minor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minor
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Minor = 1
+    return:
+      type: Meridian.Application.Monitoring.IncidentSeverity
+- uid: Meridian.Application.Monitoring.IncidentSeverity.Moderate
+  commentId: F:Meridian.Application.Monitoring.IncidentSeverity.Moderate
+  id: Moderate
+  parent: Meridian.Application.Monitoring.IncidentSeverity
+  langs:
+  - csharp
+  - vb
+  name: Moderate
+  nameWithType: IncidentSeverity.Moderate
+  fullName: Meridian.Application.Monitoring.IncidentSeverity.Moderate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Moderate
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Moderate = 2
+    return:
+      type: Meridian.Application.Monitoring.IncidentSeverity
+- uid: Meridian.Application.Monitoring.IncidentSeverity.Major
+  commentId: F:Meridian.Application.Monitoring.IncidentSeverity.Major
+  id: Major
+  parent: Meridian.Application.Monitoring.IncidentSeverity
+  langs:
+  - csharp
+  - vb
+  name: Major
+  nameWithType: IncidentSeverity.Major
+  fullName: Meridian.Application.Monitoring.IncidentSeverity.Major
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Major
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Major = 3
+    return:
+      type: Meridian.Application.Monitoring.IncidentSeverity
+- uid: Meridian.Application.Monitoring.IncidentSeverity.Critical
+  commentId: F:Meridian.Application.Monitoring.IncidentSeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.IncidentSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: IncidentSeverity.Critical
+  fullName: Meridian.Application.Monitoring.IncidentSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationCalibration.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Critical = 4
+    return:
+      type: Meridian.Application.Monitoring.IncidentSeverity
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.IncidentSeverity
+  commentId: T:Meridian.Application.Monitoring.IncidentSeverity
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IncidentSeverity.html
+  name: IncidentSeverity
+  nameWithType: IncidentSeverity
+  fullName: Meridian.Application.Monitoring.IncidentSeverity

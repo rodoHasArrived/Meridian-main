@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DiagnosticBundleService
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -93,7 +93,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateAsync
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/DiagnosticBundleService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReadBundle
     path: ../../src/Meridian.Application/Services/DiagnosticBundleService.cs

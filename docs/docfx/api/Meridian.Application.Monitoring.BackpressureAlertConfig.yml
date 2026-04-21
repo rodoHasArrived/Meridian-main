@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackpressureAlertConfig
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -63,7 +63,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -94,7 +94,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningUtilizationPercent
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalUtilizationPercent
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -156,7 +156,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningDropRatePercent
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalDropRatePercent
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConsecutiveChecksBeforeAlert
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WarningAlertIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -280,7 +280,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CriticalAlertIntervalSeconds
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -311,7 +311,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SendWebhookOnResolved
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
@@ -342,7 +342,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Default
     path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs

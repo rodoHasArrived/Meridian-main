@@ -6,6 +6,7 @@ items:
   parent: Meridian.Application.SecurityMaster
   children:
   - Meridian.Application.SecurityMaster.SecurityMasterImportService.#ctor(Meridian.Contracts.SecurityMaster.ISecurityMasterService,Meridian.Application.SecurityMaster.SecurityMasterCsvParser,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterImportService},Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
+  - Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot
   - Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
   langs:
   - csharp
@@ -17,23 +18,24 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMasterImportService
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-    startLine: 50
+    startLine: 51
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.SecurityMaster
   summary: Implementation of bulk security import service.
   example: []
   syntax:
-    content: 'public sealed class SecurityMasterImportService : ISecurityMasterImportService'
-    content.vb: Public NotInheritable Class SecurityMasterImportService Implements ISecurityMasterImportService
+    content: 'public sealed class SecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService'
+    content.vb: Public NotInheritable Class SecurityMasterImportService Implements ISecurityMasterImportService, ISecurityMasterIngestStatusService
   inheritance:
   - System.Object
   implements:
   - Meridian.Application.SecurityMaster.ISecurityMasterImportService
+  - Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
   inheritedMembers:
   - System.Object.Equals(System.Object)
   - System.Object.Equals(System.Object,System.Object)
@@ -55,11 +57,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-    startLine: 60
+    startLine: 65
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.SecurityMaster
@@ -79,6 +81,38 @@ items:
   nameWithType.vb: SecurityMasterImportService.New(ISecurityMasterService, SecurityMasterCsvParser, ILogger(Of SecurityMasterImportService), ISecurityMasterConflictService)
   fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterImportService.New(Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Application.SecurityMaster.SecurityMasterCsvParser, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterImportService), Meridian.Application.SecurityMaster.ISecurityMasterConflictService)
   name.vb: New(ISecurityMasterService, SecurityMasterCsvParser, ILogger(Of SecurityMasterImportService), ISecurityMasterConflictService)
+- uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.SecurityMaster.SecurityMasterImportService
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: SecurityMasterImportService.GetSnapshot()
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Gets the latest ingest status snapshot.
+  example: []
+  syntax:
+    content: public SecurityMasterIngestStatusSnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+    content.vb: Public Function GetSnapshot() As SecurityMasterIngestStatusSnapshot
+  overload: Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
 - uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
   commentId: M:Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
   id: ImportAsync(System.String,System.String,System.IProgress{Meridian.Application.SecurityMaster.SecurityMasterImportProgress},System.Threading.CancellationToken)
@@ -93,11 +127,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImportAsync
     path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs
-    startLine: 72
+    startLine: 85
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.SecurityMaster
@@ -177,6 +211,13 @@ references:
   name: ISecurityMasterImportService
   nameWithType: ISecurityMasterImportService
   fullName: Meridian.Application.SecurityMaster.ISecurityMasterImportService
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.html
+  name: ISecurityMasterIngestStatusService
+  nameWithType: ISecurityMasterIngestStatusService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
 - uid: System.Object.Equals(System.Object)
   commentId: M:System.Object.Equals(System.Object)
   parent: System.Object
@@ -537,6 +578,38 @@ references:
     name: Logging
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot
+  href: Meridian.Application.SecurityMaster.SecurityMasterImportService.html#Meridian_Application_SecurityMaster_SecurityMasterImportService_GetSnapshot
+  name: GetSnapshot
+  nameWithType: SecurityMasterImportService.GetSnapshot
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterImportService.GetSnapshot
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService
+  href: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.html#Meridian_Application_SecurityMaster_ISecurityMasterIngestStatusService_GetSnapshot
+  name: GetSnapshot()
+  nameWithType: ISecurityMasterIngestStatusService.GetSnapshot()
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot()
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.html#Meridian_Application_SecurityMaster_ISecurityMasterIngestStatusService_GetSnapshot
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.GetSnapshot
+    name: GetSnapshot
+    href: Meridian.Application.SecurityMaster.ISecurityMasterIngestStatusService.html#Meridian_Application_SecurityMaster_ISecurityMasterIngestStatusService_GetSnapshot
+  - name: (
+  - name: )
+- uid: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot.html
+  name: SecurityMasterIngestStatusSnapshot
+  nameWithType: SecurityMasterIngestStatusSnapshot
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot
 - uid: Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync*
   commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterImportService.ImportAsync
   href: Meridian.Application.SecurityMaster.SecurityMasterImportService.html#Meridian_Application_SecurityMaster_SecurityMasterImportService_ImportAsync_System_String_System_String_System_IProgress_Meridian_Application_SecurityMaster_SecurityMasterImportProgress__System_Threading_CancellationToken_

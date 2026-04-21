@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RepairResult
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesProcessed
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilesRepaired
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Errors
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DryRun
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
@@ -213,7 +213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Storage/Services/FileMaintenanceService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PlannedActions
     path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs

@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Exceptions/UnsupportedOrderRequestException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsupportedOrderRequestException
     path: ../../src/Meridian.Execution/Exceptions/UnsupportedOrderRequestException.cs
@@ -72,7 +72,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Exceptions/UnsupportedOrderRequestException.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Exceptions/UnsupportedOrderRequestException.cs

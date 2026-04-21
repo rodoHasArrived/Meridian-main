@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ChecklistDisplay
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -55,7 +55,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StartStep
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -89,7 +89,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompleteStep
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -123,7 +123,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailStep
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs
@@ -157,7 +157,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ProgressDisplayService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SkipStep
     path: ../../src/Meridian.Application/Services/ProgressDisplayService.cs

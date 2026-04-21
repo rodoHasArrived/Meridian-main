@@ -10,9 +10,6 @@ items:
   - Meridian.Application.UI.ConfigStore
   - Meridian.Application.UI.CreateMaintenanceScheduleRequest
   - Meridian.Application.UI.ExecuteMaintenanceRequest
-  - Meridian.Application.UI.HtmlTemplateLoader
-  - Meridian.Application.UI.HtmlTemplateLoaderExtensions
-  - Meridian.Application.UI.HtmlTemplateManager
   - Meridian.Application.UI.ImportRequest
   - Meridian.Application.UI.MaintenanceOptionsDto
   - Meridian.Application.UI.PackageRequest
@@ -119,26 +116,6 @@ references:
   name: StatusEndpointHandlers
   nameWithType: StatusEndpointHandlers
   fullName: Meridian.Application.UI.StatusEndpointHandlers
-- uid: Meridian.Application.UI.HtmlTemplateLoader
-  commentId: T:Meridian.Application.UI.HtmlTemplateLoader
-  parent: Meridian.Application.UI
-  href: Meridian.Application.UI.HtmlTemplateLoader.html
-  name: HtmlTemplateLoader
-  nameWithType: HtmlTemplateLoader
-  fullName: Meridian.Application.UI.HtmlTemplateLoader
-- uid: Meridian.Application.UI.HtmlTemplateLoaderExtensions
-  commentId: T:Meridian.Application.UI.HtmlTemplateLoaderExtensions
-  parent: Meridian.Application.UI
-  href: Meridian.Application.UI.HtmlTemplateLoaderExtensions.html
-  name: HtmlTemplateLoaderExtensions
-  nameWithType: HtmlTemplateLoaderExtensions
-  fullName: Meridian.Application.UI.HtmlTemplateLoaderExtensions
-- uid: Meridian.Application.UI.HtmlTemplateManager
-  commentId: T:Meridian.Application.UI.HtmlTemplateManager
-  href: Meridian.Application.UI.HtmlTemplateManager.html
-  name: HtmlTemplateManager
-  nameWithType: HtmlTemplateManager
-  fullName: Meridian.Application.UI.HtmlTemplateManager
 - uid: Meridian.Application.UI
   commentId: N:Meridian.Application.UI
   href: Meridian.html

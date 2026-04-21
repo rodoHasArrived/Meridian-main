@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IConfigValidationStage
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs
@@ -47,7 +47,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/IConfigValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Validate
     path: ../../src/Meridian.Application/Config/IConfigValidator.cs

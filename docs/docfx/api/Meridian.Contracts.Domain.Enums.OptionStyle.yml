@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OptionStyle
     path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
@@ -44,7 +44,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: American
     path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
@@ -75,7 +75,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Domain/Enums/OptionStyle.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: European
     path: ../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs

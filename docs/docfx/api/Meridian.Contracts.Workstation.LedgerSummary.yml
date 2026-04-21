@@ -5,12 +5,11 @@ items:
   id: LedgerSummary
   parent: Meridian.Contracts.Workstation
   children:
-  - Meridian.Contracts.Workstation.LedgerSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32,System.String)
+  - Meridian.Contracts.Workstation.LedgerSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32)
   - Meridian.Contracts.Workstation.LedgerSummary.AsOf
   - Meridian.Contracts.Workstation.LedgerSummary.AssetBalance
   - Meridian.Contracts.Workstation.LedgerSummary.EquityBalance
   - Meridian.Contracts.Workstation.LedgerSummary.ExpenseBalance
-  - Meridian.Contracts.Workstation.LedgerSummary.FundProfileId
   - Meridian.Contracts.Workstation.LedgerSummary.Journal
   - Meridian.Contracts.Workstation.LedgerSummary.JournalEntryCount
   - Meridian.Contracts.Workstation.LedgerSummary.LedgerEntryCount
@@ -31,11 +30,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerSummary
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 187
+    startLine: 204
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -55,32 +54,32 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Contracts.Workstation.LedgerSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32,System.String)
-  commentId: M:Meridian.Contracts.Workstation.LedgerSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32,System.String)
-  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32,System.String)'
+- uid: Meridian.Contracts.Workstation.LedgerSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32)
+  commentId: M:Meridian.Contracts.Workstation.LedgerSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32)
+  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.Int32,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerTrialBalanceLine},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.LedgerJournalLine},System.Int32,System.Int32)'
   parent: Meridian.Contracts.Workstation.LedgerSummary
   langs:
   - csharp
   - vb
-  name: LedgerSummary(string, string, DateTimeOffset, int, int, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<LedgerTrialBalanceLine>, IReadOnlyList<LedgerJournalLine>, int, int, string?)
-  nameWithType: LedgerSummary.LedgerSummary(string, string, DateTimeOffset, int, int, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<LedgerTrialBalanceLine>, IReadOnlyList<LedgerJournalLine>, int, int, string?)
-  fullName: Meridian.Contracts.Workstation.LedgerSummary.LedgerSummary(string, string, System.DateTimeOffset, int, int, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.LedgerTrialBalanceLine>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.LedgerJournalLine>, int, int, string?)
+  name: LedgerSummary(string, string, DateTimeOffset, int, int, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<LedgerTrialBalanceLine>, IReadOnlyList<LedgerJournalLine>, int, int)
+  nameWithType: LedgerSummary.LedgerSummary(string, string, DateTimeOffset, int, int, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<LedgerTrialBalanceLine>, IReadOnlyList<LedgerJournalLine>, int, int)
+  fullName: Meridian.Contracts.Workstation.LedgerSummary.LedgerSummary(string, string, System.DateTimeOffset, int, int, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.LedgerTrialBalanceLine>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.LedgerJournalLine>, int, int)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 187
+    startLine: 204
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
   summary: Shared ledger rollup for workstation governance and audit surfaces.
   example: []
   syntax:
-    content: public LedgerSummary(string LedgerReference, string RunId, DateTimeOffset AsOf, int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance, IReadOnlyList<LedgerTrialBalanceLine> TrialBalance, IReadOnlyList<LedgerJournalLine> Journal, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, string? FundProfileId = null)
+    content: public LedgerSummary(string LedgerReference, string RunId, DateTimeOffset AsOf, int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance, IReadOnlyList<LedgerTrialBalanceLine> TrialBalance, IReadOnlyList<LedgerJournalLine> Journal, int SecurityResolvedCount = 0, int SecurityMissingCount = 0)
     parameters:
     - id: LedgerReference
       type: System.String
@@ -110,13 +109,11 @@ items:
       type: System.Int32
     - id: SecurityMissingCount
       type: System.Int32
-    - id: FundProfileId
-      type: System.String
-    content.vb: Public Sub New(LedgerReference As String, RunId As String, AsOf As DateTimeOffset, JournalEntryCount As Integer, LedgerEntryCount As Integer, AssetBalance As Decimal, LiabilityBalance As Decimal, EquityBalance As Decimal, RevenueBalance As Decimal, ExpenseBalance As Decimal, TrialBalance As IReadOnlyList(Of LedgerTrialBalanceLine), Journal As IReadOnlyList(Of LedgerJournalLine), SecurityResolvedCount As Integer = 0, SecurityMissingCount As Integer = 0, FundProfileId As String = Nothing)
+    content.vb: Public Sub New(LedgerReference As String, RunId As String, AsOf As DateTimeOffset, JournalEntryCount As Integer, LedgerEntryCount As Integer, AssetBalance As Decimal, LiabilityBalance As Decimal, EquityBalance As Decimal, RevenueBalance As Decimal, ExpenseBalance As Decimal, TrialBalance As IReadOnlyList(Of LedgerTrialBalanceLine), Journal As IReadOnlyList(Of LedgerJournalLine), SecurityResolvedCount As Integer = 0, SecurityMissingCount As Integer = 0)
   overload: Meridian.Contracts.Workstation.LedgerSummary.#ctor*
-  nameWithType.vb: LedgerSummary.New(String, String, DateTimeOffset, Integer, Integer, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of LedgerTrialBalanceLine), IReadOnlyList(Of LedgerJournalLine), Integer, Integer, String)
-  fullName.vb: Meridian.Contracts.Workstation.LedgerSummary.New(String, String, System.DateTimeOffset, Integer, Integer, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.LedgerTrialBalanceLine), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.LedgerJournalLine), Integer, Integer, String)
-  name.vb: New(String, String, DateTimeOffset, Integer, Integer, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of LedgerTrialBalanceLine), IReadOnlyList(Of LedgerJournalLine), Integer, Integer, String)
+  nameWithType.vb: LedgerSummary.New(String, String, DateTimeOffset, Integer, Integer, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of LedgerTrialBalanceLine), IReadOnlyList(Of LedgerJournalLine), Integer, Integer)
+  fullName.vb: Meridian.Contracts.Workstation.LedgerSummary.New(String, String, System.DateTimeOffset, Integer, Integer, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.LedgerTrialBalanceLine), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.LedgerJournalLine), Integer, Integer)
+  name.vb: New(String, String, DateTimeOffset, Integer, Integer, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of LedgerTrialBalanceLine), IReadOnlyList(Of LedgerJournalLine), Integer, Integer)
 - uid: Meridian.Contracts.Workstation.LedgerSummary.LedgerReference
   commentId: P:Meridian.Contracts.Workstation.LedgerSummary.LedgerReference
   id: LedgerReference
@@ -131,11 +128,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerReference
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 188
+    startLine: 205
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -160,11 +157,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 189
+    startLine: 206
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -189,11 +186,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AsOf
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 190
+    startLine: 207
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -218,11 +215,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JournalEntryCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 191
+    startLine: 208
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -247,11 +244,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LedgerEntryCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 192
+    startLine: 209
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -276,11 +273,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AssetBalance
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 193
+    startLine: 210
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -305,11 +302,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LiabilityBalance
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 194
+    startLine: 211
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -334,11 +331,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EquityBalance
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 195
+    startLine: 212
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -363,11 +360,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RevenueBalance
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 196
+    startLine: 213
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -392,11 +389,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExpenseBalance
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 197
+    startLine: 214
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -421,11 +418,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TrialBalance
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 198
+    startLine: 215
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -450,11 +447,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Journal
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 199
+    startLine: 216
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -479,11 +476,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityResolvedCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 200
+    startLine: 217
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -508,11 +505,11 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SecurityMissingCount
     path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 201
+    startLine: 218
   assemblies:
   - Meridian.Contracts
   namespace: Meridian.Contracts.Workstation
@@ -523,35 +520,6 @@ items:
       type: System.Int32
     content.vb: Public Property SecurityMissingCount As Integer
   overload: Meridian.Contracts.Workstation.LedgerSummary.SecurityMissingCount*
-- uid: Meridian.Contracts.Workstation.LedgerSummary.FundProfileId
-  commentId: P:Meridian.Contracts.Workstation.LedgerSummary.FundProfileId
-  id: FundProfileId
-  parent: Meridian.Contracts.Workstation.LedgerSummary
-  langs:
-  - csharp
-  - vb
-  name: FundProfileId
-  nameWithType: LedgerSummary.FundProfileId
-  fullName: Meridian.Contracts.Workstation.LedgerSummary.FundProfileId
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: FundProfileId
-    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
-    startLine: 202
-  assemblies:
-  - Meridian.Contracts
-  namespace: Meridian.Contracts.Workstation
-  syntax:
-    content: public string? FundProfileId { get; init; }
-    parameters: []
-    return:
-      type: System.String
-    content.vb: Public Property FundProfileId As String
-  overload: Meridian.Contracts.Workstation.LedgerSummary.FundProfileId*
 references:
 - uid: Meridian.Contracts.Workstation
   commentId: N:Meridian.Contracts.Workstation
@@ -859,7 +827,7 @@ references:
   - name: )
 - uid: Meridian.Contracts.Workstation.LedgerSummary.#ctor*
   commentId: Overload:Meridian.Contracts.Workstation.LedgerSummary.#ctor
-  href: Meridian.Contracts.Workstation.LedgerSummary.html#Meridian_Contracts_Workstation_LedgerSummary__ctor_System_String_System_String_System_DateTimeOffset_System_Int32_System_Int32_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_LedgerTrialBalanceLine__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_LedgerJournalLine__System_Int32_System_Int32_System_String_
+  href: Meridian.Contracts.Workstation.LedgerSummary.html#Meridian_Contracts_Workstation_LedgerSummary__ctor_System_String_System_String_System_DateTimeOffset_System_Int32_System_Int32_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_LedgerTrialBalanceLine__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_LedgerJournalLine__System_Int32_System_Int32_
   name: LedgerSummary
   nameWithType: LedgerSummary.LedgerSummary
   fullName: Meridian.Contracts.Workstation.LedgerSummary.LedgerSummary
@@ -1122,9 +1090,3 @@ references:
   name: SecurityMissingCount
   nameWithType: LedgerSummary.SecurityMissingCount
   fullName: Meridian.Contracts.Workstation.LedgerSummary.SecurityMissingCount
-- uid: Meridian.Contracts.Workstation.LedgerSummary.FundProfileId*
-  commentId: Overload:Meridian.Contracts.Workstation.LedgerSummary.FundProfileId
-  href: Meridian.Contracts.Workstation.LedgerSummary.html#Meridian_Contracts_Workstation_LedgerSummary_FundProfileId
-  name: FundProfileId
-  nameWithType: LedgerSummary.FundProfileId
-  fullName: Meridian.Contracts.Workstation.LedgerSummary.FundProfileId

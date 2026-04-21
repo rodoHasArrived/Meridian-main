@@ -28,7 +28,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CanonicalSymbolRegistry
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -73,7 +73,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolveToCanonical
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -179,7 +179,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryResolve
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterAsync
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterBatchAsync
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -302,7 +302,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDefinition
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -340,7 +340,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAll
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -372,7 +372,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByAssetClass
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -410,7 +410,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetByExchange
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -448,7 +448,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryResolveWithProvider
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsKnown
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
@@ -531,7 +531,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/CanonicalSymbolRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RemoveAsync
     path: ../../src/Meridian.Application/Services/CanonicalSymbolRegistry.cs

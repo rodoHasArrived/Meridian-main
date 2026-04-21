@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBCallbackRouter
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -70,7 +70,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -108,7 +108,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterDepthTicker
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterTradeTicker
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -176,7 +176,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterQuoteTicker
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterOptionTicker
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -249,7 +249,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMktDepth
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -291,7 +291,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UpdateMktDepthL2
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -337,7 +337,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTickByTickAllLast
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -381,7 +381,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTickPrice
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -423,7 +423,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTickSize
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -461,7 +461,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTickString
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -499,7 +499,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTickGeneric
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -537,7 +537,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTickSnapshotEnd
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
@@ -571,7 +571,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnTickOptionComputation
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBCallbackRouter.cs

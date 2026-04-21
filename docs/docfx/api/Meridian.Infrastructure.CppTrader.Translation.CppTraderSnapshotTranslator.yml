@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderSnapshotTranslator
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Translate
     path: ../../src/Meridian.Infrastructure.CppTrader/Translation/CppTraderSnapshotTranslator.cs

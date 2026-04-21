@@ -1,0 +1,1982 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  commentId: T:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  id: EnvironmentDesignerService
+  parent: Meridian.Application.EnvironmentDesign
+  children:
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.#ctor(System.String)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+  - Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentDesignerService
+  nameWithType: EnvironmentDesignerService
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentDesignerService
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  summary: >-
+    Local-first environment designer service with draft, validation, publish, and rollback support.
+
+    This admin-oriented service is intentionally optimized for deterministic correctness rather than hot-path throughput.
+  example: []
+  syntax:
+    content: 'public sealed class EnvironmentDesignerService : IEnvironmentDesignService, IEnvironmentValidationService, IEnvironmentPublishService, IEnvironmentRuntimeProjectionService'
+    content.vb: Public NotInheritable Class EnvironmentDesignerService Implements IEnvironmentDesignService, IEnvironmentValidationService, IEnvironmentPublishService, IEnvironmentRuntimeProjectionService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  - Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  - Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  - Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.#ctor(System.String)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentDesignerService(string?)
+  nameWithType: EnvironmentDesignerService.EnvironmentDesignerService(string?)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.EnvironmentDesignerService(string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  syntax:
+    content: public EnvironmentDesignerService(string? persistencePath)
+    parameters:
+    - id: persistencePath
+      type: System.String
+    content.vb: Public Sub New(persistencePath As String)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.#ctor*
+  nameWithType.vb: EnvironmentDesignerService.New(String)
+  fullName.vb: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.New(String)
+  name.vb: New(String)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync(System.Threading.CancellationToken)
+  id: ListDraftsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: ListDraftsAsync(CancellationToken)
+  nameWithType: EnvironmentDesignerService.ListDraftsAsync(CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ListDraftsAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<EnvironmentDraftDto>> ListDraftsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}}
+    content.vb: Public Function ListDraftsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of EnvironmentDraftDto))
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListDraftsAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: GetDraftAsync(Guid, CancellationToken)
+  nameWithType: EnvironmentDesignerService.GetDraftAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDraftAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<EnvironmentDraftDto?> GetDraftAsync(Guid draftId, CancellationToken ct = default)
+    parameters:
+    - id: draftId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}
+    content.vb: Public Function GetDraftAsync(draftId As Guid, ct As CancellationToken = Nothing) As Task(Of EnvironmentDraftDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+  id: CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: CreateDraftAsync(CreateEnvironmentDraftRequest, CancellationToken)
+  nameWithType: EnvironmentDesignerService.CreateDraftAsync(CreateEnvironmentDraftRequest, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateDraftAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<EnvironmentDraftDto> CreateDraftAsync(CreateEnvironmentDraftRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}
+    content.vb: Public Function CreateDraftAsync(request As CreateEnvironmentDraftRequest, ct As CancellationToken = Nothing) As Task(Of EnvironmentDraftDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+  id: SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: SaveDraftAsync(EnvironmentDraftDto, CancellationToken)
+  nameWithType: EnvironmentDesignerService.SaveDraftAsync(EnvironmentDraftDto, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveDraftAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<EnvironmentDraftDto> SaveDraftAsync(EnvironmentDraftDto draft, CancellationToken ct = default)
+    parameters:
+    - id: draft
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}
+    content.vb: Public Function SaveDraftAsync(draft As EnvironmentDraftDto, ct As CancellationToken = Nothing) As Task(Of EnvironmentDraftDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+  id: DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: DeleteDraftAsync(Guid, CancellationToken)
+  nameWithType: EnvironmentDesignerService.DeleteDraftAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteDraftAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task DeleteDraftAsync(Guid draftId, CancellationToken ct = default)
+    parameters:
+    - id: draftId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DeleteDraftAsync(draftId As Guid, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  id: ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: ListPublishedVersionsAsync(Guid?, CancellationToken)
+  nameWithType: EnvironmentDesignerService.ListPublishedVersionsAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync(System.Guid?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ListPublishedVersionsAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<PublishedEnvironmentVersionDto>> ListPublishedVersionsAsync(Guid? organizationId = null, CancellationToken ct = default)
+    parameters:
+    - id: organizationId
+      type: System.Nullable{System.Guid}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}}
+    content.vb: Public Function ListPublishedVersionsAsync(organizationId As Guid? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of PublishedEnvironmentVersionDto))
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: GetPublishedVersionAsync(Guid, CancellationToken)
+  nameWithType: EnvironmentDesignerService.GetPublishedVersionAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPublishedVersionAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<PublishedEnvironmentVersionDto?> GetPublishedVersionAsync(Guid versionId, CancellationToken ct = default)
+    parameters:
+    - id: versionId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+    content.vb: Public Function GetPublishedVersionAsync(versionId As Guid, ct As CancellationToken = Nothing) As Task(Of PublishedEnvironmentVersionDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  id: GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentPublishedVersionAsync(Guid?, CancellationToken)
+  nameWithType: EnvironmentDesignerService.GetCurrentPublishedVersionAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync(System.Guid?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentPublishedVersionAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<PublishedEnvironmentVersionDto?> GetCurrentPublishedVersionAsync(Guid? organizationId = null, CancellationToken ct = default)
+    parameters:
+    - id: organizationId
+      type: System.Nullable{System.Guid}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+    content.vb: Public Function GetCurrentPublishedVersionAsync(organizationId As Guid? = Nothing, ct As CancellationToken = Nothing) As Task(Of PublishedEnvironmentVersionDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  id: ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto?, CancellationToken)
+  nameWithType: EnvironmentDesignerService.ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto, Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<EnvironmentValidationResultDto> ValidateAsync(EnvironmentDraftDto draft, EnvironmentPublishPlanDto? publishPlan = null, CancellationToken ct = default)
+    parameters:
+    - id: draft
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    - id: publishPlan
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+    content.vb: Public Function ValidateAsync(draft As EnvironmentDraftDto, publishPlan As EnvironmentPublishPlanDto = Nothing, ct As CancellationToken = Nothing) As Task(Of EnvironmentValidationResultDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  nameWithType.vb: EnvironmentDesignerService.ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto, CancellationToken)
+  fullName.vb: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto, Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto, System.Threading.CancellationToken)
+  name.vb: ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto, CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  id: PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: PreviewPublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  nameWithType: EnvironmentDesignerService.PreviewPublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviewPublishAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<EnvironmentPublishPreviewDto> PreviewPublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default)
+    parameters:
+    - id: plan
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto}
+    content.vb: Public Function PreviewPublishAsync(plan As EnvironmentPublishPlanDto, ct As CancellationToken = Nothing) As Task(Of EnvironmentPublishPreviewDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  id: PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: PublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  nameWithType: EnvironmentDesignerService.PublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<PublishedEnvironmentVersionDto> PublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default)
+    parameters:
+    - id: plan
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+    content.vb: Public Function PublishAsync(plan As EnvironmentPublishPlanDto, ct As CancellationToken = Nothing) As Task(Of PublishedEnvironmentVersionDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+  id: RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: RollbackAsync(RollbackEnvironmentVersionRequest, CancellationToken)
+  nameWithType: EnvironmentDesignerService.RollbackAsync(RollbackEnvironmentVersionRequest, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RollbackAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 331
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<PublishedEnvironmentVersionDto> RollbackAsync(RollbackEnvironmentVersionRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+    content.vb: Public Function RollbackAsync(request As RollbackEnvironmentVersionRequest, ct As CancellationToken = Nothing) As Task(Of PublishedEnvironmentVersionDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  id: GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentRuntimeAsync(Guid?, CancellationToken)
+  nameWithType: EnvironmentDesignerService.GetCurrentRuntimeAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync(System.Guid?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentRuntimeAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 349
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<PublishedEnvironmentRuntimeDto?> GetCurrentRuntimeAsync(Guid? organizationId = null, CancellationToken ct = default)
+    parameters:
+    - id: organizationId
+      type: System.Nullable{System.Guid}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto}
+    content.vb: Public Function GetCurrentRuntimeAsync(organizationId As Guid? = Nothing, ct As CancellationToken = Nothing) As Task(Of PublishedEnvironmentRuntimeDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService
+  langs:
+  - csharp
+  - vb
+  name: GetRuntimeForVersionAsync(Guid, CancellationToken)
+  nameWithType: EnvironmentDesignerService.GetRuntimeForVersionAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRuntimeForVersionAsync
+    path: ../../src/Meridian.Application/EnvironmentDesign/EnvironmentDesignerService.cs
+    startLine: 360
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.EnvironmentDesign
+  example: []
+  syntax:
+    content: public Task<PublishedEnvironmentRuntimeDto?> GetRuntimeForVersionAsync(Guid versionId, CancellationToken ct = default)
+    parameters:
+    - id: versionId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto}
+    content.vb: Public Function GetRuntimeForVersionAsync(versionId As Guid, ct As CancellationToken = Nothing) As Task(Of PublishedEnvironmentRuntimeDto)
+  overload: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync*
+  implements:
+  - Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.EnvironmentDesign
+  commentId: N:Meridian.Application.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Application.EnvironmentDesign
+  nameWithType: Meridian.Application.EnvironmentDesign
+  fullName: Meridian.Application.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Application.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Application.EnvironmentDesign.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html
+  name: IEnvironmentDesignService
+  nameWithType: IEnvironmentDesignService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.html
+  name: IEnvironmentValidationService
+  nameWithType: IEnvironmentValidationService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html
+  name: IEnvironmentPublishService
+  nameWithType: IEnvironmentPublishService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  commentId: T:Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  parent: Meridian.Application.EnvironmentDesign
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html
+  name: IEnvironmentRuntimeProjectionService
+  nameWithType: IEnvironmentRuntimeProjectionService
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.#ctor*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.#ctor
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService__ctor_System_String_
+  name: EnvironmentDesignerService
+  nameWithType: EnvironmentDesignerService.EnvironmentDesignerService
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.EnvironmentDesignerService
+  nameWithType.vb: EnvironmentDesignerService.New
+  fullName.vb: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_ListDraftsAsync_System_Threading_CancellationToken_
+  name: ListDraftsAsync
+  nameWithType: EnvironmentDesignerService.ListDraftsAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListDraftsAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListDraftsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListDraftsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_ListDraftsAsync_System_Threading_CancellationToken_
+  name: ListDraftsAsync(CancellationToken)
+  nameWithType: IEnvironmentDesignService.ListDraftsAsync(CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListDraftsAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListDraftsAsync(System.Threading.CancellationToken)
+    name: ListDraftsAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_ListDraftsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListDraftsAsync(System.Threading.CancellationToken)
+    name: ListDraftsAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_ListDraftsAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<EnvironmentDraftDto>>
+  nameWithType: Task<IReadOnlyList<EnvironmentDraftDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of EnvironmentDraftDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto))
+  name.vb: Task(Of IReadOnlyList(Of EnvironmentDraftDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_GetDraftAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetDraftAsync
+  nameWithType: EnvironmentDesignerService.GetDraftAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetDraftAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetDraftAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetDraftAsync(Guid, CancellationToken)
+  nameWithType: IEnvironmentDesignService.GetDraftAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetDraftAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetDraftAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetDraftAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetDraftAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EnvironmentDraftDto>
+  nameWithType: Task<EnvironmentDraftDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto>
+  nameWithType.vb: Task(Of EnvironmentDraftDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto)
+  name.vb: Task(Of EnvironmentDraftDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_CreateDraftAsync_Meridian_Contracts_EnvironmentDesign_CreateEnvironmentDraftRequest_System_Threading_CancellationToken_
+  name: CreateDraftAsync
+  nameWithType: EnvironmentDesignerService.CreateDraftAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.CreateDraftAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_CreateDraftAsync_Meridian_Contracts_EnvironmentDesign_CreateEnvironmentDraftRequest_System_Threading_CancellationToken_
+  name: CreateDraftAsync(CreateEnvironmentDraftRequest, CancellationToken)
+  nameWithType: IEnvironmentDesignService.CreateDraftAsync(CreateEnvironmentDraftRequest, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+    name: CreateDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_CreateDraftAsync_Meridian_Contracts_EnvironmentDesign_CreateEnvironmentDraftRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest
+    name: CreateEnvironmentDraftRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.CreateDraftAsync(Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest,System.Threading.CancellationToken)
+    name: CreateDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_CreateDraftAsync_Meridian_Contracts_EnvironmentDesign_CreateEnvironmentDraftRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest
+    name: CreateEnvironmentDraftRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest
+  commentId: T:Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest.html
+  name: CreateEnvironmentDraftRequest
+  nameWithType: CreateEnvironmentDraftRequest
+  fullName: Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_SaveDraftAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_System_Threading_CancellationToken_
+  name: SaveDraftAsync
+  nameWithType: EnvironmentDesignerService.SaveDraftAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.SaveDraftAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_SaveDraftAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_System_Threading_CancellationToken_
+  name: SaveDraftAsync(EnvironmentDraftDto, CancellationToken)
+  nameWithType: IEnvironmentDesignService.SaveDraftAsync(EnvironmentDraftDto, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+    name: SaveDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_SaveDraftAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.SaveDraftAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,System.Threading.CancellationToken)
+    name: SaveDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_SaveDraftAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto.html
+  name: EnvironmentDraftDto
+  nameWithType: EnvironmentDraftDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_DeleteDraftAsync_System_Guid_System_Threading_CancellationToken_
+  name: DeleteDraftAsync
+  nameWithType: EnvironmentDesignerService.DeleteDraftAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.DeleteDraftAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_DeleteDraftAsync_System_Guid_System_Threading_CancellationToken_
+  name: DeleteDraftAsync(Guid, CancellationToken)
+  nameWithType: IEnvironmentDesignService.DeleteDraftAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.DeleteDraftAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+    name: DeleteDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_DeleteDraftAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.DeleteDraftAsync(System.Guid,System.Threading.CancellationToken)
+    name: DeleteDraftAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_DeleteDraftAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_ListPublishedVersionsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: ListPublishedVersionsAsync
+  nameWithType: EnvironmentDesignerService.ListPublishedVersionsAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ListPublishedVersionsAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_ListPublishedVersionsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: ListPublishedVersionsAsync(Guid?, CancellationToken)
+  nameWithType: IEnvironmentDesignService.ListPublishedVersionsAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListPublishedVersionsAsync(System.Guid?, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: ListPublishedVersionsAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_ListPublishedVersionsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.ListPublishedVersionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: ListPublishedVersionsAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_ListPublishedVersionsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<PublishedEnvironmentVersionDto>>
+  nameWithType: Task<IReadOnlyList<PublishedEnvironmentVersionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of PublishedEnvironmentVersionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto))
+  name.vb: Task(Of IReadOnlyList(Of PublishedEnvironmentVersionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+    name: PublishedEnvironmentVersionDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+    name: PublishedEnvironmentVersionDto
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_GetPublishedVersionAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetPublishedVersionAsync
+  nameWithType: EnvironmentDesignerService.GetPublishedVersionAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetPublishedVersionAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetPublishedVersionAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetPublishedVersionAsync(Guid, CancellationToken)
+  nameWithType: IEnvironmentDesignService.GetPublishedVersionAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetPublishedVersionAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetPublishedVersionAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetPublishedVersionAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetPublishedVersionAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetPublishedVersionAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetPublishedVersionAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PublishedEnvironmentVersionDto>
+  nameWithType: Task<PublishedEnvironmentVersionDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto>
+  nameWithType.vb: Task(Of PublishedEnvironmentVersionDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto)
+  name.vb: Task(Of PublishedEnvironmentVersionDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+    name: PublishedEnvironmentVersionDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto
+    name: PublishedEnvironmentVersionDto
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_GetCurrentPublishedVersionAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetCurrentPublishedVersionAsync
+  nameWithType: EnvironmentDesignerService.GetCurrentPublishedVersionAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentPublishedVersionAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetCurrentPublishedVersionAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetCurrentPublishedVersionAsync(Guid?, CancellationToken)
+  nameWithType: IEnvironmentDesignService.GetCurrentPublishedVersionAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetCurrentPublishedVersionAsync(System.Guid?, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetCurrentPublishedVersionAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetCurrentPublishedVersionAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.GetCurrentPublishedVersionAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetCurrentPublishedVersionAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentDesignService.html#Meridian_Application_EnvironmentDesign_IEnvironmentDesignService_GetCurrentPublishedVersionAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_ValidateAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  name: ValidateAsync
+  nameWithType: EnvironmentDesignerService.ValidateAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.ValidateAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.html#Meridian_Application_EnvironmentDesign_IEnvironmentValidationService_ValidateAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  name: ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto, CancellationToken)
+  nameWithType: IEnvironmentValidationService.ValidateAsync(EnvironmentDraftDto, EnvironmentPublishPlanDto, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto, Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+    name: ValidateAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.html#Meridian_Application_EnvironmentDesign_IEnvironmentValidationService_ValidateAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    name: EnvironmentPublishPlanDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.ValidateAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto,Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+    name: ValidateAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentValidationService.html#Meridian_Application_EnvironmentDesign_IEnvironmentValidationService_ValidateAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentDraftDto_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto
+    name: EnvironmentDraftDto
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    name: EnvironmentPublishPlanDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto.html
+  name: EnvironmentPublishPlanDto
+  nameWithType: EnvironmentPublishPlanDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EnvironmentValidationResultDto>
+  nameWithType: Task<EnvironmentValidationResultDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto>
+  nameWithType.vb: Task(Of EnvironmentValidationResultDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto)
+  name.vb: Task(Of EnvironmentValidationResultDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    name: EnvironmentValidationResultDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto
+    name: EnvironmentValidationResultDto
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_PreviewPublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  name: PreviewPublishAsync
+  nameWithType: EnvironmentDesignerService.PreviewPublishAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PreviewPublishAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_PreviewPublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  name: PreviewPublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  nameWithType: IEnvironmentPublishService.PreviewPublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+    name: PreviewPublishAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_PreviewPublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    name: EnvironmentPublishPlanDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PreviewPublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+    name: PreviewPublishAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_PreviewPublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    name: EnvironmentPublishPlanDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EnvironmentPublishPreviewDto>
+  nameWithType: Task<EnvironmentPublishPreviewDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto>
+  nameWithType.vb: Task(Of EnvironmentPublishPreviewDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto)
+  name.vb: Task(Of EnvironmentPublishPreviewDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto
+    name: EnvironmentPublishPreviewDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto
+    name: EnvironmentPublishPreviewDto
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_PublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  name: PublishAsync
+  nameWithType: EnvironmentDesignerService.PublishAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.PublishAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_PublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  name: PublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  nameWithType: IEnvironmentPublishService.PublishAsync(EnvironmentPublishPlanDto, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+    name: PublishAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_PublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    name: EnvironmentPublishPlanDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.PublishAsync(Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto,System.Threading.CancellationToken)
+    name: PublishAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_PublishAsync_Meridian_Contracts_EnvironmentDesign_EnvironmentPublishPlanDto_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto
+    name: EnvironmentPublishPlanDto
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_RollbackAsync_Meridian_Contracts_EnvironmentDesign_RollbackEnvironmentVersionRequest_System_Threading_CancellationToken_
+  name: RollbackAsync
+  nameWithType: EnvironmentDesignerService.RollbackAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.RollbackAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_RollbackAsync_Meridian_Contracts_EnvironmentDesign_RollbackEnvironmentVersionRequest_System_Threading_CancellationToken_
+  name: RollbackAsync(RollbackEnvironmentVersionRequest, CancellationToken)
+  nameWithType: IEnvironmentPublishService.RollbackAsync(RollbackEnvironmentVersionRequest, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+    name: RollbackAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_RollbackAsync_Meridian_Contracts_EnvironmentDesign_RollbackEnvironmentVersionRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest
+    name: RollbackEnvironmentVersionRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.RollbackAsync(Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest,System.Threading.CancellationToken)
+    name: RollbackAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentPublishService.html#Meridian_Application_EnvironmentDesign_IEnvironmentPublishService_RollbackAsync_Meridian_Contracts_EnvironmentDesign_RollbackEnvironmentVersionRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest
+    name: RollbackEnvironmentVersionRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest
+  commentId: T:Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest.html
+  name: RollbackEnvironmentVersionRequest
+  nameWithType: RollbackEnvironmentVersionRequest
+  fullName: Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_GetCurrentRuntimeAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetCurrentRuntimeAsync
+  nameWithType: EnvironmentDesignerService.GetCurrentRuntimeAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetCurrentRuntimeAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html#Meridian_Application_EnvironmentDesign_IEnvironmentRuntimeProjectionService_GetCurrentRuntimeAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetCurrentRuntimeAsync(Guid?, CancellationToken)
+  nameWithType: IEnvironmentRuntimeProjectionService.GetCurrentRuntimeAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetCurrentRuntimeAsync(System.Guid?, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetCurrentRuntimeAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html#Meridian_Application_EnvironmentDesign_IEnvironmentRuntimeProjectionService_GetCurrentRuntimeAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetCurrentRuntimeAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetCurrentRuntimeAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html#Meridian_Application_EnvironmentDesign_IEnvironmentRuntimeProjectionService_GetCurrentRuntimeAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PublishedEnvironmentRuntimeDto>
+  nameWithType: Task<PublishedEnvironmentRuntimeDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto>
+  nameWithType.vb: Task(Of PublishedEnvironmentRuntimeDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto)
+  name.vb: Task(Of PublishedEnvironmentRuntimeDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+    name: PublishedEnvironmentRuntimeDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto
+    name: PublishedEnvironmentRuntimeDto
+  - name: )
+- uid: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync*
+  commentId: Overload:Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync
+  href: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.html#Meridian_Application_EnvironmentDesign_EnvironmentDesignerService_GetRuntimeForVersionAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetRuntimeForVersionAsync
+  nameWithType: EnvironmentDesignerService.GetRuntimeForVersionAsync
+  fullName: Meridian.Application.EnvironmentDesign.EnvironmentDesignerService.GetRuntimeForVersionAsync
+- uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService
+  isExternal: true
+  href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html#Meridian_Application_EnvironmentDesign_IEnvironmentRuntimeProjectionService_GetRuntimeForVersionAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetRuntimeForVersionAsync(Guid, CancellationToken)
+  nameWithType: IEnvironmentRuntimeProjectionService.GetRuntimeForVersionAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetRuntimeForVersionAsync(System.Guid, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetRuntimeForVersionAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html#Meridian_Application_EnvironmentDesign_IEnvironmentRuntimeProjectionService_GetRuntimeForVersionAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.GetRuntimeForVersionAsync(System.Guid,System.Threading.CancellationToken)
+    name: GetRuntimeForVersionAsync
+    href: Meridian.Application.EnvironmentDesign.IEnvironmentRuntimeProjectionService.html#Meridian_Application_EnvironmentDesign_IEnvironmentRuntimeProjectionService_GetRuntimeForVersionAsync_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )

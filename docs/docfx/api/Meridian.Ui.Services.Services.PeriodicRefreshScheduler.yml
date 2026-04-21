@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PeriodicRefreshScheduler
     path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Start
     path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Stop
     path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs

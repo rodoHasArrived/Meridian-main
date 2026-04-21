@@ -5,9 +5,8 @@ items:
   id: PromotionRejectionRequest
   parent: Meridian.Strategies.Services
   children:
-  - Meridian.Strategies.Services.PromotionRejectionRequest.#ctor(System.String,System.String,System.String)
+  - Meridian.Strategies.Services.PromotionRejectionRequest.#ctor(System.String,System.String)
   - Meridian.Strategies.Services.PromotionRejectionRequest.Reason
-  - Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy
   - Meridian.Strategies.Services.PromotionRejectionRequest.RunId
   langs:
   - csharp
@@ -19,11 +18,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionRejectionRequest
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 457
+    startLine: 371
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -43,44 +42,42 @@ items:
   - System.Object.GetType
   - System.Object.ReferenceEquals(System.Object,System.Object)
   - System.Object.ToString
-- uid: Meridian.Strategies.Services.PromotionRejectionRequest.#ctor(System.String,System.String,System.String)
-  commentId: M:Meridian.Strategies.Services.PromotionRejectionRequest.#ctor(System.String,System.String,System.String)
-  id: '#ctor(System.String,System.String,System.String)'
+- uid: Meridian.Strategies.Services.PromotionRejectionRequest.#ctor(System.String,System.String)
+  commentId: M:Meridian.Strategies.Services.PromotionRejectionRequest.#ctor(System.String,System.String)
+  id: '#ctor(System.String,System.String)'
   parent: Meridian.Strategies.Services.PromotionRejectionRequest
   langs:
   - csharp
   - vb
-  name: PromotionRejectionRequest(string, string, string?)
-  nameWithType: PromotionRejectionRequest.PromotionRejectionRequest(string, string, string?)
-  fullName: Meridian.Strategies.Services.PromotionRejectionRequest.PromotionRejectionRequest(string, string, string?)
+  name: PromotionRejectionRequest(string, string)
+  nameWithType: PromotionRejectionRequest.PromotionRejectionRequest(string, string)
+  fullName: Meridian.Strategies.Services.PromotionRejectionRequest.PromotionRejectionRequest(string, string)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 457
+    startLine: 371
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
   summary: Request to reject a strategy promotion.
   example: []
   syntax:
-    content: public PromotionRejectionRequest(string RunId, string Reason, string? RejectedBy = null)
+    content: public PromotionRejectionRequest(string RunId, string Reason)
     parameters:
     - id: RunId
       type: System.String
     - id: Reason
       type: System.String
-    - id: RejectedBy
-      type: System.String
-    content.vb: Public Sub New(RunId As String, Reason As String, RejectedBy As String = Nothing)
+    content.vb: Public Sub New(RunId As String, Reason As String)
   overload: Meridian.Strategies.Services.PromotionRejectionRequest.#ctor*
-  nameWithType.vb: PromotionRejectionRequest.New(String, String, String)
-  fullName.vb: Meridian.Strategies.Services.PromotionRejectionRequest.New(String, String, String)
-  name.vb: New(String, String, String)
+  nameWithType.vb: PromotionRejectionRequest.New(String, String)
+  fullName.vb: Meridian.Strategies.Services.PromotionRejectionRequest.New(String, String)
+  name.vb: New(String, String)
 - uid: Meridian.Strategies.Services.PromotionRejectionRequest.RunId
   commentId: P:Meridian.Strategies.Services.PromotionRejectionRequest.RunId
   id: RunId
@@ -95,11 +92,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 458
+    startLine: 372
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -124,11 +121,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 459
+    startLine: 373
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -139,35 +136,6 @@ items:
       type: System.String
     content.vb: Public Property Reason As String
   overload: Meridian.Strategies.Services.PromotionRejectionRequest.Reason*
-- uid: Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy
-  commentId: P:Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy
-  id: RejectedBy
-  parent: Meridian.Strategies.Services.PromotionRejectionRequest
-  langs:
-  - csharp
-  - vb
-  name: RejectedBy
-  nameWithType: PromotionRejectionRequest.RejectedBy
-  fullName: Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy
-  type: Property
-  source:
-    remote:
-      path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: RejectedBy
-    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 460
-  assemblies:
-  - Meridian.Strategies
-  namespace: Meridian.Strategies.Services
-  syntax:
-    content: public string? RejectedBy { get; init; }
-    parameters: []
-    return:
-      type: System.String
-    content.vb: Public Property RejectedBy As String
-  overload: Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy*
 references:
 - uid: Meridian.Strategies.Services
   commentId: N:Meridian.Strategies.Services
@@ -475,7 +443,7 @@ references:
   - name: )
 - uid: Meridian.Strategies.Services.PromotionRejectionRequest.#ctor*
   commentId: Overload:Meridian.Strategies.Services.PromotionRejectionRequest.#ctor
-  href: Meridian.Strategies.Services.PromotionRejectionRequest.html#Meridian_Strategies_Services_PromotionRejectionRequest__ctor_System_String_System_String_System_String_
+  href: Meridian.Strategies.Services.PromotionRejectionRequest.html#Meridian_Strategies_Services_PromotionRejectionRequest__ctor_System_String_System_String_
   name: PromotionRejectionRequest
   nameWithType: PromotionRejectionRequest.PromotionRejectionRequest
   fullName: Meridian.Strategies.Services.PromotionRejectionRequest.PromotionRejectionRequest
@@ -505,9 +473,3 @@ references:
   name: Reason
   nameWithType: PromotionRejectionRequest.Reason
   fullName: Meridian.Strategies.Services.PromotionRejectionRequest.Reason
-- uid: Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy*
-  commentId: Overload:Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy
-  href: Meridian.Strategies.Services.PromotionRejectionRequest.html#Meridian_Strategies_Services_PromotionRejectionRequest_RejectedBy
-  name: RejectedBy
-  nameWithType: PromotionRejectionRequest.RejectedBy
-  fullName: Meridian.Strategies.Services.PromotionRejectionRequest.RejectedBy

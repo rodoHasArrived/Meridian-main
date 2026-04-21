@@ -19,11 +19,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRecoveredEvent
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 412
+    startLine: 575
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -55,11 +55,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 412
+    startLine: 575
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -93,11 +93,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderName
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 413
+    startLine: 576
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -122,11 +122,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompositeScore
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 414
+    startLine: 577
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring
@@ -151,11 +151,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Timestamp
     path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
-    startLine: 415
+    startLine: 578
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Monitoring

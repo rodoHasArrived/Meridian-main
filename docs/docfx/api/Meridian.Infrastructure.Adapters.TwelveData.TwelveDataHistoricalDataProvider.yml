@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TwelveDataHistoricalDataProvider
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -178,7 +178,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -210,7 +210,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -274,7 +274,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -309,7 +309,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -344,7 +344,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -379,7 +379,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -414,7 +414,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -457,7 +457,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -493,7 +493,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
@@ -530,7 +530,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/TwelveData/TwelveDataHistoricalDataProvider.cs

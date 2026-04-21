@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardStepResult
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -112,7 +112,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextStep
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -177,7 +177,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -208,7 +208,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Succeeded
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JumpTo
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -282,7 +282,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Skipped
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Failed
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs
@@ -354,7 +354,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardStepResult.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Cancelled
     path: ../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs

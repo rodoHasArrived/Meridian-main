@@ -1,0 +1,163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Margin.MarginAccountType
+  commentId: T:Meridian.Execution.Margin.MarginAccountType
+  id: MarginAccountType
+  parent: Meridian.Execution.Margin
+  children:
+  - Meridian.Execution.Margin.MarginAccountType.Cash
+  - Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  - Meridian.Execution.Margin.MarginAccountType.RegT
+  langs:
+  - csharp
+  - vb
+  name: MarginAccountType
+  nameWithType: MarginAccountType
+  fullName: Meridian.Execution.Margin.MarginAccountType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginAccountType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginAccountType
+    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Classifies the margin regime of a brokerage account.
+  example: []
+  syntax:
+    content: public enum MarginAccountType
+    content.vb: Public Enum MarginAccountType
+- uid: Meridian.Execution.Margin.MarginAccountType.Cash
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.Cash
+  id: Cash
+  parent: Meridian.Execution.Margin.MarginAccountType
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: MarginAccountType.Cash
+  fullName: Meridian.Execution.Margin.MarginAccountType.Cash
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginAccountType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: Cash account — no borrowing allowed. Positions must be fully funded by available cash.
+  example: []
+  syntax:
+    content: Cash = 0
+    return:
+      type: Meridian.Execution.Margin.MarginAccountType
+- uid: Meridian.Execution.Margin.MarginAccountType.RegT
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.RegT
+  id: RegT
+  parent: Meridian.Execution.Margin.MarginAccountType
+  langs:
+  - csharp
+  - vb
+  name: RegT
+  nameWithType: MarginAccountType.RegT
+  fullName: Meridian.Execution.Margin.MarginAccountType.RegT
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginAccountType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegT
+    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: >-
+    Regulation T (Reg T) margin account. FINRA/SEC rules: 50 % initial margin for long
+
+    positions; 25 % maintenance margin. Short positions require 150 % of the short value
+
+    as initial collateral. Buying power is up to 2× the available cash equity.
+  example: []
+  syntax:
+    content: RegT = 1
+    return:
+      type: Meridian.Execution.Margin.MarginAccountType
+- uid: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  id: PortfolioMargin
+  parent: Meridian.Execution.Margin.MarginAccountType
+  langs:
+  - csharp
+  - vb
+  name: PortfolioMargin
+  nameWithType: MarginAccountType.PortfolioMargin
+  fullName: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Margin/MarginAccountType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioMargin
+    path: ../../src/Meridian.Execution/Margin/MarginAccountType.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Margin
+  summary: >-
+    Portfolio margin account. Risk-based margining using stress-test scenarios rather than
+
+    fixed percentage requirements. Typically requires a minimum equity threshold.
+  example: []
+  syntax:
+    content: PortfolioMargin = 2
+    return:
+      type: Meridian.Execution.Margin.MarginAccountType
+references:
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+- uid: Meridian.Execution.Margin.MarginAccountType
+  commentId: T:Meridian.Execution.Margin.MarginAccountType
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginAccountType.html
+  name: MarginAccountType
+  nameWithType: MarginAccountType
+  fullName: Meridian.Execution.Margin.MarginAccountType

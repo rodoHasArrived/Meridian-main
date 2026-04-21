@@ -17,7 +17,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PaperSessionOptions
     path: ../../src/Meridian.Execution/Services/PaperSessionOptions.cs
@@ -56,7 +56,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SectionKey
     path: ../../src/Meridian.Execution/Services/PaperSessionOptions.cs
@@ -85,7 +85,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Services/PaperSessionOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseDirectory
     path: ../../src/Meridian.Execution/Services/PaperSessionOptions.cs

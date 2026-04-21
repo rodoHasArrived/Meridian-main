@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderHostManager
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
@@ -92,7 +92,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSessionAsync
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetHealthSnapshot
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordFault
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordHeartbeat
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
@@ -228,7 +228,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordExecutionUpdate
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
@@ -263,7 +263,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordSnapshot
     path: ../../src/Meridian.Infrastructure.CppTrader/Host/CppTraderHostManager.cs

@@ -17,11 +17,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JsonBenchmarkUtilities
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 397
+    startLine: 371
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -54,11 +54,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSampleTradeEvent
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 402
+    startLine: 376
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization
@@ -84,11 +84,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateSampleEvents
     path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
-    startLine: 422
+    startLine: 396
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Serialization

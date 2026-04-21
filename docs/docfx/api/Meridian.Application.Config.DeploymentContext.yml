@@ -10,7 +10,6 @@ items:
   - Meridian.Application.Config.DeploymentContext.EnvironmentName
   - Meridian.Application.Config.DeploymentContext.ForCommand(System.String,System.String)
   - Meridian.Application.Config.DeploymentContext.ForDesktop(System.String,System.Int32,System.Boolean)
-  - Meridian.Application.Config.DeploymentContext.ForWeb(System.String,System.Int32)
   - Meridian.Application.Config.DeploymentContext.FromArgs(System.String[],System.String)
   - Meridian.Application.Config.DeploymentContext.HotReloadEnabled
   - Meridian.Application.Config.DeploymentContext.HttpPort
@@ -18,6 +17,7 @@ items:
   - Meridian.Application.Config.DeploymentContext.IsOneShotCommand
   - Meridian.Application.Config.DeploymentContext.Mode
   - Meridian.Application.Config.DeploymentContext.ModeDescription
+  - Meridian.Application.Config.DeploymentContext.ModeResolutionError
   - Meridian.Application.Config.DeploymentContext.RequiresGracefulShutdown
   - Meridian.Application.Config.DeploymentContext.RequiresHttpServer
   - Meridian.Application.Config.DeploymentContext.RunsCollector
@@ -32,11 +32,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeploymentContext
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 18
+    startLine: 17
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -47,7 +47,7 @@ items:
   remarks: >-
     <p><b>Supported Deployment Modes:</b></p>
 
-    <ul><li><b>Headless</b> - Console application, no UI, suitable for servers/containers</li><li><b>Web</b> - HTTP server with web dashboard on configurable port</li><li><b>Desktop</b> - Native desktop app with embedded HTTP server for local UI</li></ul>
+    <ul><li><b>Headless</b> - Console application, no UI, suitable for servers/containers</li><li><b>Desktop</b> - Native desktop app with embedded HTTP server for local UI</li></ul>
 
     <p>The context is immutable once created and provides all deployment-related decisions
 
@@ -81,11 +81,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Mode
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 23
+    startLine: 22
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -112,11 +112,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpPort
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 28
+    startLine: 27
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -143,11 +143,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HotReloadEnabled
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 33
+    startLine: 32
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -174,11 +174,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConfigPath
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 38
+    startLine: 37
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -205,11 +205,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnvironmentName
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 43
+    startLine: 42
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -222,6 +222,37 @@ items:
       type: System.String
     content.vb: Public Property EnvironmentName As String
   overload: Meridian.Application.Config.DeploymentContext.EnvironmentName*
+- uid: Meridian.Application.Config.DeploymentContext.ModeResolutionError
+  commentId: P:Meridian.Application.Config.DeploymentContext.ModeResolutionError
+  id: ModeResolutionError
+  parent: Meridian.Application.Config.DeploymentContext
+  langs:
+  - csharp
+  - vb
+  name: ModeResolutionError
+  nameWithType: DeploymentContext.ModeResolutionError
+  fullName: Meridian.Application.Config.DeploymentContext.ModeResolutionError
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Config/DeploymentContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModeResolutionError
+    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Error emitted while resolving the requested deployment mode, if any.
+  example: []
+  syntax:
+    content: public string? ModeResolutionError { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ModeResolutionError As String
+  overload: Meridian.Application.Config.DeploymentContext.ModeResolutionError*
 - uid: Meridian.Application.Config.DeploymentContext.IsDocker
   commentId: P:Meridian.Application.Config.DeploymentContext.IsDocker
   id: IsDocker
@@ -236,11 +267,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDocker
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 48
+    startLine: 52
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -267,11 +298,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsOneShotCommand
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 53
+    startLine: 57
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -298,11 +329,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Command
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 58
+    startLine: 62
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -329,11 +360,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresHttpServer
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 64
+    startLine: 68
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -360,11 +391,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunsCollector
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 69
+    startLine: 73
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -391,11 +422,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ShowStartupSummary
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 74
+    startLine: 78
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -422,11 +453,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RequiresGracefulShutdown
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 79
+    startLine: 83
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -453,11 +484,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModeDescription
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 84
+    startLine: 88
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -484,11 +515,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FromArgs
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 97
+    startLine: 100
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -522,11 +553,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForCommand
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 118
+    startLine: 122
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -546,44 +577,6 @@ items:
   nameWithType.vb: DeploymentContext.ForCommand(String, String)
   fullName.vb: Meridian.Application.Config.DeploymentContext.ForCommand(String, String)
   name.vb: ForCommand(String, String)
-- uid: Meridian.Application.Config.DeploymentContext.ForWeb(System.String,System.Int32)
-  commentId: M:Meridian.Application.Config.DeploymentContext.ForWeb(System.String,System.Int32)
-  id: ForWeb(System.String,System.Int32)
-  parent: Meridian.Application.Config.DeploymentContext
-  langs:
-  - csharp
-  - vb
-  name: ForWeb(string, int)
-  nameWithType: DeploymentContext.ForWeb(string, int)
-  fullName: Meridian.Application.Config.DeploymentContext.ForWeb(string, int)
-  type: Method
-  source:
-    remote:
-      path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: ForWeb
-    path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 134
-  assemblies:
-  - Meridian.Application
-  namespace: Meridian.Application.Config
-  summary: Creates a context for running in web dashboard mode.
-  example: []
-  syntax:
-    content: public static DeploymentContext ForWeb(string configPath, int port = 8080)
-    parameters:
-    - id: configPath
-      type: System.String
-    - id: port
-      type: System.Int32
-    return:
-      type: Meridian.Application.Config.DeploymentContext
-    content.vb: Public Shared Function ForWeb(configPath As String, port As Integer = 8080) As DeploymentContext
-  overload: Meridian.Application.Config.DeploymentContext.ForWeb*
-  nameWithType.vb: DeploymentContext.ForWeb(String, Integer)
-  fullName.vb: Meridian.Application.Config.DeploymentContext.ForWeb(String, Integer)
-  name.vb: ForWeb(String, Integer)
 - uid: Meridian.Application.Config.DeploymentContext.ForDesktop(System.String,System.Int32,System.Boolean)
   commentId: M:Meridian.Application.Config.DeploymentContext.ForDesktop(System.String,System.Int32,System.Boolean)
   id: ForDesktop(System.String,System.Int32,System.Boolean)
@@ -598,11 +591,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Config/DeploymentContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ForDesktop
     path: ../../src/Meridian.Application/Config/DeploymentContext.cs
-    startLine: 150
+    startLine: 138
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Config
@@ -999,6 +992,12 @@ references:
   name: EnvironmentName
   nameWithType: DeploymentContext.EnvironmentName
   fullName: Meridian.Application.Config.DeploymentContext.EnvironmentName
+- uid: Meridian.Application.Config.DeploymentContext.ModeResolutionError*
+  commentId: Overload:Meridian.Application.Config.DeploymentContext.ModeResolutionError
+  href: Meridian.Application.Config.DeploymentContext.html#Meridian_Application_Config_DeploymentContext_ModeResolutionError
+  name: ModeResolutionError
+  nameWithType: DeploymentContext.ModeResolutionError
+  fullName: Meridian.Application.Config.DeploymentContext.ModeResolutionError
 - uid: Meridian.Application.Config.DeploymentContext.IsDocker*
   commentId: Overload:Meridian.Application.Config.DeploymentContext.IsDocker
   href: Meridian.Application.Config.DeploymentContext.html#Meridian_Application_Config_DeploymentContext_IsDocker
@@ -1089,12 +1088,6 @@ references:
   name: ForCommand
   nameWithType: DeploymentContext.ForCommand
   fullName: Meridian.Application.Config.DeploymentContext.ForCommand
-- uid: Meridian.Application.Config.DeploymentContext.ForWeb*
-  commentId: Overload:Meridian.Application.Config.DeploymentContext.ForWeb
-  href: Meridian.Application.Config.DeploymentContext.html#Meridian_Application_Config_DeploymentContext_ForWeb_System_String_System_Int32_
-  name: ForWeb
-  nameWithType: DeploymentContext.ForWeb
-  fullName: Meridian.Application.Config.DeploymentContext.ForWeb
 - uid: Meridian.Application.Config.DeploymentContext.ForDesktop*
   commentId: Overload:Meridian.Application.Config.DeploymentContext.ForDesktop
   href: Meridian.Application.Config.DeploymentContext.html#Meridian_Application_Config_DeploymentContext_ForDesktop_System_String_System_Int32_System_Boolean_

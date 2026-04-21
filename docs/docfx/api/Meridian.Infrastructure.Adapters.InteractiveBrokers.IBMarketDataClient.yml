@@ -5,7 +5,7 @@ items:
   id: IBMarketDataClient
   parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
   children:
-  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector,Meridian.Application.Config.IBOptions)
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
   - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.DisposeAsync
@@ -33,11 +33,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IBMarketDataClient
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 15
+    startLine: 17
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -122,30 +122,30 @@ items:
       value: ADR-005
     - type: System.String
       value: Attribute-based provider discovery
-- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)
-  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)
-  id: '#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector)'
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector,Meridian.Application.Config.IBOptions)
+  commentId: M:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector,Meridian.Application.Config.IBOptions)
+  id: '#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Domain.Collectors.OptionDataCollector,Meridian.Application.Config.IBOptions)'
   parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient
   langs:
   - csharp
   - vb
-  name: IBMarketDataClient(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector?, OptionDataCollector?)
-  nameWithType: IBMarketDataClient.IBMarketDataClient(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector?, OptionDataCollector?)
-  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IBMarketDataClient(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector?, Meridian.Domain.Collectors.OptionDataCollector?)
+  name: IBMarketDataClient(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector?, OptionDataCollector?, IBOptions?)
+  nameWithType: IBMarketDataClient.IBMarketDataClient(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector?, OptionDataCollector?, IBOptions?)
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IBMarketDataClient(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector?, Meridian.Domain.Collectors.OptionDataCollector?, Meridian.Application.Config.IBOptions?)
   type: Constructor
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 25
+    startLine: 27
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
   syntax:
-    content: public IBMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null)
+    content: public IBMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector? quoteCollector = null, OptionDataCollector? optionCollector = null, IBOptions? options = null)
     parameters:
     - id: publisher
       type: Meridian.Domain.Events.IMarketEventPublisher
@@ -157,11 +157,13 @@ items:
       type: Meridian.Domain.Collectors.QuoteCollector
     - id: optionCollector
       type: Meridian.Domain.Collectors.OptionDataCollector
-    content.vb: Public Sub New(publisher As IMarketEventPublisher, tradeCollector As TradeDataCollector, depthCollector As MarketDepthCollector, quoteCollector As QuoteCollector = Nothing, optionCollector As OptionDataCollector = Nothing)
+    - id: options
+      type: Meridian.Application.Config.IBOptions
+    content.vb: Public Sub New(publisher As IMarketEventPublisher, tradeCollector As TradeDataCollector, depthCollector As MarketDepthCollector, quoteCollector As QuoteCollector = Nothing, optionCollector As OptionDataCollector = Nothing, options As IBOptions = Nothing)
   overload: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor*
-  nameWithType.vb: IBMarketDataClient.New(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector, OptionDataCollector)
-  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.New(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector, Meridian.Domain.Collectors.OptionDataCollector)
-  name.vb: New(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector, OptionDataCollector)
+  nameWithType.vb: IBMarketDataClient.New(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector, OptionDataCollector, IBOptions)
+  fullName.vb: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.New(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector, Meridian.Domain.Collectors.OptionDataCollector, Meridian.Application.Config.IBOptions)
+  name.vb: New(IMarketEventPublisher, TradeDataCollector, MarketDepthCollector, QuoteCollector, OptionDataCollector, IBOptions)
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
   commentId: P:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
   id: IsSimulation
@@ -176,11 +178,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsSimulation
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 39
+    startLine: 47
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -207,11 +209,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEnabled
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 41
+    startLine: 49
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -239,11 +241,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderId
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 45
+    startLine: 53
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -272,11 +274,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 48
+    startLine: 56
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -305,11 +307,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderDescription
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 51
+    startLine: 59
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -338,11 +340,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderPriority
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 54
+    startLine: 62
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -371,11 +373,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 57
+    startLine: 65
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -404,11 +406,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderCredentialFields
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 70
+    startLine: 78
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -440,11 +442,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderNotes
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 78
+    startLine: 86
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -473,11 +475,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderWarnings
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 86
+    startLine: 94
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -506,11 +508,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 93
+    startLine: 101
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -540,11 +542,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 94
+    startLine: 102
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -574,11 +576,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 96
+    startLine: 104
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -609,11 +611,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeMarketDepth
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 97
+    startLine: 105
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -645,11 +647,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 99
+    startLine: 107
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -680,11 +682,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UnsubscribeTrades
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 100
+    startLine: 108
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -716,11 +718,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBMarketDataClient.cs
-    startLine: 102
+    startLine: 110
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
@@ -1074,7 +1076,7 @@ references:
     href: Meridian.Infrastructure.Adapters.Core.html
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor*
   commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.#ctor
-  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient__ctor_Meridian_Domain_Events_IMarketEventPublisher_Meridian_Domain_Collectors_TradeDataCollector_Meridian_Domain_Collectors_MarketDepthCollector_Meridian_Domain_Collectors_QuoteCollector_Meridian_Domain_Collectors_OptionDataCollector_
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient__ctor_Meridian_Domain_Events_IMarketEventPublisher_Meridian_Domain_Collectors_TradeDataCollector_Meridian_Domain_Collectors_MarketDepthCollector_Meridian_Domain_Collectors_QuoteCollector_Meridian_Domain_Collectors_OptionDataCollector_Meridian_Application_Config_IBOptions_
   name: IBMarketDataClient
   nameWithType: IBMarketDataClient.IBMarketDataClient
   fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IBMarketDataClient
@@ -1116,6 +1118,13 @@ references:
   name: OptionDataCollector
   nameWithType: OptionDataCollector
   fullName: Meridian.Domain.Collectors.OptionDataCollector
+- uid: Meridian.Application.Config.IBOptions
+  commentId: T:Meridian.Application.Config.IBOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBOptions.html
+  name: IBOptions
+  nameWithType: IBOptions
+  fullName: Meridian.Application.Config.IBOptions
 - uid: Meridian.Domain.Events
   commentId: N:Meridian.Domain.Events
   href: Meridian.html
@@ -1176,6 +1185,36 @@ references:
   - uid: Meridian.Domain.Collectors
     name: Collectors
     href: Meridian.Domain.Collectors.html
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
 - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation*
   commentId: Overload:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulation
   href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.html#Meridian_Infrastructure_Adapters_InteractiveBrokers_IBMarketDataClient_IsSimulation

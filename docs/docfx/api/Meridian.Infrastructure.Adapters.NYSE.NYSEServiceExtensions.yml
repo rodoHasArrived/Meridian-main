@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NYSEServiceExtensions
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
@@ -54,7 +54,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AddNYSEDataSource
     path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEServiceExtensions.cs

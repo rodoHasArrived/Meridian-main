@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ImplementsAdrAttribute
     path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AdrId
     path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
@@ -152,7 +152,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DocumentPath
     path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
@@ -214,7 +214,7 @@ items:
   source:
     remote:
       path: src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.ProviderSdk/ImplementsAdrAttribute.cs

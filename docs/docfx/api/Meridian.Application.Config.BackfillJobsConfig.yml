@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BackfillJobsConfig
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistJobs
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -161,7 +161,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: JobsDirectory
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -192,7 +192,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentRequests
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -223,7 +223,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxConcurrentPerProvider
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -254,7 +254,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryDelaySeconds
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -316,7 +316,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BatchSizeDays
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -347,7 +347,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoPauseOnRateLimit
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -378,7 +378,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AutoResumeAfterRateLimit
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -409,7 +409,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRateLimitWaitMinutes
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs
@@ -440,7 +440,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/BackfillConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Scheduling
     path: ../../src/Meridian.Core/Config/BackfillConfig.cs

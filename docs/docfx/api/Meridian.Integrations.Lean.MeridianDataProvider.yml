@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeridianDataProvider
     path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NewDataRequest
     path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
@@ -91,7 +91,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
@@ -126,7 +126,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fetch
     path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs
@@ -166,7 +166,7 @@ items:
   source:
     remote:
       path: src/Meridian/Integrations/Lean/MeridianDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian/Integrations/Lean/MeridianDataProvider.cs

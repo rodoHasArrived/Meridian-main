@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PersistentDedupLedger
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalChecked
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
@@ -100,7 +100,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalDuplicates
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
@@ -133,7 +133,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
@@ -169,7 +169,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: InitializeAsync
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsDuplicateAsync
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
@@ -244,11 +244,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FlushAsync
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-    startLine: 462
+    startLine: 474
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -279,11 +279,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompactAsync
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-    startLine: 481
+    startLine: 493
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline
@@ -317,11 +317,11 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs
-    startLine: 533
+    startLine: 545
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Pipeline

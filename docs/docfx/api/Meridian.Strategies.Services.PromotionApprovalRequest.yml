@@ -21,11 +21,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PromotionApprovalRequest
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 449
+    startLine: 363
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -59,11 +59,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 449
+    startLine: 363
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -101,11 +101,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RunId
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 450
+    startLine: 364
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -130,11 +130,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ReviewNotes
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 451
+    startLine: 365
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -159,11 +159,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApprovedBy
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 452
+    startLine: 366
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -188,11 +188,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ApprovalReason
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 453
+    startLine: 367
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services
@@ -217,11 +217,11 @@ items:
   source:
     remote:
       path: src/Meridian.Strategies/Services/PromotionService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ManualOverrideId
     path: ../../src/Meridian.Strategies/Services/PromotionService.cs
-    startLine: 454
+    startLine: 368
   assemblies:
   - Meridian.Strategies
   namespace: Meridian.Strategies.Services

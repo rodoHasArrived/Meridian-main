@@ -21,7 +21,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolPreview
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -130,7 +130,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DateRange
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EstimatedBars
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -188,7 +188,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExistingData
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
@@ -217,7 +217,7 @@ items:
   source:
     remote:
       path: src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WouldOverwrite
     path: ../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs

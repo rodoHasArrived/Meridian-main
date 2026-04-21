@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CppTraderSymbolSpecification
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -59,7 +59,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolId
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -117,7 +117,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TickSize
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: QuantityIncrement
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PriceScale
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -204,7 +204,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LotSize
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -233,7 +233,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Venue
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
@@ -262,7 +262,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SessionTimeZone
     path: ../../src/Meridian.Infrastructure.CppTrader/Options/CppTraderOptions.cs

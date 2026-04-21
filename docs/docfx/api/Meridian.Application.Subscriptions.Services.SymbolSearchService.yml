@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolSearchService
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -105,7 +105,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -149,7 +149,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -182,7 +182,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -220,7 +220,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDetailsAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -264,7 +264,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LookupFigiAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -305,7 +305,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SearchFigiAsync
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ClearCache
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
@@ -376,7 +376,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs

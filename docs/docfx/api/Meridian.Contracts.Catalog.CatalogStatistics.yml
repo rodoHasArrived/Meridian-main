@@ -24,7 +24,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CatalogStatistics
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalFiles
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalEvents
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -146,7 +146,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesCompressed
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -189,7 +189,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TotalBytesRaw
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CompressionRatio
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -275,7 +275,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UniqueSymbols
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -318,7 +318,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: UniqueSources
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EventTypeCounts
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs
@@ -404,7 +404,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Catalog/StorageCatalog.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TierSizes
     path: ../../src/Meridian.Contracts/Catalog/StorageCatalog.cs

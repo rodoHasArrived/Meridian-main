@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SchemaValidationOptions
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -57,7 +57,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableVersionTracking
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -88,7 +88,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AlwaysRunStartupCheck
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -119,7 +119,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxFilesToCheck
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
@@ -150,7 +150,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FailOnFirstIncompatibility
     path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs

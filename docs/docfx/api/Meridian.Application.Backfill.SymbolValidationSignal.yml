@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolValidationSignal
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -131,7 +131,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbol
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -162,7 +162,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Status
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -198,7 +198,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BarsWritten
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -232,7 +232,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckpointBarsWritten
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -268,7 +268,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveFrom
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EffectiveTo
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Reason
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -361,7 +361,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Pass
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -403,7 +403,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PassSkipped
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -446,7 +446,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Warn
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs
@@ -488,7 +488,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Backfill/SymbolValidationSignal.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Fail
     path: ../../src/Meridian.Application/Backfill/SymbolValidationSignal.cs

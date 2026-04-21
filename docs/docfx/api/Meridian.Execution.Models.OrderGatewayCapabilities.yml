@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OrderGatewayCapabilities
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
@@ -65,7 +65,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
@@ -114,7 +114,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedOrderTypes
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedTimeInForce
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
@@ -172,7 +172,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedExecutionModes
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
@@ -201,7 +201,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsOrderModification
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsPartialFills
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
@@ -259,7 +259,7 @@ items:
   source:
     remote:
       path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderExtensions
     path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs

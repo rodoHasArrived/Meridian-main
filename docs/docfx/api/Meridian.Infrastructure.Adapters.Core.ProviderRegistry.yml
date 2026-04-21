@@ -49,7 +49,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderRegistry
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -121,7 +121,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -155,7 +155,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Register
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -199,7 +199,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterStreamingFactory
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -242,7 +242,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterStreamingFactory
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -285,7 +285,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateStreamingClient
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -330,7 +330,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateStreamingClient
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -368,7 +368,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedStreamingSources
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -399,7 +399,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProviderMetadata
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -429,7 +429,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -465,7 +465,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvidersByCapability
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -502,7 +502,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -542,7 +542,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -583,7 +583,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBestAvailableProviderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -627,7 +627,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAnyProviderAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -668,7 +668,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderAvailabilityAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -709,7 +709,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterStreaming
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -748,7 +748,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamingProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -785,7 +785,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetStreamingProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -816,7 +816,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterBackfill
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -855,7 +855,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -892,7 +892,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBackfillProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -923,7 +923,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBestBackfillProviderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -957,7 +957,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RegisterSymbolSearch
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -996,7 +996,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolSearchProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1033,7 +1033,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSymbolSearchProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1064,7 +1064,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetBestSymbolSearchProviderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1098,7 +1098,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Enable
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1132,7 +1132,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disable
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1166,7 +1166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAllProviders
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1202,7 +1202,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalog
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1236,7 +1236,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalogByType
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1271,7 +1271,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetProviderCatalogEntry
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1309,7 +1309,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetSummary
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
@@ -1339,7 +1339,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs

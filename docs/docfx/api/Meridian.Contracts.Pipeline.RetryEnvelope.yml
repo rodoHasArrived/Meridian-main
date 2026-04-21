@@ -22,7 +22,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetryEnvelope
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AttemptCount
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -101,7 +101,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRetries
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -144,7 +144,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextRetryAt
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -187,7 +187,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PolicyClass
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -230,7 +230,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseDelaySeconds
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -273,7 +273,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsExhausted
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NextDelay
     path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs

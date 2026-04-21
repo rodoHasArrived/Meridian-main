@@ -19,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian/Tools/DataValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataValidator
     path: ../../src/Meridian/Tools/DataValidator.cs
@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian/Tools/DataValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateFileAsync
     path: ../../src/Meridian/Tools/DataValidator.cs
@@ -98,7 +98,7 @@ items:
   source:
     remote:
       path: src/Meridian/Tools/DataValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateDirectoryAsync
     path: ../../src/Meridian/Tools/DataValidator.cs
@@ -138,7 +138,7 @@ items:
   source:
     remote:
       path: src/Meridian/Tools/DataValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GenerateSummary
     path: ../../src/Meridian/Tools/DataValidator.cs
@@ -174,7 +174,7 @@ items:
   source:
     remote:
       path: src/Meridian/Tools/DataValidator.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: PrintResults
     path: ../../src/Meridian/Tools/DataValidator.cs

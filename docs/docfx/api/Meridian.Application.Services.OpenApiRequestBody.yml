@@ -18,7 +18,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OpenApiRequestBody
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -52,7 +52,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -81,7 +81,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Required
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs
@@ -110,7 +110,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Services/ApiDocumentationService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Content
     path: ../../src/Meridian.Application/Services/ApiDocumentationService.cs

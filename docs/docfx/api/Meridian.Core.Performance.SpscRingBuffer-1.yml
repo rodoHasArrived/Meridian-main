@@ -23,7 +23,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SpscRingBuffer
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -103,7 +103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -142,7 +142,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capacity
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -175,7 +175,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Count
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -211,7 +211,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsEmpty
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -244,7 +244,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsFull
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -277,7 +277,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryWrite
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -322,7 +322,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: TryRead
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
@@ -367,7 +367,7 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DrainTo
     path: ../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs

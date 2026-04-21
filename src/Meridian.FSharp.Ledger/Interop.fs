@@ -88,6 +88,55 @@ type ReconciliationResultDto = {
     Status: string
 }
 
+[<CLIMutable>]
+type BreakFactsDto = {
+    BreakType: string
+    ExpectedQuantity: decimal option
+    ActualQuantity: decimal option
+    ExpectedPrice: decimal option
+    ActualPrice: decimal option
+    ExpectedInstrumentId: string
+    ActualInstrumentId: string
+    ExpectedCashAmount: decimal option
+    ActualCashAmount: decimal option
+    ExpectedCurrency: string
+    ActualCurrency: string
+    ExpectedSettlementDate: DateTimeOffset option
+    ActualSettlementDate: DateTimeOffset option
+    TimingToleranceDays: int
+    ExpectedCorporateActionType: string
+    ActualCorporateActionType: string
+    ExpectedCorporateActionFactor: decimal option
+    ActualCorporateActionFactor: decimal option
+    MappingKey: string
+    MappingResolved: bool option
+}
+
+[<CLIMutable>]
+type CanonicalBreakClassificationDto = {
+    TaxonomyVersion: string
+    BreakClass: string
+    PrimaryReasonCode: string
+    ReasonCodes: string array
+    IsFallback: bool
+}
+
+[<CLIMutable>]
+type BreakRecordClassificationDto = {
+    BreakId: Guid
+    RunId: Guid
+    SecurityId: Guid
+    FlowId: Guid
+    LegacyClassification: string
+    TaxonomyVersion: string
+    CanonicalClass: string
+    PrimaryReasonCode: string
+    ReasonCodes: string array
+    Severity: string
+    IsFallbackClassification: bool
+    Notes: string
+}
+
 [<Sealed; Extension>]
 type LedgerInterop private () =
 
@@ -199,5 +248,69 @@ type LedgerInterop private () =
                 PostedAt = result.PostedAt
                 Outcome = LedgerInterop.OutcomeToDto result.Outcome
                 Status = result.OutcomeLabel
+            })
+        |> Seq.toArray
+
+    static member private NormalizeString (value: string) : string option =
+        if String.IsNullOrWhiteSpace value then None else Some value
+
+    static member private ToRawBreakFacts (dto: BreakFactsDto) : RawBreakFacts =
+        {
+            BreakType = LedgerInterop.NormalizeString dto.BreakType
+            ExpectedQuantity = dto.ExpectedQuantity
+            ActualQuantity = dto.ActualQuantity
+            ExpectedPrice = dto.ExpectedPrice
+            ActualPrice = dto.ActualPrice
+            ExpectedInstrumentId = LedgerInterop.NormalizeString dto.ExpectedInstrumentId
+            ActualInstrumentId = LedgerInterop.NormalizeString dto.ActualInstrumentId
+            ExpectedCashAmount = dto.ExpectedCashAmount
+            ActualCashAmount = dto.ActualCashAmount
+            ExpectedCurrency = LedgerInterop.NormalizeString dto.ExpectedCurrency
+            ActualCurrency = LedgerInterop.NormalizeString dto.ActualCurrency
+            ExpectedSettlementDate = dto.ExpectedSettlementDate
+            ActualSettlementDate = dto.ActualSettlementDate
+            TimingToleranceDays = dto.TimingToleranceDays
+            ExpectedCorporateActionType = LedgerInterop.NormalizeString dto.ExpectedCorporateActionType
+            ActualCorporateActionType = LedgerInterop.NormalizeString dto.ActualCorporateActionType
+            ExpectedCorporateActionFactor = dto.ExpectedCorporateActionFactor
+            ActualCorporateActionFactor = dto.ActualCorporateActionFactor
+            MappingKey = LedgerInterop.NormalizeString dto.MappingKey
+            MappingResolved = dto.MappingResolved
+        }
+
+    static member private ToCanonicalBreakClassificationDto
+        (classification: CanonicalBreakClassification)
+        : CanonicalBreakClassificationDto =
+        {
+            TaxonomyVersion = BreakTaxonomyVersion.asString classification.TaxonomyVersion
+            BreakClass = CanonicalBreakClass.asString classification.BreakClass
+            PrimaryReasonCode = BreakReasonCode.asString classification.PrimaryReasonCode
+            ReasonCodes = classification.ReasonCodes |> List.map BreakReasonCode.asString |> List.toArray
+            IsFallback = classification.IsFallback
+        }
+
+    static member ClassifyBreakFacts(facts: seq<BreakFactsDto>) : CanonicalBreakClassificationDto array =
+        facts
+        |> Seq.map LedgerInterop.ToRawBreakFacts
+        |> Seq.map ReconciliationClassification.classify
+        |> Seq.map LedgerInterop.ToCanonicalBreakClassificationDto
+        |> Seq.toArray
+
+    static member ToBreakRecordClassificationDtos(records: seq<BreakRecord>) : BreakRecordClassificationDto array =
+        records
+        |> Seq.map (fun record ->
+            {
+                BreakId = record.BreakId
+                RunId = record.RunId
+                SecurityId = record.SecurityId
+                FlowId = record.FlowId
+                LegacyClassification = record.Classification
+                TaxonomyVersion = record.TaxonomyVersion
+                CanonicalClass = record.CanonicalClass
+                PrimaryReasonCode = record.PrimaryReasonCode
+                ReasonCodes = record.ReasonCodes
+                Severity = record.Severity
+                IsFallbackClassification = record.IsFallbackClassification
+                Notes = record.Notes
             })
         |> Seq.toArray

@@ -27,7 +27,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardContext
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -66,7 +66,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedProviders
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -97,7 +97,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SelectedUseCase
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -128,7 +128,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DataSource
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -159,7 +159,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Symbols
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -190,7 +190,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Storage
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -221,7 +221,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -252,7 +252,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FinalConfig
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -283,7 +283,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SavedConfigPath
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -314,7 +314,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Metadata
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsCancelled
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -379,7 +379,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetMeta
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
@@ -417,7 +417,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/Core/WizardContext.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SetMeta
     path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs

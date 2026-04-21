@@ -148,7 +148,14 @@ public record ProviderHealthResponse(
     int ConsecutiveSuccesses,
     DateTimeOffset? LastIssueTime,
     DateTimeOffset? LastSuccessTime,
+    double DegradationScore,
+    ProviderScoreReasonResponse[] Reasons,
     HealthIssueResponse[] RecentIssues);
+
+/// <summary>Compact explanation reason attached to score outputs.</summary>
+public readonly record struct ProviderScoreReasonResponse(
+    string Code,
+    double Contribution);
 
 /// <summary>Response containing a health issue.</summary>
 public record HealthIssueResponse(

@@ -60,7 +60,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BaseHistoricalDataProvider
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -164,7 +164,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Http
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -191,7 +191,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimiter
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -218,7 +218,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Log
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -245,7 +245,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResiliencePipeline
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -272,7 +272,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Disposed
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Name
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -332,7 +332,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -365,7 +365,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Description
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -398,7 +398,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HttpClientName
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -429,7 +429,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Priority
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -465,7 +465,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitDelay
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -501,7 +501,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxRequestsPerWindow
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -537,7 +537,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RateLimitWindow
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -573,7 +573,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Capabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -617,7 +617,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAdjustedPrices
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -651,7 +651,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsIntraday
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -685,7 +685,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsDividends
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -719,7 +719,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsSplits
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -753,7 +753,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsQuotes
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -787,7 +787,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsTrades
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -821,7 +821,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportsAuctions
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -855,7 +855,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SupportedMarkets
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -889,7 +889,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: OnRateLimitHit
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -923,7 +923,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RaiseRateLimitHit
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -954,7 +954,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -995,7 +995,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbol
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1034,7 +1034,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NormalizeSymbols
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1070,7 +1070,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WaitForRateLimitSlotAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1103,7 +1103,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RecordRateLimitHit
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1134,7 +1134,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetRateLimitInfo
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1166,7 +1166,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteGetAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1213,7 +1213,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ExecuteGetAndReadAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1267,7 +1267,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleHttpResponseAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1319,7 +1319,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HandleHttpResponse
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1360,7 +1360,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DeserializeResponse
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1400,7 +1400,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ThrowIfDisposed
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1428,7 +1428,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbol
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1462,7 +1462,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateSymbols
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1496,7 +1496,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsValidOhlc
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1538,7 +1538,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ValidateOhlc
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1584,7 +1584,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1631,7 +1631,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAvailableAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1669,7 +1669,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAdjustedDailyBarsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1716,7 +1716,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
@@ -1746,7 +1746,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Dispose
     path: ../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs

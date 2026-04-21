@@ -31,7 +31,7 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RobinhoodBrokerageGateway
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
@@ -165,11 +165,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 58
+    startLine: 59
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -201,11 +201,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GatewayId
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 78
+    startLine: 79
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -234,11 +234,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsConnected
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 81
+    startLine: 82
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -267,11 +267,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerDisplayName
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 84
+    startLine: 85
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -300,11 +300,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: BrokerageCapabilities
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 87
+    startLine: 88
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -333,11 +333,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ConnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 96
+    startLine: 97
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -368,11 +368,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisconnectAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 115
+    startLine: 116
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -403,11 +403,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SubmitOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 123
+    startLine: 124
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -440,11 +440,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CancelOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 192
+    startLine: 220
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -480,11 +480,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ModifyOrderAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 244
+    startLine: 273
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -526,11 +526,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StreamExecutionReportsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 305
+    startLine: 338
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -561,11 +561,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetAccountInfoAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 315
+    startLine: 348
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -596,11 +596,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetPositionsAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 337
+    startLine: 370
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -631,11 +631,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: GetOpenOrdersAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 370
+    startLine: 473
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -666,11 +666,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CheckHealthAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 400
+    startLine: 503
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood
@@ -704,11 +704,11 @@ items:
   source:
     remote:
       path: src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DisposeAsync
     path: ../../src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs
-    startLine: 419
+    startLine: 522
   assemblies:
   - Meridian.Infrastructure
   namespace: Meridian.Infrastructure.Adapters.Robinhood

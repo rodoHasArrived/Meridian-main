@@ -29,7 +29,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ProviderLatencyHistogram
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -67,7 +67,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -125,7 +125,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Provider
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -154,7 +154,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SampleCount
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -183,7 +183,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MeanMs
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -212,7 +212,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MinMs
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -241,7 +241,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxMs
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -270,7 +270,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P50Ms
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -299,7 +299,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P75Ms
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -328,7 +328,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P90Ms
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -357,7 +357,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P95Ms
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -386,7 +386,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: P99Ms
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -415,7 +415,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Buckets
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -444,7 +444,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SymbolCount
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs
@@ -473,7 +473,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Monitoring/ProviderLatencyService.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: LastUpdateTime
     path: ../../src/Meridian.Application/Monitoring/ProviderLatencyService.cs

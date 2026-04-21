@@ -95,6 +95,7 @@ items:
   - Meridian.Application.Services.OpenApiTag
   - Meridian.Application.Services.OperationProgress
   - Meridian.Application.Services.OptionsChainService
+  - Meridian.Application.Services.OptionsProviderStatus
   - Meridian.Application.Services.PluginLoadResult
   - Meridian.Application.Services.PluginLoaderService
   - Meridian.Application.Services.PortfolioPositionInput
@@ -829,6 +830,7 @@ references:
   fullName: Meridian.Application.Services.HistoricalDataDateRange
 - uid: Meridian.Application.Services.NavAttributionService
   commentId: T:Meridian.Application.Services.NavAttributionService
+  parent: Meridian.Application.Services
   href: Meridian.Application.Services.NavAttributionService.html
   name: NavAttributionService
   nameWithType: NavAttributionService
@@ -865,6 +867,13 @@ references:
   name: OptionsChainService
   nameWithType: OptionsChainService
   fullName: Meridian.Application.Services.OptionsChainService
+- uid: Meridian.Application.Services.OptionsProviderStatus
+  commentId: T:Meridian.Application.Services.OptionsProviderStatus
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.OptionsProviderStatus.html
+  name: OptionsProviderStatus
+  nameWithType: OptionsProviderStatus
+  fullName: Meridian.Application.Services.OptionsProviderStatus
 - uid: Meridian.Application.Services.PluginLoadResult
   commentId: T:Meridian.Application.Services.PluginLoadResult
   href: Meridian.Application.Services.PluginLoadResult.html
@@ -979,6 +988,7 @@ references:
   fullName: Meridian.Application.Services.EngineReconciliationResult
 - uid: Meridian.Application.Services.ReportGenerationService
   commentId: T:Meridian.Application.Services.ReportGenerationService
+  parent: Meridian.Application.Services
   href: Meridian.Application.Services.ReportGenerationService.html
   name: ReportGenerationService
   nameWithType: ReportGenerationService

@@ -7,22 +7,24 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
-public sealed class WorkspacePageViewModelTests
+public sealed class WorkspacePageViewModelTests : IDisposable
 {
-    private static readonly string TestSettingsFilePath = Path.Combine(
-        Path.GetTempPath(),
-        "Meridian.Wpf.Tests",
-        "workspace-vm-tests",
-        "workspace-data.json");
+    private static string CreateTestSettingsFilePath()
+        => Path.Combine(
+            Path.GetTempPath(),
+            "Meridian.Wpf.Tests",
+            "workspace-vm-tests",
+            $"{Guid.NewGuid():N}.workspace-data.json");
 
     private static async Task<WorkspaceService> CreateServiceAsync()
     {
-        var service = WorkspaceService.Instance;
-        WorkspaceService.SetSettingsFilePathOverrideForTests(TestSettingsFilePath);
-        Directory.CreateDirectory(Path.GetDirectoryName(TestSettingsFilePath)!);
-        if (File.Exists(TestSettingsFilePath))
+        var settingsFilePath = CreateTestSettingsFilePath();
+        var service = (WorkspaceService)Activator.CreateInstance(typeof(WorkspaceService), nonPublic: true)!;
+        WorkspaceService.SetSettingsFilePathOverrideForTests(settingsFilePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(settingsFilePath)!);
+        if (File.Exists(settingsFilePath))
         {
-            File.Delete(TestSettingsFilePath);
+            File.Delete(settingsFilePath);
         }
 
         service.ResetForTests();
@@ -36,6 +38,11 @@ public sealed class WorkspacePageViewModelTests
             svc,
             Meridian.Wpf.Services.NotificationService.Instance,
             Meridian.Wpf.Services.LoggingService.Instance);
+    }
+
+    public void Dispose()
+    {
+        WorkspaceService.SetSettingsFilePathOverrideForTests(null);
     }
 
     [Fact]
@@ -57,7 +64,7 @@ public sealed class WorkspacePageViewModelTests
     public async Task LoadAsync_SetsActiveWorkspaceName_WhenActiveExists()
     {
         var service = await CreateServiceAsync();
-        var workspace = service.Workspaces.First();
+        var workspace = service.Workspaces.First(item => item.Id == "research");
         await service.ActivateWorkspaceAsync(workspace.Id);
 
         WpfTestThread.Run(async () =>

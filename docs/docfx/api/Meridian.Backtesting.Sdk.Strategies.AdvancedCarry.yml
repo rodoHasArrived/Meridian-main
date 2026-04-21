@@ -18,12 +18,14 @@ items:
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTailRiskEstimate
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionSlice
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
   - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ScenarioImpact
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
   langs:
   - csharp
   - vb
@@ -47,6 +49,13 @@ references:
   name: CarryOptimizationMethod
   nameWithType: CarryOptimizationMethod
   fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.html
+  name: YieldCarryMode
+  nameWithType: YieldCarryMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
 - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
   commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
   parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
@@ -168,6 +177,12 @@ references:
   name: AdvancedCarryDecision
   nameWithType: AdvancedCarryDecision
   fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html
+  name: CarryTradeBacktestStrategy
+  nameWithType: CarryTradeBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
 - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
   commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
   href: Meridian.html

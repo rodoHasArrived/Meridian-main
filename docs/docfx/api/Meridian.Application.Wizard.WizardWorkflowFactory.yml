@@ -16,7 +16,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/WizardWorkflowFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: WizardWorkflowFactory
     path: ../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs
@@ -58,7 +58,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Wizard/WizardWorkflowFactory.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: CreateInteractive
     path: ../../src/Meridian.Application/Wizard/WizardWorkflowFactory.cs

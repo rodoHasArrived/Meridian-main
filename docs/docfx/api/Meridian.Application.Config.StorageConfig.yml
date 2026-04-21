@@ -25,11 +25,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: StorageConfig
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 78
+    startLine: 77
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -66,11 +66,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: .ctor
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 78
+    startLine: 77
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -119,11 +119,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: NamingConvention
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 82
+    startLine: 81
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -148,11 +148,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DatePartition
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 87
+    startLine: 86
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -177,11 +177,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IncludeProvider
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 92
+    startLine: 91
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -206,11 +206,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: FilePrefix
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 97
+    startLine: 96
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -235,11 +235,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Profile
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 102
+    startLine: 101
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -264,11 +264,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: RetentionDays
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 107
+    startLine: 106
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -293,11 +293,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: MaxTotalMegabytes
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 113
+    startLine: 112
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -322,11 +322,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: EnableParquetSink
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 120
+    startLine: 119
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config
@@ -351,11 +351,11 @@ items:
   source:
     remote:
       path: src/Meridian.Core/Config/AppConfig.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Sinks
     path: ../../src/Meridian.Core/Config/AppConfig.cs
-    startLine: 126
+    startLine: 125
   assemblies:
   - Meridian.Core
   namespace: Meridian.Application.Config

@@ -25,7 +25,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ArchiveIssue
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -61,7 +61,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Id
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -102,7 +102,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Severity
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -143,7 +143,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Category
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -184,7 +184,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Message
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -225,7 +225,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedFiles
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -266,7 +266,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: AffectedSymbols
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -307,7 +307,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: SuggestedAction
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -348,7 +348,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: DetectedAt
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -389,7 +389,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: ResolvedAt
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
@@ -430,7 +430,7 @@ items:
   source:
     remote:
       path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: IsAutoFixable
     path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs

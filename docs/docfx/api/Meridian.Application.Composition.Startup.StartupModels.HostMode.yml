@@ -9,7 +9,6 @@ items:
   - Meridian.Application.Composition.Startup.StartupModels.HostMode.Collector
   - Meridian.Application.Composition.Startup.StartupModels.HostMode.Command
   - Meridian.Application.Composition.Startup.StartupModels.HostMode.Desktop
-  - Meridian.Application.Composition.Startup.StartupModels.HostMode.Web
   langs:
   - csharp
   - vb
@@ -20,7 +19,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: HostMode
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
@@ -47,7 +46,7 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Command
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
@@ -59,34 +58,6 @@ items:
   example: []
   syntax:
     content: Command = 0
-    return:
-      type: Meridian.Application.Composition.Startup.StartupModels.HostMode
-- uid: Meridian.Application.Composition.Startup.StartupModels.HostMode.Web
-  commentId: F:Meridian.Application.Composition.Startup.StartupModels.HostMode.Web
-  id: Web
-  parent: Meridian.Application.Composition.Startup.StartupModels.HostMode
-  langs:
-  - csharp
-  - vb
-  name: Web
-  nameWithType: HostMode.Web
-  fullName: Meridian.Application.Composition.Startup.StartupModels.HostMode.Web
-  type: Field
-  source:
-    remote:
-      path: src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-      branch: codex/ci-repair-path
-      repo: https://github.com/rodoHasArrived/Meridian-main.git
-    id: Web
-    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-    startLine: 15
-  assemblies:
-  - Meridian.Application
-  namespace: Meridian.Application.Composition.Startup.StartupModels
-  summary: Standalone web dashboard server (HTTP-only, no data collector).
-  example: []
-  syntax:
-    content: Web = 1
     return:
       type: Meridian.Application.Composition.Startup.StartupModels.HostMode
 - uid: Meridian.Application.Composition.Startup.StartupModels.HostMode.Desktop
@@ -103,18 +74,18 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Desktop
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-    startLine: 20
+    startLine: 15
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup.StartupModels
   summary: 'Desktop host: embedded HTTP UI server plus the data collector running side-by-side.'
   example: []
   syntax:
-    content: Desktop = 2
+    content: Desktop = 1
     return:
       type: Meridian.Application.Composition.Startup.StartupModels.HostMode
 - uid: Meridian.Application.Composition.Startup.StartupModels.HostMode.Collector
@@ -131,18 +102,18 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Collector
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-    startLine: 25
+    startLine: 20
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup.StartupModels
   summary: Headless streaming data collector (console / server / container).
   example: []
   syntax:
-    content: Collector = 3
+    content: Collector = 2
     return:
       type: Meridian.Application.Composition.Startup.StartupModels.HostMode
 - uid: Meridian.Application.Composition.Startup.StartupModels.HostMode.Backfill
@@ -159,18 +130,18 @@ items:
   source:
     remote:
       path: src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-      branch: codex/ci-repair-path
+      branch: main
       repo: https://github.com/rodoHasArrived/Meridian-main.git
     id: Backfill
     path: ../../src/Meridian.Application/Composition/Startup/StartupModels/HostMode.cs
-    startLine: 30
+    startLine: 25
   assemblies:
   - Meridian.Application
   namespace: Meridian.Application.Composition.Startup.StartupModels
   summary: Historical data backfill operation running in headless mode.
   example: []
   syntax:
-    content: Backfill = 4
+    content: Backfill = 3
     return:
       type: Meridian.Application.Composition.Startup.StartupModels.HostMode
 references:
