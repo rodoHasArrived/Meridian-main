@@ -283,6 +283,9 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         if (startIndex < 0 || endIndex < startIndex || endIndex >= NotebookCells.Count)
             return false;
 
+        if (!ValidateExecutionDateRange())
+            return false;
+
         ClearResults();
         IsRunning = true;
         StatusText = startIndex == endIndex ? $"Running {NotebookCells[endIndex].Title.ToLowerInvariant()}..." : $"Running cells {startIndex + 1}-{endIndex + 1}...";
@@ -629,7 +632,51 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         _fileWatcher.Renamed += (_, _) => System.Windows.Application.Current?.Dispatcher.InvokeAsync(RefreshScripts, DispatcherPriority.Background);
     }
 
-    private IReadOnlyDictionary<string, object?> BuildParameterDictionary() => Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.ParsedValue, StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyDictionary<string, object?> BuildParameterDictionary()
+    {
+        var values = Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.ParsedValue, StringComparer.OrdinalIgnoreCase);
+
+        var normalizedSymbol = string.IsNullOrWhiteSpace(AssetSymbol) ? null : AssetSymbol.Trim().ToUpperInvariant();
+        var normalizedFrom = DateOnly.FromDateTime(FromDate.Date);
+        var normalizedTo = DateOnly.FromDateTime(ToDate.Date);
+        var normalizedInterval = NormalizeInterval(SelectedInterval);
+
+        values["symbol"] = normalizedSymbol;
+        values["from"] = normalizedFrom;
+        values["to"] = normalizedTo;
+        values["interval"] = normalizedInterval;
+
+        // Namespaced aliases keep script access resilient while still supporting helpers.
+        values["context.symbol"] = normalizedSymbol;
+        values["context.from"] = normalizedFrom;
+        values["context.to"] = normalizedTo;
+        values["context.interval"] = normalizedInterval;
+
+        return values;
+    }
+
+    private bool ValidateExecutionDateRange()
+    {
+        if (FromDate.Date <= ToDate.Date)
+            return true;
+
+        var message = $"Invalid date range: From ({FromDate:yyyy-MM-dd}) cannot be after To ({ToDate:yyyy-MM-dd}).";
+        StatusText = message;
+        Diagnostics.Add(new DiagnosticEntry("Validation", message));
+        AppendConsole(message, ConsoleEntryKind.Error);
+        return false;
+    }
+
+    private static string NormalizeInterval(string? interval) => (interval ?? string.Empty).Trim() switch
+    {
+        "Daily (Custom)" => "daily",
+        "Daily" => "daily",
+        "Weekly" => "weekly",
+        "Monthly" => "monthly",
+        var other when string.IsNullOrWhiteSpace(other) => "daily",
+        var other => other.ToLowerInvariant()
+    };
+
     private List<NotebookCellExecutionIdentity> GetCellIdentities() => NotebookCells.Select(cell => new NotebookCellExecutionIdentity(cell.Id, cell.Revision)).ToList();
 
     private void UpdateCellOrdinals()
