@@ -4826,6 +4826,7 @@ Meridian-main
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
 │   │   ├── CHANGELOG.md
+│   │   ├── contract-compatibility-matrix.md
 │   │   ├── coverage-report.md
 │   │   ├── dk1-baseline-trust-thresholds.md
 │   │   ├── dk1-pilot-parity-runbook.md
@@ -4930,6 +4931,7 @@ Meridian-main
 │   ├── lib
 │   │   ├── ui-diagram-generator.mjs
 │   │   └── ui-diagram-generator.test.mjs
+│   ├── check_contract_compatibility_gate.py
 │   ├── compare_benchmarks.py
 │   ├── example-sharpe.csx
 │   ├── generate-diagrams.mjs
