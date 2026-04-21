@@ -4858,7 +4858,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── environment-variables.md
 │   │   ├── open-source-references.md
 │   │   ├── reconciliation-break-taxonomy.md
-│   │   └── research-briefing-workflow.md
+│   │   ├── research-briefing-workflow.md
+│   │   └── strategy-promotion-history.md
 │   ├── screenshots
 │   │   ├── 01-dashboard.png
 │   │   ├── 02-workstation.png
@@ -4948,7 +4949,8 @@ Use these documents together when planning or implementing new work:
 │   │   ├── metrics-dashboard.md
 │   │   ├── production-status.md
 │   │   ├── provider-validation-matrix.md
-│   │   └── rules-report.md
+│   │   ├── rules-report.md
+│   │   └── wave4-evidence-template.md
 │   └── toc.yml
 ├── environment.yml
 ├── global.json
@@ -5208,7 +5210,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── GovernanceSharedDataAccessService.cs
 │   │   │   ├── IFundStructureService.cs
 │   │   │   ├── IGovernanceSharedDataAccessService.cs
-│   │   │   └── InMemoryFundStructureService.cs
+│   │   │   ├── InMemoryFundStructureService.cs
+│   │   │   └── LedgerGroupingRules.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Http
 │   │   │   ├── BackfillCoordinator.cs
@@ -5594,7 +5597,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── AccountManagementOptions.cs
 │   │   │   ├── FundStructureCommands.cs
 │   │   │   ├── FundStructureDtos.cs
-│   │   │   └── FundStructureQueries.cs
+│   │   │   ├── FundStructureQueries.cs
+│   │   │   └── LedgerGroupId.cs
 │   │   ├── Manifest
 │   │   │   └── DataManifest.cs
 │   │   ├── Meridian.Contracts.csproj
@@ -6345,7 +6349,9 @@ Use these documents together when planning or implementing new work:
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.cs
 │   │   │   ├── IAggregatePortfolioService.cs
+│   │   │   ├── IReconciliationBreakQueueRepository.cs
 │   │   │   ├── IReconciliationRunRepository.cs
 │   │   │   ├── IReconciliationRunService.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
@@ -6359,6 +6365,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   └── StrategyRunReadService.cs
 │   │   └── Storage
+│   │       ├── IPromotionRecordStore.cs
+│   │       ├── JsonlPromotionRecordStore.cs
 │   │       └── StrategyRunStore.cs
 │   ├── Meridian.Ui
 │   │   ├── dashboard
@@ -7200,6 +7208,8 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   └── EtlNormalizationServiceTests.cs
 │   │   │   ├── FundAccounts
 │   │   │   │   └── FundAccountServiceTests.cs
+│   │   │   ├── FundStructure
+│   │   │   │   └── LedgerGroupIdTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Monitoring
@@ -7267,6 +7277,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   │   ├── OperationalSchedulerTests.cs
 │   │   │   │   ├── OptionsChainServiceTests.cs
 │   │   │   │   ├── PreflightCheckerTests.cs
+│   │   │   │   ├── ReportGenerationServiceTests.cs
 │   │   │   │   ├── TradingCalendarTests.cs
 │   │   │   │   └── VenueMicMapperTests.cs
 │   │   │   ├── Ui
@@ -7629,6 +7640,7 @@ Use these documents together when planning or implementing new work:
 │   │   │   ├── DataOperationsWorkspacePresentationBuilderTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
+│   │   │   ├── FundLedgerReadServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
@@ -7705,6 +7717,6 @@ Use these documents together when planning or implementing new work:
 │   └── xunit.runner.json
 └── tree.bak
 
-604 directories, 6961 files
+605 directories, 6972 files
 ```
 <!-- readme-tree end -->
