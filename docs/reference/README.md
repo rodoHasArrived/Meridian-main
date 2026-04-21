@@ -40,6 +40,7 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 | [Environment Variables](environment-variables.md) | Credential and configuration reference |
 | [Open Source References](open-source-references.md) | Third-party library acknowledgements |
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions |
+| [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Versioned canonical break classes and reason codes used by ledger reconciliation |
 
 See also: [DEPENDENCIES.md](../DEPENDENCIES.md) — full third-party package inventory.
 

@@ -1,6 +1,6 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-20
 **Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical April 17 roadmap
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
@@ -27,7 +27,7 @@ Meridian already has strong platform foundations, meaningful workstation flows i
 6. **Wave 6:** live integration readiness
 7. **Optional advanced research / scale tracks**
 
-Waves 1-4 define the core operator-readiness path. Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside that core path.
+Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery Kernel wrapper now governs that path: **DK1** (data-quality + provider trust hardening) and **DK2** (promotion + export + reconciliation continuity). Waves 5-6 deepen the product and widen later claims. Optional advanced research / scale tracks remain outside core readiness.
 
 ---
 
@@ -84,6 +84,14 @@ QuantScript expansion, queue-aware simulation, multi-instance coordination, and 
 
 Across Waves 1-4, keep WPF consolidation, shared DTOs, read models, workflow services, export seams, and operator-grade validation supporting the active waves rather than becoming separate priorities.
 
+Delivery Kernel governance to avoid piecemeal adoption:
+
+- **DK1 (maps to Wave 2 + trust-dependent Wave 3 scope):** requires parity, explainability, calibration, and operator sign-off before promotion scope expands
+- **DK2 (maps to Wave 3-4 integration scope):** requires the same four gates across promotion, export, and reconciliation
+- **Subsystem ownership:** Data Operations, Trading, Export, Governance, and a Shared Platform Interop owner for contract governance
+- **Single status surface:** track subsystem readiness and rollback posture in [`kernel-readiness-dashboard.md`](kernel-readiness-dashboard.md)
+- **Execution now active:** date-bounded implementation commitments run from 2026-04-20 through 2026-05-29 and are updated weekly in the dashboard
+
 ---
 
 ## Target End Product
@@ -98,7 +106,7 @@ The product promise is continuity: one operator can move from data trust to rese
 
 ## Core Operator-Readiness
 
-Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
+Meridian can reasonably claim **core operator-readiness** when Wave gates and DK wrappers are both satisfied:
 
 1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, checkpoint reliability plus Parquet L2 flush behavior are closed in repo tests, and `run-wave1-provider-validation.ps1` reproduces the offline gate.
 2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.

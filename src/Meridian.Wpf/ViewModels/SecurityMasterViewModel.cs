@@ -776,6 +776,19 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             return;
         }
 
+        if (!_securityMasterRuntimeStatus.IsAvailable)
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+
+            Results.Clear();
+            SelectedSecurity = null;
+            HistoryText = string.Empty;
+            StatusText = _securityMasterRuntimeStatus.AvailabilityDescription;
+            return;
+        }
+
         _cts?.Cancel();
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var linked = _cts.Token;

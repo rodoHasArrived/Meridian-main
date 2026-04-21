@@ -134,6 +134,72 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnTypedResearchBriefing()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-latest",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx"));
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-prior",
+            strategyId: "meanrev-1",
+            strategyName: "Mean Reversion",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities"));
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+
+        briefing.Should().NotBeNull();
+        briefing!.Workspace.TotalRuns.Should().Be(2);
+        briefing.Workspace.LatestRunId.Should().Be("run-latest");
+        briefing.Workspace.HasLedgerCoverage.Should().BeTrue();
+        briefing.InsightFeed.Widgets.Should().HaveCount(2);
+        briefing.RecentRuns.Should().HaveCount(2);
+        briefing.RecentRuns[0].RunId.Should().Be("run-latest");
+        briefing.RecentRuns[0].DrillIn.Continuity.Should().Be("/api/workstation/runs/run-latest/continuity");
+        briefing.SavedComparisons.Should().NotBeEmpty();
+        briefing.Alerts.Should().NotBeEmpty();
+        briefing.Watchlists.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackResearchBriefing()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+
+        briefing.Should().NotBeNull();
+        briefing!.Workspace.TotalRuns.Should().Be(24);
+        briefing.Workspace.LatestRunId.Should().Be("run-research-001");
+        briefing.InsightFeed.Widgets.Should().HaveCount(3);
+        briefing.Watchlists.Should().HaveCount(2);
+        briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-research-001");
+        briefing.Alerts.Should().NotBeEmpty();
+        briefing.WhatChanged.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingPayload_ShouldSurfacePaperGatewayBrokerGap()
     {
         await using var app = await CreateAppAsync(services =>

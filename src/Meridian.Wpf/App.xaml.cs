@@ -16,8 +16,8 @@ using Meridian.Application.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
-using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
@@ -295,6 +295,7 @@ public partial class App : System.Windows.Application
         // ── Domain / feature services ───────────────────────────────────────
         services.AddSingleton<WpfServices.BackendServiceManager>(_ => WpfServices.BackendServiceManager.Instance);
         services.AddSingleton<WpfServices.WatchlistService>(_ => WpfServices.WatchlistService.Instance);
+        services.AddSingleton<WpfServices.IWatchlistReader>(sp => sp.GetRequiredService<WpfServices.WatchlistService>());
         services.AddSingleton<WpfServices.ArchiveHealthService>(_ => WpfServices.ArchiveHealthService.Instance);
         services.AddSingleton<WpfServices.SchemaService>(_ => WpfServices.SchemaService.Instance);
         services.AddSingleton<WpfServices.RunMatService>(_ => WpfServices.RunMatService.Instance);
@@ -307,6 +308,8 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.ReconciliationReadService>();
         services.AddSingleton<WpfServices.CashFinancingReadService>();
         services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
+        services.AddSingleton<WpfServices.IWorkstationResearchBriefingApiClient, WpfServices.WorkstationResearchBriefingApiClient>();
+        services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
         services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
 
         // ── AI Agent service (local Ollama) ──────────────────────────────────

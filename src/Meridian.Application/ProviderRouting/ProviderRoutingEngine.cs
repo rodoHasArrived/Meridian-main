@@ -16,6 +16,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
     private readonly UI.ConfigStore _store;
     private readonly IProviderConnectionHealthSource _healthSource;
     private readonly IProviderFamilyCatalogService _catalog;
+    private readonly KernelObservabilityService _kernelObservability;
     private readonly ConcurrentQueue<ProviderRouteResult> _history = new();
     private readonly object _snapshotSync = new();
     private volatile ProviderRoutingSnapshot? _snapshot;
@@ -23,15 +24,18 @@ public sealed class ProviderRoutingService : ICapabilityRouter
     public ProviderRoutingService(
         UI.ConfigStore store,
         IProviderConnectionHealthSource healthSource,
-        IProviderFamilyCatalogService catalog)
+        IProviderFamilyCatalogService catalog,
+        KernelObservabilityService? kernelObservability = null)
     {
         _store = store;
         _healthSource = healthSource;
         _catalog = catalog;
+        _kernelObservability = kernelObservability ?? new KernelObservabilityService();
     }
 
     public async ValueTask<ProviderRouteResult> RouteAsync(ProviderRouteContext context, CancellationToken ct = default)
     {
+        var executionScope = _kernelObservability.BeginExecution(context);
         var snapshot = GetSnapshot();
         var connections = snapshot.ConnectionsById;
         var bindings = snapshot.GetBindings(context.Capability);
@@ -229,6 +233,8 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         while (_history.Count > 50 && _history.TryDequeue(out _))
         {
         }
+
+        _kernelObservability.RecordResult(context, result, healthCache, executionScope);
 
         return result;
     }

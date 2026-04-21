@@ -5,6 +5,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Microsoft.Extensions.Logging;
+using Interop = Meridian.FSharp.Interop;
 
 namespace Meridian.Strategies.Services;
 
@@ -73,16 +74,12 @@ public sealed class PromotionService
 
         var effectiveCriteria = criteria ?? PromotionCriteria.Default;
         var targetMode = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
-        var eligible = _promoter.MeetsPromotionThresholds(run.Metrics, effectiveCriteria);
-
-        // Governance checks for live promotion
-        var blockingReasons = new List<string>();
-        var requiresHumanApproval = false;
-        var requiresManualOverride = false;
-        string? requiredManualOverrideKind = null;
-
-        if (targetMode == RunType.Live)
+        var controlsSnapshot = _operatorControls?.GetSnapshot();
+        var hasConflictingOverride = false;
+        var hasLivePromotionOverride = false;
+        if (targetMode == RunType.Live && controlsSnapshot is not null)
         {
+<<<<<<< ours
             var brokerageValidation = BrokerageValidationEvaluator.Evaluate(_brokerageConfiguration);
             if (brokerageValidation.HasBlockingGap)
             {
@@ -90,8 +87,56 @@ public sealed class PromotionService
                 requiresHumanApproval = true;
                 requiresManualOverride = true;
                 requiredManualOverrideKind = ExecutionManualOverrideKinds.AllowLivePromotion;
+=======
+            foreach (var overrideEntry in controlsSnapshot.ManualOverrides)
+            {
+                var matchesStrategy = string.IsNullOrWhiteSpace(overrideEntry.StrategyId) ||
+                                      string.Equals(overrideEntry.StrategyId, run.StrategyId, StringComparison.OrdinalIgnoreCase);
+                var matchesRun = string.IsNullOrWhiteSpace(overrideEntry.RunId) ||
+                                 string.Equals(overrideEntry.RunId, run.RunId, StringComparison.OrdinalIgnoreCase);
+                if (!matchesStrategy || !matchesRun)
+                {
+                    continue;
+                }
+
+                if (string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase))
+                {
+                    hasConflictingOverride = true;
+                }
+
+                if (string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.AllowLivePromotion, StringComparison.OrdinalIgnoreCase))
+                {
+                    hasLivePromotionOverride = true;
+                }
+>>>>>>> theirs
             }
         }
+
+        var policyInput = new Meridian.FSharp.Promotion.PromotionPolicy.PromotionPolicyInput(
+            IsRunCompleted: run.EndedAt.HasValue,
+            HasMetrics: run.Metrics is not null,
+            SharpeRatio: run.Metrics.Metrics.SharpeRatio,
+            MaxDrawdownPercent: run.Metrics.Metrics.MaxDrawdownPercent,
+            TotalReturn: run.Metrics.Metrics.TotalReturn,
+            MinSharpeRatio: effectiveCriteria.MinSharpeRatio,
+            MaxAllowedDrawdownPercent: effectiveCriteria.MaxAllowedDrawdownPercent,
+            MinTotalReturn: effectiveCriteria.MinTotalReturn,
+            IsLiveTarget: targetMode == RunType.Live,
+            HasCompleteTrustEvidence: controlsSnapshot is not null || targetMode != RunType.Live,
+            HasFreshTrustEvidence: controlsSnapshot is not null || targetMode != RunType.Live,
+            IsLiveExecutionEnabled: _brokerageConfiguration?.LiveExecutionEnabled ?? false,
+            IsCircuitBreakerOpen: controlsSnapshot?.CircuitBreaker.IsOpen ?? false,
+            HasConflictingOverride: hasConflictingOverride,
+            HasActiveLivePromotionOverride: targetMode != RunType.Live || hasLivePromotionOverride,
+            RequiredManualOverrideKind: ExecutionManualOverrideKinds.AllowLivePromotion);
+        var policyDecision = Interop.PromotionInterop.EvaluatePromotionPolicy(policyInput);
+        var eligible = policyDecision.Eligible;
+        var requiresManualOverride = string.Equals(policyDecision.Outcome, "requires_manual_override", StringComparison.OrdinalIgnoreCase);
+        var requiresHumanApproval = requiresManualOverride || string.Equals(policyDecision.Outcome, "requires_human_review", StringComparison.OrdinalIgnoreCase);
+        var blockingReasons = policyDecision.Reasons.Length > 0 ? policyDecision.Reasons : null;
+        var requiredManualOverrideKind = string.IsNullOrWhiteSpace(policyDecision.RequiredManualOverrideKind)
+            ? null
+            : policyDecision.RequiredManualOverrideKind;
 
         _logger.LogInformation(
             "Promotion evaluation for run {RunId}: eligible={Eligible}, target={Target}, sharpe={Sharpe:F3}",
@@ -107,15 +152,20 @@ public sealed class PromotionService
             SharpeRatio: run.Metrics.Metrics.SharpeRatio,
             MaxDrawdownPercent: run.Metrics.Metrics.MaxDrawdownPercent,
             TotalReturn: run.Metrics.Metrics.TotalReturn,
-            Reason: eligible
-                ? "Meets all promotion thresholds."
-                : "Does not meet minimum promotion criteria.",
+            Reason: policyDecision.Outcome switch
+            {
+                "approved" => "Meets all promotion policy gates.",
+                "requires_human_review" => "Promotion requires human governance review.",
+                "requires_manual_override" => "Promotion requires a manual override.",
+                "blocked" => "Promotion is blocked by policy.",
+                _ => "Promotion policy decision unavailable."
+            },
             Found: true,
             Ready: true,
             RequiresHumanApproval: requiresHumanApproval,
             RequiresManualOverride: requiresManualOverride,
             RequiredManualOverrideKind: requiredManualOverrideKind,
-            BlockingReasons: blockingReasons.Count > 0 ? blockingReasons : null);
+            BlockingReasons: blockingReasons);
     }
 
     /// <summary>
@@ -138,6 +188,19 @@ public sealed class PromotionService
         }
 
         var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
+
+        if (targetRunType == RunType.Live && _operatorControls is not null)
+        {
+            var controlDecision = _operatorControls.EvaluateLivePromotion(run.RunId, run.StrategyId, request.ManualOverrideId);
+            if (!controlDecision.IsAllowed)
+            {
+                return new PromotionDecisionResult(
+                    Success: false,
+                    PromotionId: null,
+                    NewRunId: null,
+                    Reason: controlDecision.RejectReason ?? "Promotion blocked by execution controls.");
+            }
+        }
 
         // Create audit record
         var promotionRecord = _promoter.CreatePromotionRecord(

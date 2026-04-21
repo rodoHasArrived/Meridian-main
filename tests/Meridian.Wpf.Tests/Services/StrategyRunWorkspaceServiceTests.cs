@@ -16,7 +16,11 @@ public sealed class StrategyRunWorkspaceServiceTests
     [Fact]
     public async Task RecordBacktestRunAsync_ShouldExposeRecordedRunAcrossBrowserAndDrillIns()
     {
-        var service = StrategyRunWorkspaceService.Instance;
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
         var request = new BacktestRequest(
             From: new DateOnly(2026, 3, 1),
             To: new DateOnly(2026, 3, 20),

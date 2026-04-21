@@ -15,6 +15,7 @@ make build-wpf                    # Build WPF desktop app
 make test-desktop-services        # Run all desktop-focused tests
 dotnet test tests/Meridian.Wpf.Tests        # WPF service tests (Windows only)
 dotnet test tests/Meridian.Ui.Tests         # Shared UI service tests (Windows only)
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
 ```
 
 ## Quick Start
@@ -207,7 +208,24 @@ dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQu
 
 # Broader mixed shell-workflow bundle
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests|FullyQualifiedName~WorkspaceShellPageSmokeTests|FullyQualifiedName~GovernanceWorkspaceShellSmokeTests|FullyQualifiedName~DataOperationsWorkspaceShellSmokeTests|FullyQualifiedName~MainPageSmokeTests|FullyQualifiedName~MainPageUiWorkflowTests|FullyQualifiedName~RunMatUiSmokeTests|FullyQualifiedName~MainShellViewModelTests|FullyQualifiedName~NavigationPageSmokeTests|FullyQualifiedName~WorkspaceDeepPageChromeTests|FullyQualifiedName~WorkstationPageSmokeTests|FullyQualifiedName~FullNavigationSweepTests|FullyQualifiedName~NavigationServiceTests"
+
+# Position blotter route slice
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-position-blotter-route.ps1
 ```
+
+The position blotter route wrapper exists for the recurring WPF `testhost` lock case around `Meridian.Desktop.dll`.
+It uses a per-run `MeridianBuildIsolationKey`, builds the WPF test project once into an isolated artifact root, and then runs the focused route slice with `--no-build` so the validation path is repeatable.
+
+The default slice covers:
+
+- `PositionBlotterViewModelTests`
+- `ShellNavigationCatalogTests`
+- `WorkspaceDeepPageChromeTests`
+- `TradingWorkspaceShellPageTests`
+
+Validation artifacts land under `artifacts/wpf-validation/position-blotter-route/<timestamp>/` with build/test logs plus JSON and Markdown summaries.
+
+If a stale repo-owned `testhost.exe` is still hanging around from an earlier run and the first build fails, the script stops only those repo-scoped processes and retries the build once.
 
 On non-Windows platforms, these tests will be skipped automatically by the Makefile target.
 

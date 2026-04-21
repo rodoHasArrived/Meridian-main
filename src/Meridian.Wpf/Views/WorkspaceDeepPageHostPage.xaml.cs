@@ -118,10 +118,6 @@ public partial class WorkspaceDeepPageHostPage : Page
         SummaryCard.Margin = showStandaloneChrome
             ? new Thickness(0, 0, 0, 18)
             : new Thickness(0, 0, 0, 12);
-
-        ShellHintText.Text = showStandaloneChrome
-            ? $"This workflow is running inside the shared {_workspace.Title} shell so trust state, alerts, and related routes stay one interaction away."
-            : $"This workflow is docked inside {_workspace.Title}. The shared shell above retains trust signals while this page keeps its original functionality.";
     }
 
     private void ApplyShellSummary()

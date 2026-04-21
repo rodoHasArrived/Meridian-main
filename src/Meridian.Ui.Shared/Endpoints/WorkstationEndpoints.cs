@@ -5,6 +5,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
+using Meridian.Application.ProviderRouting;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -40,6 +41,14 @@ public static class WorkstationEndpoints
             return await BuildResearchPayloadAsync(context).ConfigureAwait(false);
         })
         .WithName("GetWorkstationResearch");
+
+        group.MapGet("/research/briefing", async (HttpContext context) =>
+        {
+            var briefing = await BuildResearchBriefingAsync(context).ConfigureAwait(false);
+            return Results.Json(briefing, jsonOptions);
+        })
+        .WithName("GetWorkstationResearchBriefing")
+        .Produces<ResearchBriefingDto>(200);
 
         group.MapGet("/trading", async (HttpContext context) =>
         {
@@ -881,6 +890,217 @@ public static class WorkstationEndpoints
         };
     }
 
+    private static async Task<ResearchBriefingDto> BuildResearchBriefingAsync(HttpContext context)
+    {
+        var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        if (readService is null)
+        {
+            return BuildResearchBriefingFallback();
+        }
+
+        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
+            .Take(10)
+            .ToArray();
+        var details = await Task.WhenAll(
+                runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
+            .ConfigureAwait(false);
+
+        return BuildResearchBriefingFromRuns(runs, details);
+    }
+
+    private static ResearchBriefingDto BuildResearchBriefingFromRuns(
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<StrategyRunDetail?> details)
+    {
+        var activeRuns = runs.Count(static run => run.Status is StrategyRunStatus.Running or StrategyRunStatus.Paused);
+        var promotionCandidates = runs.Count(static run => run.Promotion is { RequiresReview: true } &&
+            run.Promotion.State is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive);
+        var positivePnlRuns = runs.Count(static run => (run.NetPnl ?? 0m) > 0m);
+        var latestRun = runs.FirstOrDefault();
+        var alertItems = BuildBriefingAlerts(runs, details);
+
+        return new ResearchBriefingDto(
+            Workspace: new ResearchBriefingWorkspaceSummary(
+                TotalRuns: runs.Count,
+                ActiveRuns: activeRuns,
+                PromotionCandidates: promotionCandidates,
+                PositivePnlRuns: positivePnlRuns,
+                LatestRunId: latestRun?.RunId,
+                LatestStrategyName: latestRun?.StrategyName,
+                HasLedgerCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
+                HasPortfolioCoverage: runs.Any(static run => !string.IsNullOrWhiteSpace(run.PortfolioId)),
+                Summary: latestRun is null
+                    ? "Start a backtest or restore a saved run to populate the Market Briefing."
+                    : $"{activeRuns} active research session(s), {promotionCandidates} promotion candidate(s), and {alertItems.Count} alert(s) on the desk."),
+            InsightFeed: BuildBriefingInsightFeed(runs, details, alertItems.Count),
+            Watchlists: Array.Empty<WorkstationWatchlist>(),
+            RecentRuns: runs
+                .Zip(details, static (run, detail) => BuildBriefingRun(run, detail))
+                .Take(6)
+                .ToArray(),
+            SavedComparisons: BuildSavedComparisons(runs),
+            Alerts: alertItems,
+            WhatChanged: BuildWhatChangedItems(runs));
+    }
+
+    private static ResearchBriefingDto BuildResearchBriefingFallback()
+    {
+        var generatedAt = DateTimeOffset.UtcNow;
+        return new ResearchBriefingDto(
+            Workspace: new ResearchBriefingWorkspaceSummary(
+                TotalRuns: 24,
+                ActiveRuns: 6,
+                PromotionCandidates: 3,
+                PositivePnlRuns: 17,
+                LatestRunId: "run-research-001",
+                LatestStrategyName: "Mean Reversion FX",
+                HasLedgerCoverage: true,
+                HasPortfolioCoverage: true,
+                Summary: "Research is organized around briefing context first, then run studio drill-ins."),
+            InsightFeed: new InsightFeed(
+                FeedId: "research-market-briefing",
+                Title: "Pinned Insights",
+                Summary: "A compact market briefing with pinned research tiles, saved comparisons, and promotion posture.",
+                GeneratedAt: generatedAt,
+                Widgets:
+                [
+                    new InsightWidget(
+                        WidgetId: "insight-meanrev-fx",
+                        Title: "Mean Reversion FX",
+                        Subtitle: "Paper run · Running",
+                        Headline: "+4.2%",
+                        Tone: "success",
+                        Summary: "Primary paper candidate with steady fill quality and stable financing.",
+                        RunId: "run-research-001",
+                        DrillInRoute: "/api/workstation/runs/run-research-001/equity-curve"),
+                    new InsightWidget(
+                        WidgetId: "insight-index-carry",
+                        Title: "Index Carry Basket",
+                        Subtitle: "Backtest · Completed",
+                        Headline: "+2.8%",
+                        Tone: "default",
+                        Summary: "Pinned chart compares carry spread compression against basket returns.",
+                        RunId: "run-research-014",
+                        DrillInRoute: "/api/workstation/runs/run-research-014/equity-curve"),
+                    new InsightWidget(
+                        WidgetId: "insight-vol-breakout",
+                        Title: "Volatility Breakout",
+                        Subtitle: "Backtest · Needs review",
+                        Headline: "-0.9%",
+                        Tone: "warning",
+                        Summary: "Transaction-cost preview deteriorated after the most recent parameter sweep.",
+                        RunId: "run-research-022",
+                        DrillInRoute: "/api/workstation/runs/run-research-022/equity-curve")
+                ]),
+            Watchlists:
+            [
+                new WorkstationWatchlist(
+                    WatchlistId: "wl-tech",
+                    Name: "Tech Giants",
+                    Symbols: ["AAPL", "MSFT", "NVDA", "AMZN", "META"],
+                    SymbolCount: 5,
+                    IsPinned: true,
+                    SortOrder: 0,
+                    AccentColor: "#4CAF50",
+                    Summary: "Pinned for cross-run spread checks and financing sensitivity."),
+                new WorkstationWatchlist(
+                    WatchlistId: "wl-macro",
+                    Name: "Macro FX",
+                    Symbols: ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD"],
+                    SymbolCount: 4,
+                    IsPinned: true,
+                    SortOrder: 1,
+                    AccentColor: "#2196F3",
+                    Summary: "Monitored for carry baskets and mean-reversion entry timing.")
+            ],
+            RecentRuns:
+            [
+                new ResearchBriefingRun(
+                    RunId: "run-research-001",
+                    StrategyName: "Mean Reversion FX",
+                    Mode: StrategyRunMode.Paper,
+                    Status: StrategyRunStatus.Running,
+                    Dataset: "FX Majors",
+                    WindowLabel: "90d",
+                    ReturnLabel: "+4.2%",
+                    SharpeLabel: "1.41",
+                    LastUpdatedLabel: "2m ago",
+                    Notes: "Primary paper candidate with stable fill quality and healthy depth coverage.",
+                    PromotionState: StrategyRunPromotionState.CandidateForLive,
+                    NetPnl: 4200m,
+                    TotalReturn: 0.042m,
+                    FinalEquity: 104200m,
+                    DrillIn: new ResearchRunDrillInLinks(
+                        EquityCurve: "/api/workstation/runs/run-research-001/equity-curve",
+                        Fills: "/api/workstation/runs/run-research-001/fills",
+                        Attribution: "/api/workstation/runs/run-research-001/attribution",
+                        Ledger: "/api/workstation/runs/run-research-001/ledger",
+                        CashFlows: "/api/portfolio/run-research-001/cash-flows",
+                        Continuity: "/api/workstation/runs/run-research-001/continuity"))
+            ],
+            SavedComparisons:
+            [
+                new ResearchSavedComparison(
+                    ComparisonId: "cmp-meanrev-fx",
+                    StrategyName: "Mean Reversion FX",
+                    ModeSummary: "Backtest -> Paper",
+                    Summary: "Saved compare lane tracks readiness from completed backtest into paper execution.",
+                    AnchorRunId: "run-research-001",
+                    Modes:
+                    [
+                        new ResearchSavedComparisonMode(
+                            RunId: "run-research-001",
+                            Mode: StrategyRunMode.Paper,
+                            Status: StrategyRunStatus.Running,
+                            NetPnl: 4200m,
+                            TotalReturn: 0.042m,
+                            DrillIn: new ResearchRunDrillInLinks(
+                                EquityCurve: "/api/workstation/runs/run-research-001/equity-curve",
+                                Fills: "/api/workstation/runs/run-research-001/fills",
+                                Attribution: "/api/workstation/runs/run-research-001/attribution",
+                                Ledger: "/api/workstation/runs/run-research-001/ledger",
+                                CashFlows: "/api/portfolio/run-research-001/cash-flows",
+                                Continuity: "/api/workstation/runs/run-research-001/continuity"))
+                    ])
+            ],
+            Alerts:
+            [
+                new ResearchBriefingAlert(
+                    AlertId: "alert-promotion-review",
+                    Title: "Promotion review due",
+                    Summary: "Mean Reversion FX is running in paper and is queued for live promotion review.",
+                    Tone: "warning",
+                    RunId: "run-research-001",
+                    ActionLabel: "Review run"),
+                new ResearchBriefingAlert(
+                    AlertId: "alert-cost-preview",
+                    Title: "Execution costs widened",
+                    Summary: "Volatility Breakout now shows a weaker transaction-cost preview than the prior saved comparison.",
+                    Tone: "default",
+                    RunId: "run-research-022",
+                    ActionLabel: "Open comparison")
+            ],
+            WhatChanged:
+            [
+                new ResearchWhatChangedItem(
+                    ChangeId: "change-paper-ready",
+                    Title: "Paper lane updated",
+                    Summary: "Mean Reversion FX stayed profitable and kept full ledger continuity after the latest refresh.",
+                    Category: "paper",
+                    Timestamp: generatedAt.AddMinutes(-2),
+                    RelativeTime: "2m ago",
+                    RunId: "run-research-001"),
+                new ResearchWhatChangedItem(
+                    ChangeId: "change-backtest-failed",
+                    Title: "Backtest needs review",
+                    Summary: "Volatility Breakout completed with weaker returns and is now flagged for review.",
+                    Category: "review",
+                    Timestamp: generatedAt.AddMinutes(-18),
+                    RelativeTime: "18m ago",
+                    RunId: "run-research-022")
+            ]);
+    }
+
     private static object BuildResearchFallbackPayload()
     {
         return new
@@ -1183,10 +1403,11 @@ public static class WorkstationEndpoints
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
+        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
 
         if (readService is null && configStore is null)
         {
-            return BuildDataOperationsFallbackPayload();
+            return BuildDataOperationsFallbackPayload(kernelObservability);
         }
 
         var runs = readService is not null
@@ -1251,15 +1472,17 @@ public static class WorkstationEndpoints
                 new { id = "providers-healthy", label = "Providers Healthy", value = healthyProviderCount.ToString(CultureInfo.InvariantCulture), delta = "0", tone = healthyProviderCount > 0 ? "success" : "default" },
                 new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
                 new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
-                new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" }
+                new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             providers,
             backfills,
-            exports = Array.Empty<object>()
+            exports = Array.Empty<object>(),
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
-    private static object BuildDataOperationsFallbackPayload()
+    private static object BuildDataOperationsFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
     {
         return new
         {
@@ -1268,7 +1491,8 @@ public static class WorkstationEndpoints
                 new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
                 new { id = "backfills-running", label = "Backfills Running", value = "2", delta = "+1", tone = "default" },
                 new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
-                new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" }
+                new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             providers = new[]
             {
@@ -1285,16 +1509,18 @@ public static class WorkstationEndpoints
             {
                 new { exportId = "EX-2196", profile = "python-pandas", target = "research pack", status = "Ready", rows = "118k", updatedAt = "7m ago" },
                 new { exportId = "EX-2198", profile = "postgresql", target = "ops warehouse", status = "Attention", rows = "42k", updatedAt = "9m ago" }
-            }
+            },
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
     private static async Task<object> BuildGovernancePayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
         if (readService is null)
         {
-            return BuildGovernanceFallbackPayload();
+            return BuildGovernanceFallbackPayload(kernelObservability);
         }
 
         var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
@@ -1308,7 +1534,8 @@ public static class WorkstationEndpoints
                     new { id = "open-breaks", label = "Open Breaks", value = "0", tone = "success" },
                     new { id = "timing-drift", label = "Timing Drift", value = "0", tone = "default" },
                     new { id = "security-gaps", label = "Security Gaps", value = "0", tone = "success" },
-                    new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" }
+                    new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" },
+                    new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
                 },
                 reconciliationQueue = Array.Empty<object>(),
                 breakQueue = Array.Empty<ReconciliationBreakQueueItem>(),
@@ -1321,7 +1548,8 @@ public static class WorkstationEndpoints
                     securityIssues = 0
                 },
                 cashFlow = BuildGovernanceWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                reporting = BuildGovernanceReportingPayload()
+                reporting = BuildGovernanceReportingPayload(),
+                kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
             };
         }
 
@@ -1350,7 +1578,8 @@ public static class WorkstationEndpoints
                 new { id = "open-breaks", label = "Open Breaks", value = openBreaks.ToString(CultureInfo.InvariantCulture), tone = openBreaks == 0 ? "success" : "warning" },
                 new { id = "timing-drift", label = "Timing Drift", value = timingDriftRuns.ToString(CultureInfo.InvariantCulture), tone = timingDriftRuns == 0 ? "default" : "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), tone = runsWithSecurityIssues == 0 ? "success" : "warning" },
-                new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" }
+                new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             reconciliationQueue = runs
                 .Zip(details, static (run, detail) => (run, detail))
@@ -1366,11 +1595,12 @@ public static class WorkstationEndpoints
                 securityIssues = runsWithSecurityIssues
             },
             cashFlow = BuildGovernanceWorkspaceCashFlowSummary(details),
-            reporting = BuildGovernanceReportingPayload()
+            reporting = BuildGovernanceReportingPayload(),
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
-    private static object BuildGovernanceFallbackPayload()
+    private static object BuildGovernanceFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
     {
         return new
         {
@@ -1379,7 +1609,8 @@ public static class WorkstationEndpoints
                 new { id = "open-breaks", label = "Open Breaks", value = "4", tone = "warning" },
                 new { id = "timing-drift", label = "Timing Drift", value = "1", tone = "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = "2", tone = "warning" },
-                new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" }
+                new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             reconciliationQueue = new[]
             {
@@ -1587,6 +1818,266 @@ public static class WorkstationEndpoints
         };
     }
 
+    private static InsightFeed BuildBriefingInsightFeed(
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<StrategyRunDetail?> details,
+        int alertCount)
+    {
+        var generatedAt = DateTimeOffset.UtcNow;
+        if (runs.Count == 0)
+        {
+            return new InsightFeed(
+                FeedId: "research-market-briefing",
+                Title: "Pinned Insights",
+                Summary: "No saved charts or run insights yet.",
+                GeneratedAt: generatedAt,
+                Widgets: Array.Empty<InsightWidget>());
+        }
+
+        var widgets = runs
+            .Zip(details, static (run, detail) => new InsightWidget(
+                WidgetId: $"insight-{run.RunId}",
+                Title: run.StrategyName,
+                Subtitle: $"{run.Mode} · {run.Status}",
+                Headline: FormatReturn(run.TotalReturn, run.NetPnl),
+                Tone: GetInsightTone(run, detail),
+                Summary: BuildInsightSummary(run, detail),
+                RunId: run.RunId,
+                DrillInRoute: $"/api/workstation/runs/{run.RunId}/equity-curve"))
+            .Take(3)
+            .ToArray();
+
+        return new InsightFeed(
+            FeedId: "research-market-briefing",
+            Title: "Pinned Insights",
+            Summary: $"{runs.Count} tracked run(s) in briefing scope; {alertCount} alert(s) require attention.",
+            GeneratedAt: generatedAt,
+            Widgets: widgets);
+    }
+
+    private static ResearchBriefingRun BuildBriefingRun(StrategyRunSummary run, StrategyRunDetail? detail)
+        => new(
+            RunId: run.RunId,
+            StrategyName: run.StrategyName,
+            Mode: run.Mode,
+            Status: run.Status,
+            Dataset: run.DatasetReference ?? run.FeedReference ?? "Unassigned",
+            WindowLabel: FormatWindow(run.StartedAt, run.CompletedAt),
+            ReturnLabel: FormatReturn(run.TotalReturn, run.NetPnl),
+            SharpeLabel: FormatSharpeProxy(run),
+            LastUpdatedLabel: FormatRelativeTime(run.LastUpdatedAt),
+            Notes: BuildInsightSummary(run, detail),
+            PromotionState: run.Promotion?.State,
+            NetPnl: run.NetPnl,
+            TotalReturn: run.TotalReturn,
+            FinalEquity: run.FinalEquity,
+            DrillIn: BuildResearchDrillInLinks(run));
+
+    private static IReadOnlyList<ResearchSavedComparison> BuildSavedComparisons(IReadOnlyList<StrategyRunSummary> runs)
+    {
+        var groupedComparisons = runs
+            .GroupBy(static run => run.StrategyName, StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                var modes = group
+                    .OrderBy(static run => run.Mode)
+                    .Select(static run => new ResearchSavedComparisonMode(
+                        RunId: run.RunId,
+                        Mode: run.Mode,
+                        Status: run.Status,
+                        NetPnl: run.NetPnl,
+                        TotalReturn: run.TotalReturn,
+                        DrillIn: BuildResearchDrillInLinks(run)))
+                    .ToArray();
+
+                return new ResearchSavedComparison(
+                    ComparisonId: $"cmp-{group.First().RunId}",
+                    StrategyName: group.Key,
+                    ModeSummary: string.Join(" -> ", modes.Select(static mode => mode.Mode.ToString())),
+                    Summary: BuildComparisonSummary(group.Key, modes),
+                    AnchorRunId: modes.FirstOrDefault()?.RunId,
+                    Modes: modes);
+            })
+            .Where(static comparison => comparison.Modes.Count >= 2)
+            .Take(4)
+            .ToArray();
+
+        if (groupedComparisons.Length > 0)
+        {
+            return groupedComparisons;
+        }
+
+        if (runs.Count < 2)
+        {
+            return Array.Empty<ResearchSavedComparison>();
+        }
+
+        var syntheticModes = runs
+            .Take(2)
+            .Select(static run => new ResearchSavedComparisonMode(
+                RunId: run.RunId,
+                Mode: run.Mode,
+                Status: run.Status,
+                NetPnl: run.NetPnl,
+                TotalReturn: run.TotalReturn,
+                DrillIn: BuildResearchDrillInLinks(run)))
+            .ToArray();
+
+        return
+        [
+            new ResearchSavedComparison(
+                ComparisonId: $"cmp-recent-{syntheticModes[0].RunId}",
+                StrategyName: "Recent Runs",
+                ModeSummary: string.Join(" vs ", syntheticModes.Select(static mode => mode.Mode.ToString())),
+                Summary: "Saved compare lane across the two most recent runs while multi-mode history is still building.",
+                AnchorRunId: syntheticModes[0].RunId,
+                Modes: syntheticModes)
+        ];
+    }
+
+    private static IReadOnlyList<ResearchBriefingAlert> BuildBriefingAlerts(
+        IReadOnlyList<StrategyRunSummary> runs,
+        IReadOnlyList<StrategyRunDetail?> details)
+    {
+        var alerts = new List<ResearchBriefingAlert>();
+
+        for (var index = 0; index < runs.Count; index++)
+        {
+            var run = runs[index];
+            var detail = index < details.Count ? details[index] : null;
+            var coverageIssueCount = GetSecurityCoverageIssueCount(detail);
+
+            if (run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
+            {
+                alerts.Add(new ResearchBriefingAlert(
+                    AlertId: $"alert-status-{run.RunId}",
+                    Title: $"{run.StrategyName} needs operator review",
+                    Summary: $"Run finished with status {run.Status} and should be investigated before it is reused.",
+                    Tone: "warning",
+                    RunId: run.RunId,
+                    ActionLabel: "Open run"));
+            }
+
+            if (run.Promotion?.RequiresReview == true)
+            {
+                alerts.Add(new ResearchBriefingAlert(
+                    AlertId: $"alert-promotion-{run.RunId}",
+                    Title: $"{run.StrategyName} is queued for promotion review",
+                    Summary: run.Promotion.Reason,
+                    Tone: "default",
+                    RunId: run.RunId,
+                    ActionLabel: "Review promotion"));
+            }
+
+            if (coverageIssueCount > 0)
+            {
+                alerts.Add(new ResearchBriefingAlert(
+                    AlertId: $"alert-security-{run.RunId}",
+                    Title: $"{run.StrategyName} has Security Master gaps",
+                    Summary: $"{coverageIssueCount} unresolved portfolio or ledger reference(s) should be fixed before handoff.",
+                    Tone: "warning",
+                    RunId: run.RunId,
+                    ActionLabel: "Inspect continuity"));
+            }
+        }
+
+        if (alerts.Count == 0)
+        {
+            return
+            [
+                new ResearchBriefingAlert(
+                    AlertId: "alert-none",
+                    Title: "No blocking alerts",
+                    Summary: "Recent runs have no failed states, open promotion blockers, or Security Master gaps.",
+                    Tone: "success",
+                    ActionLabel: "Browse runs")
+            ];
+        }
+
+        return alerts
+            .Take(4)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ResearchWhatChangedItem> BuildWhatChangedItems(IReadOnlyList<StrategyRunSummary> runs)
+        => runs
+            .Take(4)
+            .Select(static run => new ResearchWhatChangedItem(
+                ChangeId: $"change-{run.RunId}",
+                Title: $"{run.StrategyName} moved to {run.Mode}",
+                Summary: BuildChangeSummary(run),
+                Category: run.Mode.ToString().ToLowerInvariant(),
+                Timestamp: run.LastUpdatedAt,
+                RelativeTime: FormatRelativeTime(run.LastUpdatedAt),
+                RunId: run.RunId))
+            .ToArray();
+
+    private static string BuildInsightSummary(StrategyRunSummary run, StrategyRunDetail? detail)
+    {
+        var coverageIssueCount = GetSecurityCoverageIssueCount(detail);
+        if (coverageIssueCount > 0)
+        {
+            return $"{BuildRunNotes(run)} {coverageIssueCount} Security Master gap(s) remain open.";
+        }
+
+        return BuildRunNotes(run);
+    }
+
+    private static string BuildComparisonSummary(
+        string strategyName,
+        IReadOnlyList<ResearchSavedComparisonMode> modes)
+    {
+        if (modes.Count == 0)
+        {
+            return $"No comparison history saved for {strategyName}.";
+        }
+
+        if (modes.Count == 1)
+        {
+            return $"Baseline comparison package is ready for {strategyName}.";
+        }
+
+        return $"Saved compare lane covers {modes.Count} lifecycle stage(s) for {strategyName}.";
+    }
+
+    private static string BuildChangeSummary(StrategyRunSummary run)
+        => run.Status switch
+        {
+            StrategyRunStatus.Running => $"{run.StrategyName} is still running with updated execution and workspace telemetry.",
+            StrategyRunStatus.Completed when run.Promotion?.RequiresReview == true => $"{run.StrategyName} completed and is ready for promotion review.",
+            StrategyRunStatus.Completed => $"{run.StrategyName} completed and remains available for compare and pin workflows.",
+            StrategyRunStatus.Failed => $"{run.StrategyName} failed and should be reviewed before promotion or reuse.",
+            StrategyRunStatus.Cancelled or StrategyRunStatus.Stopped => $"{run.StrategyName} stopped before promotion and is retained for evidence.",
+            _ => BuildRunNotes(run)
+        };
+
+    private static string GetInsightTone(StrategyRunSummary run, StrategyRunDetail? detail)
+    {
+        if (run.Status is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
+        {
+            return "warning";
+        }
+
+        if (run.Promotion?.RequiresReview == true || GetSecurityCoverageIssueCount(detail) > 0)
+        {
+            return "default";
+        }
+
+        return (run.NetPnl ?? 0m) >= 0m ? "success" : "warning";
+    }
+
+    private static int GetSecurityCoverageIssueCount(StrategyRunDetail? detail)
+        => (detail?.Portfolio?.SecurityMissingCount ?? 0) + (detail?.Ledger?.SecurityMissingCount ?? 0);
+
+    private static ResearchRunDrillInLinks BuildResearchDrillInLinks(StrategyRunSummary run)
+        => new(
+            EquityCurve: $"/api/workstation/runs/{run.RunId}/equity-curve",
+            Fills: $"/api/workstation/runs/{run.RunId}/fills",
+            Attribution: $"/api/workstation/runs/{run.RunId}/attribution",
+            Ledger: string.IsNullOrWhiteSpace(run.LedgerReference) ? null : $"/api/workstation/runs/{run.RunId}/ledger",
+            CashFlows: $"/api/portfolio/{run.RunId}/cash-flows",
+            Continuity: $"/api/workstation/runs/{run.RunId}/continuity");
+
     private static object BuildTimelineCard(StrategyRunSummary run) => new
     {
         runId = run.RunId,
@@ -1713,7 +2204,55 @@ public static class WorkstationEndpoints
                     hasSecurityCoverageIssues = reconciliation.Summary.HasSecurityCoverageIssues,
                     lastUpdated = FormatRelativeTime(reconciliation.Summary.CreatedAt),
                     tone = reconciliation.Summary.BreakCount == 0 && !reconciliation.Summary.HasSecurityCoverageIssues ? "success" : "warning"
-                }
+            },
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
+        };
+    }
+
+    private static object BuildKernelObservabilityPayload(KernelObservabilitySnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return new
+            {
+                updatedAtUtc = (DateTimeOffset?)null,
+                determinismChecksEnabled = false,
+                alerts = 0,
+                domains = Array.Empty<object>()
+            };
+        }
+
+        return new
+        {
+            updatedAtUtc = snapshot.UpdatedAtUtc,
+            determinismChecksEnabled = snapshot.DeterminismChecksEnabled,
+            alerts = snapshot.AlertCount,
+            domains = snapshot.Domains.Select(static domain => new
+            {
+                domain = domain.Domain,
+                evaluations = domain.Evaluations,
+                throughputPerMinute = domain.ThroughputPerMinute,
+                latencyMs = new
+                {
+                    p50 = domain.Latency.P50Ms,
+                    p95 = domain.Latency.P95Ms,
+                    p99 = domain.Latency.P99Ms
+                },
+                reasonCoveragePercent = domain.ReasonCodeCoveragePercent,
+                drift = new
+                {
+                    score = domain.ScoreDrift,
+                    severity = domain.SeverityDrift
+                },
+                criticalSeverityRate = new
+                {
+                    shortWindow = domain.CriticalRateShortWindow,
+                    longWindow = domain.CriticalRateLongWindow,
+                    jumpAlertActive = domain.CriticalJumpActive,
+                    jumpAlertCount = domain.CriticalJumpAlertCount
+                },
+                determinismMismatches = domain.DeterminismMismatches
+            })
         };
     }
 

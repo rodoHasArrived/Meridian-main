@@ -48,7 +48,9 @@ Content Frame
 └── WPF Frame → page navigation
 ```
 
-**Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state.
+**Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state. `WorkspacePrimaryNavList`, `WorkspaceSecondaryNavList`, `WorkspaceOverflowNavList`, and `RelatedWorkflowNavList` all dispatch through the same `NavigateToPageCommand` contract when the operator changes selection.
+
+**Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
 **Selection suppression** — `_suppressNavSelection` prevents feedback loops when the NavigationService drives sidebar selection changes programmatically.
 
@@ -305,13 +307,13 @@ Shell implementation now shares descriptor-driven infrastructure:
 
 ### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
 
-**Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and key risk metrics.
+**Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and a compact promotion/audit/validation status card for the active run or aggregate workspace posture.
 
 **Design zones**:
-1. **Header** — Active run count (paper + live), total equity under management, connection status
-2. **Live Positions strip** — `PortfolioPositionSummary` rows for active paper/live runs; gross/net exposure
-3. **Quick Actions** — Open Live Data, Open Portfolio, Import Positions, View Trading Hours
-4. **Risk Rail** — Drawdown gauge, position-limit utilization, order-rate throttle status (from `CompositeRiskValidator`)
+1. **Header** — Active fund context, active run, and a promotion/status card that projects promotion readiness, audit linkage, and validation posture from `StrategyRunWorkspaceService`
+2. **KPI strip** — Active paper/live run counts and total equity under management
+3. **Desk panels** — Strategy/watchlist posture, market-core/accounting access, and risk/alerts/audit quick actions
+4. **Workbench rail** — Active positions plus capital and risk inspector cards for the current trading posture
 
 ### `DataOperationsWorkspaceShellPage` (`Views/DataOperationsWorkspaceShellPage.xaml`)
 

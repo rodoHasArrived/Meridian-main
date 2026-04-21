@@ -24,7 +24,6 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
 
     public GovernanceWorkspaceShellPage(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         GovernanceWorkspaceShellStateProvider stateProvider,
         GovernanceWorkspaceShellViewModel viewModel,
         FundContextService fundContextService,
@@ -32,7 +31,7 @@ public partial class GovernanceWorkspaceShellPage : GovernanceWorkspaceShellPage
         WorkspaceShellContextService shellContextService,
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         Meridian.Wpf.Services.NotificationService notificationService)
-        : base(navigationService, workspaceService, stateProvider, viewModel)
+        : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
         _fundContextService = fundContextService;

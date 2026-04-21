@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.RuleEvaluation;
 
 namespace Meridian.Contracts.Api;
 
@@ -140,7 +141,8 @@ public sealed record ProviderTrustSnapshotDto(
     string HealthStatus,
     bool IsProductionReady,
     bool IsCertificationFresh,
-    string[] Signals);
+    string[] Signals,
+    DecisionResult<double> Decision);
 
 /// <summary>
 /// Candidate item in a route preview.

@@ -29,7 +29,6 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
 
     public DataOperationsWorkspaceShellPage(
         NavigationService navigationService,
-        WorkspaceService workspaceService,
         DataOperationsWorkspaceShellStateProvider stateProvider,
         DataOperationsWorkspaceShellViewModel viewModel,
         WorkspaceShellContextService shellContextService,
@@ -42,7 +41,7 @@ public partial class DataOperationsWorkspaceShellPage : DataOperationsWorkspaceS
         CollectionSessionService collectionSessionService,
         ScheduleManagerService scheduleManagerService,
         BatchExportSchedulerService exportSchedulerService)
-        : base(navigationService, workspaceService, stateProvider, viewModel)
+        : base(navigationService, stateProvider, viewModel)
     {
         InitializeComponent();
         _shellContextService = shellContextService;
