@@ -1,21 +1,16 @@
-using Meridian.Contracts.Banking;
 using Meridian.Contracts.Workstation;
-using Meridian.FSharp.Ledger;
 
 namespace Meridian.Strategies.Services;
 
 public sealed class ReconciliationProjectionService
 {
-    public IReadOnlyList<PortfolioLedgerCheckDto> BuildChecks(
-        StrategyRunDetail detail,
-        ReconciliationRunRequest request)
+    public IReadOnlyList<PortfolioLedgerCheckDto> BuildChecks(ReconciliationNormalizedInputs inputs)
     {
-        ArgumentNullException.ThrowIfNull(detail);
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(inputs);
 
         var checks = new List<PortfolioLedgerCheckDto>();
-        var portfolio = detail.Portfolio;
-        var ledger = detail.Ledger;
+        var portfolio = inputs.Portfolio;
+        var ledger = inputs.Ledger;
 
         if (portfolio is not null && ledger is not null)
         {
@@ -78,6 +73,9 @@ public sealed class ReconciliationProjectionService
         {
             checks.Add(CreateCoverageCheck("portfolio-summary-missing", "Portfolio summary coverage", false, true, null, ledger.AsOf, "summary", "portfolio", "summary"));
         }
+
+        checks.AddRange(BuildInternalCashChecks(inputs.InternalCashMovements, ledger));
+        checks.AddRange(BuildExternalStatementChecks(inputs.ExternalStatementRows, inputs.InternalCashMovements));
 
         return checks;
     }
@@ -143,39 +141,34 @@ public sealed class ReconciliationProjectionService
             ActualKind = actualKind
         };
 
-    /// <summary>
-    /// Build reconciliation checks that compare bank-side transaction totals against
-    /// the internal ledger's cash balance.  Returns an empty list when both sides have
-    /// no data.
-    /// </summary>
-    public IReadOnlyList<PortfolioLedgerCheckDto> BuildBankingChecks(
-        IReadOnlyList<BankTransactionDto> bankTransactions,
-        LedgerSummary? ledger)
+    private static IReadOnlyList<PortfolioLedgerCheckDto> BuildInternalCashChecks(
+        IReadOnlyList<ReconciliationCashMovementInput> internalCashMovements,
+        ReconciliationLedgerInput? ledger)
     {
-        ArgumentNullException.ThrowIfNull(bankTransactions);
+        ArgumentNullException.ThrowIfNull(internalCashMovements);
 
-        var activeTxns = bankTransactions.Where(static t => !t.IsVoided).ToArray();
-        var hasBankData = activeTxns.Length > 0;
-        var bankNetAmount = activeTxns.Sum(static t => t.Amount);
+        var activeCashMovements = internalCashMovements.Where(static t => !t.IsVoided).ToArray();
+        var hasCashData = activeCashMovements.Length > 0;
+        var cashNetAmount = activeCashMovements.Sum(static t => t.Amount);
 
         var hasLedgerData = ledger is not null;
         var ledgerCash = ledger?.TrialBalance
             .Where(static l => string.Equals(l.AccountName, "Cash", StringComparison.OrdinalIgnoreCase))
             .Sum(static l => l.Balance) ?? 0m;
 
-        if (!hasBankData && !hasLedgerData)
+        if (!hasCashData && !hasLedgerData)
         {
             return Array.Empty<PortfolioLedgerCheckDto>();
         }
 
-        if (hasBankData && hasLedgerData)
+        if (hasCashData && hasLedgerData)
         {
             return
             [
                 CreateAmountCheck(
                     "bank-net-vs-ledger-cash",
                     "Bank net transactions vs ledger cash",
-                    bankNetAmount,
+                    cashNetAmount,
                     ledgerCash,
                     null,
                     ledger!.AsOf,
@@ -184,9 +177,8 @@ public sealed class ReconciliationProjectionService
             ];
         }
 
-        if (hasBankData)
+        if (hasCashData)
         {
-            // Bank has transactions but no internal ledger exists
             return
             [
                 CreateCoverageCheck(
@@ -201,7 +193,6 @@ public sealed class ReconciliationProjectionService
             ];
         }
 
-        // Ledger exists but no bank transactions recorded for this entity
         return
         [
             CreateCoverageCheck(
@@ -213,6 +204,37 @@ public sealed class ReconciliationProjectionService
                 categoryHint: "bank",
                 missingSourceHint: "bank",
                 actualKind: "ledger")
+        ];
+    }
+
+    private static IReadOnlyList<PortfolioLedgerCheckDto> BuildExternalStatementChecks(
+        IReadOnlyList<ReconciliationExternalStatementInput> statementRows,
+        IReadOnlyList<ReconciliationCashMovementInput> internalCashMovements)
+    {
+        ArgumentNullException.ThrowIfNull(statementRows);
+        ArgumentNullException.ThrowIfNull(internalCashMovements);
+
+        if (statementRows.Count == 0)
+        {
+            return Array.Empty<PortfolioLedgerCheckDto>();
+        }
+
+        var statementNet = statementRows.Sum(static row => row.Amount);
+        var internalNet = internalCashMovements.Where(static row => !row.IsVoided).Sum(static row => row.Amount);
+        var statementAsOf = statementRows.Count == 0 ? null : statementRows.Max(static row => row.AsOf);
+        var internalAsOf = internalCashMovements.Count == 0 ? null : internalCashMovements.Max(static row => row.AsOf);
+
+        return
+        [
+            CreateAmountCheck(
+                "external-statement-vs-internal-cash",
+                "External statement net vs internal cash movements",
+                statementNet,
+                internalNet,
+                statementAsOf,
+                internalAsOf,
+                expectedSource: "external-statement",
+                actualSource: "bank")
         ];
     }
 }

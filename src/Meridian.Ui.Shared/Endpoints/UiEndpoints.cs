@@ -117,6 +117,11 @@ public static class UiEndpoints
         // InMemoryReconciliationRunRepository is the default; a persistent implementation can
         // override it by registering before AddUiSharedServices is called (TryAdd semantics).
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
+        services.TryAddSingleton<IStrategyPortfolioReconciliationSourceAdapter, StrategyPortfolioReconciliationSourceAdapter>();
+        services.TryAddSingleton<IInternalCashReconciliationSourceAdapter, BankInternalCashReconciliationSourceAdapter>();
+        services.TryAddSingleton<IExternalStatementSource, NullExternalStatementSource>();
+        services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         services.TryAddSingleton<ReconciliationProjectionService>();
         services.TryAddSingleton<IReconciliationRunService, ReconciliationRunService>();
     }

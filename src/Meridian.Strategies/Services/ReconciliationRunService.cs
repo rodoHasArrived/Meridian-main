@@ -9,18 +9,28 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     private readonly StrategyRunReadService _runReadService;
     private readonly ReconciliationProjectionService _projectionService;
     private readonly IReconciliationRunRepository _repository;
-    private readonly IBankTransactionSource? _bankTransactionSource;
+    private readonly IStrategyLedgerReconciliationSourceAdapter _ledgerAdapter;
+    private readonly IStrategyPortfolioReconciliationSourceAdapter _portfolioAdapter;
+    private readonly IInternalCashReconciliationSourceAdapter _internalCashAdapter;
+    private readonly IExternalStatementReconciliationSourceAdapter _externalStatementAdapter;
 
     public ReconciliationRunService(
         StrategyRunReadService runReadService,
         ReconciliationProjectionService projectionService,
         IReconciliationRunRepository repository,
-        IBankTransactionSource? bankTransactionSource = null)
+        IBankTransactionSource? bankTransactionSource = null,
+        IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter = null,
+        IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter = null,
+        IInternalCashReconciliationSourceAdapter? internalCashAdapter = null,
+        IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null)
     {
         _runReadService = runReadService ?? throw new ArgumentNullException(nameof(runReadService));
         _projectionService = projectionService ?? throw new ArgumentNullException(nameof(projectionService));
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-        _bankTransactionSource = bankTransactionSource;
+        _ledgerAdapter = ledgerAdapter ?? new StrategyLedgerReconciliationSourceAdapter();
+        _portfolioAdapter = portfolioAdapter ?? new StrategyPortfolioReconciliationSourceAdapter();
+        _internalCashAdapter = internalCashAdapter ?? new BankInternalCashReconciliationSourceAdapter(bankTransactionSource);
+        _externalStatementAdapter = externalStatementAdapter ?? new ExternalStatementReconciliationSourceAdapter(new NullExternalStatementSource());
     }
 
     public async Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
@@ -33,33 +43,23 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             return null;
         }
 
-        // --- Portfolio / Ledger checks (existing) ---------------------------
-        var checks = _projectionService.BuildChecks(runDetail, request);
+        var normalizedInputs = new ReconciliationNormalizedInputs(
+            Portfolio: _portfolioAdapter.Adapt(runDetail),
+            Ledger: _ledgerAdapter.Adapt(runDetail),
+            InternalCashMovements: await _internalCashAdapter.GetCashMovementsAsync(request, ct).ConfigureAwait(false),
+            ExternalStatementRows: await _externalStatementAdapter.GetStatementRowsAsync(request, ct).ConfigureAwait(false));
 
-        // --- Banking checks (new, optional) ---------------------------------
-        IReadOnlyList<BankTransactionDto> bankTransactions = Array.Empty<BankTransactionDto>();
-        if (request.BankEntityId.HasValue && _bankTransactionSource is not null)
-        {
-            bankTransactions = await _bankTransactionSource
-                .GetBankTransactionsAsync(request.BankEntityId.Value, ct)
-                .ConfigureAwait(false);
-        }
-
-        var bankChecks = request.BankEntityId.HasValue
-            ? _projectionService.BuildBankingChecks(bankTransactions, runDetail.Ledger)
-            : Array.Empty<PortfolioLedgerCheckDto>();
-
-        // Combine all checks and run through the F# reconciliation engine
-        var allChecks = checks.Count > 0 || bankChecks.Count > 0
-            ? [.. checks, .. bankChecks]
-            : checks;
+        // ReconciliationProjectionService now operates on normalized inputs from adapter seams,
+        // keeping run-model traversal out of the hot-path check projection logic.
+        var allChecks = _projectionService.BuildChecks(normalizedInputs);
 
         var results = LedgerInterop.ReconcilePortfolioLedgerChecks(
             request.AmountTolerance, request.MaxAsOfDriftMinutes, allChecks);
 
-        // Track which check IDs originated from the banking layer
+        // Track which check IDs originated from the banking/cash layer.
         var bankCheckIds = new HashSet<string>(
-            bankChecks.Select(static c => c.CheckId), StringComparer.Ordinal);
+            ["bank-net-vs-ledger-cash", "bank-ledger-coverage-missing", "bank-coverage-missing"],
+            StringComparer.Ordinal);
 
         var matches = new List<ReconciliationMatchDto>(results.Length);
         var breaks = new List<ReconciliationBreakDto>();
@@ -97,6 +97,11 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         var securityCoverageIssues = BuildSecurityCoverageIssues(runDetail);
         var bankBreakCount = breaks.Count(b => bankCheckIds.Contains(b.CheckId));
 
+        var bankTransactions = normalizedInputs.InternalCashMovements
+            .Select(static movement => movement.BankTransaction)
+            .OfType<BankTransactionDto>()
+            .ToArray();
+
         // Build Security Master classification map from already-resolved security references
         // in the portfolio and ledger read models (populated by PortfolioReadService /
         // LedgerReadService when ISecurityReferenceLookup is wired into those services).
@@ -116,11 +121,11 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             request.MaxAsOfDriftMinutes,
             securityCoverageIssues.Count,
             securityCoverageIssues.Count > 0,
-            bankTransactions.Count,
+            bankTransactions.Length,
             bankBreakCount);
 
         var detail = new ReconciliationRunDetail(summary, matches, breaks, securityCoverageIssues,
-            bankTransactions.Count > 0 ? bankTransactions : null,
+            bankTransactions.Length > 0 ? bankTransactions : null,
             securityClassifications.Count > 0 ? securityClassifications : null);
         await _repository.SaveAsync(detail, ct).ConfigureAwait(false);
         return detail;
