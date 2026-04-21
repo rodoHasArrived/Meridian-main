@@ -15,7 +15,6 @@ public sealed class ScriptRunner : IScriptRunner
 {
     private readonly IQuantScriptCompiler _compiler;
     private readonly IQuantDataContext _dataContext;
-    private readonly PlotQueue _plotQueue;
     private readonly Backtesting.Engine.BacktestEngine? _backtestEngine;
     private readonly QuantScriptOptions _options;
     private readonly ILogger<ScriptRunner> _logger;
@@ -30,7 +29,7 @@ public sealed class ScriptRunner : IScriptRunner
     {
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
         _dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
-        _plotQueue = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue));
+        _ = plotQueue ?? throw new ArgumentNullException(nameof(plotQueue)); // retained for DI compatibility; per-run queues are now local
         _backtestEngine = backtestEngine; // null is valid — backtest is optional
         _options = options?.Value ?? new QuantScriptOptions();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -110,7 +109,7 @@ public sealed class ScriptRunner : IScriptRunner
         string? runtimeError = null;
         IReadOnlyList<ScriptDiagnostic> continuationDiagnostics = Array.Empty<ScriptDiagnostic>();
         ScriptExecutionCheckpoint? nextCheckpoint = checkpoint;
-        var runPlotQueue = _plotQueue;
+        var runPlotQueue = new PlotQueue();
 
         await Task.Run(async () =>
         {
