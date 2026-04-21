@@ -377,6 +377,16 @@ public static class PrometheusMetrics
         "Total kernel executions by domain",
         new CounterConfiguration { LabelNames = new[] { "domain" } });
 
+    private static readonly Gauge KernelThroughputPerMinute = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_throughput_per_minute",
+        "Kernel executions per minute by domain",
+        new GaugeConfiguration { LabelNames = new[] { "domain" } });
+
+    private static readonly Gauge KernelLatencyPercentileMs = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_latency_percentile_milliseconds",
+        "Kernel latency percentile in milliseconds by domain and percentile",
+        new GaugeConfiguration { LabelNames = new[] { "domain", "percentile" } });
+
     private static readonly Counter KernelDeterminismChecksTotal = Prometheus.Metrics.CreateCounter(
         "mdc_kernel_determinism_checks_total",
         "Total kernel determinism checks by domain and outcome",
@@ -401,6 +411,11 @@ public static class PrometheusMetrics
         "mdc_kernel_critical_severity_jump_alerts_total",
         "Total alerts raised for sudden jumps in kernel critical-severity rate by domain",
         new CounterConfiguration { LabelNames = new[] { "domain" } });
+
+    private static readonly Gauge KernelCriticalSeverityJumpActive = Prometheus.Metrics.CreateGauge(
+        "mdc_kernel_critical_severity_jump_active",
+        "Whether a critical-severity jump alert is currently active (0/1) by domain",
+        new GaugeConfiguration { LabelNames = new[] { "domain" } });
 
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
@@ -518,6 +533,25 @@ public static class PrometheusMetrics
     }
 
     /// <summary>
+    /// Sets kernel throughput per minute for a domain.
+    /// </summary>
+    public static void SetKernelThroughputPerMinute(string domain, double throughputPerMinute)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        KernelThroughputPerMinute.WithLabels(safeDomain).Set(Math.Max(0, throughputPerMinute));
+    }
+
+    /// <summary>
+    /// Sets a kernel latency percentile for a domain.
+    /// </summary>
+    public static void SetKernelLatencyPercentile(string domain, string percentile, double latencyMilliseconds)
+    {
+        var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
+        var safePercentile = string.IsNullOrWhiteSpace(percentile) ? "unknown" : percentile.Trim().ToLowerInvariant();
+        KernelLatencyPercentileMs.WithLabels(safeDomain, safePercentile).Set(Math.Max(0, latencyMilliseconds));
+    }
+
+    /// <summary>
     /// Records one determinism check outcome for a kernel domain.
     /// </summary>
     public static void RecordKernelDeterminismCheck(string domain, bool isMatch)
@@ -549,9 +583,16 @@ public static class PrometheusMetrics
     /// Sets current critical severity rate for a domain and optionally records alert count.
     /// </summary>
     public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool raiseJumpAlert)
+        => SetKernelCriticalSeverityRate(domain, criticalRate, jumpActive: false, raiseJumpAlert);
+
+    /// <summary>
+    /// Sets current critical severity rate and jump activity state for a domain, with optional alert increment.
+    /// </summary>
+    public static void SetKernelCriticalSeverityRate(string domain, double criticalRate, bool jumpActive, bool raiseJumpAlert)
     {
         var safeDomain = string.IsNullOrWhiteSpace(domain) ? "unknown" : domain.Trim().ToLowerInvariant();
         KernelCriticalSeverityRate.WithLabels(safeDomain).Set(Math.Clamp(criticalRate, 0, 1));
+        KernelCriticalSeverityJumpActive.WithLabels(safeDomain).Set(jumpActive ? 1 : 0);
         if (raiseJumpAlert)
         {
             KernelCriticalSeverityJumpAlertsTotal.WithLabels(safeDomain).Inc();
