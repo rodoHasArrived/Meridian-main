@@ -891,13 +891,8 @@ internal sealed class SimulatedPortfolio
             }
             else
             {
-                // Partial close: reduce the lot in-place.
-                lots.Remove(node);
-                // Insert the reduced lot at the front for FIFO/LIFO consistency, or back for HIFO.
-                if (method == LotSelectionMethod.Lifo)
-                    lots.AddLast(lot with { Quantity = lot.Quantity - remaining });
-                else
-                    lots.AddFirst(lot with { Quantity = lot.Quantity - remaining });
+                // Partial close: reduce the lot in-place while preserving its list position.
+                node.Value = lot with { Quantity = lot.Quantity - remaining };
                 remaining = 0;
             }
         }
