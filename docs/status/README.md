@@ -70,6 +70,16 @@ These dated snapshots remain useful for history, but they no longer act as activ
 9. [provider-validation-matrix.md](provider-validation-matrix.md)
 10. [IMPROVEMENTS.md](IMPROVEMENTS.md)
 
+## Contributor Checklist (Required Headings)
+
+When authoring or editing these doc categories, include the required section headers so docs lint passes:
+
+- **Runbooks** (for example `docs/operations/operator-runbook.md`):
+  - `## Troubleshooting`
+- **Provider setup guides** (`docs/providers/*-setup.md`):
+  - `## Prerequisites`
+  - `## Configuration`
+
 ## Current Status Summary
 
 - **Platform state:** Development / pilot-ready baseline with strong ingestion, storage, replay, and export foundations
