@@ -85,7 +85,10 @@ public sealed class ReconciliationRunServiceTests
             Currency: "USD",
             Status: SecurityStatusDto.Active,
             PrimaryIdentifier: "AAPL",
-            SubType: "CommonShare"));
+            SubType: "CommonShare",
+            MatchedIdentifierKind: "ISIN",
+            MatchedIdentifierValue: "US0378331005",
+            MatchedProvider: "OpenFIGI"));
         lookup.Register("TSLA", new WorkstationSecurityReference(
             SecurityId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
             DisplayName: "Tesla Inc.",
@@ -108,7 +111,12 @@ public sealed class ReconciliationRunServiceTests
         detail.SecurityClassifications!.Should().ContainKey("AAPL");
         detail.SecurityClassifications["AAPL"].AssetClass.Should().Be("Equity");
         detail.SecurityClassifications["AAPL"].SubType.Should().Be("CommonShare");
+        detail.SecurityClassifications["AAPL"].PrimaryIdentifierKind.Should().Be("ISIN");
         detail.SecurityClassifications["AAPL"].PrimaryIdentifierValue.Should().Be("AAPL");
+        detail.SecurityClassifications["AAPL"].MatchedIdentifierKind.Should().Be("ISIN");
+        detail.SecurityClassifications["AAPL"].MatchedIdentifierValue.Should().Be("US0378331005");
+        detail.SecurityClassifications["AAPL"].MatchedProvider.Should().Be("OpenFIGI");
+        detail.SecurityClassifications["TSLA"].PrimaryIdentifierKind.Should().Be("Ticker");
     }
 
     [Fact]

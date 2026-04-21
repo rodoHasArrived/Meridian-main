@@ -621,6 +621,9 @@ export interface SecurityClassificationSummary {
   subType: string | null;
   primaryIdentifierKind: string | null;
   primaryIdentifierValue: string | null;
+  matchedIdentifierKind?: string | null;
+  matchedIdentifierValue?: string | null;
+  matchedProvider?: string | null;
 }
 
 export interface SecurityEconomicDefinitionSummary {

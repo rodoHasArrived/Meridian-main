@@ -2797,7 +2797,10 @@ public static class WorkstationEndpoints
                 AssetClass: summary.AssetClass,
                 SubType: DeriveSubType(summary.AssetClass),
                 PrimaryIdentifierKind: null,
-                PrimaryIdentifierValue: summary.PrimaryIdentifier),
+                PrimaryIdentifierValue: summary.PrimaryIdentifier,
+                MatchedIdentifierKind: null,
+                MatchedIdentifierValue: null,
+                MatchedProvider: null),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
                 Currency: summary.Currency,
                 Version: summary.Version,
@@ -2818,7 +2821,10 @@ public static class WorkstationEndpoints
                 AssetClass: detail.AssetClass,
                 SubType: DeriveSubType(detail.AssetClass),
                 PrimaryIdentifierKind: primaryIdentifier?.Kind.ToString(),
-                PrimaryIdentifierValue: primaryIdentifier?.Value),
+                PrimaryIdentifierValue: primaryIdentifier?.Value,
+                MatchedIdentifierKind: null,
+                MatchedIdentifierValue: null,
+                MatchedProvider: null),
             EconomicDefinition: new SecurityEconomicDefinitionSummaryDto(
                 Currency: detail.Currency,
                 Version: detail.Version,
