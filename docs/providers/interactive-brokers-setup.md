@@ -4,6 +4,13 @@ This guide covers Meridian's three Interactive Brokers modes and the preferred l
 
 Use this together with [provider-confidence-baseline.md](provider-confidence-baseline.md) and [provider-validation-matrix.md](../status/provider-validation-matrix.md).
 
+## Prerequisites
+
+- Local Interactive Brokers TWS or IB Gateway installation
+- Official IB API SDK downloaded locally (not committed to the repository)
+- Meridian build environment with `-p:EnableWindowsTargeting=true`
+- Paper account access for safe initial verification (`7497`)
+
 ## Modes
 
 | Mode | Build switch | What it is for | What it is not |
@@ -100,7 +107,9 @@ dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
 
 Do not combine smoke mode with vendor mode.
 
-## Runtime Configuration
+## Configuration
+
+### Runtime Configuration
 
 Meridian now separates:
 

@@ -95,7 +95,7 @@ public sealed class PromotionServiceTests
     [Fact]
     public async Task ApproveAsync_WhenRunExists_CreatesNewRunAndRecordsHistory()
     {
-        var service = BuildService(out var store);
+        var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
@@ -127,7 +127,7 @@ public sealed class PromotionServiceTests
     [Fact]
     public async Task RejectAsync_AlwaysReturnsSuccess()
     {
-        var service = BuildService(out _);
+        var service = BuildService(out _, CreateTempRoot());
 
         var result = await service.RejectAsync(new PromotionRejectionRequest("any-run", "Not ready"));
 
@@ -140,7 +140,7 @@ public sealed class PromotionServiceTests
     [Fact]
     public async Task GetPromotionHistory_AfterApproval_ContainsRecord()
     {
-        var service = BuildService(out var store);
+        var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
             EndedAt = DateTimeOffset.UtcNow,
@@ -154,15 +154,74 @@ public sealed class PromotionServiceTests
         history.Should().HaveCount(1);
         history[0].StrategyId.Should().Be("s1");
         history[0].TargetRunType.Should().Be(RunType.Paper);
+        history[0].Decision.Should().Be("Approved");
+        history[0].SourceRunId.Should().Be(run.RunId);
+        history[0].TargetRunId.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task GetPromotionHistory_SurvivesServiceReinstantiation_WithApprovedAndRejectedDecisions()
+    {
+        var rootPath = CreateTempRoot();
+        var service = BuildService(out var store, rootPath);
+        var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+        await service.ApproveAsync(new PromotionApprovalRequest(
+            RunId: run.RunId,
+            ReviewNotes: "Initial review complete.",
+            ApprovedBy: "ops",
+            ApprovalReason: "All policy checks passed.",
+            ManualOverrideId: "override-1"));
+        await service.RejectAsync(new PromotionRejectionRequest(
+            RunId: run.RunId,
+            Reason: "Holding promotion pending additional controls.",
+            ReviewNotes: "Rejected during governance review.",
+            RejectedBy: "risk"));
+
+        var restartedService = BuildService(out _, rootPath);
+        var history = restartedService.GetPromotionHistory();
+
+        history.Should().HaveCount(2);
+        history.Should().Contain(record =>
+            record.Decision == "Approved" &&
+            record.SourceRunId == run.RunId &&
+            !string.IsNullOrWhiteSpace(record.TargetRunId) &&
+            record.ApprovedBy == "ops" &&
+            record.ApprovalReason == "All policy checks passed." &&
+            record.ReviewNotes == "Initial review complete." &&
+            record.ManualOverrideId == "override-1" &&
+            !string.IsNullOrWhiteSpace(record.AuditReference));
+        history.Should().Contain(record =>
+            record.Decision == "Rejected" &&
+            record.SourceRunId == run.RunId &&
+            record.TargetRunId is null &&
+            record.ApprovedBy == "risk" &&
+            record.ApprovalReason == "Holding promotion pending additional controls." &&
+            record.ReviewNotes == "Rejected during governance review." &&
+            !string.IsNullOrWhiteSpace(record.AuditReference));
     }
 
     // ---- Helpers ----
 
-    private static PromotionService BuildService(out StrategyRunStore store)
+    private static PromotionService BuildService(out StrategyRunStore store, string? rootPath = null)
     {
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
-        return new PromotionService(store, promoter, NullLogger<PromotionService>.Instance);
+        var promotionStore = new JsonlPromotionRecordStore(
+            Path.Combine(rootPath ?? Path.GetTempPath(), "promotion-history"),
+            NullLogger<JsonlPromotionRecordStore>.Instance);
+        return new PromotionService(store, promoter, promotionStore, NullLogger<PromotionService>.Instance);
+    }
+
+    private static string CreateTempRoot()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "meridian-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
     }
 
     private static BacktestResult BuildPassingResult()

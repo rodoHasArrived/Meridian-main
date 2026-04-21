@@ -1,6 +1,6 @@
 # Meridian - Combined Roadmap, Opportunities, and Target State
 
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-21
 **Status:** Combined stakeholder-facing roadmap refresh aligned to the canonical April 17 roadmap
 
 This document is the shortest complete entry point into Meridian's current roadmap. [`ROADMAP.md`](ROADMAP.md) remains the authoritative source for wave order, retained completion claims, and the definition of core operator-readiness.
@@ -12,6 +12,23 @@ Use this with:
 - [`OPPORTUNITY_SCAN.md`](OPPORTUNITY_SCAN.md) for the prioritized opportunity framing
 - [`TARGET_END_PRODUCT.md`](TARGET_END_PRODUCT.md) for the compact product narrative
 - [`production-status.md`](production-status.md) for current readiness posture
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
 
 ---
 
@@ -33,22 +50,9 @@ Waves 1-4 define the core operator-readiness path. A focused two-wave Delivery K
 
 ## Current State
 
-### Complete
+Use the canonical wave table in [`PROGRAM_STATE.md`](PROGRAM_STATE.md) for all status labels and target dates.
 
-- core ingestion, storage, replay, export, and data-quality foundations are materially strong
-- the web and WPF workstation baselines already organize around `Research`, `Trading`, `Data Operations`, and `Governance`
-- shared `StrategyRun`, portfolio, and ledger read services already feed workstation surfaces
-- promotion endpoints and dashboard promotion surfaces are already in code
-- Security Master is already the authoritative instrument-definition baseline across workstation and governance surfaces
-- governance-facing reconciliation, direct-lending, and export/report-adjacent seams are already present in the repo
-
-### Partial
-
-- the active Wave 1 trust gate is closed for Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet L2 flush behavior, but that closure still needs deliberate doc, script, and artifact synchronization
-- the paper-trading cockpit is real, but not yet hardened as a dependable daily-use lane
-- shared run continuity is present, but not yet equally deep across every workspace and mode
-- governance workflows now build on a delivered Security Master baseline, but multi-ledger, cash-flow, reconciliation, and reporting still need deeper productization
-- WPF workflow-first consolidation and MVVM extraction remain active in high-traffic areas
+This document keeps concise framing only; detailed readiness evidence remains in [`production-status.md`](production-status.md) and full sequencing remains in [`ROADMAP.md`](ROADMAP.md).
 
 ---
 

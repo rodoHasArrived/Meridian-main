@@ -51,7 +51,13 @@ vi.mock("@/lib/api", async () => {
         positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
         asOf: "2026-01-01T00:15:00Z"
       },
-      verifiedAt: "2026-01-01T00:20:00Z"
+      verifiedAt: "2026-01-01T00:20:00Z",
+      comparedFillCount: 1,
+      comparedOrderCount: 0,
+      comparedLedgerEntryCount: 1,
+      lastPersistedFillAt: "2026-01-01T00:10:00Z",
+      lastPersistedOrderUpdateAt: null,
+      verificationAuditId: "audit-verify-1"
     }),
     getExecutionAudit: vi.fn().mockResolvedValue([
       {
@@ -70,6 +76,25 @@ vi.mock("@/lib/api", async () => {
         metadata: { sessionId: "sess-1" }
       }
     ]),
+    getExecutionControls: vi.fn().mockResolvedValue({
+      circuitBreaker: { isOpen: false, reason: null, changedBy: "ops", changedAt: "2026-01-01T00:00:00Z" },
+      defaultMaxPositionSize: 5000,
+      symbolPositionLimits: { AAPL: 2500 },
+      manualOverrides: [
+        {
+          overrideId: "ovr-1",
+          kind: "BypassOrderControls",
+          reason: "incident drill",
+          createdBy: "ops",
+          createdAt: "2026-01-01T00:00:00Z",
+          expiresAt: null,
+          symbol: "AAPL",
+          strategyId: null,
+          runId: null
+        }
+      ],
+      asOf: "2026-01-01T00:20:00Z"
+    }),
     getReplayFiles: vi.fn().mockResolvedValue({ files: [{ path: "/tmp/replay.jsonl", name: "replay.jsonl", symbol: "AAPL", eventType: "trades", sizeBytes: 1, isCompressed: false, lastModified: "2026-01-01" }], total: 1, timestamp: "2026-01-01" }),
     startReplay: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "started", speedMultiplier: 1 }),
     getReplayStatus: vi.fn().mockResolvedValue({ sessionId: "rep-1", filePath: "/tmp/replay.jsonl", status: "running", speedMultiplier: 1, eventsProcessed: 3, totalEvents: 10, progressPercent: 30, startedAt: "2026-01-01" }),
@@ -80,7 +105,22 @@ vi.mock("@/lib/api", async () => {
     setReplaySpeed: vi.fn().mockResolvedValue({}),
     evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
     approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved" }),
-    getPromotionHistory: vi.fn().mockResolvedValue([{ promotionId: "promo-1", strategyId: "strat-1", strategyName: "S1", sourceRunType: "backtest", targetRunType: "paper", qualifyingSharpe: 1.2, qualifyingMaxDrawdownPercent: 5, qualifyingTotalReturn: 10, promotedAt: "2026-01-01" }]),
+    getPromotionHistory: vi.fn().mockResolvedValue([{
+      promotionId: "promo-1",
+      strategyId: "strat-1",
+      strategyName: "S1",
+      sourceRunType: "backtest",
+      targetRunType: "paper",
+      runId: "run-1",
+      approvedBy: "operator-7",
+      approvalReason: "Meets risk constraints",
+      reviewNotes: "Checked replay consistency",
+      manualOverrideId: "override-9",
+      qualifyingSharpe: 1.2,
+      qualifyingMaxDrawdownPercent: 5,
+      qualifyingTotalReturn: 10,
+      promotedAt: "2026-01-01"
+    }]),
     pauseStrategy: vi.fn().mockResolvedValue({ strategyId: "s", action: "pause", success: true, reason: null }),
     stopStrategy: vi.fn().mockResolvedValue({ strategyId: "s", action: "stop", success: true, reason: null })
   };
@@ -108,14 +148,53 @@ describe("TradingScreen", () => {
     expect(screen.getByText("Backtest → Paper promotion gate")).toBeInTheDocument();
   });
 
+  it("fetches and renders execution controls snapshot", async () => {
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalled());
+    expect(screen.getByText(/Execution controls snapshot/i)).toBeInTheDocument();
+    expect(screen.getByText(/Breaker Closed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Default limit:/i)).toHaveTextContent("5000");
+    expect(screen.getByText(/Active overrides:/i)).toHaveTextContent("BypassOrderControls (AAPL)");
+  });
+
   it("handles promotion happy path", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
     await user.type(screen.getByLabelText("Run id"), "run-1");
+    await user.type(screen.getByLabelText("Approved by"), "operator-7");
+    await user.type(screen.getByLabelText("Approval reason"), "Meets risk constraints");
+    await user.type(screen.getByLabelText("Review notes"), "Checked replay consistency");
+    await user.type(screen.getByLabelText("Manual override id"), "override-9");
     await user.click(screen.getByRole("button", { name: /evaluate gate checks/i }));
     await screen.findByText(/Eligible: Yes/i);
     await user.click(screen.getByRole("button", { name: /confirm promote/i }));
     await screen.findByText(/Promoted\. Promotion ID: promo-1/i);
+    expect(api.approvePromotion).toHaveBeenCalledWith({
+      runId: "run-1",
+      approvedBy: "operator-7",
+      approvalReason: "Meets risk constraints",
+      reviewNotes: "Checked replay consistency",
+      manualOverrideId: "override-9"
+    });
+    await screen.findByText(/by operator-7/i);
+    await screen.findByText(/reason: Meets risk constraints/i);
+    await screen.findByText(/override: override-9/i);
+    await screen.findByText(/notes: Checked replay consistency/i);
+  });
+
+  it("refreshes execution controls after control-affecting actions", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/trading"]}><TradingScreen data={data} /></MemoryRouter>);
+    await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole("button", { name: /new order/i }));
+    await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");
+    const quantityInput = screen.getAllByRole("spinbutton")[0];
+    await user.clear(quantityInput);
+    await user.type(quantityInput, "10");
+    await user.click(screen.getByRole("button", { name: /submit order/i }));
+
+    await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
   it("shows error path when promotion evaluation fails", async () => {
@@ -148,6 +227,8 @@ describe("TradingScreen", () => {
 
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();
+    expect(screen.getByText(/Compared fills: 1/i)).toBeInTheDocument();
+    expect(screen.getByText(/Verification audit: audit-verify-1/i)).toBeInTheDocument();
     expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
   });
 
