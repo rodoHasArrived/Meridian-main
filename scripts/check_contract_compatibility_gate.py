@@ -21,7 +21,7 @@ TRACKED_EXACT = {
 BREAKING_REMOVAL_PATTERNS = (
     re.compile(r"^-\s*public\s+(?:sealed\s+|static\s+|partial\s+|readonly\s+|abstract\s+)*"
                r"(?:record|class|interface|enum|struct|delegate)\b"),
-    re.compile(r"^-\s*public\s+[^=;]+\([^)]*\)\s*(?:=>|\{|;)"),
+    re.compile(r"^-\s*public\s+[^=;]+\("),
     re.compile(r"^-\s*group\.Map(?:Get|Post|Put|Delete|Patch)\("),
     re.compile(r"^-\s*\.WithName\("),
     re.compile(r"^-\s*\.Produces<"),
