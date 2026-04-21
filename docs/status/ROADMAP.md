@@ -1,6 +1,6 @@
 # Meridian - Project Roadmap
 
-**Last Updated:** 2026-04-20
+**Last Updated:** 2026-04-21
 **Status:** Active productization — the narrow Wave 1 trust gate is repo-closed, Waves 2-4 remain the core operator-readiness path, and the current working tree shows active WPF workspace-shell consolidation on top of the delivered platform baseline
 **Repository Snapshot (2026-04-13 working tree):** solution projects: 39 | `src/` project files: 27 | test projects: 9 | workflow files: 42
 
@@ -30,6 +30,23 @@ Use this document with:
 
 ---
 
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
+
+---
+
 ## Summary
 
 Meridian's platform foundations are already broad enough that roadmap priority should now come from operator value and readiness evidence, not from generalized platform sprawl. The repo already includes:
@@ -47,61 +64,13 @@ The meaningful repo delta since the April 8 planning refresh is not a new produc
 
 ## Current State
 
-### Complete
+Wave-by-wave status labels are tracked in the canonical table in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
 
-These are conservative "in code and materially usable" claims as of 2026-04-13:
+For implementation detail and evidence, use:
 
-- Core ingestion pipeline: bounded channels, backpressure handling, WAL durability, composite sinks, graceful shutdown, and structured metrics
-- Storage and export foundation: JSONL and Parquet sinks, tiered storage, replay, packaging, export, lineage, catalog, quota enforcement, and lifecycle-policy support
-- Broad provider and backfill baseline: streaming providers, historical providers, symbol search, fallback chains, backfill scheduling, checkpointing, gap analysis, and rate-limit handling
-- Data-quality foundation: completeness, freshness, anomaly detection, sequence checks, degradation scoring, SLO registry, and quality reporting
-- Backtesting baseline: native replay engine, Lean integration, strategy SDK, stored run metrics, fill summaries, and export
-- Execution baseline: paper gateway, risk rules, order abstractions, brokerage gateway framework, session endpoints, promotion endpoints, and strategy lifecycle endpoints
-- Web workstation shell: routed `Research`, `Trading`, `Data Operations`, and `Governance` workspaces
-- Research workspace workflows: run filtering, comparison, diffing, attribution drill-ins, fills drill-ins, promotion evaluation, approval, rejection, and promotion history
-- Trading workspace workflows: positions, orders, fills, risk panels, paper-session creation and restore, replay controls, and promotion gate flows
-- Data Operations workflows: provider health, backfill queue detail, trigger and preview flows, export visibility, symbol management, and quality monitoring
-- Governance workflows: reconciliation queue detail, trial-balance drill-ins, reporting-profile visibility, Security Master search, and identifier-conflict workflows
-- Shared run, portfolio, and ledger read-model baseline: `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` normalize cross-workspace read paths
-- Security Master platform seam: workstation coverage, provenance, corporate-action support, trading-parameter support, conflict handling, and cross-workspace propagation are in code
-- WPF shell modernization baseline: Fluent theme, SVG icon set, candlestick charting, zero-API-key startup, workflow guide, and screenshot-refresh CI are complete
-- Governance baseline: run-scoped reconciliation, direct-lending APIs, export seams, and governance-facing workstation endpoints are present in the repo
-- Improvement tracker baseline: Themes A-G and J are closed for the current platform baseline, with Theme K active
-
-### Partial
-
-These areas exist in code but are not yet complete enough to treat as finished operator workflows:
-
-- The active Wave 1 trust gate is intentionally narrow and now repo-closed. Alpaca and Yahoo are closed by checked-in evidence, Robinhood remains explicitly bounded by committed runtime artifacts, and Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred from the active gate.
-- Backfill reliability and Parquet L2 flush behavior are closed by repo-backed proof, but the docs, scripts, and operator-facing acceptance language still need to stay synchronized with the validation matrix so the gate stays closed.
-- The web workstation is no longer just a shell, but the paper-trading cockpit still needs stronger daily-use acceptance criteria, replay confidence, audit visibility, and clearer hardening boundaries.
-- Shared run coverage spans backtest, paper, and live-aware models in contracts and UI, but portfolio, ledger, cash-flow, and reconciliation continuity are not yet equally deep in every mode.
-- External brokerage and custodian account state still reaches Meridian mostly through paper sessions, statement ingestion, and read-model joins; first-class brokerage portfolio sync into fund-account, ledger, and governance workflows is not yet productized.
-- Governance workflows now build on a delivered Security Master baseline, but account/entity structure, multi-ledger, cash-flow modeling, report-pack generation, and broader exception handling are still early product layers rather than finished experiences.
-- WPF workstation migration is meaningfully underway. The current working tree shows workspace shell descriptors, richer shell navigation, related-workflow routing, and new shell smoke coverage, but that should still count as active K1 delivery work rather than closed migration.
-- Live brokerage validation and controlled `Paper -> Live` promotion remain incomplete and should not yet be treated as an operator-ready live-trading claim.
-
-### Planned
-
-These are active productization tracks rather than greenfield invention:
-
-- harden Wave 2 paper-trading cockpit workflows and operator acceptance criteria
-- deepen Wave 3 shared run / portfolio / ledger / reconciliation continuity
-- add brokerage and custodian portfolio-sync ingestion through execution and fund-account seams without moving portfolio logic into market-data providers
-- productize Wave 4 governance and fund-operations workflows on top of Security Master and shared read-model seams
-- unify native and Lean backtesting into one Wave 5 Backtest Studio workflow
-- validate at least one broader Wave 6 live brokerage path with explicit audit trail and operator controls
-
-### Optional
-
-These remain valuable, but they are not on the shortest path to Meridian's core operator-readiness path:
-
-- deeper QuantScript workflow integration and broader sample libraries
-- L3 inference and queue-aware execution simulation
-- multi-instance coordination as a supported scale-out topology
-- Phase 16 assembly-level performance optimization
-- broader preferred and convertible equity productization beyond the shipped domain and read-query foundation
-- broader advanced research tooling after the core workstation workflows are operator-ready
+- [`production-status.md`](production-status.md) for readiness posture and provider evidence
+- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) for active execution tracks
+- [`ROADMAP_COMBINED.md`](ROADMAP_COMBINED.md) for the shortest stakeholder summary
 
 ---
 

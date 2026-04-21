@@ -1,10 +1,27 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-04-17
+**Last Updated:** 2026-04-21
 **Status:** Development / Pilot Ready - Wave 1 trust gate is closed and Waves 2-4 productization work remain active
 
 This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
 
 ---
 
@@ -49,6 +66,7 @@ The current working tree reinforces that direction rather than changing it. WPF 
 
 ## Active Gaps By Wave
 
+Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
 ### Wave 1: Closed provider confidence and checkpoint gate
 
 - Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
@@ -86,7 +104,7 @@ Operator-readiness language for Wave 2 should stay “in progress” until the f
 - governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows
 - the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
 
-Waves 5 and 6 remain valid roadmap steps, but they sit after the Wave 1-4 core operator-readiness path. Optional advanced research / scale tracks do not change the current readiness posture.
+Use this file for readiness evidence and operator-facing risk notes; use [`ROADMAP.md`](ROADMAP.md) for full wave sequencing.
 
 ---
 
