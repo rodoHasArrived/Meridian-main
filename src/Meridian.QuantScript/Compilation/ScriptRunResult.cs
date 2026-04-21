@@ -15,5 +15,16 @@ public sealed record ScriptRunResult(
     string ConsoleOutput,
     IReadOnlyList<KeyValuePair<string, string>> Metrics,
     IReadOnlyList<PlotRequest> Plots,
-    IReadOnlyList<string> TradesSummary,
+    IReadOnlyList<ScriptTradeResult> Trades,
     ScriptExecutionCheckpoint? Checkpoint = null);
+
+/// <summary>
+/// Structured trade/fill payload emitted from script execution for backtest-driven runs.
+/// </summary>
+public sealed record ScriptTradeResult(
+    DateTimeOffset Timestamp,
+    string Symbol,
+    string Side,
+    decimal Quantity,
+    decimal Price,
+    decimal Commission);

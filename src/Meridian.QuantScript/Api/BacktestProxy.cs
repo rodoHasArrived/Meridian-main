@@ -17,6 +17,7 @@ public sealed class BacktestProxy(BacktestEngine? engine, QuantScriptOptions opt
     private string _fillModel = "midpoint";
     private string? _dataRoot;
     private readonly LambdaBacktestStrategy _strategy = new();
+    private IReadOnlyList<FillEvent> _capturedFills = [];
 
     public BacktestProxy WithSymbols(params string[] symbols) { _symbols = symbols; return this; }
     public BacktestProxy From(DateOnly from) { _from = from; return this; }
@@ -57,6 +58,12 @@ public sealed class BacktestProxy(BacktestEngine? engine, QuantScriptOptions opt
 
         var result = engine.RunAsync(request, _strategy, progress).GetAwaiter().GetResult();
         _strategy.SetResult(result);
+        _capturedFills = result.Fills;
         return result;
     }
+
+    /// <summary>
+    /// Returns fills captured from the most recent <see cref="Run(Action{BacktestProgressEvent}?)"/> call.
+    /// </summary>
+    public IReadOnlyList<FillEvent> CapturedFills => _capturedFills;
 }
