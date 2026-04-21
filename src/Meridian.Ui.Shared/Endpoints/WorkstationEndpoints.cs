@@ -1738,7 +1738,8 @@ public static class WorkstationEndpoints
                     Reason: "Cash variance exceeds configured tolerance.",
                     AssignedTo: null,
                     DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18)),
+                    LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
+                    Severity: ReconciliationBreakSeverity.Critical),
                 new ReconciliationBreakQueueItem(
                     BreakId: "BRK-gov-run-001-2",
                     RunId: "gov-run-001",
@@ -1752,7 +1753,8 @@ public static class WorkstationEndpoints
                     LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
                     ReviewedBy: "ops.gov",
                     ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                    ResolutionNote: "Investigating ticker reclassification.")
+                    ResolutionNote: "Investigating ticker reclassification.",
+                    Severity: ReconciliationBreakSeverity.Warning)
             },
             workspace = new
             {
@@ -2901,7 +2903,8 @@ public static class WorkstationEndpoints
                         Reason: reconciliationBreak.Reason,
                         AssignedTo: null,
                         DetectedAt: DateTimeOffset.UtcNow,
-                        LastUpdatedAt: DateTimeOffset.UtcNow);
+                        LastUpdatedAt: DateTimeOffset.UtcNow,
+                        Severity: reconciliationBreak.Severity);
                 }
             }
         }

@@ -12,7 +12,9 @@ public enum ReconciliationSourceKind : byte
     Unknown = 0,
     Portfolio = 1,
     Ledger = 2,
-    Bank = 3
+    Bank = 3,
+    ExternalStatement = Bank,
+    Cash = 4
 }
 
 /// <summary>
@@ -38,7 +40,22 @@ public enum ReconciliationBreakCategory : byte
     MissingPortfolioCoverage = 2,
     ClassificationGap = 3,
     TimingMismatch = 4,
-    MissingBankCoverage = 5
+    MissingBankCoverage = 5,
+    CashMismatch = 6,
+    MissingCashCoverage = 7,
+    MissingExternalStatementCoverage = 8,
+    ExternalStatementMismatch = 9
+}
+
+/// <summary>
+/// Relative urgency for a reconciliation break.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationBreakSeverity>))]
+public enum ReconciliationBreakSeverity : byte
+{
+    Info = 0,
+    Warning = 1,
+    Critical = 2
 }
 
 /// <summary>
@@ -103,7 +120,8 @@ public sealed record ReconciliationBreakDto(
     decimal Variance,
     string Reason,
     DateTimeOffset? ExpectedAsOf,
-    DateTimeOffset? ActualAsOf);
+    DateTimeOffset? ActualAsOf,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Warning);
 
 /// <summary>
 /// Security Master coverage issue attached to a reconciliation run.
@@ -158,7 +176,8 @@ public sealed record ReconciliationBreakQueueItem(
     DateTimeOffset? ReviewedAt = null,
     string? ResolvedBy = null,
     DateTimeOffset? ResolvedAt = null,
-    string? ResolutionNote = null);
+    string? ResolutionNote = null,
+    ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Warning);
 
 /// <summary>
 /// Request to move a break into active review and assign an operator.

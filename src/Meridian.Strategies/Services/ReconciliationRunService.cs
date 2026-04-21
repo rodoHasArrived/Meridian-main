@@ -83,7 +83,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             breaks.Add(new ReconciliationBreakDto(
                 result.CheckId,
                 result.Label,
-                MapCategory(result.Category, result.MissingSource),
+                MapCategory(result.Category, result.MissingSource, result.CheckId),
                 MapStatus(result.Status),
                 result.MissingSource,
                 result.HasExpectedAmount ? result.ExpectedAmount : null,
@@ -91,7 +91,8 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 result.Variance,
                 result.Reason,
                 result.HasExpectedAsOf ? result.ExpectedAsOf : null,
-                result.HasActualAsOf ? result.ActualAsOf : null));
+                result.HasActualAsOf ? result.ActualAsOf : null,
+                MapSeverity(result.Category, result.MissingSource, result.CheckId, result.ExpectedSource, result.ActualSource)));
         }
 
         var securityCoverageIssues = BuildSecurityCoverageIssues(runDetail);
@@ -135,17 +136,74 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
         _repository.GetHistoryForRunAsync(runId, ct);
 
-    private static ReconciliationBreakCategory MapCategory(string category, string missingSource = "") => category switch
+    private static ReconciliationBreakCategory MapCategory(string category, string missingSource = "", string checkId = "") => category switch
     {
+        "amount_mismatch" when IsCashCheck(checkId)
+            => ReconciliationBreakCategory.CashMismatch,
+        "amount_mismatch" when IsExternalStatementSource(missingSource)
+            => ReconciliationBreakCategory.ExternalStatementMismatch,
         "amount_mismatch" => ReconciliationBreakCategory.AmountMismatch,
+        "missing_ledger_coverage" when IsCashCheck(checkId)
+            => ReconciliationBreakCategory.MissingCashCoverage,
+        "missing_ledger_coverage" when IsExternalStatementSource(missingSource)
+            => ReconciliationBreakCategory.MissingExternalStatementCoverage,
         "missing_ledger_coverage" => ReconciliationBreakCategory.MissingLedgerCoverage,
         "missing_portfolio_coverage" when string.Equals(missingSource, "bank", StringComparison.OrdinalIgnoreCase)
             => ReconciliationBreakCategory.MissingBankCoverage,
+        "missing_portfolio_coverage" when IsExternalStatementSource(missingSource)
+            => ReconciliationBreakCategory.MissingExternalStatementCoverage,
+        "missing_portfolio_coverage" when IsCashCheck(checkId)
+            => ReconciliationBreakCategory.MissingCashCoverage,
         "missing_portfolio_coverage" => ReconciliationBreakCategory.MissingPortfolioCoverage,
         "classification_gap" => ReconciliationBreakCategory.ClassificationGap,
         "timing_mismatch" => ReconciliationBreakCategory.TimingMismatch,
         _ => ReconciliationBreakCategory.ClassificationGap
     };
+
+    private static ReconciliationBreakSeverity MapSeverity(
+        string category,
+        string missingSource,
+        string checkId,
+        string expectedSource,
+        string actualSource)
+    {
+        if (string.Equals(category, "timing_mismatch", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReconciliationBreakSeverity.Info;
+        }
+
+        if (string.Equals(category, "classification_gap", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReconciliationBreakSeverity.Warning;
+        }
+
+        if (string.Equals(category, "amount_mismatch", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsCashCheck(checkId) ||
+                   IsExternalStatementSource(expectedSource) ||
+                   IsExternalStatementSource(actualSource)
+                ? ReconciliationBreakSeverity.Critical
+                : ReconciliationBreakSeverity.Warning;
+        }
+
+        if (string.Equals(category, "missing_ledger_coverage", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(category, "missing_portfolio_coverage", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsExternalStatementSource(missingSource)
+                ? ReconciliationBreakSeverity.Critical
+                : ReconciliationBreakSeverity.Warning;
+        }
+
+        return ReconciliationBreakSeverity.Warning;
+    }
+
+    private static bool IsCashCheck(string checkId) =>
+        checkId.Contains("cash", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsExternalStatementSource(string source) =>
+        string.Equals(source, "bank", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(source, "external_statement", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(source, "statement", StringComparison.OrdinalIgnoreCase);
 
     private static ReconciliationBreakStatus MapStatus(string status) => status switch
     {
