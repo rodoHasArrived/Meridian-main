@@ -42,6 +42,7 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions |
 | [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Versioned canonical break classes and reason codes used by ledger reconciliation |
 | [Research Briefing Workflow](research-briefing-workflow.md) | Shared Research workspace briefing contracts, endpoint, and shell binding flow |
+| [Strategy Promotion History Persistence](strategy-promotion-history.md) | Durable promotion decision chain fields and JSONL-backed history behavior |
 
 See also: [DEPENDENCIES.md](../DEPENDENCIES.md) — full third-party package inventory.
 
