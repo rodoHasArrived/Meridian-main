@@ -51,6 +51,40 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task GetWorkspaceView_WithScopeQueryParameters_ParsesSelectionAndReturnsScopedLedgerDto()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=Entity&scopeId=entity-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundOperationsWorkspaceDto>();
+
+        payload.Should().NotBeNull();
+        payload!.Ledger.ScopeKind.Should().Be(FundLedgerScope.Entity);
+        payload.Ledger.ScopeId.Should().Be("entity-alpha");
+        payload.Ledger.TrialBalance.Should().NotBeNull();
+        payload.Ledger.Journal.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceView_WithInvalidScopeKind_FallsBackToConsolidatedScope()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+
+        var response = await _client.GetAsync(
+            $"/api/fund-structure/workspace-view?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&scopeKind=invalid-value&scopeId=entity-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundOperationsWorkspaceDto>();
+
+        payload.Should().NotBeNull();
+        payload!.Ledger.ScopeKind.Should().Be(FundLedgerScope.Consolidated);
+        payload.Ledger.ScopeId.Should().Be("entity-alpha");
+    }
+
+    [Fact]
     public async Task GetWorkspaceView_WithoutFundProfileId_ReturnsBadRequest()
     {
         var response = await _client.GetAsync("/api/fund-structure/workspace-view");

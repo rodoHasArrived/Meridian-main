@@ -589,6 +589,20 @@ public sealed class FundLedgerViewModelTests
                 viewModel.SelectedLedgerJournalEntriesText.Should().Be("2");
                 viewModel.SelectedLedgerTrialBalanceLinesText.Should().Be("3");
                 viewModel.SelectedLedgerAssetBalanceText.Should().NotBe("-");
+
+                var consolidatedView = viewModel.LedgerDimensions.Single(view => view.Key == "consolidated");
+                viewModel.SelectedLedgerDimension = consolidatedView;
+
+                viewModel.SelectedLedgerDimensionDisplayText.Should().Be("Consolidated Fund View");
+                viewModel.VisibleTrialBalance.Should().HaveCount(viewModel.TrialBalance.Count);
+                viewModel.VisibleJournal.Should().HaveCount(viewModel.Journal.Count);
+
+                viewModel.SelectedLedgerDimension = entityView;
+
+                viewModel.SelectedLedgerDimensionDisplayText.Should().Be(entityView.DisplayName);
+                viewModel.VisibleTrialBalance.Should().OnlyContain(line => line.FinancialAccountId == accountId.ToString());
+                viewModel.VisibleJournal.Should().OnlyContain(line =>
+                    (line.FinancialAccountIds ?? []).Contains(accountId.ToString(), StringComparer.OrdinalIgnoreCase));
             }
             finally
             {
