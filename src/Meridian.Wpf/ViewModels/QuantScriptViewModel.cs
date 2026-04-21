@@ -188,7 +188,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
     public string StatusText { get => _statusText; private set => SetProperty(ref _statusText, value); }
     public string ElapsedText { get => _elapsedText; private set => SetProperty(ref _elapsedText, value); }
     public string MemoryText { get => _memoryText; private set => SetProperty(ref _memoryText, value); }
-    public bool CanRun => !IsRunning && SelectedCell is not null;
+    public bool HasInvalidParameters => Parameters.Any(parameter => !parameter.IsValid);
+    public bool CanRun => !IsRunning && SelectedCell is not null && !HasInvalidParameters;
     public int ActiveResultsTab { get => _activeResultsTab; set => SetProperty(ref _activeResultsTab, value); }
 
     public IAsyncRelayCommand RunScriptCommand { get; }
@@ -593,6 +594,8 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
 
     private void RefreshParameters()
     {
+        foreach (var parameter in Parameters)
+            parameter.PropertyChanged -= OnParameterPropertyChanged;
         Parameters.Clear();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var cell in NotebookCells)
@@ -601,9 +604,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             {
                 if (!seen.Add(descriptor.Name))
                     continue;
-                Parameters.Add(new ParameterViewModel(descriptor.Name, descriptor.DefaultValue, ResolveParameterType(descriptor.TypeName)));
+                var parameter = new ParameterViewModel(descriptor.Name, descriptor.DefaultValue, ResolveParameterType(descriptor.TypeName));
+                parameter.PropertyChanged += OnParameterPropertyChanged;
+                Parameters.Add(parameter);
             }
         }
+
+        RaisePropertyChanged(nameof(HasInvalidParameters));
+        RaisePropertyChanged(nameof(CanRun));
+        NotifyCommandStateChanged();
     }
 
     private static Type ResolveParameterType(string? typeName) => (typeName ?? string.Empty).ToLowerInvariant() switch
@@ -740,5 +749,15 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
         RefreshScriptsCommand.NotifyCanExecuteChanged();
         AddCellCommand.NotifyCanExecuteChanged();
         DeleteCellCommand.NotifyCanExecuteChanged();
+    }
+
+    private void OnParameterPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ParameterViewModel.IsValid) && e.PropertyName != nameof(ParameterViewModel.ValidationMessage))
+            return;
+
+        RaisePropertyChanged(nameof(HasInvalidParameters));
+        RaisePropertyChanged(nameof(CanRun));
+        NotifyCommandStateChanged();
     }
 }
