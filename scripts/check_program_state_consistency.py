@@ -49,6 +49,10 @@ def parse_file(path: Path):
                 f"invalid status '{status}' for {milestone} in {path}; "
                 f"expected one of {sorted(VALID_STATUSES)}"
             )
+        if milestone in results:
+            raise ValueError(
+                f"duplicate milestone '{milestone}' in program-state block of {path}"
+            )
         results[milestone] = status
     if not results:
         raise ValueError(f"no milestone rows parsed from {path}")
