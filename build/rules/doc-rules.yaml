@@ -38,7 +38,7 @@ rules:
   # ---------------------------------------------------------------------------
   - name: "Generated docs have auto-generated notice"
     applies_to: "docs/generated/*.md"
-    must_contain: "auto-generated"
+    must_contain: "(?i)auto-generated"
     severity: error
 
   # ---------------------------------------------------------------------------

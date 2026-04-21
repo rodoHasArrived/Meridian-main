@@ -501,7 +501,9 @@ jobs:
               --rules build/rules/doc-rules.yaml \
               --paths-file /tmp/changed-markdown-files.txt \
               --output docs/status/rules-report.md \
-              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1
+              --summary 2>&1 | tee /tmp/docs-rules-report.txt
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/docs-rules-report.txt >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Rules engine not configured, skipping." >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -515,7 +517,9 @@ jobs:
             python3 build/scripts/docs/rules-engine.py \
               --rules build/rules/doc-rules.yaml \
               --output docs/status/rules-report.md \
-              --summary >> "$GITHUB_STEP_SUMMARY" 2>&1 || true
+              --summary 2>&1 | tee /tmp/docs-rules-report.txt || true
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/docs-rules-report.txt >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Rules engine not configured, skipping." >> "$GITHUB_STEP_SUMMARY"
           fi

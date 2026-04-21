@@ -632,5 +632,5 @@ For recurring production issues, use this quick triage path before escalating:
 ---
 
 **Version:** 1.6.1
-**Last Updated:** 2026-01-30
+**Last Updated:** 2026-04-21
 **See Also:** [Configuration](../HELP.md#configuration) | [Troubleshooting](../HELP.md#troubleshooting) | [Architecture](../architecture/overview.md) | [Lean Integration](../integrations/lean-integration.md)
