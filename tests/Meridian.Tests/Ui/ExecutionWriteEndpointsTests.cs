@@ -523,9 +523,13 @@ public sealed class ExecutionWriteEndpointsTests
 
         services.AddSingleton(strategyRepository);
         services.AddSingleton<BacktestToLivePromoter>();
+        services.AddSingleton<IPromotionRecordStore>(_ => new JsonlPromotionRecordStore(
+            Path.Combine(Path.GetTempPath(), "meridian-tests", "execution-write", Guid.NewGuid().ToString("N")),
+            NullLogger<JsonlPromotionRecordStore>.Instance));
         services.AddSingleton<PromotionService>(sp => new PromotionService(
             sp.GetRequiredService<StrategyRunStore>(),
             sp.GetRequiredService<BacktestToLivePromoter>(),
+            sp.GetRequiredService<IPromotionRecordStore>(),
             NullLogger<PromotionService>.Instance,
             auditTrail: sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
     }
