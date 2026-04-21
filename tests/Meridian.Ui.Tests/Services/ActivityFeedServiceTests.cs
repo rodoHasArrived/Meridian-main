@@ -166,6 +166,31 @@ public sealed class ActivityFeedServiceTests
         activity!.Metadata.Should().ContainKey("key");
     }
 
+    [Fact]
+    public async Task MergeLoadedActivities_ShouldPreserveNewerInMemoryActivities()
+    {
+        using var fixture = new PathFixture("mdc-activity-merge");
+        var svc = new ActivityFeedService(new FixedConfigService(fixture.ConfigPath, null));
+        var inMemoryTitle = "InMemory-" + Guid.NewGuid();
+
+        await svc.LogActivityAsync(ActivityType.Info, inMemoryTitle);
+
+        var persistedItems = Enumerable.Range(0, 100)
+            .Select(index => new ActivityItem
+            {
+                Id = $"persisted-{index}",
+                Title = $"Persisted-{index}",
+                Type = ActivityType.Info,
+                Timestamp = DateTime.UtcNow.AddMinutes(-(index + 1))
+            });
+
+        svc.MergeLoadedActivities(persistedItems);
+
+        svc.Activities.Should().HaveCount(100);
+        svc.Activities.First().Title.Should().Be(inMemoryTitle);
+        svc.Activities.Should().Contain(activity => activity.Title == inMemoryTitle);
+    }
+
     // ── Convenience Logging ──────────────────────────────────────────
 
     [Fact]
@@ -450,6 +475,34 @@ public sealed class ActivityFeedServiceTests
 
         received.Should().NotBeNull();
         received!.Id.Should().Be(id);
+    }
+
+    [Fact]
+    public void MergeLoadedActivities_ShouldSeedServerEventDeduplication()
+    {
+        using var fixture = new PathFixture("mdc-activity-server-seed");
+        var svc = new ActivityFeedService(new FixedConfigService(fixture.ConfigPath, null));
+        const string id = "server:loaded-event";
+
+        svc.MergeLoadedActivities(
+        [
+            new ActivityItem
+            {
+                Id = id,
+                Title = "Persisted server event",
+                Type = ActivityType.DataQualityIssue
+            }
+        ]);
+
+        var duplicateAdded = svc.AddServerEventIfNew(new ActivityItem
+        {
+            Id = id,
+            Title = "Duplicate server event",
+            Type = ActivityType.DataQualityIssue
+        });
+
+        duplicateAdded.Should().BeFalse();
+        svc.Activities.Count(activity => activity.Id == id).Should().Be(1);
     }
 
     private static T GetPrivateField<T>(object instance, string fieldName)

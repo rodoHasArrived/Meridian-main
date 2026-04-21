@@ -271,6 +271,7 @@ public sealed class ExecutionWriteEndpointsTests
 
         var persistence = app.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
         await persistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 5m, 200m));
+        await persistence.RecordOrderUpdateAsync(summary.SessionId, CreateOrderState("order-session-1", "AAPL", 5m));
 
         var detailResponse = await client.GetAsync(
             UiApiRoutes.ExecutionSessionById.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
@@ -300,6 +301,10 @@ public sealed class ExecutionWriteEndpointsTests
             replayVerification.MismatchReasons.Should().BeEmpty();
             replayVerification.CurrentPortfolio.Should().NotBeNull();
             replayVerification.ReplayPortfolio.Cash.Should().Be(124_000m);
+            replayVerification.ComparedFillCount.Should().Be(1);
+            replayVerification.ComparedOrderCount.Should().Be(1);
+            replayVerification.ComparedLedgerEntryCount.Should().BeGreaterThanOrEqualTo(0);
+            replayVerification.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
         }
 
         var auditResponse = await client.GetAsync(UiApiRoutes.ExecutionAudit);
@@ -308,6 +313,56 @@ public sealed class ExecutionWriteEndpointsTests
         audits.Should().Contain(entry => entry.Action == "CreatePaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
         audits.Should().Contain(entry => entry.Action == "ClosePaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
         audits.Should().Contain(entry => entry.Action == "ReplayPaperSession" && entry.Actor == "ops-session" && entry.Metadata!["sessionId"] == summary.SessionId);
+    }
+
+    [Fact]
+    public async Task PaperSessionEndpoints_AfterRestart_RestoreSessionAndReplayEvidence()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(PaperSessionEndpoints_AfterRestart_RestoreSessionAndReplayEvidence));
+
+        await using var firstApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
+        var firstClient = firstApp.GetTestClient();
+
+        var createResponse = await firstClient.PostAsync(
+            UiApiRoutes.ExecutionSessionCreate,
+            JsonContent(new CreatePaperSessionRequest(
+                StrategyId: "strat-restart",
+                StrategyName: "Restart Strategy",
+                InitialCash: 100_000m,
+                Symbols: ["AAPL"])));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var summary = await ReadAsync<ExecutionServices.PaperSessionSummaryDto>(createResponse);
+
+        var firstPersistence = firstApp.Services.GetRequiredService<ExecutionServices.PaperSessionPersistenceService>();
+        await firstPersistence.RecordFillAsync(summary.SessionId, CreateFill("AAPL", 10m, 150m));
+        await firstPersistence.RecordOrderUpdateAsync(summary.SessionId, CreateOrderState("order-restart-1", "AAPL", 10m));
+
+        await using var secondApp = await CreateAppAsync(services => RegisterSessionServices(services, artifacts.RootPath));
+        var secondClient = secondApp.GetTestClient();
+
+        var detailResponse = await secondClient.GetAsync(
+            UiApiRoutes.ExecutionSessionById.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
+        detailResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var detail = await ReadAsync<ExecutionServices.PaperSessionDetailDto>(detailResponse);
+
+        detail.Symbols.Should().Equal("AAPL");
+        detail.OrderHistory.Should().ContainSingle(order => order.OrderId == "order-restart-1");
+
+        var replayResponse = await secondClient.GetAsync(
+            UiApiRoutes.ExecutionSessionReplay.Replace("{sessionId}", summary.SessionId, StringComparison.Ordinal));
+        replayResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var replayVerification = await ReadAsync<ExecutionServices.PaperSessionReplayVerificationDto>(replayResponse);
+
+        using (new AssertionScope())
+        {
+            replayVerification.IsConsistent.Should().BeTrue();
+            replayVerification.ComparedFillCount.Should().Be(1);
+            replayVerification.ComparedOrderCount.Should().Be(1);
+            replayVerification.LastPersistedFillAt.Should().NotBeNull();
+            replayVerification.LastPersistedOrderUpdateAt.Should().NotBeNull();
+            replayVerification.VerificationAuditId.Should().NotBeNullOrWhiteSpace();
+        }
     }
 
     // ------------------------------------------------------------------ //
@@ -399,6 +454,18 @@ public sealed class ExecutionWriteEndpointsTests
         FilledQuantity = quantity,
         FillPrice = fillPrice,
         Timestamp = DateTimeOffset.UtcNow
+    };
+
+    private static OrderState CreateOrderState(string orderId, string symbol, decimal quantity) => new()
+    {
+        OrderId = orderId,
+        Symbol = symbol,
+        Side = OrderSide.Buy,
+        Type = OrderType.Market,
+        Quantity = quantity,
+        Status = Meridian.Execution.Sdk.OrderStatus.Accepted,
+        CreatedAt = DateTimeOffset.UtcNow,
+        LastUpdatedAt = DateTimeOffset.UtcNow
     };
 
     private static BrokerPosition CreateRobinhoodOptionPosition(

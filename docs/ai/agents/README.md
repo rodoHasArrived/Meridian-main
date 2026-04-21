@@ -30,14 +30,14 @@ Primary inputs:
 - [`docs/ai/generated/repo-navigation.md`](../generated/repo-navigation.md)
 - [`docs/ai/generated/repo-navigation.json`](../generated/repo-navigation.json)
 - [`docs/ai/navigation/README.md`](../navigation/README.md)
-- [`../../../.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md)
+- [`.codex/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/project-context.md)
 
 ---
 
 ## GitHub Copilot Agents (`.github/agents/`)
 
 | Agent | Purpose |
-|------|---------|
+| ------ | --------- |
 | `adr-generator.agent.md` | Create ADRs in `docs/adr/` |
 | `blueprint-agent.md` | Produce implementation-ready technical designs |
 | `brainstorm-agent.md` | Generate high-value ideas and refactoring directions |
@@ -57,7 +57,7 @@ Primary inputs:
 ## Claude Code Agents (`.claude/agents/`)
 
 | Agent | Purpose |
-|------|---------|
+| ------ | --------- |
 | `meridian-blueprint.md` | Blueprint and design specialist |
 | `meridian-cleanup.md` | Cleanup specialist |
 | `meridian-docs.md` | Documentation specialist |
@@ -81,13 +81,13 @@ Use repo navigation first whenever the main problem is â€œwhere should I start?â
 ## Related Resources
 
 | Resource | Purpose |
-|----------|---------|
+| ---------- | --------- |
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../navigation/README.md`](../navigation/README.md) | Navigation workflow guide |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Generated routing digest |
 | [`../skills/README.md`](../skills/README.md) | Skill catalog across Codex and portable packages |
-| [`../../../.codex/skills/README.md`](../../../.codex/skills/README.md) | Current repo-local Codex skills |
+| [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Current repo-local Codex skills |
 
 ---
 
-*Last Updated: 2026-04-14*
+_Last Updated: 2026-04-14_

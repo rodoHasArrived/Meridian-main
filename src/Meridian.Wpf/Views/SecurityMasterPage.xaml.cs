@@ -31,6 +31,6 @@ public partial class SecurityMasterPage : Page
     private async void ResultsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_viewModel.SelectedSecurity is SecurityMasterWorkstationDto selected)
-            await _viewModel.LoadDetailAsync(selected.SecurityId);
+            await _viewModel.LoadSelectedTrustSnapshotAsync(selected.SecurityId);
     }
 }

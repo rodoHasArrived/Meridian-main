@@ -15,6 +15,7 @@
     <Compile Include="CanonicalizationTests.fs" />
     <Compile Include="PipelineTests.fs" />
     <Compile Include="RiskPolicyTests.fs" />
+    <Compile Include="PromotionPolicyTests.fs" />
     <Compile Include="TradingTransitionTests.fs" />
     <Compile Include="LedgerKernelTests.fs" />
     <Compile Include="DirectLendingInteropTests.fs" />

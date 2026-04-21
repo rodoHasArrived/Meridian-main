@@ -78,8 +78,12 @@ public sealed class WorkspaceDeepPageChromeTests
     [InlineData(@"src\Meridian.Wpf\Views\PositionBlotterPage.xaml", "PositionBlotterSelectionInspector")]
     [InlineData(@"src\Meridian.Wpf\Views\PositionBlotterPage.xaml", "PositionBlotterActionInspector")]
     [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterResultsWorkbench")]
-    [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterRuntimeInspector")]
+    [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterTrustPostureInspector")]
     [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterSelectionInspector")]
+    [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterIdentityProvenanceTab")]
+    [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterConflictTriagePanel")]
+    [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterBulkResolveButton")]
+    [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "SecurityMasterRecommendedActionsList")]
     [InlineData(@"src\Meridian.Wpf\Views\ServiceManagerPage.xaml", "ServiceManagerControlWorkbench")]
     [InlineData(@"src\Meridian.Wpf\Views\ServiceManagerPage.xaml", "ServiceManagerRuntimeInspector")]
     public void HarmonizedDeepPages_ShouldExposeWorkbenchAndInspectorAutomationIds(string relativePath, string automationId)

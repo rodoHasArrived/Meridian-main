@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-04-16 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-04-20 | **Status**: Authored / Included in solution build
 
 ## Overview
 
@@ -59,6 +59,10 @@ Content Frame
 **Security Master conflict operator lane** — the workstation conflict queue now groups open mismatches by security, scores severity and auto-resolve confidence from the selected field mismatch, and turns fund-review, reconciliation, cash-flow, and report-pack jumps on only when the active conflict actually affects those downstream workflows.
 
 **Security Master trust posture** — detail refresh now loads economic-definition provenance, latest history actor/timestamp, and trading-parameter coverage so the selected security surface can answer whether the instrument definition is ready for downstream portfolio, ledger, reconciliation, and reporting use.
+
+**Security Master trust workbench** — the selected-security workspace is now organized as `Overview`, `Identity & Provenance`, `History`, `Conflict Queue`, and `Corporate Actions`. The overview surface adds trust summary, downstream impact, and recommended-action cards; the conflict queue adds selected-security filters plus low-risk bulk assist; the right rail now exposes `Trust Posture`, `Selected Security`, and `Next Best Actions`.
+
+**Security Master trust workflow client** — `SecurityMasterViewModel` now consumes `SecurityMasterTrustSnapshotDto` and bulk conflict-resolution results through the typed workstation API client, keeps dispatcher hops explicit as `System.Windows.Application`, routes downstream fund-operations jumps with the active fund profile attached, and leaves global ingest polling independent from the selected-security trust snapshot refresh path.
 
 **Selection suppression** — `_suppressNavSelection` prevents feedback loops when the NavigationService drives sidebar selection changes programmatically.
 
@@ -219,6 +223,24 @@ ReconciliationBreakDto    — check ID, category, status, variance, source metad
 ReconciliationBreakCategory — AmountMismatch | MissingLedgerCoverage | MissingPortfolioCoverage | ...
 ```
 
+### `SecurityMasterTrustWorkbenchDtos.cs`
+
+```text
+SecurityMasterTrustSnapshotDto            — selected-security workbench snapshot
+SecurityMasterEconomicDefinitionDrillInDto — typed winning-source provenance fields
+SecurityMasterTrustPostureDto            — trust tone, summary, conflict/trading-parameter posture
+SecurityMasterSourceCandidateDto         — winning source plus challenger candidates
+SecurityMasterConflictAssessmentDto      — preserve-winner / challenger / dismiss-equivalent recommendations
+SecurityMasterDownstreamImpactDto        — workflow-summary portfolio / ledger / reconciliation / report-pack impact
+SecurityMasterRecommendedActionDto       — ordered next-best operator actions
+BulkResolveSecurityMasterConflictsRequest / Result — low-risk bulk-assist contract
+```
+
+Shared workstation routes now include:
+
+- `GET /api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId={optional}`
+- `POST /api/workstation/security-master/conflicts/bulk-resolve`
+
 ---
 
 ## Strategy Run Workstation — ViewModel Layer
@@ -332,6 +354,8 @@ Shell implementation now shares descriptor-driven infrastructure:
 2. **KPI strip** — Active paper/live run counts and total equity under management
 3. **Desk panels** — Strategy/watchlist posture, market-core/accounting access, and risk/alerts/audit quick actions
 4. **Workbench rail** — Active positions plus capital and risk inspector cards for the current trading posture
+
+Replay and collection-session review stay on their owning Data Operations and Governance pages until the trading shell has a proven need for another deep-review lane.
 
 ### `DataOperationsWorkspaceShellPage` (`Views/DataOperationsWorkspaceShellPage.xaml`)
 

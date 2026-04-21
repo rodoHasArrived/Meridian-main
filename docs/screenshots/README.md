@@ -1,6 +1,6 @@
 # Meridian UI Screenshots
 
-Screenshots of Meridian operator surfaces. The authoritative current catalog is the WPF desktop set under [`desktop/`](desktop/); the older web/API captures in this file are retained as historical reference.
+Screenshots of Meridian operator surfaces. The authoritative current catalog is the WPF desktop set under `desktop/`; the older web/API captures in this file are retained as historical reference.
 
 ## Current Desktop Highlight
 
@@ -16,7 +16,7 @@ $env:MDC_FIXTURE_MODE = '1'
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj --no-build -c Release
 ```
 
-Desktop screenshots are stored under [`desktop/`](desktop/) and are captured using Windows UI Automation against the desktop shell.
+Desktop screenshots are stored under `desktop/` and are captured using Windows UI Automation against the desktop shell.
 
 ---
 
@@ -209,12 +209,12 @@ The **Security master coverage** deep-link within the Governance workspace, show
 ## WPF Desktop Catalog
 
 The following screenshots are captured from the WPF desktop application running in
-fixture mode (`MDC_FIXTURE_MODE=1`). They live under the [`desktop/`](desktop/) subdirectory.
+fixture mode (`MDC_FIXTURE_MODE=1`). They live under the `desktop/` subdirectory.
 
 `D13` reflects the current governance assurance-oriented Security Master workstation surface.
 
 | # | Page | File |
-|---|------|------|
+| --- | ------ | ------ |
 | D01 | Dashboard | [`desktop/wpf-dashboard.png`](desktop/wpf-dashboard.png) |
 | D02 | Providers | [`desktop/wpf-providers.png`](desktop/wpf-providers.png) |
 | D03 | Provider Health | [`desktop/wpf-provider-health.png`](desktop/wpf-provider-health.png) |

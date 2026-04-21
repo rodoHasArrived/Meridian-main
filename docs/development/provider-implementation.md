@@ -5,7 +5,7 @@
 This guide covers patterns for implementing market data providers in Meridian. The system has three provider categories, each with its own interface hierarchy:
 
 | Category | Primary Interface | Base Class | Purpose |
-|----------|-------------------|------------|---------|
+| ---------- | ------------------- | ------------ | --------- |
 | Streaming | `IMarketDataClient` | — | Real-time trade/quote/depth data via WebSocket or push |
 | Historical (Backfill) | `IHistoricalDataProvider` | `BaseHistoricalDataProvider` | OHLCV bars, quotes, trades, auctions via REST |
 | Symbol Search | `ISymbolSearchProvider` | — | Symbol lookup and autocomplete |
@@ -21,7 +21,7 @@ There is also a parallel **DataSource** hierarchy (`IDataSource` → `IRealtimeD
 The ProviderSdk project defines the core contracts that all providers share:
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `IMarketDataClient.cs` | Streaming provider contract |
 | `IDataSource.cs` | Unified base interface for all data sources |
 | `IRealtimeDataSource.cs` | Real-time streaming data source |
@@ -43,7 +43,7 @@ The ProviderSdk project defines the core contracts that all providers share:
 Provider implementations must comply with these ADRs:
 
 | ADR | Requirement |
-|-----|-------------|
+| ----- | ------------- |
 | ADR-001 | All providers implement a standard interface (`IMarketDataClient`, `IHistoricalDataProvider`, or `ISymbolSearchProvider`) |
 | ADR-004 | All async methods accept `CancellationToken` |
 | ADR-005 | Use `[DataSource]` attribute for automatic discovery |
@@ -410,6 +410,7 @@ public override HistoricalDataCapabilities Capabilities => new()
 ### Registration in CompositeHistoricalDataProvider
 
 Historical providers are routed through `CompositeHistoricalDataProvider`, which provides:
+
 - Priority-based fallback chain
 - Rate limit tracking per provider
 - Provider health monitoring
@@ -463,7 +464,7 @@ public interface IFilterableSymbolSearchProvider : ISymbolSearchProvider
 
 The `ProviderSdk` project defines a unified interface hierarchy for newer provider implementations:
 
-```
+```text
 IDataSource (base)
 ├── IRealtimeDataSource (streaming with IObservable<T> event streams)
 └── IHistoricalDataSource (bars, dividends, splits, intraday)
@@ -476,6 +477,7 @@ Location: `src/Meridian.ProviderSdk/IDataSource.cs`
 Provides identity, classification, capabilities, health/status, rate limit state, and lifecycle management (`InitializeAsync`, `ValidateCredentialsAsync`, `TestConnectivityAsync`).
 
 Key types:
+
 - `DataSourceType` — `Realtime`, `Historical`, `Hybrid`
 - `DataSourceCategory` — `Exchange`, `Broker`, `Aggregator`, `Free`, `Premium`
 - `DataSourceCapabilities` — Bitwise flags for fine-grained capability checking
@@ -487,6 +489,7 @@ Key types:
 Location: `src/Meridian.Infrastructure/DataSources/DataSourceBase.cs`
 
 Abstract base class providing:
+
 - **Health tracking** — automatic health score calculation, consecutive failure tracking, health change notifications via `IObservable<DataSourceHealthChanged>`
 - **Rate limiting** — window-based rate limit enforcement, concurrent request limiting via semaphore
 - **Retry logic** — exponential backoff for `HttpRequestException` and `TimeoutException`
@@ -506,6 +509,7 @@ public sealed class ExampleDataSource : DataSourceBase, IRealtimeDataSource, IHi
 ```
 
 Parameters:
+
 - `id` — Unique identifier (e.g., `"alpaca"`, `"yahoo"`, `"ib"`)
 - `displayName` — Human-readable name
 - `type` — `DataSourceType.Realtime`, `Historical`, or `Hybrid`
@@ -754,7 +758,7 @@ Provider scaffolding templates now live outside the production assembly at `docs
 
 Place provider implementations in the appropriate subdirectory:
 
-```
+```text
 src/Meridian.Infrastructure/Adapters/
 ├── Backfill/                          # Historical provider base + interface
 │   ├── IHistoricalDataProvider.cs     # Interface
@@ -923,7 +927,7 @@ public sealed class MockExampleClient : IMarketDataClient
 ## Performance Considerations
 
 | Technique | When to Use |
-|-----------|-------------|
+| ----------- | ------------- |
 | `EventPipelinePolicy` presets | All bounded channel creation |
 | `BoundedChannelFullMode.DropOldest` | High-frequency data where latest matters |
 | `IHttpClientFactory` | All HTTP-based providers (ADR-010) |
@@ -938,7 +942,7 @@ public sealed class MockExampleClient : IMarketDataClient
 ## Common Mistakes to Avoid
 
 | Mistake | Consequence |
-|---------|-------------|
+| --------- | ------------- |
 | Forgetting `[ImplementsAdr]` attributes | ADR traceability is lost; audit tools flag it |
 | Not using `CancellationToken` throughout async chain | Graceful shutdown fails |
 | Creating unbounded channels | Memory exhaustion under load |
@@ -972,7 +976,7 @@ public sealed class MockExampleClient : IMarketDataClient
 - **Operations and Testing:**
   - [Backfill Guide](../providers/backfill-guide.md) — Historical data procedures
   - [Performance Tuning](../operations/performance-tuning.md) — Optimization strategies
-  - [Provider-Specific Setup Guides](../providers/) — Interactive Brokers, Alpaca, etc.
+- [Provider-Specific Setup Guides](../providers/README.md) — Interactive Brokers, Alpaca, etc.
 
 - **AI Guides:**
   - [CLAUDE.providers.md](../ai/claude/CLAUDE.providers.md) — AI-focused provider reference

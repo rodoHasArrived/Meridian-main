@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -352,7 +353,7 @@ public static class WorkstationEndpoints
             string? query,
             int? take,
             bool activeOnly,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             if (string.IsNullOrWhiteSpace(query))
@@ -373,7 +374,7 @@ public static class WorkstationEndpoints
 
         group.MapGet("/security-master/securities/{securityId:guid}", async (
             Guid securityId,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -388,7 +389,7 @@ public static class WorkstationEndpoints
         group.MapGet("/security-master/securities/{securityId:guid}/history", async (
             Guid securityId,
             int? take,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var history = await queryService.GetHistoryAsync(
@@ -408,7 +409,7 @@ public static class WorkstationEndpoints
 
         group.MapGet("/security-master/securities/{securityId:guid}/identity", async (
             Guid securityId,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -422,7 +423,7 @@ public static class WorkstationEndpoints
 
         group.MapGet("/security-master/securities/{securityId:guid}/economic-definition", async (
             Guid securityId,
-            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ContractSecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var record = await queryService.GetEconomicDefinitionByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -434,7 +435,7 @@ public static class WorkstationEndpoints
         .Produces<SecurityEconomicDefinitionSummaryDto>(200)
         .Produces(404);
 
-        group.MapGet(UiApiRoutes.WorkstationSecurityMasterTrustSnapshot, async (
+        group.MapGet("/security-master/securities/{securityId:guid}/trust-snapshot", async (
             Guid securityId,
             string? fundProfileId,
             HttpContext context) =>
@@ -458,7 +459,7 @@ public static class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapPost(UiApiRoutes.WorkstationSecurityMasterBulkResolveConflicts, async (
+        group.MapPost("/security-master/conflicts/bulk-resolve", async (
             BulkResolveSecurityMasterConflictsRequest request,
             HttpContext context) =>
         {

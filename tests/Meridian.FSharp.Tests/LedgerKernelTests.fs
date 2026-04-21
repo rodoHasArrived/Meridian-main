@@ -688,7 +688,7 @@ let ``ReconciliationClassification unknown break type uses safe fallback migrati
 
 [<Fact>]
 let ``LedgerInterop ClassifyBreakFacts returns stable DTO values for governance consumers`` () =
-    let input = [|
+    let input : BreakFactsDto array = [|
         {
             BreakType = "price"
             ExpectedQuantity = None

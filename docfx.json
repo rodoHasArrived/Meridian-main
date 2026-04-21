@@ -42,7 +42,17 @@
       { "files": [ "docs/docfx/api/**.yml", "docs/docfx/api/index.md" ], "src": "." }
     ],
     "resource": [
-      { "files": [ "docs/**/*.png", "docs/**/*.svg", "docs/**/*.puml" ], "exclude": [ "docs/docfx/**", "docs/_site/**" ], "src": "." }
+      {
+        "files": [
+          "docs/**/*.png",
+          "docs/**/*.svg",
+          "docs/**/*.puml",
+          "docs/**/*.json",
+          "docs/**/*.txt"
+        ],
+        "exclude": [ "docs/docfx/**", "docs/_site/**" ],
+        "src": "."
+      }
     ],
     "output": "docs/_site",
     "template": [ "default", "modern" ],

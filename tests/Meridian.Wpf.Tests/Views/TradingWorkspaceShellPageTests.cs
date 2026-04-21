@@ -1,3 +1,4 @@
+using System.IO;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Views;
@@ -28,5 +29,52 @@ public sealed class TradingWorkspaceShellPageTests
         target.PageTag.Should().Be("AccountPortfolio");
         target.Action.Should().Be(PaneDropAction.Replace);
         target.RunId.Should().BeNull();
+    }
+
+    [Fact]
+    public void TradingWorkspaceShellPageSource_ShouldProjectConsistentDegradedStatusCard()
+    {
+        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+
+        code.Should().Contain("ApplyStatusCardPresentation(BuildDegradedStatusCardPresentation());");
+        code.Should().Contain("internal static TradingStatusCardPresentation BuildStatusCardPresentation(TradingWorkspaceSummary summary)");
+        code.Should().Contain("internal static TradingStatusCardPresentation BuildDegradedStatusCardPresentation()");
+        code.Should().Contain("Label = \"Promotion refresh degraded\"");
+        code.Should().Contain("Label = \"Audit refresh degraded\"");
+        code.Should().Contain("Label = \"Validation refresh degraded\"");
+    }
+
+    [Fact]
+    public void TradingWorkspaceShellPageSource_ShouldNotExposePrematureDeepReviewActions()
+    {
+        var code = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml.cs"));
+        var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\TradingWorkspaceShellPage.xaml"));
+
+        code.Should().NotContain("Id = \"RunDetail\"");
+        code.Should().NotContain("Id = \"EventReplay\"");
+        code.Should().NotContain("Id = \"CollectionSessions\"");
+        code.Should().NotContain("case \"RunDetail\":");
+        code.Should().NotContain("case \"EventReplay\":");
+        code.Should().NotContain("case \"CollectionSessions\":");
+        xaml.Should().NotContain("Deeper Review");
+        xaml.Should().NotContain("OpenRunReview_Click");
+        xaml.Should().NotContain("OpenReplayReview_Click");
+        xaml.Should().NotContain("OpenCollectionSessions_Click");
+    }
+
+    private static string GetRepositoryFilePath(string relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+            var candidate = Path.Combine(current.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
     }
 }

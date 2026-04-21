@@ -398,6 +398,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _selectedConflict, value))
             {
+                UpdateSelectedConflictAssessmentState();
+                RebuildRecommendedActions();
                 NotifyConflictWorkflowCommandsChanged();
             }
         }
@@ -672,7 +674,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public string SelectedSecurityConflictSummaryText => SelectedSecurity is null
         ? "Conflict posture appears after a security is selected."
-        : GetSelectedSecurityConflictCount() switch
+        : (SelectedTrustSnapshot?.TrustPosture.OpenConflictCount ?? GetSelectedSecurityConflictCount()) switch
         {
             0 => "No open conflicts currently affect this security.",
             1 => "1 open conflict still affects this security.",
@@ -849,6 +851,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get
         {
+            var recommendedAction = RecommendedActions.FirstOrDefault(action => action.IsEnabled);
+            if (recommendedAction is not null)
+            {
+                return recommendedAction.Title;
+            }
+
             var activeConflict = GetActiveConflictContextEntry();
             if (activeConflict is not null)
             {
@@ -865,6 +873,12 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     {
         get
         {
+            var recommendedAction = RecommendedActions.FirstOrDefault(action => action.IsEnabled);
+            if (recommendedAction is not null)
+            {
+                return recommendedAction.Detail;
+            }
+
             var activeConflict = GetActiveConflictContextEntry();
             if (activeConflict is not null)
             {
@@ -889,7 +903,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     public bool ShowReportPackAction => GetActiveConflictContextEntry()?.RoutesToReportPack == true;
 
-    public bool ShowBackfillTradingParamsAction =>
+    public bool ShowBackfillTradingParamsAction => SelectedTrustSnapshot?.TrustPosture.TradingParametersComplete == false ||
         GetMissingTradingParameterFields().Count > 0 ||
         GetActiveConflictContextEntry()?.RequiresTradingBackfill == true;
 
@@ -1505,70 +1519,567 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
     // ── Detail + history ─────────────────────────────────────────────────────
     public async Task LoadDetailAsync(Guid securityId, CancellationToken ct = default)
+        => await LoadSelectedTrustSnapshotAsync(securityId, ct).ConfigureAwait(false);
+
+    public async Task LoadSelectedTrustSnapshotAsync(Guid securityId, CancellationToken ct = default)
     {
+        if (securityId == Guid.Empty)
+        {
+            return;
+        }
+
         IsLoading = true;
-        HistoryText = string.Empty;
-        CorporateActions.Clear();
+        IsTrustSnapshotLoading = true;
+        StatusText = "Loading selected security trust snapshot…";
+
         try
         {
-            var detailTask = ApiClientService.Instance
-                .GetAsync<SecurityMasterWorkstationDto>($"/api/workstation/security-master/securities/{securityId}", ct);
-            var historyTask = ApiClientService.Instance
-                .GetAsync<SecurityMasterEventEnvelope[]>($"/api/workstation/security-master/securities/{securityId}/history?take=20", ct);
-            var economicDefinitionTask = _queryService.GetEconomicDefinitionByIdAsync(securityId, ct)
-                ?? Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
-            var tradingParametersTask = _queryService.GetTradingParametersAsync(securityId, DateTimeOffset.UtcNow, ct)
-                ?? Task.FromResult<TradingParametersDto?>(null);
-
-            await Task.WhenAll(detailTask, historyTask, economicDefinitionTask, tradingParametersTask).ConfigureAwait(false);
-
-            var detail = await detailTask;
-            var history = ((await historyTask) ?? [])
-                .OrderByDescending(item => item.EventTimestamp)
-                .ToArray();
-            var economicDefinition = await economicDefinitionTask;
-            var tradingParameters = await tradingParametersTask;
+            await _fundContextService.LoadAsync(ct).ConfigureAwait(false);
+            var snapshot = await _workstationSecurityMasterApiClient
+                .GetTrustSnapshotAsync(securityId, GetCurrentFundProfileId(), ct)
+                .ConfigureAwait(false);
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                if (detail is not null)
+                if (snapshot is null)
                 {
-                    SelectedSecurity = detail;
-                    _conflictSecurityContextCache[detail.SecurityId] = ToSecurityContext(detail);
+                    ClearSelectedSecurityAssuranceState();
+                    StatusText = "Selected security snapshot is unavailable.";
+                    return;
                 }
 
-                _selectedEconomicDefinition = economicDefinition;
-                _selectedTradingParameters = tradingParameters;
-                _latestHistoryEvent = history.FirstOrDefault();
-
-                HistoryText = history is { Length: > 0 }
-                    ? string.Join(Environment.NewLine, history.Select(e =>
-                        $"[{e.EventTimestamp:yyyy-MM-dd HH:mm}] {e.EventType}  v{e.StreamVersion} • {e.Actor}"))
-                    : "(no history)";
-
-                RaisePropertyChanged(nameof(SelectedTrustPostureText));
-                RaisePropertyChanged(nameof(SelectedProvenanceText));
-                RaisePropertyChanged(nameof(SelectedTradingParameterCoverageText));
-                RaisePropertyChanged(nameof(LatestHistoryEventText));
-                RaisePropertyChanged(nameof(ActionInspectorLeadText));
-                RaisePropertyChanged(nameof(ActionInspectorDetailText));
-                RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
-                RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
+                ApplyTrustSnapshot(snapshot);
+                StatusText = $"Loaded trust snapshot for {snapshot.Security.DisplayName}.";
             });
-
-            // Load corporate actions
-            await OnLoadCorporateActions(ct);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
-            _loggingService.LogError($"Security Master detail load failed for {securityId}", ex);
+            _loggingService.LogError($"Security Master trust snapshot load failed for {securityId}", ex);
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                StatusText = "Failed to load selected security trust snapshot.";
+                _notificationService.ShowNotification("Security Master", "Trust snapshot load failed.", NotificationType.Error);
+            });
         }
         finally
         {
             IsLoading = false;
+            IsTrustSnapshotLoading = false;
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => RefreshSelectedTrustSnapshotCommand.NotifyCanExecuteChanged());
         }
     }
+
+    private void ApplyTrustSnapshot(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+
+        var preferredConflictId = SelectedConflict?.ConflictId;
+        SyncLegacySelectionStateFromSnapshot(snapshot);
+
+        SelectedTrustSnapshot = snapshot;
+        _conflictAssessmentById.Clear();
+        foreach (var assessment in snapshot.ConflictAssessments)
+        {
+            _conflictAssessmentById[assessment.Conflict.ConflictId] = assessment;
+        }
+
+        ProvenanceCandidates.Clear();
+        foreach (var candidate in snapshot.ProvenanceCandidates
+                     .OrderByDescending(candidate => candidate.IsWinningSource)
+                     .ThenByDescending(candidate => candidate.AsOf))
+        {
+            ProvenanceCandidates.Add(candidate);
+        }
+
+        DownstreamImpactLinks.Clear();
+        foreach (var link in snapshot.DownstreamImpact.Links.OrderBy(GetImpactLinkOrder))
+        {
+            DownstreamImpactLinks.Add(link);
+        }
+
+        TrustScoreText = $"{snapshot.TrustPosture.TrustScore}/100 • {snapshot.TrustPosture.Tone}";
+        TrustSummaryText = snapshot.TrustPosture.Summary;
+        GoldenCopySourceText = FormatGoldenCopySourceText(snapshot.EconomicDefinition);
+        GoldenCopyRuleText = snapshot.TrustPosture.GoldenCopyRule;
+        TradingParametersStatusText = snapshot.TrustPosture.TradingParametersStatus;
+        ProvenanceSummaryText = BuildProvenanceSummaryText(snapshot);
+        DownstreamImpactSummaryText = snapshot.DownstreamImpact.Summary;
+        CorporateActionReadinessText = snapshot.TrustPosture.CorporateActionReadiness;
+        CorporateActionImpactSummaryText = BuildCorporateActionImpactSummary(snapshot);
+
+        RebuildFilteredConflicts(preferredConflictId);
+        RebuildRecommendedActions();
+        UpdateSelectedConflictAssessmentState();
+        RaiseSelectionDerivedStateChanged();
+        RaiseConflictDerivedStateChanged();
+    }
+
+    private void RebuildFilteredConflicts()
+        => RebuildFilteredConflicts(SelectedConflict?.ConflictId);
+
+    private void RebuildFilteredConflicts(Guid? preferredConflictId)
+    {
+        IEnumerable<SecurityMasterConflict> source = SelectedTrustSnapshot?.ConflictAssessments.Select(assessment => assessment.Conflict)
+            ?? OpenConflicts;
+
+        if (ShowOnlySelectedSecurityConflicts && SelectedSecurity is not null)
+        {
+            source = source.Where(conflict => conflict.SecurityId == SelectedSecurity.SecurityId);
+        }
+
+        var baseConflicts = source.ToArray();
+        var filtered = baseConflicts
+            .Where(conflict => !ShowHighImpactConflictsOnly ||
+                               GetSelectedConflictAssessment(conflict.ConflictId)?.ImpactSeverity == SecurityMasterImpactSeverity.High)
+            .Where(conflict => !ShowBulkEligibleConflictsOnly ||
+                               GetSelectedConflictAssessment(conflict.ConflictId)?.IsBulkEligible == true)
+            .OrderByDescending(conflict => GetImpactSeverityRank(GetSelectedConflictAssessment(conflict.ConflictId)?.ImpactSeverity ?? SecurityMasterImpactSeverity.Unknown))
+            .ThenByDescending(conflict => conflict.DetectedAt)
+            .ToArray();
+
+        FilteredConflicts.Clear();
+        foreach (var conflict in filtered)
+        {
+            FilteredConflicts.Add(conflict);
+        }
+
+        ConflictFilterSummaryText = BuildConflictFilterSummary(baseConflicts.Length, filtered.Length);
+        BulkPreviewSummaryText = BuildBulkPreviewSummary();
+        CanApplyBulkRecommendedResolutions = GetVisibleConflictAssessments().Any(assessment => assessment.IsBulkEligible);
+
+        var nextSelectedConflict = filtered.FirstOrDefault(conflict => preferredConflictId.HasValue && conflict.ConflictId == preferredConflictId.Value)
+            ?? filtered.FirstOrDefault();
+        SelectedConflict = nextSelectedConflict;
+
+        if (nextSelectedConflict is null)
+        {
+            UpdateSelectedConflictAssessmentState();
+        }
+    }
+
+    private void RebuildRecommendedActions()
+    {
+        RecommendedActions.Clear();
+        if (SelectedTrustSnapshot is null)
+        {
+            return;
+        }
+
+        var selectedConflictAssessment = GetSelectedConflictAssessment();
+        if (selectedConflictAssessment is not null)
+        {
+            RecommendedActions.Add(CreateSelectedConflictAction(selectedConflictAssessment));
+        }
+
+        foreach (var action in SelectedTrustSnapshot.RecommendedActions
+                     .Where(action => action.Kind != SecurityMasterRecommendedActionKind.ResolveSelectedConflict)
+                     .OrderBy(action => GetRecommendedActionOrder(action.Kind)))
+        {
+            RecommendedActions.Add(action);
+        }
+
+        if (selectedConflictAssessment is null)
+        {
+            var defaultResolveAction = SelectedTrustSnapshot.RecommendedActions
+                .FirstOrDefault(action => action.Kind == SecurityMasterRecommendedActionKind.ResolveSelectedConflict);
+            if (defaultResolveAction is not null)
+            {
+                RecommendedActions.Insert(0, defaultResolveAction);
+            }
+        }
+
+        RaisePropertyChanged(nameof(ActionInspectorLeadText));
+        RaisePropertyChanged(nameof(ActionInspectorDetailText));
+        RaisePropertyChanged(nameof(ActionInspectorNoActionText));
+    }
+
+    private void SyncLegacySelectionStateFromSnapshot(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        SelectedSecurity = snapshot.Security;
+        _selectedEconomicDefinition = null;
+        _selectedTradingParameters = null;
+        _latestHistoryEvent = snapshot.History
+            .OrderByDescending(item => item.EventTimestamp)
+            .FirstOrDefault();
+
+        HistoryText = BuildHistoryText(snapshot.History);
+
+        CorporateActions.Clear();
+        foreach (var action in snapshot.CorporateActions.OrderByDescending(action => action.ExDate))
+        {
+            CorporateActions.Add(action);
+        }
+
+        _conflictSecurityContextCache[snapshot.Security.SecurityId] = ToSecurityContext(snapshot.Security);
+    }
+
+    private void UpdateSelectedConflictAssessmentState()
+    {
+        var assessment = GetSelectedConflictAssessment();
+        if (assessment is null)
+        {
+            SelectedConflictRecommendedActionText = "Select a conflict to see the recommended action.";
+            SelectedConflictWinnerText = "Select a conflict to compare the current winner.";
+            _selectedConflictImpactText = "Select a conflict to review downstream impact.";
+            CanApplyRecommendedConflictResolution = false;
+            RaisePropertyChanged(nameof(SelectedConflictImpactText));
+            return;
+        }
+
+        SelectedConflictRecommendedActionText = assessment.Recommendation switch
+        {
+            SecurityMasterConflictRecommendationKind.DismissAsEquivalent =>
+                "Dismiss as equivalent because the normalized values match.",
+            SecurityMasterConflictRecommendationKind.Challenger =>
+                $"Accept {assessment.ChallengerSource} because the current winning value is blank.",
+            SecurityMasterConflictRecommendationKind.PreserveWinner =>
+                $"Preserve {assessment.CurrentWinningSource} as the current winner.",
+            _ =>
+                "Manual review required before applying a resolution."
+        };
+        SelectedConflictWinnerText = assessment.RecommendedWinner;
+        _selectedConflictImpactText = $"{assessment.ImpactSummary} {assessment.ImpactDetail}".Trim();
+        CanApplyRecommendedConflictResolution = !string.IsNullOrWhiteSpace(assessment.RecommendedResolution);
+        RaisePropertyChanged(nameof(SelectedConflictImpactText));
+    }
+
+    private SecurityMasterConflictAssessmentDto? GetSelectedConflictAssessment(Guid? conflictId = null)
+    {
+        var effectiveConflictId = conflictId ?? SelectedConflict?.ConflictId;
+        return effectiveConflictId.HasValue && _conflictAssessmentById.TryGetValue(effectiveConflictId.Value, out var assessment)
+            ? assessment
+            : null;
+    }
+
+    private IEnumerable<SecurityMasterConflictAssessmentDto> GetVisibleConflictAssessments()
+    {
+        if (SelectedTrustSnapshot is null || FilteredConflicts.Count == 0)
+        {
+            return [];
+        }
+
+        var visibleIds = FilteredConflicts
+            .Select(conflict => conflict.ConflictId)
+            .ToHashSet();
+        return SelectedTrustSnapshot.ConflictAssessments
+            .Where(assessment => visibleIds.Contains(assessment.Conflict.ConflictId));
+    }
+
+    private void ResetConflictFilters()
+    {
+        var changed = ShowOnlySelectedSecurityConflicts != true ||
+                      ShowHighImpactConflictsOnly ||
+                      ShowBulkEligibleConflictsOnly;
+
+        ShowOnlySelectedSecurityConflicts = true;
+        ShowHighImpactConflictsOnly = false;
+        ShowBulkEligibleConflictsOnly = false;
+
+        if (!changed)
+        {
+            RebuildFilteredConflicts();
+        }
+    }
+
+    private void PreviewBulkRecommendedResolutions()
+    {
+        BulkPreviewSummaryText = BuildBulkPreviewSummary();
+        CanApplyBulkRecommendedResolutions = GetVisibleConflictAssessments().Any(assessment => assessment.IsBulkEligible);
+    }
+
+    private async Task ApplyBulkRecommendedResolutionsAsync(CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(ConflictOperatorText))
+        {
+            _notificationService.ShowNotification("Security Master", "Resolved By is required for bulk resolution.", NotificationType.Warning);
+            return;
+        }
+
+        var eligibleAssessments = GetVisibleConflictAssessments()
+            .Where(assessment => assessment.IsBulkEligible)
+            .ToArray();
+        if (eligibleAssessments.Length == 0)
+        {
+            PreviewBulkRecommendedResolutions();
+            _notificationService.ShowNotification("Security Master", "No low-risk conflicts qualify for bulk assist in the current filter.", NotificationType.Info);
+            return;
+        }
+
+        try
+        {
+            var response = await _workstationSecurityMasterApiClient
+                .BulkResolveConflictsAsync(
+                    new BulkResolveSecurityMasterConflictsRequest(
+                        ConflictIds: eligibleAssessments.Select(assessment => assessment.Conflict.ConflictId).ToArray(),
+                        ResolvedBy: ConflictOperatorText.Trim(),
+                        Reason: string.IsNullOrWhiteSpace(ConflictNoteText) ? null : ConflictNoteText.Trim(),
+                        FundProfileId: GetCurrentFundProfileId()),
+                    ct)
+                .ConfigureAwait(false);
+
+            if (!response.Success || response.Data is null)
+            {
+                var errorMessage = string.IsNullOrWhiteSpace(response.ErrorMessage)
+                    ? "Bulk conflict resolution failed."
+                    : $"Bulk conflict resolution failed: {response.ErrorMessage}";
+                _notificationService.ShowNotification("Security Master", errorMessage, NotificationType.Error);
+                return;
+            }
+
+            var result = response.Data;
+
+            var summary = $"{result.Resolved} of {result.Requested} requested conflict(s) resolved.";
+            if (result.Skipped > 0)
+            {
+                var skipDetail = string.Join("; ", result.SkippedReasons.Values.Take(2));
+                summary = $"{summary} {result.Skipped} skipped{(string.IsNullOrWhiteSpace(skipDetail) ? "." : $": {skipDetail}.")}";
+            }
+
+            await RefreshOperatorWorkflowAsync(ct).ConfigureAwait(false);
+            if (SelectedSecurity is not null)
+            {
+                await LoadSelectedTrustSnapshotAsync(SelectedSecurity.SecurityId, ct).ConfigureAwait(false);
+            }
+
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                ConflictNoteText = string.Empty;
+                BulkPreviewSummaryText = summary;
+                _notificationService.ShowNotification(
+                    "Security Master",
+                    summary,
+                    result.Resolved > 0 && result.Skipped == 0 ? NotificationType.Success : NotificationType.Warning);
+            });
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to apply bulk Security Master resolutions", ex);
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                _notificationService.ShowNotification("Security Master", "Bulk conflict resolution failed.", NotificationType.Error));
+        }
+    }
+
+    private async Task ApplyRecommendedConflictResolutionAsync(CancellationToken ct = default)
+    {
+        var assessment = GetSelectedConflictAssessment();
+        if (assessment is null)
+        {
+            var recommendedAction = RecommendedActions
+                .FirstOrDefault(action => action.Kind == SecurityMasterRecommendedActionKind.ResolveSelectedConflict && action.ConflictId.HasValue);
+            assessment = recommendedAction?.ConflictId is Guid recommendedConflictId
+                ? GetSelectedConflictAssessment(recommendedConflictId)
+                : SelectedTrustSnapshot?.ConflictAssessments.FirstOrDefault();
+        }
+
+        if (assessment is null)
+        {
+            _notificationService.ShowNotification("Security Master", "No recommended conflict resolution is available.", NotificationType.Info);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(assessment.RecommendedResolution))
+        {
+            _notificationService.ShowNotification("Security Master", "This conflict requires manual review.", NotificationType.Warning);
+            return;
+        }
+
+        SelectedConflict = FilteredConflicts.FirstOrDefault(conflict => conflict.ConflictId == assessment.Conflict.ConflictId)
+            ?? assessment.Conflict;
+        await ResolveSelectedConflictAsync(assessment.RecommendedResolution, ct).ConfigureAwait(false);
+    }
+
+    private void NavigateToFundOperations(string pageTag, FundOperationsTab tab)
+    {
+        _navigationService.NavigateTo(
+            pageTag,
+            new FundOperationsNavigationContext(
+                Tab: tab,
+                FundProfileId: GetCurrentFundProfileId()));
+    }
+
+    private bool HasActiveImpactLink(string target)
+        => DownstreamImpactLinks.Any(link =>
+            link.IsActive &&
+            string.Equals(link.Target, target, StringComparison.OrdinalIgnoreCase));
+
+    private string? GetCurrentFundProfileId()
+        => string.IsNullOrWhiteSpace(_fundContextService.CurrentFundProfile?.FundProfileId)
+            ? _fundContextService.LastSelectedFundProfileId
+            : _fundContextService.CurrentFundProfile?.FundProfileId;
+
+    private void CopySelectedIdentifier()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedIdentifier))
+        {
+            return;
+        }
+
+        try
+        {
+            Clipboard.SetText(SelectedIdentifier);
+            _notificationService.ShowNotification("Security Master", "Selected identifier copied to clipboard.", NotificationType.Success);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to copy selected identifier", ex);
+            _notificationService.ShowNotification("Security Master", "Failed to copy the selected identifier.", NotificationType.Error);
+        }
+    }
+
+    private static string BuildHistoryText(IReadOnlyList<SecurityMasterEventEnvelope> history)
+    {
+        var ordered = history
+            .OrderByDescending(item => item.EventTimestamp)
+            .ToArray();
+        return ordered.Length == 0
+            ? "(no history)"
+            : string.Join(Environment.NewLine, ordered.Select(item =>
+                $"[{item.EventTimestamp:yyyy-MM-dd HH:mm}] {item.EventType}  v{item.StreamVersion} • {item.Actor}"));
+    }
+
+    private static string FormatGoldenCopySourceText(SecurityMasterEconomicDefinitionDrillInDto economicDefinition)
+    {
+        var source = string.IsNullOrWhiteSpace(economicDefinition.WinningSourceSystem)
+            ? "Unknown source"
+            : economicDefinition.WinningSourceSystem;
+        var recordIdText = string.IsNullOrWhiteSpace(economicDefinition.WinningSourceRecordId)
+            ? string.Empty
+            : $" • record {economicDefinition.WinningSourceRecordId}";
+        var asOfText = economicDefinition.WinningSourceAsOf.HasValue
+            ? $" • {economicDefinition.WinningSourceAsOf.Value.LocalDateTime:g}"
+            : string.Empty;
+
+        return $"{source}{recordIdText}{asOfText}";
+    }
+
+    private static string BuildProvenanceSummaryText(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        var challengerCount = snapshot.ProvenanceCandidates.Count(candidate => !candidate.IsWinningSource);
+        var sourceText = FormatGoldenCopySourceText(snapshot.EconomicDefinition);
+        var reasonText = string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.WinningSourceReason)
+            ? string.Empty
+            : $" • {snapshot.EconomicDefinition.WinningSourceReason}";
+
+        return challengerCount == 0
+            ? $"Winning source {sourceText}{reasonText}"
+            : $"Winning source {sourceText}{reasonText} • {challengerCount} challenger row(s) remain open";
+    }
+
+    private static string BuildCorporateActionImpactSummary(SecurityMasterTrustSnapshotDto snapshot)
+    {
+        if (snapshot.CorporateActions.Count == 0)
+        {
+            return "No corporate actions recorded for the selected security.";
+        }
+
+        var upcomingCount = snapshot.CorporateActions.Count(action => action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow));
+        return upcomingCount == 0
+            ? $"{snapshot.CorporateActions.Count} corporate action(s) are recorded with no upcoming events in the current review window."
+            : $"{upcomingCount} upcoming corporate action(s) require review across {snapshot.CorporateActions.Count} recorded event(s).";
+    }
+
+    private string BuildConflictFilterSummary(int baseCount, int filteredCount)
+    {
+        var activeFilters = new List<string>();
+        if (ShowOnlySelectedSecurityConflicts)
+        {
+            activeFilters.Add("selected security");
+        }
+
+        if (ShowHighImpactConflictsOnly)
+        {
+            activeFilters.Add("high impact");
+        }
+
+        if (ShowBulkEligibleConflictsOnly)
+        {
+            activeFilters.Add("bulk eligible");
+        }
+
+        var filterText = activeFilters.Count == 0
+            ? "all open conflicts"
+            : string.Join(", ", activeFilters);
+
+        return filteredCount == 0
+            ? $"No conflicts match the current filter set ({filterText})."
+            : $"{filteredCount} of {baseCount} conflict(s) shown for {filterText}.";
+    }
+
+    private string BuildBulkPreviewSummary()
+    {
+        if (SelectedTrustSnapshot is null)
+        {
+            return "Load a selected security to preview low-risk bulk resolutions.";
+        }
+
+        var visibleAssessments = GetVisibleConflictAssessments().ToArray();
+        if (visibleAssessments.Length == 0)
+        {
+            return "No conflicts match the current filters.";
+        }
+
+        var eligibleCount = visibleAssessments.Count(assessment => assessment.IsBulkEligible);
+        if (eligibleCount == 0)
+        {
+            var firstReason = visibleAssessments
+                .Select(assessment => assessment.BulkIneligibilityReason)
+                .FirstOrDefault(reason => !string.IsNullOrWhiteSpace(reason));
+            return string.IsNullOrWhiteSpace(firstReason)
+                ? $"0 of {visibleAssessments.Length} filtered conflict(s) qualify for low-risk bulk assist."
+                : $"0 of {visibleAssessments.Length} filtered conflict(s) qualify for low-risk bulk assist. {firstReason}";
+        }
+
+        return $"{eligibleCount} of {visibleAssessments.Length} filtered conflict(s) qualify for low-risk bulk assist.";
+    }
+
+    private static SecurityMasterRecommendedActionDto CreateSelectedConflictAction(SecurityMasterConflictAssessmentDto assessment)
+        => new(
+            Kind: SecurityMasterRecommendedActionKind.ResolveSelectedConflict,
+            Title: $"Resolve {FormatFieldLabel(assessment.Conflict.FieldPath)}",
+            Detail: $"{assessment.RecommendedWinner} {assessment.ImpactSummary}",
+            IsPrimary: true,
+            IsEnabled: !string.IsNullOrWhiteSpace(assessment.RecommendedResolution),
+            ConflictId: assessment.Conflict.ConflictId);
+
+    private static int GetImpactSeverityRank(SecurityMasterImpactSeverity severity)
+        => severity switch
+        {
+            SecurityMasterImpactSeverity.High => 3,
+            SecurityMasterImpactSeverity.Medium => 2,
+            SecurityMasterImpactSeverity.Low => 1,
+            SecurityMasterImpactSeverity.None => 0,
+            _ => -1
+        };
+
+    private static int GetImpactLinkOrder(SecurityMasterImpactLinkDto link)
+        => link.Target switch
+        {
+            "reconciliation" => 0,
+            "ledger" => 1,
+            "reportPack" => 2,
+            "portfolio" => 3,
+            _ => 4
+        };
+
+    private static int GetRecommendedActionOrder(SecurityMasterRecommendedActionKind kind)
+        => kind switch
+        {
+            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts => 1,
+            SecurityMasterRecommendedActionKind.BackfillTradingParameters => 2,
+            SecurityMasterRecommendedActionKind.ReviewCorporateActions => 3,
+            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => 4,
+            SecurityMasterRecommendedActionKind.OpenLedgerImpact => 5,
+            SecurityMasterRecommendedActionKind.OpenReportPackImpact => 6,
+            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => 7,
+            SecurityMasterRecommendedActionKind.EditSelectedSecurity => 8,
+            _ => 9
+        };
 
     public void Dispose() => Stop();
 
@@ -1711,8 +2222,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     _notificationService.ShowNotification("Corporate Actions", "Corporate action recorded successfully.", NotificationType.Success);
                 });
 
-                // Reload the list
-                await OnLoadCorporateActions(ct);
+                await LoadSelectedTrustSnapshotAsync(securityId, ct).ConfigureAwait(false);
             }
             else
             {
@@ -1815,6 +2325,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     AlignConflictLaneToSelectedSecurity();
                 }
 
+                RebuildFilteredConflicts();
                 ApplyIngestStatus(status);
                 NotifyConflictWorkflowCommandsChanged();
             });
@@ -2363,6 +2874,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
+            var selectedSecurityId = SelectedSecurity?.SecurityId;
             var updated = await _workflowClient
                 .ResolveConflictAsync(
                     SelectedConflict.ConflictId,
@@ -2380,6 +2892,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
             ConflictNoteText = string.Empty;
             await RefreshOperatorWorkflowAsync(ct).ConfigureAwait(false);
+            if (selectedSecurityId.HasValue && updated.SecurityId == selectedSecurityId.Value)
+            {
+                await LoadSelectedTrustSnapshotAsync(selectedSecurityId.Value, ct).ConfigureAwait(false);
+            }
+
             _notificationService.ShowNotification(
                 "Security Master",
                 resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)

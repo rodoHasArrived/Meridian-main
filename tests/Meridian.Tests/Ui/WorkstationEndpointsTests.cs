@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -864,6 +865,299 @@ public sealed class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnTypedWinningSourceProvenance()
+    {
+        var securityId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "AAPL"),
+            CreateSecurityDetail(securityId, "Apple Inc.", "AAPL"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                "Apple Inc.",
+                "AAPL",
+                JsonSerializer.SerializeToElement(new
+                {
+                    sourceSystem = "golden-edm",
+                    sourceRecordId = "EDM-123",
+                    asOf = "2026-04-20T09:30:00Z",
+                    updatedBy = "workflow.bot",
+                    reason = "golden-copy"
+                })));
+        queryService.RegisterTradingParameters(securityId, CreateTradingParameters(securityId));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.EconomicDefinition.WinningSourceSystem.Should().Be("golden-edm");
+        snapshot.EconomicDefinition.WinningSourceRecordId.Should().Be("EDM-123");
+        snapshot.EconomicDefinition.WinningSourceUpdatedBy.Should().Be("workflow.bot");
+        snapshot.ProvenanceCandidates.Should().ContainSingle(candidate =>
+            candidate.IsWinningSource &&
+            candidate.SourceSystem == "golden-edm" &&
+            candidate.SourceRecordId == "EDM-123");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldReturnOnlySelectedSecurityChallengers()
+    {
+        var selectedSecurityId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+        var otherSecurityId = Guid.Parse("88888888-8888-8888-8888-888888888888");
+        var selectedConflictId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(selectedSecurityId, "Apple Inc.", "AAPL"),
+            CreateSecurityDetail(selectedSecurityId, "Apple Inc.", "AAPL"));
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(otherSecurityId, "Microsoft Corp.", "MSFT"),
+            CreateSecurityDetail(otherSecurityId, "Microsoft Corp.", "MSFT"));
+        queryService.RegisterEconomicDefinition(
+            selectedSecurityId,
+            CreateEconomicDefinitionRecord(
+                selectedSecurityId,
+                "Apple Inc.",
+                "AAPL",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflicts = new[]
+        {
+            new SecurityMasterConflict(
+                ConflictId: selectedConflictId,
+                SecurityId: selectedSecurityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "AAPL",
+                ProviderB: "vendor-b",
+                ValueB: "AAPL.O",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 10, 0, 0, TimeSpan.Zero),
+                Status: "Open"),
+            new SecurityMasterConflict(
+                ConflictId: Guid.Parse("aaaaaaaa-1111-1111-1111-111111111111"),
+                SecurityId: otherSecurityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "MSFT",
+                ProviderB: "vendor-c",
+                ValueB: "MSFT.O",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 11, 0, 0, TimeSpan.Zero),
+                Status: "Open")
+        };
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService(conflicts));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{selectedSecurityId}/trust-snapshot");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.ConflictAssessments.Should().ContainSingle();
+        snapshot.ProvenanceCandidates.Count(candidate => !candidate.IsWinningSource).Should().Be(1);
+        snapshot.ProvenanceCandidates.Should().OnlyContain(candidate =>
+            candidate.IsWinningSource || candidate.ConflictId == selectedConflictId);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldPreserveWinnerByDefault()
+    {
+        var securityId = Guid.Parse("bbbbbbbb-1111-1111-1111-111111111111");
+        var conflictId = Guid.Parse("bbbbbbbb-2222-2222-2222-222222222222");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "AAPL US"),
+            CreateSecurityDetail(securityId, "Apple Inc.", "AAPL US"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                "Apple Inc.",
+                "AAPL US",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflict = new SecurityMasterConflict(
+            ConflictId: conflictId,
+            SecurityId: securityId,
+            ConflictKind: "IdentifierMismatch",
+            FieldPath: "Identifiers.Primary",
+            ProviderA: "golden-edm",
+            ValueA: "AAPL US",
+            ProviderB: "vendor-b",
+            ValueB: "AAPL UW",
+            DetectedAt: new DateTimeOffset(2026, 4, 20, 12, 0, 0, TimeSpan.Zero),
+            Status: "Open");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([conflict]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=fund-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.ConflictAssessments.Should().ContainSingle();
+        snapshot.ConflictAssessments[0].Recommendation.Should().Be(SecurityMasterConflictRecommendationKind.PreserveWinner);
+        snapshot.ConflictAssessments[0].RecommendedResolution.Should().Be("AcceptA");
+        snapshot.ConflictAssessments[0].RecommendedWinner.Should().Contain("Preserve golden-edm");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterTrustSnapshot_ShouldDismissEquivalentNormalizedValues()
+    {
+        var securityId = Guid.Parse("cccccccc-1111-1111-1111-111111111111");
+        var conflictId = Guid.Parse("cccccccc-2222-2222-2222-222222222222");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Berkshire Hathaway", "BRK-B"),
+            CreateSecurityDetail(securityId, "Berkshire Hathaway", "BRK-B"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                "Berkshire Hathaway",
+                "BRK-B",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflict = new SecurityMasterConflict(
+            ConflictId: conflictId,
+            SecurityId: securityId,
+            ConflictKind: "IdentifierMismatch",
+            FieldPath: "Identifiers.Primary",
+            ProviderA: "golden-edm",
+            ValueA: "BRK-B",
+            ProviderB: "vendor-b",
+            ValueB: "BRK/B",
+            DetectedAt: new DateTimeOffset(2026, 4, 20, 12, 30, 0, TimeSpan.Zero),
+            Status: "Open");
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, new StubSecurityMasterConflictService([conflict]));
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync($"/api/workstation/security-master/securities/{securityId}/trust-snapshot?fundProfileId=fund-alpha");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var snapshot = await response.Content.ReadFromJsonAsync<SecurityMasterTrustSnapshotDto>(ServerJsonOptions);
+
+        snapshot.Should().NotBeNull();
+        snapshot!.ConflictAssessments.Should().ContainSingle();
+        snapshot.ConflictAssessments[0].Recommendation.Should().Be(SecurityMasterConflictRecommendationKind.DismissAsEquivalent);
+        snapshot.ConflictAssessments[0].RecommendedResolution.Should().Be("Dismiss");
+        snapshot.ConflictAssessments[0].IsBulkEligible.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_SecurityMasterBulkResolve_ShouldResolveOnlyEligibleConflicts()
+    {
+        var securityId = Guid.Parse("dddddddd-1111-1111-1111-111111111111");
+        var equivalentConflictId = Guid.Parse("dddddddd-2222-2222-2222-222222222222");
+        var blankWinnerConflictId = Guid.Parse("dddddddd-3333-3333-3333-333333333333");
+        var skippedConflictId = Guid.Parse("dddddddd-4444-4444-4444-444444444444");
+
+        var queryService = new StubSecurityMasterQueryService();
+        queryService.RegisterSecurity(
+            CreateSecuritySummary(securityId, "Apple Inc.", "BRK-B"),
+            CreateSecurityDetail(securityId, string.Empty, "BRK-B"));
+        queryService.RegisterEconomicDefinition(
+            securityId,
+            CreateEconomicDefinitionRecord(
+                securityId,
+                string.Empty,
+                "BRK-B",
+                JsonSerializer.SerializeToElement(new { sourceSystem = "golden-edm" })));
+
+        var conflictService = new StubSecurityMasterConflictService(
+        [
+            new SecurityMasterConflict(
+                ConflictId: equivalentConflictId,
+                SecurityId: securityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "BRK-B",
+                ProviderB: "vendor-b",
+                ValueB: "BRK/B",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 13, 0, 0, TimeSpan.Zero),
+                Status: "Open"),
+            new SecurityMasterConflict(
+                ConflictId: blankWinnerConflictId,
+                SecurityId: securityId,
+                ConflictKind: "FieldMismatch",
+                FieldPath: "DisplayName",
+                ProviderA: "golden-edm",
+                ValueA: "",
+                ProviderB: "vendor-b",
+                ValueB: "Apple Inc.",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 13, 5, 0, TimeSpan.Zero),
+                Status: "Open"),
+            new SecurityMasterConflict(
+                ConflictId: skippedConflictId,
+                SecurityId: securityId,
+                ConflictKind: "IdentifierMismatch",
+                FieldPath: "Identifiers.Primary",
+                ProviderA: "golden-edm",
+                ValueA: "BRK-B",
+                ProviderB: "vendor-b",
+                ValueB: "MSFT",
+                DetectedAt: new DateTimeOffset(2026, 4, 20, 13, 10, 0, TimeSpan.Zero),
+                Status: "Open")
+        ]);
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterSecurityMasterWorkbenchServices(services, queryService, conflictService);
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/security-master/conflicts/bulk-resolve",
+            new BulkResolveSecurityMasterConflictsRequest(
+                ConflictIds: [equivalentConflictId, blankWinnerConflictId, skippedConflictId],
+                ResolvedBy: "desktop-user",
+                Reason: "bulk assist",
+                FundProfileId: "fund-alpha"));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<BulkResolveSecurityMasterConflictsResult>(ServerJsonOptions);
+
+        result.Should().NotBeNull();
+        result!.Requested.Should().Be(3);
+        result.Eligible.Should().Be(2);
+        result.Resolved.Should().Be(2);
+        result.Skipped.Should().Be(1);
+        result.ResolvedConflictIds.Should().Contain([equivalentConflictId, blankWinnerConflictId]);
+        result.SkippedReasons.Should().ContainKey(skippedConflictId);
+        conflictService.ResolvedRequests.Select(request => request.ConflictId)
+            .Should()
+            .Contain([equivalentConflictId, blankWinnerConflictId]);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_CompareRuns_ShouldReturnMetricsForEachRun()
     {
         await using var app = await CreateAppAsync(services =>
@@ -1070,6 +1364,104 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<CashFlowProjectionService>();
         services.AddSingleton<StrategyRunContinuityService>();
     }
+
+    private static void RegisterSecurityMasterWorkbenchServices(
+        IServiceCollection services,
+        StubSecurityMasterQueryService queryService,
+        StubSecurityMasterConflictService conflictService)
+    {
+        services.AddSingleton<ISecurityMasterQueryService>(queryService);
+        services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(queryService);
+        services.AddSingleton<ISecurityMasterConflictService>(conflictService);
+        services.AddSingleton<ISecurityMasterIngestStatusService>(new StubSecurityMasterIngestStatusService());
+        RegisterRunReadServices(services);
+        services.AddSingleton<ReportGenerationService>();
+        services.AddSingleton<ISecurityMasterWorkbenchQueryService, SecurityMasterWorkbenchQueryService>();
+    }
+
+    private static SecuritySummaryDto CreateSecuritySummary(Guid securityId, string displayName, string primaryIdentifier)
+        => new(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: displayName,
+            PrimaryIdentifier: primaryIdentifier,
+            Currency: "USD",
+            Version: 4);
+
+    private static SecurityDetailDto CreateSecurityDetail(Guid securityId, string displayName, string primaryIdentifier)
+        => new(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: displayName,
+            Currency: "USD",
+            CommonTerms: CreateEmptyJson(),
+            AssetSpecificTerms: CreateEmptyJson(),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    primaryIdentifier,
+                    true,
+                    new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+                    null,
+                    null)
+            ],
+            Aliases: [],
+            Version: 4,
+            EffectiveFrom: new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null);
+
+    private static SecurityEconomicDefinitionRecord CreateEconomicDefinitionRecord(
+        Guid securityId,
+        string displayName,
+        string primaryIdentifier,
+        JsonElement provenance)
+        => new(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            AssetFamily: "Public Equity",
+            SubType: "CommonStock",
+            TypeName: "Common Stock",
+            IssuerType: "Corporate",
+            RiskCountry: "US",
+            Status: SecurityStatusDto.Active,
+            DisplayName: displayName,
+            Currency: "USD",
+            Classification: CreateEmptyJson(),
+            CommonTerms: CreateEmptyJson(),
+            EconomicTerms: CreateEmptyJson(),
+            Provenance: provenance,
+            Version: 4,
+            EffectiveFrom: new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    primaryIdentifier,
+                    true,
+                    new DateTimeOffset(2026, 4, 20, 0, 0, 0, TimeSpan.Zero),
+                    null,
+                    null)
+            ],
+            LegacyAssetClass: null,
+            LegacyAssetSpecificTerms: null);
+
+    private static TradingParametersDto CreateTradingParameters(Guid securityId)
+        => new(
+            SecurityId: securityId,
+            LotSize: 1m,
+            TickSize: 0.01m,
+            ContractMultiplier: null,
+            MarginRequirementPct: null,
+            TradingHoursUtc: "13:30-20:00",
+            CircuitBreakerThresholdPct: null,
+            AsOf: new DateTimeOffset(2026, 4, 20, 9, 30, 0, TimeSpan.Zero));
+
+    private static JsonElement CreateEmptyJson()
+        => JsonDocument.Parse("{}").RootElement.Clone();
 
     private static KernelObservabilityService CreateRecoveredKernelObservability()
     {
@@ -1957,16 +2349,39 @@ public sealed class WorkstationEndpointsTests
         }
     }
 
-    private sealed class StubSecurityMasterQueryService : ISecurityMasterQueryService
+    private sealed class StubSecurityMasterQueryService :
+        ISecurityMasterQueryService,
+        Meridian.Application.SecurityMaster.ISecurityMasterQueryService
     {
         private readonly Dictionary<Guid, SecurityDetailDto> _details = [];
         private readonly Dictionary<Guid, IReadOnlyList<SecurityMasterEventEnvelope>> _history = [];
+        private readonly Dictionary<Guid, SecurityEconomicDefinitionRecord> _economicDefinitions = [];
+        private readonly Dictionary<Guid, TradingParametersDto> _tradingParameters = [];
+        private readonly Dictionary<Guid, IReadOnlyList<CorporateActionDto>> _corporateActions = [];
         private readonly List<SecuritySummaryDto> _summaries = [];
 
         public void Register(SecuritySummaryDto summary, SecurityDetailDto detail)
+            => RegisterSecurity(summary, detail);
+
+        public void RegisterSecurity(SecuritySummaryDto summary, SecurityDetailDto detail)
         {
             _summaries.Add(summary);
             _details[detail.SecurityId] = detail;
+        }
+
+        public void RegisterEconomicDefinition(Guid securityId, SecurityEconomicDefinitionRecord record)
+        {
+            _economicDefinitions[securityId] = record;
+        }
+
+        public void RegisterTradingParameters(Guid securityId, TradingParametersDto tradingParameters)
+        {
+            _tradingParameters[securityId] = tradingParameters;
+        }
+
+        public void RegisterCorporateActions(Guid securityId, IReadOnlyList<CorporateActionDto> corporateActions)
+        {
+            _corporateActions[securityId] = corporateActions;
         }
 
         public void RegisterHistory(Guid securityId, IReadOnlyList<SecurityMasterEventEnvelope> history)
@@ -2012,17 +2427,84 @@ public sealed class WorkstationEndpointsTests
         }
 
         public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default)
-            => Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+        {
+            _economicDefinitions.TryGetValue(securityId, out var record);
+            return Task.FromResult<SecurityEconomicDefinitionRecord?>(record);
+        }
 
         public Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
-            => Task.FromResult<TradingParametersDto?>(null);
+        {
+            _tradingParameters.TryGetValue(securityId, out var tradingParameters);
+            return Task.FromResult<TradingParametersDto?>(tradingParameters);
+        }
 
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+        {
+            if (_corporateActions.TryGetValue(securityId, out var corporateActions))
+            {
+                return Task.FromResult(corporateActions);
+            }
+
+            return Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+        }
 
         public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<PreferredEquityTermsDto?>(null);
         public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<ConvertibleEquityTermsDto?>(null);
+    }
+
+    private sealed class StubSecurityMasterConflictService : ISecurityMasterConflictService
+    {
+        private readonly Dictionary<Guid, SecurityMasterConflict> _conflicts;
+
+        public StubSecurityMasterConflictService(IReadOnlyList<SecurityMasterConflict> conflicts)
+        {
+            _conflicts = conflicts.ToDictionary(conflict => conflict.ConflictId);
+        }
+
+        public List<ResolveConflictRequest> ResolvedRequests { get; } = [];
+
+        public Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<SecurityMasterConflict>>(
+                _conflicts.Values
+                    .Where(conflict => string.Equals(conflict.Status, "Open", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(conflict => conflict.DetectedAt)
+                    .ToArray());
+
+        public Task<SecurityMasterConflict?> GetConflictAsync(Guid conflictId, CancellationToken ct)
+        {
+            _conflicts.TryGetValue(conflictId, out var conflict);
+            return Task.FromResult<SecurityMasterConflict?>(conflict);
+        }
+
+        public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct)
+        {
+            ResolvedRequests.Add(request);
+            if (!_conflicts.TryGetValue(request.ConflictId, out var existing))
+            {
+                return Task.FromResult<SecurityMasterConflict?>(null);
+            }
+
+            var updated = existing with
+            {
+                Status = string.Equals(request.Resolution, "Dismiss", StringComparison.OrdinalIgnoreCase)
+                    ? "Dismissed"
+                    : "Resolved"
+            };
+            _conflicts[request.ConflictId] = updated;
+            return Task.FromResult<SecurityMasterConflict?>(updated);
+        }
+
+        public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
+            => Task.CompletedTask;
+    }
+
+    private sealed class StubSecurityMasterIngestStatusService : ISecurityMasterIngestStatusService
+    {
+        public SecurityMasterIngestStatusSnapshot GetSnapshot()
+            => new(
+                ActiveImport: null,
+                LastCompleted: null);
     }
 }

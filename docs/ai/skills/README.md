@@ -26,7 +26,7 @@ Each portable skill package follows this shape:
 These repo-local skills are the primary Meridian skill set for current AI work:
 
 | Skill | Purpose |
-|------|---------|
+| ------ | --------- |
 | `meridian-archive-organizer` | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
@@ -39,14 +39,14 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
 | `meridian-test-writer` | Produce scenario-first Meridian tests |
 
-The shared Codex grounding file is [`../../../.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md).
+The shared Codex grounding file is [`.codex/skills/_shared/project-context.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/_shared/project-context.md).
 
 ---
 
 ## Available Portable Skills
 
 | Skill | Purpose |
-|------|---------|
+| ------ | --------- |
 | `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | Generate high-value product and architecture ideas |
 | `meridian-code-review` | Apply Meridian’s 7-lens review framework |
@@ -62,11 +62,11 @@ Code-defined provider skills may also exist, such as AI documentation maintenanc
 ## Related Resources
 
 | Resource | Purpose |
-|----------|---------|
+| ---------- | --------- |
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../navigation/README.md`](../navigation/README.md) | Repo navigation workflow |
 | [`../agents/README.md`](../agents/README.md) | Agent catalog |
-| [`../../../.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex repo-local skills and their maintenance rules |
+| [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md) | Codex repo-local skills and their maintenance rules |
 
 ---
 
@@ -80,4 +80,4 @@ python3 build/scripts/docs/validate-skill-packages.py
 
 ---
 
-*Last Updated: 2026-04-14*
+_Last Updated: 2026-04-14_

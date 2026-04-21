@@ -18,6 +18,13 @@ namespace Meridian.Wpf.Views;
 public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 {
     internal readonly record struct TradingPortfolioNavigationTarget(string PageTag, PaneDropAction Action, string? RunId);
+    internal readonly record struct TradingStatusCardPresentation(
+        string SummaryText,
+        string BadgeText,
+        TradingWorkspaceStatusTone BadgeTone,
+        TradingWorkspaceStatusItem PromotionStatus,
+        TradingWorkspaceStatusItem AuditStatus,
+        TradingWorkspaceStatusItem ValidationStatus);
 
     private readonly StrategyRunWorkspaceService _runService;
     private readonly FundContextService _fundContextService;
@@ -155,19 +162,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Refresh failed: {ex.Message}");
-            TradingStatusSummaryText.Text = "Cockpit refresh degraded. Promotion, audit, and broker validation details may be stale.";
-            TradingStatusBadgeText.Text = "Attention";
-            ApplyTone(TradingStatusBadgeBorder, TradingStatusBadgeText, TradingWorkspaceStatusTone.Warning);
-            ApplyStatusItem(
-                ValidationStatusPill,
-                ValidationStatusLabelText,
-                ValidationStatusDetailText,
-                new TradingWorkspaceStatusItem
-                {
-                    Label = "Validation refresh degraded",
-                    Detail = "Trading posture and broker validation details may be stale until the shell can refresh again.",
-                    Tone = TradingWorkspaceStatusTone.Warning
-                });
+            ApplyStatusCardPresentation(BuildDegradedStatusCardPresentation());
             RiskRailText.Text = "Cockpit refresh degraded. Trading posture and broker validation details may be stale until the shell can refresh again.";
             DeskActionStatusText.Text = "Cockpit refresh failed. Recheck desktop API connectivity, run-state services, and broker validation before relying on this shell state.";
         }
@@ -198,28 +193,68 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     }
 
     private void UpdateStatusCard(TradingWorkspaceSummary summary)
+        => ApplyStatusCardPresentation(BuildStatusCardPresentation(summary));
+
+    private void ApplyStatusCardPresentation(TradingStatusCardPresentation presentation)
     {
+        TradingStatusSummaryText.Text = presentation.SummaryText;
+        TradingStatusBadgeText.Text = presentation.BadgeText;
+        ApplyTone(TradingStatusBadgeBorder, TradingStatusBadgeText, presentation.BadgeTone);
+        ApplyStatusItem(PromotionStatusPill, PromotionStatusLabelText, PromotionStatusDetailText, presentation.PromotionStatus);
+        ApplyStatusItem(AuditStatusPill, AuditStatusLabelText, AuditStatusDetailText, presentation.AuditStatus);
+        ApplyStatusItem(ValidationStatusPill, ValidationStatusLabelText, ValidationStatusDetailText, presentation.ValidationStatus);
+    }
+
+    internal static TradingStatusCardPresentation BuildStatusCardPresentation(TradingWorkspaceSummary summary)
+    {
+        ArgumentNullException.ThrowIfNull(summary);
+
         var promotion = summary.ActiveRunContext?.PromotionStatus ?? summary.PromotionStatus;
         var audit = summary.ActiveRunContext?.AuditStatus ?? summary.AuditStatus;
         var validation = summary.ActiveRunContext?.ValidationStatus ?? summary.ValidationStatus;
         var cardTone = ResolveCardTone(promotion, audit, validation);
-
-        TradingStatusSummaryText.Text = summary.ActiveRunContext is null
-            ? "Workspace-level promotion handoff, audit traceability, and control coverage across recorded runs."
-            : $"{summary.ActiveRunContext.StrategyName} promotion handoff, audit traceability, and control coverage.";
-
-        TradingStatusBadgeText.Text = cardTone switch
+        var badgeText = cardTone switch
         {
             TradingWorkspaceStatusTone.Warning => "Attention",
             TradingWorkspaceStatusTone.Success => "Ready",
             _ => "Info"
         };
+        var summaryText = summary.ActiveRunContext is null
+            ? "Workspace-level promotion handoff, audit traceability, and control coverage across recorded runs."
+            : $"{summary.ActiveRunContext.StrategyName} promotion handoff, audit traceability, and control coverage.";
 
-        ApplyTone(TradingStatusBadgeBorder, TradingStatusBadgeText, cardTone);
-        ApplyStatusItem(PromotionStatusPill, PromotionStatusLabelText, PromotionStatusDetailText, promotion);
-        ApplyStatusItem(AuditStatusPill, AuditStatusLabelText, AuditStatusDetailText, audit);
-        ApplyStatusItem(ValidationStatusPill, ValidationStatusLabelText, ValidationStatusDetailText, validation);
+        return new TradingStatusCardPresentation(
+            summaryText,
+            badgeText,
+            cardTone,
+            promotion,
+            audit,
+            validation);
     }
+
+    internal static TradingStatusCardPresentation BuildDegradedStatusCardPresentation() =>
+        new(
+            "Cockpit refresh degraded. Promotion, audit, and broker validation details may be stale.",
+            "Attention",
+            TradingWorkspaceStatusTone.Warning,
+            new TradingWorkspaceStatusItem
+            {
+                Label = "Promotion refresh degraded",
+                Detail = "Promotion posture may be stale until the shell can refresh again.",
+                Tone = TradingWorkspaceStatusTone.Warning
+            },
+            new TradingWorkspaceStatusItem
+            {
+                Label = "Audit refresh degraded",
+                Detail = "Audit linkage and ledger review posture may be stale until the shell can refresh again.",
+                Tone = TradingWorkspaceStatusTone.Warning
+            },
+            new TradingWorkspaceStatusItem
+            {
+                Label = "Validation refresh degraded",
+                Detail = "Trading posture and broker validation details may be stale until the shell can refresh again.",
+                Tone = TradingWorkspaceStatusTone.Warning
+            });
 
     private static TradingWorkspaceStatusTone ResolveCardTone(params TradingWorkspaceStatusItem[] items)
     {
@@ -289,20 +324,11 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
             case "PositionBlotter":
                 OpenBlotter_Click(sender, new RoutedEventArgs());
                 break;
-            case "RunDetail":
-                OpenRunReview_Click(sender, new RoutedEventArgs());
-                break;
             case "RunPortfolio":
                 OpenPortfolio_Click(sender, new RoutedEventArgs());
                 break;
             case "RunRisk":
                 OpenRiskRail_Click(sender, new RoutedEventArgs());
-                break;
-            case "EventReplay":
-                OpenReplayReview_Click(sender, new RoutedEventArgs());
-                break;
-            case "CollectionSessions":
-                OpenCollectionSessions_Click(sender, new RoutedEventArgs());
                 break;
             case "NotificationCenter":
                 OpenAlerts_Click(sender, new RoutedEventArgs());
@@ -358,20 +384,6 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     private void OpenBlotter_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage(TradingDockManager, "PositionBlotter", PaneDropAction.SplitRight);
 
-    private async void OpenRunReview_Click(object sender, RoutedEventArgs e)
-    {
-        var activeRun = await _runService.GetActiveRunContextAsync().ConfigureAwait(true);
-        if (activeRun is null)
-        {
-            DeskActionStatusText.Text = "No active trading run is selected. Opened strategy runs so a review target can be chosen.";
-            NavigationService.NavigateTo("StrategyRuns");
-            return;
-        }
-
-        DeskActionStatusText.Text = $"Run review opened for {activeRun.StrategyName}.";
-        OpenWorkspacePage(TradingDockManager, "RunDetail", PaneDropAction.SplitRight, activeRun.RunId);
-    }
-
     private async void OpenPortfolio_Click(object sender, RoutedEventArgs e)
     {
         var target = ResolvePortfolioNavigationTarget(await _runService.GetActiveRunContextAsync().ConfigureAwait(true));
@@ -386,18 +398,6 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
 
     private void OpenRiskRail_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage(TradingDockManager, "RunRisk", PaneDropAction.SplitRight);
-
-    private void OpenReplayReview_Click(object sender, RoutedEventArgs e)
-    {
-        DeskActionStatusText.Text = "Event replay opened so sequencing and execution consequences can be reviewed alongside the cockpit.";
-        OpenWorkspacePage(TradingDockManager, "EventReplay", PaneDropAction.FloatWindow);
-    }
-
-    private void OpenCollectionSessions_Click(object sender, RoutedEventArgs e)
-    {
-        DeskActionStatusText.Text = "Collection sessions opened for ingest, replay, and session-lifecycle review.";
-        OpenWorkspacePage(TradingDockManager, "CollectionSessions", PaneDropAction.OpenTab);
-    }
 
     private void OpenAlerts_Click(object sender, RoutedEventArgs e)
         => OpenWorkspacePage(TradingDockManager, "NotificationCenter", PaneDropAction.SplitBelow);
@@ -462,7 +462,7 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         ActiveFundDetailText.Text = $"{profile.LegalEntityName} · {profile.BaseCurrency}";
     }
 
-    private static WorkspaceCommandGroup BuildCommandGroup() =>
+    internal static WorkspaceCommandGroup BuildCommandGroup() =>
         new()
         {
             PrimaryCommands =
@@ -476,12 +476,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
                 new WorkspaceCommandItem { Id = "CancelAll", Label = "Cancel All", Description = "Cancel staged orders", Glyph = "\uE711" },
                 new WorkspaceCommandItem { Id = "AcknowledgeRisk", Label = "Acknowledge Risk", Description = "Acknowledge current risk posture", Glyph = "\uE73E" },
                 new WorkspaceCommandItem { Id = "LiveData", Label = "Live Data", Description = "Open live data", Glyph = "\uE9D2" },
-                new WorkspaceCommandItem { Id = "RunDetail", Label = "Run Review", Description = "Open active run review", Glyph = "\uE8A5" },
                 new WorkspaceCommandItem { Id = "RunPortfolio", Label = "Portfolio", Description = "Open run or account portfolio", Glyph = "\uE8B5" },
                 new WorkspaceCommandItem { Id = "PositionBlotter", Label = "Blotter", Description = "Open position blotter", Glyph = "\uE8A5" },
                 new WorkspaceCommandItem { Id = "RunRisk", Label = "Risk Rail", Description = "Open risk rail", Glyph = "\uE7BA" },
-                new WorkspaceCommandItem { Id = "EventReplay", Label = "Event Replay", Description = "Open event replay", Glyph = "\uE768" },
-                new WorkspaceCommandItem { Id = "CollectionSessions", Label = "Collection Sessions", Description = "Open collection sessions", Glyph = "\uE8EF" },
                 new WorkspaceCommandItem { Id = "FundTrialBalance", Label = "Accounting", Description = "Open accounting consequences", Glyph = "\uE9D9" },
                 new WorkspaceCommandItem { Id = "FundReconciliation", Label = "Reconciliation", Description = "Open reconciliation review", Glyph = "\uE895" },
                 new WorkspaceCommandItem { Id = "FundAuditTrail", Label = "Audit", Description = "Open audit trail", Glyph = "\uE7BA" },

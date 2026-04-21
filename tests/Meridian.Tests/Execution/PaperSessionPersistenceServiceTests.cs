@@ -723,6 +723,17 @@ public sealed class PaperSessionReplayTests : IDisposable
         var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-F", "Replay Verify", 100_000m, ["AAPL"]));
 
         await service.RecordFillAsync(summary.SessionId, BuyFill("AAPL", 12m, 150m));
+        await service.RecordOrderUpdateAsync(summary.SessionId, new OrderState
+        {
+            OrderId = "verify-order-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 12m,
+            Status = OrderStatus.Filled,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastUpdatedAt = DateTimeOffset.UtcNow
+        });
 
         var verification = await service.VerifyReplayAsync(summary.SessionId);
 
@@ -734,6 +745,28 @@ public sealed class PaperSessionReplayTests : IDisposable
         verification.MismatchReasons.Should().BeEmpty();
         verification.CurrentPortfolio.Should().NotBeNull();
         verification.ReplayPortfolio.Cash.Should().Be(100_000m - (12m * 150m));
+        verification.ComparedFillCount.Should().Be(1);
+        verification.ComparedOrderCount.Should().Be(1);
+        verification.ComparedLedgerEntryCount.Should().BeGreaterThanOrEqualTo(0);
+        verification.LastPersistedFillAt.Should().NotBeNull();
+        verification.LastPersistedOrderUpdateAt.Should().NotBeNull();
+        verification.VerificationAuditId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task VerifyReplayAsync_WhenPersistedOrderHistoryDiffers_ReturnsMismatchWithCounts()
+    {
+        var service = Build(new ReplayMismatchStore());
+        var summary = await service.CreateSessionAsync(new CreatePaperSessionDto("strat-mismatch", null, 100_000m, ["AAPL"]));
+
+        var verification = await service.VerifyReplayAsync(summary.SessionId);
+
+        verification.Should().NotBeNull();
+        verification!.IsConsistent.Should().BeFalse();
+        verification.ComparedOrderCount.Should().Be(1);
+        verification.LastPersistedOrderUpdateAt.Should().NotBeNull();
+        verification.MismatchReasons.Should().Contain(reason =>
+            reason.Contains("Persisted order history count", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -787,6 +820,50 @@ internal sealed class ThrowingOrderUpdateStore : IPaperSessionStore
 
     public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<OrderState>>([]);
+
+    public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedJournalEntryDto>>([]);
+}
+
+internal sealed class ReplayMismatchStore : IPaperSessionStore
+{
+    public Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task SaveLedgerJournalAsync(
+        string sessionId,
+        IReadOnlyList<PersistedJournalEntryDto> entries,
+        CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task<IReadOnlyList<PersistedSessionRecord>> LoadAllSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PersistedSessionRecord>>([]);
+
+    public Task<IReadOnlyList<ExecutionReport>> LoadFillsAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ExecutionReport>>([]);
+
+    public Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<OrderState>>([
+            new OrderState
+            {
+                OrderId = "persisted-order-1",
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = OrderType.Market,
+                Quantity = 5m,
+                Status = OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-5),
+                LastUpdatedAt = DateTimeOffset.UtcNow.AddMinutes(-4)
+            }
+        ]);
 
     public Task<IReadOnlyList<PersistedJournalEntryDto>> LoadLedgerJournalAsync(
         string sessionId,
