@@ -80,7 +80,7 @@ public sealed class ScriptRunner : IScriptRunner
                 ConsoleOutput: string.Empty,
                 Metrics: Array.Empty<KeyValuePair<string, string>>(),
                 Plots: Array.Empty<PlotRequest>(),
-                TradesSummary: Array.Empty<string>(),
+                Trades: Array.Empty<ScriptTradeResult>(),
                 Checkpoint: checkpoint);
         }
 
@@ -166,6 +166,15 @@ public sealed class ScriptRunner : IScriptRunner
         wallClock.Stop();
         var peakMemory = Math.Max(0, GC.GetTotalMemory(false) - memBefore);
         var plots = runPlotQueue.DrainRemaining();
+        var trades = backtestProxy.CapturedFills
+            .Select(static fill => new ScriptTradeResult(
+                Timestamp: fill.FilledAt,
+                Symbol: fill.Symbol,
+                Side: fill.FilledQuantity >= 0 ? "Buy" : "Sell",
+                Quantity: Math.Abs(fill.FilledQuantity),
+                Price: fill.FillPrice,
+                Commission: fill.Commission))
+            .ToList();
         var resultSuccess = runtimeError is null && continuationDiagnostics.Count == 0;
 
         return new ScriptRunResult(
@@ -178,7 +187,7 @@ public sealed class ScriptRunner : IScriptRunner
             ConsoleOutput: globals.DrainConsoleOutput(),
             Metrics: globals.DrainMetrics(),
             Plots: plots,
-            TradesSummary: Array.Empty<string>(),
+            Trades: trades,
             Checkpoint: resultSuccess ? nextCheckpoint : checkpoint);
     }
 

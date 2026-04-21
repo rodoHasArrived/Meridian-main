@@ -380,15 +380,34 @@ public sealed class QuantScriptViewModel : BindableBase, IDisposable
             Metrics.Add(new MetricEntry(metric.Key, metric.Value));
         foreach (var plot in result.Plots)
             Charts.Add(new PlotViewModel(plot.Title, plot));
-        if (result.Metrics.Count > 0 && result.Plots.Count == 0)
-            ActiveResultsTab = 1;
-        else if (result.TradesSummary.Count > 0 && result.Plots.Count == 0)
-            ActiveResultsTab = 4;
+        foreach (var trade in result.Trades)
+        {
+            Trades.Add(new TradeEntry(
+                FilledAt: trade.Timestamp,
+                Symbol: trade.Symbol,
+                FilledQuantity: trade.Quantity,
+                FillPrice: trade.Price,
+                Commission: trade.Commission,
+                Side: trade.Side));
+        }
+
+        ActiveResultsTab = ResolvePreferredResultsTab(result);
         Diagnostics.Add(new DiagnosticEntry("Wall clock", $"{result.Elapsed.TotalSeconds:F2}s"));
         Diagnostics.Add(new DiagnosticEntry("Compile time", $"{result.CompileTime.TotalMilliseconds:F0}ms"));
         Diagnostics.Add(new DiagnosticEntry("Peak memory", $"{result.PeakMemoryBytes / 1024.0:F0} KB"));
         ElapsedText = $"{result.Elapsed.TotalSeconds:F1}s";
         MemoryText = $"{result.PeakMemoryBytes / 1024.0:F0} KB";
+    }
+
+    private int ResolvePreferredResultsTab(ScriptRunResult result)
+    {
+        if (result.Trades.Count > 0)
+            return 4; // Backtest Output
+        if (result.Metrics.Count > 0 && result.Plots.Count == 0)
+            return 1; // Metrics
+        if (result.Plots.Count > 0)
+            return 0; // Charts
+        return ActiveResultsTab;
     }
 
     private void StopRunning()
