@@ -5,6 +5,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
+using Meridian.Application.ProviderRouting;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -1161,10 +1162,11 @@ public static class WorkstationEndpoints
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
+        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
 
         if (readService is null && configStore is null)
         {
-            return BuildDataOperationsFallbackPayload();
+            return BuildDataOperationsFallbackPayload(kernelObservability);
         }
 
         var runs = readService is not null
@@ -1229,15 +1231,17 @@ public static class WorkstationEndpoints
                 new { id = "providers-healthy", label = "Providers Healthy", value = healthyProviderCount.ToString(CultureInfo.InvariantCulture), delta = "0", tone = healthyProviderCount > 0 ? "success" : "default" },
                 new { id = "backfills-running", label = "Backfills Running", value = activeRuns.ToString(CultureInfo.InvariantCulture), delta = activeRuns == 0 ? "0" : $"+{activeRuns}", tone = activeRuns > 0 ? "default" : "success" },
                 new { id = "exports-ready", label = "Exports Ready", value = "0", delta = "0", tone = "default" },
-                new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" }
+                new { id = "ops-review", label = "Needs Review", value = reviewRuns.ToString(CultureInfo.InvariantCulture), delta = reviewRuns == 0 ? "0" : $"+{reviewRuns}", tone = reviewRuns == 0 ? "default" : "warning" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             providers,
             backfills,
-            exports = Array.Empty<object>()
+            exports = Array.Empty<object>(),
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
-    private static object BuildDataOperationsFallbackPayload()
+    private static object BuildDataOperationsFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
     {
         return new
         {
@@ -1246,7 +1250,8 @@ public static class WorkstationEndpoints
                 new { id = "providers-healthy", label = "Providers Healthy", value = "4", delta = "0", tone = "success" },
                 new { id = "backfills-running", label = "Backfills Running", value = "2", delta = "+1", tone = "default" },
                 new { id = "exports-ready", label = "Exports Ready", value = "3", delta = "+1", tone = "success" },
-                new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" }
+                new { id = "ops-review", label = "Needs Review", value = "1", delta = "+1", tone = "warning" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), delta = "24h", tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             providers = new[]
             {
@@ -1263,16 +1268,18 @@ public static class WorkstationEndpoints
             {
                 new { exportId = "EX-2196", profile = "python-pandas", target = "research pack", status = "Ready", rows = "118k", updatedAt = "7m ago" },
                 new { exportId = "EX-2198", profile = "postgresql", target = "ops warehouse", status = "Attention", rows = "42k", updatedAt = "9m ago" }
-            }
+            },
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
     private static async Task<object> BuildGovernancePayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
+        var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
         if (readService is null)
         {
-            return BuildGovernanceFallbackPayload();
+            return BuildGovernanceFallbackPayload(kernelObservability);
         }
 
         var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
@@ -1286,7 +1293,8 @@ public static class WorkstationEndpoints
                     new { id = "open-breaks", label = "Open Breaks", value = "0", tone = "success" },
                     new { id = "timing-drift", label = "Timing Drift", value = "0", tone = "default" },
                     new { id = "security-gaps", label = "Security Gaps", value = "0", tone = "success" },
-                    new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" }
+                    new { id = "audit-ready", label = "Audit Ready", value = "0", tone = "default" },
+                    new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
                 },
                 reconciliationQueue = Array.Empty<object>(),
                 breakQueue = Array.Empty<ReconciliationBreakQueueItem>(),
@@ -1299,7 +1307,8 @@ public static class WorkstationEndpoints
                     securityIssues = 0
                 },
                 cashFlow = BuildGovernanceWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                reporting = BuildGovernanceReportingPayload()
+                reporting = BuildGovernanceReportingPayload(),
+                kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
             };
         }
 
@@ -1328,7 +1337,8 @@ public static class WorkstationEndpoints
                 new { id = "open-breaks", label = "Open Breaks", value = openBreaks.ToString(CultureInfo.InvariantCulture), tone = openBreaks == 0 ? "success" : "warning" },
                 new { id = "timing-drift", label = "Timing Drift", value = timingDriftRuns.ToString(CultureInfo.InvariantCulture), tone = timingDriftRuns == 0 ? "default" : "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), tone = runsWithSecurityIssues == 0 ? "success" : "warning" },
-                new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" }
+                new { id = "audit-ready", label = "Audit Ready", value = Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), tone = auditReadyRuns > 0 ? "success" : "default" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             reconciliationQueue = runs
                 .Zip(details, static (run, detail) => (run, detail))
@@ -1344,11 +1354,12 @@ public static class WorkstationEndpoints
                 securityIssues = runsWithSecurityIssues
             },
             cashFlow = BuildGovernanceWorkspaceCashFlowSummary(details),
-            reporting = BuildGovernanceReportingPayload()
+            reporting = BuildGovernanceReportingPayload(),
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
         };
     }
 
-    private static object BuildGovernanceFallbackPayload()
+    private static object BuildGovernanceFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
     {
         return new
         {
@@ -1357,7 +1368,8 @@ public static class WorkstationEndpoints
                 new { id = "open-breaks", label = "Open Breaks", value = "4", tone = "warning" },
                 new { id = "timing-drift", label = "Timing Drift", value = "1", tone = "warning" },
                 new { id = "security-gaps", label = "Security Gaps", value = "2", tone = "warning" },
-                new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" }
+                new { id = "audit-ready", label = "Audit Ready", value = "9", tone = "success" },
+                new { id = "kernel-critical-jumps", label = "Kernel Jump Alerts", value = (kernelObservability?.AlertCount ?? 0).ToString(CultureInfo.InvariantCulture), tone = (kernelObservability?.AlertCount ?? 0) == 0 ? "success" : "warning" }
             },
             reconciliationQueue = new[]
             {
@@ -1691,7 +1703,55 @@ public static class WorkstationEndpoints
                     hasSecurityCoverageIssues = reconciliation.Summary.HasSecurityCoverageIssues,
                     lastUpdated = FormatRelativeTime(reconciliation.Summary.CreatedAt),
                     tone = reconciliation.Summary.BreakCount == 0 && !reconciliation.Summary.HasSecurityCoverageIssues ? "success" : "warning"
-                }
+            },
+            kernelObservability = BuildKernelObservabilityPayload(kernelObservability)
+        };
+    }
+
+    private static object BuildKernelObservabilityPayload(KernelObservabilitySnapshot? snapshot)
+    {
+        if (snapshot is null)
+        {
+            return new
+            {
+                updatedAtUtc = (DateTimeOffset?)null,
+                determinismChecksEnabled = false,
+                alerts = 0,
+                domains = Array.Empty<object>()
+            };
+        }
+
+        return new
+        {
+            updatedAtUtc = snapshot.UpdatedAtUtc,
+            determinismChecksEnabled = snapshot.DeterminismChecksEnabled,
+            alerts = snapshot.AlertCount,
+            domains = snapshot.Domains.Select(static domain => new
+            {
+                domain = domain.Domain,
+                evaluations = domain.Evaluations,
+                throughputPerMinute = domain.ThroughputPerMinute,
+                latencyMs = new
+                {
+                    p50 = domain.Latency.P50Ms,
+                    p95 = domain.Latency.P95Ms,
+                    p99 = domain.Latency.P99Ms
+                },
+                reasonCoveragePercent = domain.ReasonCodeCoveragePercent,
+                drift = new
+                {
+                    score = domain.ScoreDrift,
+                    severity = domain.SeverityDrift
+                },
+                criticalSeverityRate = new
+                {
+                    shortWindow = domain.CriticalRateShortWindow,
+                    longWindow = domain.CriticalRateLongWindow,
+                    jumpAlertActive = domain.CriticalJumpActive,
+                    jumpAlertCount = domain.CriticalJumpAlertCount
+                },
+                determinismMismatches = domain.DeterminismMismatches
+            })
         };
     }
 
