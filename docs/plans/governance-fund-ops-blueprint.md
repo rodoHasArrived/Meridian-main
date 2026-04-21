@@ -115,6 +115,12 @@ Current expectation:
 - reuse the delivered workstation propagation and drill-in patterns already present across workstation and governance surfaces
 - limit new Security Master work to governance-specific gaps, not baseline productization that is already complete
 
+Governance architecture guard (required):
+
+- Security Master is the sole instrument-definition and instrument-metadata source for governance and fund-ops surfaces.
+- Any governance DTO that carries instrument metadata (symbol, issuer, coupon, maturity, classification, venue, lot/tick parameters, corporate-action context, or similar term fields) must reference Security Master identity/provenance fields (for example `WorkstationSecurityReference` and Security Master IDs/provenance summaries).
+- Governance-local instrument definitions are prohibited unless they are adapter-only ingestion/transformation intermediates that are explicitly mapped back to Security Master identities before workstation DTO publication or persistence.
+
 ### Layer 2: Fund accounting and multi-ledger kernel
 
 Extend the ledger model to support:
@@ -559,6 +565,8 @@ Current delivered slice: report-pack preview contracts and a shared preview endp
 - [ ] Keep F# kernels pure and deterministic wherever possible.
 - [ ] Keep WPF code-behind thin; prefer `BindableBase` view models and services.
 - [ ] Reuse existing export and workstation infrastructure before adding new stacks.
+- [ ] PR/review validation: no governance-local instrument definitions unless adapter-only and explicitly mapped to Security Master identity/provenance before exposure.
+- [ ] Reviewer search guidance: inspect governance DTO/service changes for instrument-term fields (for example `Symbol`, `Cusip`, `Isin`, `Coupon`, `Maturity`, `Issuer`, `Venue`, `AssetClass`) introduced without Security Master references/provenance wiring.
 - [ ] Update roadmap, feature inventory, and improvements docs in the same PRs as implementation changes.
 
 ## Suggested first PR slices
