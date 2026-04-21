@@ -51,7 +51,13 @@ vi.mock("@/lib/api", async () => {
         positions: [{ symbol: "AAPL", quantity: 5, averageCostBasis: 200, currentPrice: 205, marketValue: 1025, unrealisedPnl: 25, realisedPnl: 0 }],
         asOf: "2026-01-01T00:15:00Z"
       },
-      verifiedAt: "2026-01-01T00:20:00Z"
+      verifiedAt: "2026-01-01T00:20:00Z",
+      comparedFillCount: 1,
+      comparedOrderCount: 0,
+      comparedLedgerEntryCount: 1,
+      lastPersistedFillAt: "2026-01-01T00:10:00Z",
+      lastPersistedOrderUpdateAt: null,
+      verificationAuditId: "audit-verify-1"
     }),
     getExecutionAudit: vi.fn().mockResolvedValue([
       {
@@ -148,6 +154,8 @@ describe("TradingScreen", () => {
 
     await waitFor(() => expect(api.getPaperSessionReplayVerification).toHaveBeenCalledWith("sess-1"));
     expect(screen.getByText(/Matched current state/i)).toBeInTheDocument();
+    expect(screen.getByText(/Compared fills: 1/i)).toBeInTheDocument();
+    expect(screen.getByText(/Verification audit: audit-verify-1/i)).toBeInTheDocument();
     expect(screen.getByText(/ReplayPaperSession/i)).toBeInTheDocument();
   });
 
