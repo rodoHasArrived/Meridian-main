@@ -929,6 +929,7 @@ public static class WorkstationEndpoints
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
+        var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
 
         // When neither execution layer nor strategy run service is active, use fixture data
         if (portfolio is null && oms is null && readService is null)
@@ -943,6 +944,8 @@ public static class WorkstationEndpoints
             var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
             run = runs.FirstOrDefault(static candidate => candidate.Mode == StrategyRunMode.Paper) ?? runs.FirstOrDefault();
         }
+
+        var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
 
         // --- Metrics (prefer live data, fall back to run-level metrics) ---
         var realisedPnl = portfolio?.RealisedPnl ?? run?.NetPnl ?? 0m;
@@ -1085,20 +1088,39 @@ public static class WorkstationEndpoints
             },
             brokerage = new
             {
-                provider = "Interactive Brokers",
+                provider = brokerageValidation.GatewayDisplayName,
                 account = run is not null && !string.IsNullOrWhiteSpace(run.PortfolioId) ? run.PortfolioId : "—",
-                environment = "paper",
+                environment = run?.Mode == StrategyRunMode.Live ? "live" : "paper",
                 connection = portfolio is not null ? "Connected" : "Disconnected",
                 lastHeartbeat = portfolio is not null ? "live" : "—",
                 orderIngress = oms is not null ? "healthy" : "—",
                 fillFeed = portfolio is not null ? "healthy" : "—",
-                notes = portfolio is not null
-                    ? "Live execution state from PaperTradingPortfolio and OrderManagementSystem."
-                    : "Paper gateway not active. Start a paper session to see live position and order data."
+                notes = BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)
             },
             comparisons = run is null ? Array.Empty<object>() : BuildModeComparisons([run]),
             drillIn = run is null ? null : BuildRunDrillInLinks(run)
         };
+    }
+
+    private static string BuildTradingBrokerageNotes(
+        StrategyRunSummary? run,
+        bool hasLiveExecutionState,
+        BrokerageConfiguration? brokerageConfiguration)
+    {
+        if (hasLiveExecutionState)
+        {
+            return "Live execution state from PaperTradingPortfolio and OrderManagementSystem.";
+        }
+
+        if (run?.Mode == StrategyRunMode.Paper && run.Promotion?.SuggestedNextMode == StrategyRunMode.Live)
+        {
+            var brokerageValidation = BrokerageValidationEvaluator.Evaluate(brokerageConfiguration);
+            return brokerageValidation.HasBlockingGap
+                ? $"Paper promotion is complete. Live promotion remains blocked. {brokerageValidation.Summary}"
+                : $"Paper promotion is complete. {brokerageValidation.Summary}";
+        }
+
+        return "Paper gateway not active. Start a paper session to see live position and order data.";
     }
 
     private static object BuildTradingFallbackPayload()

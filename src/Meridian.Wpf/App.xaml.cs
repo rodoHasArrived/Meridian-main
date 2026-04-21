@@ -17,6 +17,7 @@ using Meridian.Application.FundStructure;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
@@ -503,7 +504,8 @@ public partial class App : System.Windows.Application
         {
             var service = new WpfServices.StrategyRunWorkspaceService(
                 sp.GetRequiredService<IStrategyRepository>(),
-                sp.GetRequiredService<StrategyRunReadService>());
+                sp.GetRequiredService<StrategyRunReadService>(),
+                sp.GetService<BrokerageConfiguration>());
             WpfServices.StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });

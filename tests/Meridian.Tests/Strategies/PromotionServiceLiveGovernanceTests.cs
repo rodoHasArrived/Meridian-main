@@ -38,7 +38,35 @@ public sealed class PromotionServiceLiveGovernanceTests
         result.RequiresManualOverride.Should().BeTrue();
         result.RequiredManualOverrideKind.Should().Be(ExecutionManualOverrideKinds.AllowLivePromotion);
         result.BlockingReasons.Should().NotBeNull();
-        result.BlockingReasons!.Should().Contain(reason => reason.Contains("Live execution is not enabled", StringComparison.Ordinal));
+        result.BlockingReasons!.Should().Contain(reason => reason.Contains("does not enable live execution", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_WhenPaperRunTargetsLiveWithPaperGateway_RequiresHumanApprovalControls()
+    {
+        var service = BuildService(
+            out var store,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.EvaluateAsync(run.RunId);
+
+        result.TargetMode.Should().Be(RunType.Live);
+        result.RequiresHumanApproval.Should().BeTrue();
+        result.RequiresManualOverride.Should().BeTrue();
+        result.RequiredManualOverrideKind.Should().Be(ExecutionManualOverrideKinds.AllowLivePromotion);
+        result.BlockingReasons.Should().NotBeNull();
+        result.BlockingReasons!.Should().Contain(reason => reason.Contains("paper trading", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

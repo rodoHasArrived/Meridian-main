@@ -7,6 +7,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -130,6 +131,36 @@ public sealed class WorkstationEndpointsTests
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingPayload_ShouldSurfacePaperGatewayBrokerGap()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                LiveExecutionEnabled = true
+            });
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-paper-live-review",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+
+        var brokerage = trading.RootElement.GetProperty("brokerage");
+        brokerage.GetProperty("provider").GetString().Should().Be("Paper trading");
+        brokerage.GetProperty("notes").GetString().Should().Contain("blocked");
+        brokerage.GetProperty("notes").GetString().Should().Contain("paper trading");
     }
 
     [Fact]

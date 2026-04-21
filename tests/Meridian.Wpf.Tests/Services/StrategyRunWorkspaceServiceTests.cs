@@ -2,8 +2,11 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
 using Meridian.Ledger;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Tests.Services;
@@ -45,6 +48,18 @@ public sealed class StrategyRunWorkspaceServiceTests
         var latest = await service.GetLatestRunAsync();
         latest.Should().NotBeNull();
         latest!.RunId.Should().Be(runId);
+
+        var activeContext = await service.GetActiveRunContextAsync();
+        activeContext.Should().NotBeNull();
+        activeContext!.PromotionStatus.Label.Should().Be("Candidate for paper");
+        activeContext.AuditStatus.Label.Should().Be("Audit trail ready");
+        activeContext.ValidationStatus.Label.Should().Be("Validation ready");
+
+        var tradingSummary = await service.GetTradingSummaryAsync();
+        tradingSummary.ActiveRunContext.Should().NotBeNull();
+        tradingSummary.PromotionStatus.Label.Should().Be("Candidate for paper");
+        tradingSummary.AuditStatus.Label.Should().Be("Audit trail ready");
+        tradingSummary.ValidationStatus.Label.Should().Be("Validation ready");
     }
 
     [Fact]
@@ -88,6 +103,106 @@ public sealed class StrategyRunWorkspaceServiceTests
             line.Symbol == "AAPL" &&
             line.Security != null &&
             line.Security.DisplayName == "Apple Inc.");
+    }
+
+    [Fact]
+    public async Task GetTradingSummaryAsync_WithoutActiveRun_ShouldExposeAggregatePromotionAuditAndValidationStatus()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+        var request = new BacktestRequest(
+            From: new DateOnly(2026, 3, 1),
+            To: new DateOnly(2026, 3, 20),
+            Symbols: ["AAPL", "MSFT"],
+            InitialCash: 100_000m,
+            DataRoot: "./data/test");
+
+        await service.RecordBacktestRunAsync(request, "Buy & Hold (equal-weight)", BuildResult());
+        await service.SetActiveRunContextAsync(null);
+
+        var summary = await service.GetTradingSummaryAsync();
+
+        summary.ActiveRunContext.Should().BeNull();
+        summary.PromotionStatus.Label.Should().Be("Awaiting review");
+        summary.AuditStatus.Label.Should().Be("Audit trail ready");
+        summary.ValidationStatus.Label.Should().Be("Validation ready");
+    }
+
+    [Fact]
+    public async Task GetTradingSummaryAsync_WithIncompletePaperRun_ShouldExposeAuditAndValidationAttention()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService());
+        var run = StrategyRunEntry.Start(
+            "alpha-mean-reversion",
+            "Alpha Mean Reversion",
+            RunType.Paper,
+            "paper-run-001");
+
+        await store.RecordRunAsync(run);
+        await service.SetActiveRunContextAsync(run.RunId);
+
+        var activeContext = await service.GetActiveRunContextAsync();
+
+        activeContext.Should().NotBeNull();
+        activeContext!.PromotionStatus.Label.Should().Be("Requires completion");
+        activeContext.PromotionStatus.Tone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        activeContext.AuditStatus.Label.Should().Be("Audit trail pending");
+        activeContext.AuditStatus.Tone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        activeContext.ValidationStatus.Label.Should().Be("Validation attention");
+        activeContext.ValidationStatus.Tone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        activeContext.ValidationStatus.Detail.Should().Contain("parameters");
+
+        await service.SetActiveRunContextAsync(null);
+        var summary = await service.GetTradingSummaryAsync();
+
+        summary.PromotionStatus.Label.Should().Be("Completion required");
+        summary.PromotionStatus.Tone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        summary.AuditStatus.Label.Should().Be("Audit pending");
+        summary.AuditStatus.Tone.Should().Be(TradingWorkspaceStatusTone.Warning);
+        summary.ValidationStatus.Label.Should().Be("Validation attention");
+        summary.ValidationStatus.Tone.Should().Be(TradingWorkspaceStatusTone.Warning);
+    }
+
+    [Fact]
+    public async Task GetActiveRunContextAsync_WithPaperRunReadyForLive_ShouldSurfaceBrokerValidationGap()
+    {
+        var store = new StrategyRunStore();
+        var service = new StrategyRunWorkspaceService(
+            store,
+            new Meridian.Strategies.Services.PortfolioReadService(),
+            new Meridian.Strategies.Services.LedgerReadService(),
+            new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                LiveExecutionEnabled = true
+            });
+
+        var run = StrategyRunEntry.Start("paper-live-review", "Paper Live Review", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildResult(),
+            PortfolioId = "paper-live-review-portfolio",
+            LedgerReference = "paper-live-review-ledger",
+            AuditReference = "audit-paper-live-review"
+        };
+        await store.RecordRunAsync(run);
+        await service.SetActiveRunContextAsync(run.RunId);
+
+        var activeContext = await service.GetActiveRunContextAsync();
+        var tradingSummary = await service.GetTradingSummaryAsync();
+
+        activeContext.Should().NotBeNull();
+        activeContext!.ValidationStatus.Label.Should().Be("Broker validation gap");
+        activeContext.ValidationStatus.Detail.Should().Contain("paper trading");
+        tradingSummary.ValidationStatus.Label.Should().Be("Broker validation gap");
+        tradingSummary.ValidationStatus.Detail.Should().Contain("paper trading");
     }
 
     private static BacktestResult BuildResult()

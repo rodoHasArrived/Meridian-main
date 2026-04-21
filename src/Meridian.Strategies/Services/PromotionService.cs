@@ -83,9 +83,10 @@ public sealed class PromotionService
 
         if (targetMode == RunType.Live)
         {
-            if (_brokerageConfiguration is { LiveExecutionEnabled: false })
+            var brokerageValidation = BrokerageValidationEvaluator.Evaluate(_brokerageConfiguration);
+            if (brokerageValidation.HasBlockingGap)
             {
-                blockingReasons.Add("Live execution is not enabled in the brokerage configuration.");
+                blockingReasons.AddRange(brokerageValidation.Findings);
                 requiresHumanApproval = true;
                 requiresManualOverride = true;
                 requiredManualOverrideKind = ExecutionManualOverrideKinds.AllowLivePromotion;
